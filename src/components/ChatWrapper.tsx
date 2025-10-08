@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ChatWrapperProps, Message, StreamEvent, ToolResult } from '../types';
-import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
 import '../styles/chat-wrapper.css';
 
@@ -18,6 +17,9 @@ export function ChatWrapper({
   
   // Advanced state for tool results and streaming
   const [toolResults, setToolResults] = useState<ToolResult[]>([]);
+  const [todos, setTodos] = useState<any[]>([]);
+  const [briefs, setBriefs] = useState<any[]>([]);
+  const [uploadedMedia, setUploadedMedia] = useState<string[]>([]);
   const [streamingStatus, setStreamingStatus] = useState('');
   const [isThinking, setIsThinking] = useState(false);
   const [reasoningContent, setReasoningContent] = useState('');
@@ -162,6 +164,7 @@ export function ChatWrapper({
         
         // Handle todos and briefs if provided
         if (event.todos) {
+          setTodos(event.todos);
           // Call onToolResult callback if provided
           if (config.onToolResult) {
             config.onToolResult('todos', event.todos);
@@ -169,6 +172,7 @@ export function ChatWrapper({
         }
         
         if (event.briefs) {
+          setBriefs(event.briefs);
           // Call onToolResult callback if provided
           if (config.onToolResult) {
             config.onToolResult('briefs', event.briefs);
@@ -250,12 +254,11 @@ export function ChatWrapper({
       const endpoint = getApiEndpoint();
       const requestBody = config.endpoint === 'brief-planner' ? {
         messages: [...messages, userMessage],
-        promptPath: 'briefPlanner',
+        promptPath: config.promptPath || 'briefPlanner',
         conversationUuid,
-        todos: toolResults.filter(r => r.status !== undefined),
-        briefs: toolResults.filter(r => r.title && r.description),
-        media: media || [],
-        tools: tools ? Object.keys(tools) : []
+        todos, // Send current todos to the API
+        briefs, // Send current briefs to the API  
+        media: uploadedMedia, // Send uploaded images as base64
       } : {
         message: message.trim(),
         tools: tools ? Object.keys(tools) : []
@@ -335,7 +338,9 @@ export function ChatWrapper({
     generateId, 
     messages, 
     conversationUuid, 
-    toolResults, 
+    todos,
+    briefs,
+    uploadedMedia,
     tools, 
     config, 
     apiUrl, 
@@ -402,6 +407,9 @@ export function ChatWrapper({
     setMessages(initialMessages);
     setConversationUuid(null);
     setToolResults([]);
+    setTodos([]);
+    setBriefs([]);
+    setUploadedMedia([]);
     setStreamingStatus('');
     setIsThinking(false);
     setReasoningContent('');
@@ -483,11 +491,27 @@ export function ChatWrapper({
         
         {renderThinkingIndicator()}
         
-        <div className="chat-wrapper__content">
-          <MessageList messages={messages} />
-          {renderToolResults()}
+        <div className="chat-wrapper__messages">
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`chat-wrapper__message chat-wrapper__message--${message.role}`}
+            >
+              <div className="chat-wrapper__message-content">
+                {message.content}
+                {message.isStreaming && (
+                  <span className="chat-wrapper__streaming-indicator">...</span>
+                )}
+              </div>
+              <div className="chat-wrapper__message-timestamp">
+                {message.timestamp.toLocaleTimeString()}
+              </div>
+            </div>
+          ))}
           <div ref={messagesEndRef} />
         </div>
+        
+        {renderToolResults()}
         
         <MessageInput
           onSend={handleSubmit}

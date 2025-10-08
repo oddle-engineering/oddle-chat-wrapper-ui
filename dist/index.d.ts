@@ -9,6 +9,7 @@ export declare interface ChatConfig {
     theme?: ChatTheme;
     placeholder?: string;
     welcomeMessage?: string;
+    promptPath?: string;
     features?: {
         fileUpload?: boolean;
         voiceInput?: boolean;

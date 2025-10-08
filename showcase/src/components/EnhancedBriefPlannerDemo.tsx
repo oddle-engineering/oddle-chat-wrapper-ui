@@ -14,6 +14,7 @@ export function EnhancedBriefPlannerDemo() {
       theme: "light",
       placeholder: "Ask about Middle Child Bar planning, create todos, or generate briefs...",
       endpoint: "brief-planner",
+      promptPath: "briefPlanner",
       features: {
         showToolResults: true,
         messageHistory: true,
