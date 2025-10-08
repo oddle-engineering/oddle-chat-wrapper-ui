@@ -44,12 +44,14 @@ export interface ChatConfig {
   placeholder?: string;
   welcomeMessage?: string;
   promptPath?: string;
+  bubbleText?: string;
   features?: {
     fileUpload?: boolean;
     voiceInput?: boolean;
     messageHistory?: boolean;
     exportChat?: boolean;
     showToolResults?: boolean;
+    showBubbleText?: boolean;
   };
   onMessage?: (message: Message) => void;
   onError?: (error: Error) => void;

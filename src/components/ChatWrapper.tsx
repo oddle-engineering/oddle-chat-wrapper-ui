@@ -14,6 +14,7 @@ export function ChatWrapper({
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [conversationUuid, setConversationUuid] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Advanced state for tool results and streaming
   const [toolResults, setToolResults] = useState<ToolResult[]>([]);
@@ -401,6 +402,29 @@ export function ChatWrapper({
     console.log("Chat cleared");
   }, [initialMessages]);
 
+  // Modal controls
+  const openModal = useCallback(() => {
+    setIsModalOpen(true);
+  }, []);
+
+  const closeModal = useCallback(() => {
+    setIsModalOpen(false);
+  }, []);
+
+  // Handle escape key for modal
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && config.mode === 'modal' && isModalOpen) {
+        closeModal();
+      }
+    };
+
+    if (config.mode === 'modal' && isModalOpen) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [config.mode, isModalOpen, closeModal]);
+
   // Build CSS classes without external library
   const buildClasses = (...classes: (string | undefined | false)[]): string => {
     return classes.filter(Boolean).join(" ");
@@ -415,8 +439,76 @@ export function ChatWrapper({
 
   // Render modal overlay if needed
   const renderModalOverlay = () => {
-    if (config.mode === "modal") {
-      return <div className="chat-wrapper-overlay" />;
+    if (config.mode === "modal" && isModalOpen) {
+      return (
+        <div 
+          className="chat-wrapper-overlay" 
+          onClick={closeModal}
+        />
+      );
+    }
+    return null;
+  };
+
+  // Render bubble button for modal mode
+  const renderBubbleButton = () => {
+    if (config.mode === "modal" && !isModalOpen) {
+      return (
+        <button
+          className="chat-wrapper__bubble-button"
+          onClick={openModal}
+          title={`Open ${config.appName}`}
+        >
+          <svg 
+            width="24" 
+            height="24" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            xmlns="http://www.w3.org/2000/svg"
+            className="chat-wrapper__bubble-icon"
+          >
+            <path 
+              d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H5.17L4 17.17V4H20V16Z" 
+              fill="currentColor"
+            />
+            <circle cx="7" cy="10" r="1" fill="currentColor"/>
+            <circle cx="12" cy="10" r="1" fill="currentColor"/>
+            <circle cx="17" cy="10" r="1" fill="currentColor"/>
+          </svg>
+          {config.features?.showBubbleText !== false && (
+            <span className="chat-wrapper__bubble-text">
+              {config.bubbleText || 'Chat'}
+            </span>
+          )}
+        </button>
+      );
+    }
+    return null;
+  };
+
+  // Render close button for modal mode
+  const renderCloseButton = () => {
+    if (config.mode === "modal" && isModalOpen) {
+      return (
+        <button
+          className="chat-wrapper__close-button"
+          onClick={closeModal}
+          title="Close chat"
+        >
+          <svg 
+            width="20" 
+            height="20" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path 
+              d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z" 
+              fill="currentColor"
+            />
+          </svg>
+        </button>
+      );
     }
     return null;
   };
@@ -464,12 +556,18 @@ export function ChatWrapper({
     );
   };
 
+  // For modal mode, only render when open
+  if (config.mode === "modal" && !isModalOpen) {
+    return renderBubbleButton();
+  }
+
   return (
     <>
       {renderModalOverlay()}
       <div className={containerClasses} style={config.customStyles}>
         <div className="chat-wrapper__header">
           <h2 className="chat-wrapper__title">{config.appName}</h2>
+          {renderCloseButton()}
           {streamingStatus && (
             <div className="chat-wrapper__status">{streamingStatus}</div>
           )}

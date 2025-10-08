@@ -10,12 +10,14 @@ export declare interface ChatConfig {
     placeholder?: string;
     welcomeMessage?: string;
     promptPath?: string;
+    bubbleText?: string;
     features?: {
         fileUpload?: boolean;
         voiceInput?: boolean;
         messageHistory?: boolean;
         exportChat?: boolean;
         showToolResults?: boolean;
+        showBubbleText?: boolean;
     };
     onMessage?: (message: Message) => void;
     onError?: (error: Error) => void;
@@ -31,7 +33,7 @@ export declare type ChatPosition = 'left' | 'right';
 
 export declare type ChatTheme = 'light' | 'dark' | 'auto';
 
-export declare function ChatWrapper({ apiUrl, config, tools, initialMessages, }: ChatWrapperProps): JSX_2.Element;
+export declare function ChatWrapper({ apiUrl, config, tools, initialMessages, }: ChatWrapperProps): JSX_2.Element | null;
 
 export declare interface ChatWrapperProps {
     apiUrl: string;

@@ -44,6 +44,10 @@ function App() {
         appName: "AI Assistant",
         theme: "dark" as ChatTheme,
         placeholder: "Ask me anything...",
+        bubbleText: "Need Help?",
+        features: {
+          showBubbleText: true,
+        },
       },
     },
     {
@@ -413,9 +417,10 @@ function App() {
       {/* Active Demo Render */}
       {activeDemo &&
         activeDemo !== "embedded" &&
-        activeDemo !== "brief-planner" && (
+        activeDemo !== "brief-planner" &&
+        activeDemo !== "modal" && (
           <>
-            {(activeDemo === "modal" || activeDemo === "fullscreen") && (
+            {activeDemo === "fullscreen" && (
               <div className="active-demo-overlay" />
             )}
 
@@ -431,6 +436,20 @@ function App() {
               : renderDemo(demos.find((d) => d.id === activeDemo)!)}
           </>
         )}
+
+      {/* Modal Demo - Special handling */}
+      {activeDemo === "modal" && (
+        <>
+          <button
+            className="close-demo-button"
+            onClick={() => setActiveDemo(null)}
+            style={{ zIndex: 1002 }}
+          >
+            Close Demo
+          </button>
+          {renderDemo(demos.find((d) => d.id === "modal")!)}
+        </>
+      )}
 
       {/* Close button for special demos */}
       {(activeDemo === "embedded" || activeDemo === "brief-planner") && (

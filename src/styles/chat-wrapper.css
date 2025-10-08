@@ -525,3 +525,155 @@
 .chat-wrapper--dark .chat-wrapper__thinking-content {
   color: #cbd5e0;
 }
+
+/* Bubble Button for Modal Mode */
+.chat-wrapper__bubble-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: auto;
+  min-width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+  border: none;
+  border-radius: 30px;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 20px;
+  box-shadow: 0 8px 32px rgba(66, 153, 225, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.chat-wrapper__bubble-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(66, 153, 225, 0.4);
+  background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%);
+}
+
+.chat-wrapper__bubble-button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 20px rgba(66, 153, 225, 0.3);
+}
+
+.chat-wrapper__bubble-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.chat-wrapper__bubble-text {
+  white-space: nowrap;
+  margin-left: 4px;
+}
+
+/* Hide text on small screens for compact bubble */
+@media (max-width: 640px) {
+  .chat-wrapper__bubble-button {
+    width: 60px;
+    padding: 0;
+  }
+  
+  .chat-wrapper__bubble-text {
+    display: none;
+  }
+}
+
+/* Close Button for Modal Mode */
+.chat-wrapper__close-button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  background-color: transparent;
+  border: none;
+  border-radius: 18px;
+  color: #718096;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.chat-wrapper__close-button:hover {
+  background-color: #f1f5f9;
+  color: #2d3748;
+}
+
+.chat-wrapper__close-button:active {
+  background-color: #e2e8f0;
+}
+
+/* Dark theme bubble and close buttons */
+.chat-wrapper--dark .chat-wrapper__bubble-button {
+  background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+  box-shadow: 0 8px 32px rgba(45, 55, 72, 0.3);
+}
+
+.chat-wrapper--dark .chat-wrapper__bubble-button:hover {
+  background: linear-gradient(135deg, #1a202c 0%, #0d0f12 100%);
+  box-shadow: 0 12px 40px rgba(45, 55, 72, 0.4);
+}
+
+.chat-wrapper--dark .chat-wrapper__close-button {
+  color: #cbd5e0;
+}
+
+.chat-wrapper--dark .chat-wrapper__close-button:hover {
+  background-color: #4a5568;
+  color: #f7fafc;
+}
+
+.chat-wrapper--dark .chat-wrapper__close-button:active {
+  background-color: #2d3748;
+}
+
+/* Modal positioning adjustments */
+.chat-wrapper--modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90vw;
+  max-width: 800px;
+  height: 80vh;
+  max-height: 600px;
+  z-index: 1001;
+  animation: modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Header adjustments for close button */
+.chat-wrapper--modal .chat-wrapper__header {
+  position: relative;
+  padding-right: 50px;
+}
+
+/* Responsive modal adjustments */
+@media (max-width: 768px) {
+  .chat-wrapper--modal {
+    width: 95vw;
+    height: 90vh;
+    max-height: none;
+  }
+}
