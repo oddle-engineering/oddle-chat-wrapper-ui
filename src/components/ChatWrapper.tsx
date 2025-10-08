@@ -248,13 +248,13 @@ export function ChatWrapper({
         // Create abort controller for this request
         abortControllerRef.current = new AbortController();
 
-        const endpoint = true
+        const endpoint = config.endpoint === 'brief-planner'
           ? `${apiUrl}/api/brief-planner`
           : conversationUuid
           ? `${apiUrl}/api/conversation/${conversationUuid}`
           : `${apiUrl}/api/conversation/init`;
 
-        const requestBody = true
+        const requestBody = config.endpoint === 'brief-planner'
           ? {
               messages: [...messages, userMessage],
               promptPath: config.promptPath || "briefPlanner",
@@ -265,6 +265,7 @@ export function ChatWrapper({
             }
           : {
               message: message.trim(),
+              tools: tools ? Object.keys(tools) : [],
             };
 
         console.log("Sending request to:", endpoint);
@@ -284,35 +285,8 @@ export function ChatWrapper({
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        // Handle regular conversation init response
-        if (!conversationUuid && config.endpoint !== "brief-planner") {
-          const data = await response.json();
-          setConversationUuid(data.conversationId);
-
-          // For regular conversation, we need to make another request to send the actual message
-          const messageEndpoint = `${apiUrl}/api/conversation/${data.conversationId}`;
-          const messageResponse = await fetch(messageEndpoint, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...(config.apiKey && {
-                Authorization: `Bearer ${config.apiKey}`,
-              }),
-            },
-            body: JSON.stringify({ message: message.trim() }),
-            signal: abortControllerRef.current.signal,
-          });
-
-          if (!messageResponse.ok) {
-            throw new Error(`HTTP error! status: ${messageResponse.status}`);
-          }
-
-          // Process the streaming response
-          await processStreamingResponse(messageResponse);
-        } else {
-          // Process the streaming response for brief-planner or existing conversation
-          await processStreamingResponse(response);
-        }
+        // Always process as streaming response since your API returns SSE
+        await processStreamingResponse(response);
       } catch (error) {
         if (error instanceof Error && error.name === "AbortError") {
           console.log("Request aborted");

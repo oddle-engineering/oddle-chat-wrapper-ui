@@ -1,40 +1,40 @@
 var ne = Object.defineProperty;
-var oe = (l, t, n) => t in l ? ne(l, t, { enumerable: !0, configurable: !0, writable: !0, value: n }) : l[t] = n;
-var z = (l, t, n) => oe(l, typeof t != "symbol" ? t + "" : t, n);
+var oe = (l, t, a) => t in l ? ne(l, t, { enumerable: !0, configurable: !0, writable: !0, value: a }) : l[t] = a;
+var z = (l, t, a) => oe(l, typeof t != "symbol" ? t + "" : t, a);
 import { jsxs as f, jsx as i, Fragment as ie } from "react/jsx-runtime";
-import { useState as p, useRef as B, useCallback as y, useEffect as L } from "react";
+import { useState as p, useRef as U, useCallback as y, useEffect as L } from "react";
 function ce({
   onSend: l,
   disabled: t,
-  placeholder: n,
-  value: a,
+  placeholder: a,
+  value: s,
   onChange: d,
   onStop: h,
-  onClear: I,
-  showStopButton: k,
+  onClear: $,
+  showStopButton: b,
   showClearButton: m
 }) {
   const w = () => {
-    const s = a || "";
-    s.trim() && !t && (l(s.trim()), d && d(""));
+    const n = s || "";
+    n.trim() && !t && (l(n.trim()), d && d(""));
   };
   return /* @__PURE__ */ f("div", { className: "chat-wrapper__input", children: [
     /* @__PURE__ */ i(
       "textarea",
       {
-        value: a || "",
-        onChange: (s) => d ? d(s.target.value) : void 0,
-        onKeyPress: (s) => {
-          s.key === "Enter" && !s.shiftKey && (s.preventDefault(), w());
+        value: s || "",
+        onChange: (n) => d ? d(n.target.value) : void 0,
+        onKeyPress: (n) => {
+          n.key === "Enter" && !n.shiftKey && (n.preventDefault(), w());
         },
-        placeholder: n,
+        placeholder: a,
         disabled: t,
         className: "chat-wrapper__textarea",
         rows: 1
       }
     ),
     /* @__PURE__ */ f("div", { className: "chat-wrapper__input-buttons", children: [
-      k && /* @__PURE__ */ i(
+      b && /* @__PURE__ */ i(
         "button",
         {
           onClick: () => {
@@ -49,7 +49,7 @@ function ce({
         "button",
         {
           onClick: () => {
-            I && I();
+            $ && $();
           },
           className: "chat-wrapper__clear-button",
           title: "Clear chat",
@@ -60,7 +60,7 @@ function ce({
         "button",
         {
           onClick: w,
-          disabled: t || !(a != null && a.trim()),
+          disabled: t || !(s != null && s.trim()),
           className: "chat-wrapper__send-button",
           children: t ? "Sending..." : "Send"
         }
@@ -71,10 +71,10 @@ function ce({
 function me({
   apiUrl: l,
   config: t,
-  tools: n,
-  initialMessages: a = []
+  tools: a,
+  initialMessages: s = []
 }) {
-  const [d, h] = p(a), [I, k] = p(""), [m, w] = p(!1), [S, _] = p(null), [P, s] = p([]), [J, v] = p([]), [b, M] = p([]), [C, j] = p([]), [q, T] = p(""), [X, O] = p(!1), [W, x] = p(""), G = B(null), F = B(null), A = B(null), U = y(
+  const [d, h] = p(s), [$, b] = p(""), [m, w] = p(!1), [g, N] = p(null), [I, n] = p([]), [q, D] = p([]), [_, M] = p([]), [k, j] = p([]), [F, C] = p(""), [Q, P] = p(!1), [W, x] = p(""), G = U(null), J = U(null), A = U(null), K = y(
     () => Math.random().toString(36).substring(2) + Date.now().toString(36),
     []
   ), V = y(() => {
@@ -82,41 +82,41 @@ function me({
     (e = G.current) == null || e.scrollIntoView({ behavior: "smooth" });
   }, []);
   L(() => {
-    n && Object.keys(n).length > 0 && console.log("Available tools:", Object.keys(n));
-  }, [n]), L(() => {
+    a && Object.keys(a).length > 0 && console.log("Available tools:", Object.keys(a));
+  }, [a]), L(() => {
     V();
   }, [d, V]), L(() => {
-    t.onStreamingStatusChange && t.onStreamingStatusChange(q);
-  }, [q, t]);
-  const g = y(
+    t.onStreamingStatusChange && t.onStreamingStatusChange(F);
+  }, [F, t]);
+  const S = y(
     (e) => {
-      const c = F.current;
+      const c = J.current;
       c && h(
-        (E) => E.map((u) => u.id === c ? e(u) : u)
+        (T) => T.map((u) => u.id === c ? e(u) : u)
       );
     },
     []
   ), H = y(
     (e) => {
-      var c, E, u, K, o, R, N, D;
+      var c, T, u, O, o, E, R, v;
       switch (console.log("Processing stream event:", e.type, e), e.type) {
         case "event":
-          e.event === "latitude-event" ? ((c = e.data) == null ? void 0 : c.type) === "chain-started" ? (T("Planning chain started"), O(!0), x(
+          e.event === "latitude-event" ? ((c = e.data) == null ? void 0 : c.type) === "chain-started" ? (C("Planning chain started"), P(!0), x(
             "🔗 Starting comprehensive planning chain..."
-          )) : ((E = e.data) == null ? void 0 : E.type) === "step-started" ? (T("Planning step started"), O(!0), x("📊 Executing planning step...")) : ((u = e.data) == null ? void 0 : u.type) === "provider-completed" ? (T("AI planning completed"), O(!1), x(""), (K = e.data.response) != null && K.text && g((r) => ({
+          )) : ((T = e.data) == null ? void 0 : T.type) === "step-started" ? (C("Planning step started"), P(!0), x("📊 Executing planning step...")) : ((u = e.data) == null ? void 0 : u.type) === "provider-completed" ? (C("AI planning completed"), P(!1), x(""), (O = e.data.response) != null && O.text && S((r) => ({
             ...r,
             content: e.data.response.text,
             isStreaming: !1
-          }))) : ((o = e.data) == null ? void 0 : o.type) === "chain-completed" && (T("Planning completed"), O(!1), x(""), e.data.uuid && _(e.data.uuid), g((r) => ({
+          }))) : ((o = e.data) == null ? void 0 : o.type) === "chain-completed" && (C("Planning completed"), P(!1), x(""), e.data.uuid && N(e.data.uuid), S((r) => ({
             ...r,
             isStreaming: !1
-          }))) : e.event === "provider-event" && ((R = e.data) == null ? void 0 : R.type) === "text-delta" && (O(!1), x(""), g((r) => ({
+          }))) : e.event === "provider-event" && ((E = e.data) == null ? void 0 : E.type) === "text-delta" && (P(!1), x(""), S((r) => ({
             ...r,
             content: r.content + e.data.textDelta
           })));
           break;
         case "text-delta":
-          e.content && g((r) => ({
+          e.content && S((r) => ({
             ...r,
             content: r.content + e.content
           }));
@@ -124,36 +124,36 @@ function me({
         case "tool-result":
           if (console.log("Tool result received:", e), e.tool && e.data && (e.data.id || e.data.success)) {
             const r = {
-              id: e.data.id || U(),
+              id: e.data.id || K(),
               title: e.data.title || `${e.tool} result`,
               description: e.data.description,
               status: e.data.status || "completed",
               created_at: e.data.created_at || (/* @__PURE__ */ new Date()).toISOString(),
               ...e.data
             };
-            s(($) => [...$, r]);
+            n((B) => [...B, r]);
           }
-          e.todos && (v(e.todos), t.onToolResult && t.onToolResult("todos", e.todos)), e.briefs && (M(e.briefs), t.onToolResult && t.onToolResult("briefs", e.briefs));
+          e.todos && (D(e.todos), t.onToolResult && t.onToolResult("todos", e.todos)), e.briefs && (M(e.briefs), t.onToolResult && t.onToolResult("briefs", e.briefs));
           break;
         case "finished":
-          T("Stream finished"), e.uuid && _(e.uuid), (D = (N = e.result) == null ? void 0 : N.response) != null && D.text ? g((r) => ({
+          C("Stream finished"), e.uuid && N(e.uuid), (v = (R = e.result) == null ? void 0 : R.response) != null && v.text ? S((r) => ({
             ...r,
             content: e.result.response.text,
             isStreaming: !1
-          })) : g((r) => ({
+          })) : S((r) => ({
             ...r,
             isStreaming: !1
           }));
           break;
         case "stream-error":
-          console.error("Stream error:", e.error), g((r) => ({
+          console.error("Stream error:", e.error), S((r) => ({
             ...r,
             content: `Stream Error: ${e.error}`,
             isStreaming: !1
           }));
           break;
         case "error":
-          console.error("API error:", e.error), g((r) => ({
+          console.error("API error:", e.error), S((r) => ({
             ...r,
             content: `Error: ${e.error}`,
             isStreaming: !1
@@ -161,146 +161,131 @@ function me({
           break;
       }
     },
-    [g, U, t]
-  ), Y = y(
+    [S, K, t]
+  ), X = y(
     async (e, c) => {
       if (!e.trim() || m) return;
-      const E = {
-        id: U(),
+      const T = {
+        id: K(),
         role: "user",
         content: e.trim(),
         timestamp: /* @__PURE__ */ new Date(),
         media: c
       };
-      h((o) => [...o, E]), w(!0), T("Starting...");
-      const u = U();
-      F.current = u;
-      const K = {
+      h((o) => [...o, T]), w(!0), C("Starting...");
+      const u = K();
+      J.current = u;
+      const O = {
         id: u,
         role: "assistant",
         content: "",
         timestamp: /* @__PURE__ */ new Date(),
         isStreaming: !0
       };
-      h((o) => [...o, K]);
+      h((o) => [...o, O]);
       try {
         A.current = new AbortController();
-        const o = `${l}/api/brief-planner`, R = {
-          messages: [...d, E],
+        const o = t.endpoint === "brief-planner" ? `${l}/api/brief-planner` : g ? `${l}/api/conversation/${g}` : `${l}/api/conversation/init`, E = t.endpoint === "brief-planner" ? {
+          messages: [...d, T],
           promptPath: t.promptPath || "briefPlanner",
-          conversationUuid: S,
-          todos: J,
+          conversationUuid: g,
+          todos: q,
           // Send current todos to the API
-          briefs: b,
+          briefs: _,
           // Send current briefs to the API
           media: c || []
           // Use media from function parameter, not uploadedMedia
+        } : {
+          message: e.trim(),
+          tools: a ? Object.keys(a) : []
         };
-        console.log("Sending request to:", o), console.log("Request payload:", JSON.stringify(R, null, 2));
-        const N = await fetch(o, {
+        console.log("Sending request to:", o), console.log("Request payload:", JSON.stringify(E, null, 2));
+        const R = await fetch(o, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             ...t.apiKey && { Authorization: `Bearer ${t.apiKey}` }
           },
-          body: JSON.stringify(R),
+          body: JSON.stringify(E),
           signal: A.current.signal
         });
-        if (!N.ok)
-          throw new Error(`HTTP error! status: ${N.status}`);
-        if (!S && t.endpoint !== "brief-planner") {
-          const D = await N.json();
-          _(D.conversationId);
-          const r = `${l}/api/conversation/${D.conversationId}`, $ = await fetch(r, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...t.apiKey && {
-                Authorization: `Bearer ${t.apiKey}`
-              }
-            },
-            body: JSON.stringify({ message: e.trim() }),
-            signal: A.current.signal
-          });
-          if (!$.ok)
-            throw new Error(`HTTP error! status: ${$.status}`);
-          await Q($);
-        } else
-          await Q(N);
+        if (!R.ok)
+          throw new Error(`HTTP error! status: ${R.status}`);
+        await Y(R);
       } catch (o) {
-        o instanceof Error && o.name === "AbortError" ? console.log("Request aborted") : (console.error("Request error:", o), g((R) => ({
-          ...R,
+        o instanceof Error && o.name === "AbortError" ? console.log("Request aborted") : (console.error("Request error:", o), S((E) => ({
+          ...E,
           content: `Sorry, there was an error: ${o instanceof Error ? o.message : "Unknown error"}`,
           isStreaming: !1
         })), t.onError && t.onError(
           o instanceof Error ? o : new Error("Unknown error")
         ));
       } finally {
-        w(!1), T(""), O(!1), x(""), A.current = null, F.current = null;
+        w(!1), C(""), P(!1), x(""), A.current = null, J.current = null;
       }
     },
     [
       m,
-      U,
+      K,
       d,
-      S,
-      J,
-      b,
-      C,
-      n,
+      g,
+      q,
+      _,
+      k,
+      a,
       t,
       l,
-      g,
+      S,
       H
     ]
-  ), Q = y(
+  ), Y = y(
     async (e) => {
-      var K;
-      const c = (K = e.body) == null ? void 0 : K.getReader(), E = new TextDecoder();
+      var O;
+      const c = (O = e.body) == null ? void 0 : O.getReader(), T = new TextDecoder();
       if (!c)
         throw new Error("No response body reader available");
       let u = "";
       for (; ; ) {
-        const { done: o, value: R } = await c.read();
+        const { done: o, value: E } = await c.read();
         if (o) {
           console.log("Stream completed");
           break;
         }
-        u += E.decode(R, { stream: !0 });
-        const N = u.split(/\r?\n/);
-        u = N.pop() || "";
-        for (const D of N)
-          if (D.startsWith("data: ")) {
-            const r = D.slice(6).trim();
+        u += T.decode(E, { stream: !0 });
+        const R = u.split(/\r?\n/);
+        u = R.pop() || "";
+        for (const v of R)
+          if (v.startsWith("data: ")) {
+            const r = v.slice(6).trim();
             if (r === "[DONE]" || r === "")
               continue;
             try {
-              const $ = JSON.parse(r);
-              H($);
-            } catch ($) {
-              console.error("Failed to parse event:", $);
+              const B = JSON.parse(r);
+              H(B);
+            } catch (B) {
+              console.error("Failed to parse event:", B);
             }
           }
       }
     },
     [H]
   ), Z = y(() => {
-    A.current && (A.current.abort(), w(!1), T(""), O(!1), x(""));
+    A.current && (A.current.abort(), w(!1), C(""), P(!1), x(""));
   }, []), ee = y(() => {
-    h(a), _(null), s([]), v([]), M([]), j([]), T(""), O(!1), x(""), console.log("Chat cleared");
-  }, [a]), te = ((...e) => e.filter(Boolean).join(" "))(
+    h(s), N(null), n([]), D([]), M([]), j([]), C(""), P(!1), x(""), console.log("Chat cleared");
+  }, [s]), te = ((...e) => e.filter(Boolean).join(" "))(
     "chat-wrapper",
     `chat-wrapper--${t.mode}`,
     t.position && `chat-wrapper--${t.position}`,
     t.theme && `chat-wrapper--${t.theme}`
-  ), re = () => t.mode === "modal" ? /* @__PURE__ */ i("div", { className: "chat-wrapper-overlay" }) : null, ae = () => !X || !W ? null : /* @__PURE__ */ i("div", { className: "chat-wrapper__thinking", children: /* @__PURE__ */ f("div", { className: "chat-wrapper__thinking-content", children: [
+  ), re = () => t.mode === "modal" ? /* @__PURE__ */ i("div", { className: "chat-wrapper-overlay" }) : null, ae = () => !Q || !W ? null : /* @__PURE__ */ i("div", { className: "chat-wrapper__thinking", children: /* @__PURE__ */ f("div", { className: "chat-wrapper__thinking-content", children: [
     /* @__PURE__ */ i("span", { className: "chat-wrapper__thinking-spinner" }),
     /* @__PURE__ */ i("span", { children: W })
   ] }) }), se = () => {
     var e;
-    return !((e = t.features) != null && e.showToolResults) || P.length === 0 ? null : /* @__PURE__ */ f("div", { className: "chat-wrapper__tool-results", children: [
+    return !((e = t.features) != null && e.showToolResults) || I.length === 0 ? null : /* @__PURE__ */ f("div", { className: "chat-wrapper__tool-results", children: [
       /* @__PURE__ */ i("h4", { children: "Tool Results" }),
-      /* @__PURE__ */ i("div", { className: "chat-wrapper__tool-results-list", children: P.map((c) => /* @__PURE__ */ f("div", { className: "chat-wrapper__tool-result", children: [
+      /* @__PURE__ */ i("div", { className: "chat-wrapper__tool-results-list", children: I.map((c) => /* @__PURE__ */ f("div", { className: "chat-wrapper__tool-result", children: [
         /* @__PURE__ */ i("div", { className: "chat-wrapper__tool-result-title", children: c.title }),
         c.description && /* @__PURE__ */ i("div", { className: "chat-wrapper__tool-result-description", children: c.description }),
         /* @__PURE__ */ f("div", { className: "chat-wrapper__tool-result-meta", children: [
@@ -315,7 +300,7 @@ function me({
     /* @__PURE__ */ f("div", { className: te, style: t.customStyles, children: [
       /* @__PURE__ */ f("div", { className: "chat-wrapper__header", children: [
         /* @__PURE__ */ i("h2", { className: "chat-wrapper__title", children: t.appName }),
-        q && /* @__PURE__ */ i("div", { className: "chat-wrapper__status", children: q })
+        F && /* @__PURE__ */ i("div", { className: "chat-wrapper__status", children: F })
       ] }),
       ae(),
       /* @__PURE__ */ f("div", { className: "chat-wrapper__messages", children: [
@@ -339,11 +324,11 @@ function me({
       /* @__PURE__ */ i(
         ce,
         {
-          onSend: Y,
+          onSend: X,
           disabled: m,
           placeholder: t.placeholder || "Type a message...",
-          value: I,
-          onChange: k,
+          value: $,
+          onChange: b,
           onStop: Z,
           onClear: ee,
           showStopButton: m,
@@ -355,10 +340,10 @@ function me({
   ] });
 }
 class le {
-  constructor(t, n) {
+  constructor(t, a) {
     z(this, "baseUrl");
     z(this, "apiKey");
-    this.baseUrl = t, this.apiKey = n;
+    this.baseUrl = t, this.apiKey = a;
   }
   getHeaders() {
     const t = {
@@ -374,94 +359,94 @@ class le {
     if (!t.ok) throw new Error("Failed to initialize conversation");
     return (await t.json()).conversationId;
   }
-  async *streamMessage(t, n) {
-    const a = await fetch(
+  async *streamMessage(t, a) {
+    const s = await fetch(
       `${this.baseUrl}/api/conversation/${t}`,
       {
         method: "POST",
         headers: this.getHeaders(),
-        body: JSON.stringify({ message: n })
+        body: JSON.stringify({ message: a })
       }
     );
-    if (!a.ok) throw new Error("Failed to send message");
-    if (!a.body) throw new Error("No response body");
-    const d = a.body.getReader(), h = new TextDecoder();
+    if (!s.ok) throw new Error("Failed to send message");
+    if (!s.body) throw new Error("No response body");
+    const d = s.body.getReader(), h = new TextDecoder();
     for (; ; ) {
-      const { done: I, value: k } = await d.read();
-      if (I) break;
-      const w = h.decode(k).split(`
+      const { done: $, value: b } = await d.read();
+      if ($) break;
+      const w = h.decode(b).split(`
 `);
-      for (const S of w)
-        if (S.startsWith("data: ")) {
-          const _ = S.slice(6);
-          if (_ === "[DONE]") return;
+      for (const g of w)
+        if (g.startsWith("data: ")) {
+          const N = g.slice(6);
+          if (N === "[DONE]") return;
           try {
-            yield JSON.parse(_).content || "";
-          } catch (P) {
-            console.error("Failed to parse chunk:", P);
+            yield JSON.parse(N).content || "";
+          } catch (I) {
+            console.error("Failed to parse chunk:", I);
           }
         }
     }
   }
 }
 function fe(l, t) {
-  const [n, a] = p([]), [d, h] = p(!1), [I, k] = p(null), m = B(null), w = B(new le(l, t)), S = y(async () => {
+  const [a, s] = p([]), [d, h] = p(!1), [$, b] = p(null), m = U(null), w = U(new le(l, t)), g = y(async () => {
     try {
-      const s = await w.current.initConversation();
-      return m.current = s, s;
-    } catch (s) {
-      throw k(s), s;
+      const n = await w.current.initConversation();
+      return m.current = n, n;
+    } catch (n) {
+      throw b(n), n;
     }
-  }, []), _ = y(
-    async (s) => {
-      m.current || await S();
-      const J = {
+  }, []), N = y(
+    async (n) => {
+      m.current || await g();
+      const q = {
         id: Date.now().toString(),
         role: "user",
-        content: s,
+        content: n,
         timestamp: /* @__PURE__ */ new Date()
       };
-      a((b) => [...b, J]), h(!0), k(null);
-      const v = {
+      s((_) => [..._, q]), h(!0), b(null);
+      const D = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: "",
         timestamp: /* @__PURE__ */ new Date(),
         isStreaming: !0
       };
-      a((b) => [...b, v]);
+      s((_) => [..._, D]);
       try {
-        const b = w.current.streamMessage(
+        const _ = w.current.streamMessage(
           m.current,
-          s
+          n
         );
-        for await (const M of b)
-          a(
-            (C) => C.map(
-              (j) => j.id === v.id ? { ...j, content: j.content + M } : j
+        for await (const M of _)
+          s(
+            (k) => k.map(
+              (j) => j.id === D.id ? { ...j, content: j.content + M } : j
             )
           );
-        a(
+        s(
           (M) => M.map(
-            (C) => C.id === v.id ? { ...C, isStreaming: !1 } : C
+            (k) => k.id === D.id ? { ...k, isStreaming: !1 } : k
           )
         );
-      } catch (b) {
-        k(b), a((M) => M.filter((C) => C.id !== v.id));
+      } catch (_) {
+        b(_), s((M) => M.filter((k) => k.id !== D.id));
       } finally {
         h(!1);
       }
     },
-    [S]
-  ), P = y(() => {
-    a([]), m.current = null;
+    [g]
+  ), I = y(() => {
+    s([]), m.current = null;
   }, []);
   return {
-    messages: n,
+    messages: a,
     isLoading: d,
-    error: I,
-    sendMessage: _,
-    clearMessages: P
+    error: $,
+    sendMessage: N,
+    clearMessages: I
   };
 }
 export {
