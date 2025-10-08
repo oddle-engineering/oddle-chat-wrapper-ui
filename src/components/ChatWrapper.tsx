@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
-import { ChatConfig } from '../types';
+import { ChatWrapperProps } from '../types';
 import { useChatConnection } from '../hooks/useChatConnection';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
-import clsx from 'clsx';
+import '../styles/chat-wrapper.css';
 
-export function ChatWrapper(config: ChatConfig) {
+export function ChatWrapper({ apiUrl, config }: ChatWrapperProps) {
   const { messages, isLoading, error, sendMessage } = useChatConnection(
-    config.apiEndpoint,
+    apiUrl,
     config.apiKey
   );
 
@@ -17,32 +17,48 @@ export function ChatWrapper(config: ChatConfig) {
     }
   }, [error, config]);
 
-  const containerClasses = clsx(
+  // Build CSS classes without external library
+  const buildClasses = (...classes: (string | undefined | false)[]): string => {
+    return classes.filter(Boolean).join(' ');
+  };
+
+  const containerClasses = buildClasses(
     'chat-wrapper',
     `chat-wrapper--${config.mode}`,
     config.position && `chat-wrapper--${config.position}`,
     config.theme && `chat-wrapper--${config.theme}`
   );
 
+  // Render modal overlay if needed
+  const renderModalOverlay = () => {
+    if (config.mode === 'modal') {
+      return <div className="chat-wrapper-overlay" />;
+    }
+    return null;
+  };
+
   return (
-    <div className={containerClasses} style={config.customStyles}>
-      <div className="chat-wrapper__header">
-        <h2 className="chat-wrapper__title">{config.appName}</h2>
-      </div>
-      
-      <MessageList messages={messages} />
-      
-      <MessageInput
-        onSend={sendMessage}
-        disabled={isLoading}
-        placeholder={config.placeholder || 'Type a message...'}
-      />
-      
-      {error && (
-        <div className="chat-wrapper__error">
-          Error: {error.message}
+    <>
+      {renderModalOverlay()}
+      <div className={containerClasses} style={config.customStyles}>
+        <div className="chat-wrapper__header">
+          <h2 className="chat-wrapper__title">{config.appName}</h2>
         </div>
-      )}
-    </div>
+        
+        <MessageList messages={messages} />
+        
+        <MessageInput
+          onSend={sendMessage}
+          disabled={isLoading}
+          placeholder={config.placeholder || 'Type a message...'}
+        />
+        
+        {error && (
+          <div className="chat-wrapper__error">
+            Error: {error.message}
+          </div>
+        )}
+      </div>
+    </>
   );
 }

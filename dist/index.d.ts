@@ -22,11 +22,21 @@ export declare interface ChatConfig {
 
 export declare type ChatMode = 'sidebar' | 'fullscreen' | 'modal' | 'embedded';
 
-declare type ChatPosition = 'left' | 'right';
+export declare type ChatPosition = 'left' | 'right';
 
 export declare type ChatTheme = 'light' | 'dark' | 'auto';
 
-export declare function ChatWrapper(config: ChatConfig): JSX_2.Element;
+export declare function ChatWrapper({ apiUrl, config }: ChatWrapperProps): JSX_2.Element;
+
+export declare interface ChatWrapperProps {
+    apiUrl: string;
+    config: Omit<ChatConfig, 'apiEndpoint'>;
+}
+
+export declare interface ConversationResponse {
+    conversationId: string;
+    message: string;
+}
 
 export declare interface Message {
     id: string;

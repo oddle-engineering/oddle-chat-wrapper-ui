@@ -30,6 +30,11 @@ export interface ChatConfig {
   customStyles?: React.CSSProperties;
 }
 
+export interface ChatWrapperProps {
+  apiUrl: string;
+  config: Omit<ChatConfig, 'apiEndpoint'>;
+}
+
 export interface ConversationResponse {
   conversationId: string;
   message: string;
