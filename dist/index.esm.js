@@ -1,44 +1,44 @@
 var ne = Object.defineProperty;
-var oe = (l, t, a) => t in l ? ne(l, t, { enumerable: !0, configurable: !0, writable: !0, value: a }) : l[t] = a;
-var z = (l, t, a) => oe(l, typeof t != "symbol" ? t + "" : t, a);
+var oe = (l, t, n) => t in l ? ne(l, t, { enumerable: !0, configurable: !0, writable: !0, value: n }) : l[t] = n;
+var z = (l, t, n) => oe(l, typeof t != "symbol" ? t + "" : t, n);
 import { jsxs as f, jsx as i, Fragment as ie } from "react/jsx-runtime";
-import { useState as p, useRef as U, useCallback as y, useEffect as L } from "react";
+import { useState as p, useRef as B, useCallback as y, useEffect as L } from "react";
 function ce({
   onSend: l,
   disabled: t,
-  placeholder: a,
-  value: s,
+  placeholder: n,
+  value: a,
   onChange: d,
-  onStop: u,
+  onStop: h,
   onClear: I,
-  showStopButton: C,
+  showStopButton: k,
   showClearButton: m
 }) {
   const w = () => {
-    const n = s || "";
-    n.trim() && !t && (l(n.trim()), d && d(""));
+    const s = a || "";
+    s.trim() && !t && (l(s.trim()), d && d(""));
   };
   return /* @__PURE__ */ f("div", { className: "chat-wrapper__input", children: [
     /* @__PURE__ */ i(
       "textarea",
       {
-        value: s || "",
-        onChange: (n) => d ? d(n.target.value) : void 0,
-        onKeyPress: (n) => {
-          n.key === "Enter" && !n.shiftKey && (n.preventDefault(), w());
+        value: a || "",
+        onChange: (s) => d ? d(s.target.value) : void 0,
+        onKeyPress: (s) => {
+          s.key === "Enter" && !s.shiftKey && (s.preventDefault(), w());
         },
-        placeholder: a,
+        placeholder: n,
         disabled: t,
         className: "chat-wrapper__textarea",
         rows: 1
       }
     ),
     /* @__PURE__ */ f("div", { className: "chat-wrapper__input-buttons", children: [
-      C && /* @__PURE__ */ i(
+      k && /* @__PURE__ */ i(
         "button",
         {
           onClick: () => {
-            u && u();
+            h && h();
           },
           className: "chat-wrapper__stop-button",
           title: "Stop generation",
@@ -60,7 +60,7 @@ function ce({
         "button",
         {
           onClick: w,
-          disabled: t || !(s != null && s.trim()),
+          disabled: t || !(a != null && a.trim()),
           className: "chat-wrapper__send-button",
           children: t ? "Sending..." : "Send"
         }
@@ -71,10 +71,10 @@ function ce({
 function me({
   apiUrl: l,
   config: t,
-  tools: a,
-  initialMessages: s = []
+  tools: n,
+  initialMessages: a = []
 }) {
-  const [d, u] = p(s), [I, C] = p(""), [m, w] = p(!1), [S, b] = p(null), [$, n] = p([]), [F, j] = p([]), [_, P] = p([]), [N, A] = p([]), [H, T] = p(""), [X, M] = p(!1), [W, O] = p(""), G = U(null), J = U(null), v = U(null), B = y(
+  const [d, h] = p(a), [I, k] = p(""), [m, w] = p(!1), [S, _] = p(null), [P, s] = p([]), [J, v] = p([]), [b, M] = p([]), [C, j] = p([]), [q, T] = p(""), [X, O] = p(!1), [W, x] = p(""), G = B(null), F = B(null), A = B(null), U = y(
     () => Math.random().toString(36).substring(2) + Date.now().toString(36),
     []
   ), V = y(() => {
@@ -82,35 +82,35 @@ function me({
     (e = G.current) == null || e.scrollIntoView({ behavior: "smooth" });
   }, []);
   L(() => {
-    a && Object.keys(a).length > 0 && console.log("Available tools:", Object.keys(a));
-  }, [a]), L(() => {
+    n && Object.keys(n).length > 0 && console.log("Available tools:", Object.keys(n));
+  }, [n]), L(() => {
     V();
   }, [d, V]), L(() => {
-    t.onStreamingStatusChange && t.onStreamingStatusChange(H);
-  }, [H, t]);
+    t.onStreamingStatusChange && t.onStreamingStatusChange(q);
+  }, [q, t]);
   const g = y(
     (e) => {
-      const c = J.current;
-      c && u(
-        (E) => E.map((h) => h.id === c ? e(h) : h)
+      const c = F.current;
+      c && h(
+        (E) => E.map((u) => u.id === c ? e(u) : u)
       );
     },
     []
-  ), q = y(
+  ), H = y(
     (e) => {
-      var c, E, h, K, o, x, k, D;
+      var c, E, u, K, o, R, N, D;
       switch (console.log("Processing stream event:", e.type, e), e.type) {
         case "event":
-          e.event === "latitude-event" ? ((c = e.data) == null ? void 0 : c.type) === "chain-started" ? (T("Planning chain started"), M(!0), O(
+          e.event === "latitude-event" ? ((c = e.data) == null ? void 0 : c.type) === "chain-started" ? (T("Planning chain started"), O(!0), x(
             "🔗 Starting comprehensive planning chain..."
-          )) : ((E = e.data) == null ? void 0 : E.type) === "step-started" ? (T("Planning step started"), M(!0), O("📊 Executing planning step...")) : ((h = e.data) == null ? void 0 : h.type) === "provider-completed" ? (T("AI planning completed"), M(!1), O(""), (K = e.data.response) != null && K.text && g((r) => ({
+          )) : ((E = e.data) == null ? void 0 : E.type) === "step-started" ? (T("Planning step started"), O(!0), x("📊 Executing planning step...")) : ((u = e.data) == null ? void 0 : u.type) === "provider-completed" ? (T("AI planning completed"), O(!1), x(""), (K = e.data.response) != null && K.text && g((r) => ({
             ...r,
             content: e.data.response.text,
             isStreaming: !1
-          }))) : ((o = e.data) == null ? void 0 : o.type) === "chain-completed" && (T("Planning completed"), M(!1), O(""), e.data.uuid && b(e.data.uuid), g((r) => ({
+          }))) : ((o = e.data) == null ? void 0 : o.type) === "chain-completed" && (T("Planning completed"), O(!1), x(""), e.data.uuid && _(e.data.uuid), g((r) => ({
             ...r,
             isStreaming: !1
-          }))) : e.event === "provider-event" && ((x = e.data) == null ? void 0 : x.type) === "text-delta" && (M(!1), O(""), g((r) => ({
+          }))) : e.event === "provider-event" && ((R = e.data) == null ? void 0 : R.type) === "text-delta" && (O(!1), x(""), g((r) => ({
             ...r,
             content: r.content + e.data.textDelta
           })));
@@ -124,19 +124,19 @@ function me({
         case "tool-result":
           if (console.log("Tool result received:", e), e.tool && e.data && (e.data.id || e.data.success)) {
             const r = {
-              id: e.data.id || B(),
+              id: e.data.id || U(),
               title: e.data.title || `${e.tool} result`,
               description: e.data.description,
               status: e.data.status || "completed",
               created_at: e.data.created_at || (/* @__PURE__ */ new Date()).toISOString(),
               ...e.data
             };
-            n((R) => [...R, r]);
+            s(($) => [...$, r]);
           }
-          e.todos && (j(e.todos), t.onToolResult && t.onToolResult("todos", e.todos)), e.briefs && (P(e.briefs), t.onToolResult && t.onToolResult("briefs", e.briefs));
+          e.todos && (v(e.todos), t.onToolResult && t.onToolResult("todos", e.todos)), e.briefs && (M(e.briefs), t.onToolResult && t.onToolResult("briefs", e.briefs));
           break;
         case "finished":
-          T("Stream finished"), e.uuid && b(e.uuid), (D = (k = e.result) == null ? void 0 : k.response) != null && D.text ? g((r) => ({
+          T("Stream finished"), e.uuid && _(e.uuid), (D = (N = e.result) == null ? void 0 : N.response) != null && D.text ? g((r) => ({
             ...r,
             content: e.result.response.text,
             isStreaming: !1
@@ -161,60 +161,57 @@ function me({
           break;
       }
     },
-    [g, B, t]
+    [g, U, t]
   ), Y = y(
     async (e, c) => {
       if (!e.trim() || m) return;
       const E = {
-        id: B(),
+        id: U(),
         role: "user",
         content: e.trim(),
         timestamp: /* @__PURE__ */ new Date(),
         media: c
       };
-      u((o) => [...o, E]), w(!0), T("Starting...");
-      const h = B();
-      J.current = h;
+      h((o) => [...o, E]), w(!0), T("Starting...");
+      const u = U();
+      F.current = u;
       const K = {
-        id: h,
+        id: u,
         role: "assistant",
         content: "",
         timestamp: /* @__PURE__ */ new Date(),
         isStreaming: !0
       };
-      u((o) => [...o, K]);
+      h((o) => [...o, K]);
       try {
-        v.current = new AbortController();
-        const o = `${l}/api/brief-planner`, x = t.endpoint === "brief-planner" ? {
+        A.current = new AbortController();
+        const o = `${l}/api/brief-planner`, R = {
           messages: [...d, E],
           promptPath: t.promptPath || "briefPlanner",
           conversationUuid: S,
-          todos: F,
+          todos: J,
           // Send current todos to the API
-          briefs: _,
+          briefs: b,
           // Send current briefs to the API
-          media: N
-          // Send uploaded images as base64
-        } : {
-          message: e.trim(),
-          tools: a ? Object.keys(a) : []
+          media: c || []
+          // Use media from function parameter, not uploadedMedia
         };
-        console.log("Sending request to:", o);
-        const k = await fetch(o, {
+        console.log("Sending request to:", o), console.log("Request payload:", JSON.stringify(R, null, 2));
+        const N = await fetch(o, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             ...t.apiKey && { Authorization: `Bearer ${t.apiKey}` }
           },
-          body: JSON.stringify(x),
-          signal: v.current.signal
+          body: JSON.stringify(R),
+          signal: A.current.signal
         });
-        if (!k.ok)
-          throw new Error(`HTTP error! status: ${k.status}`);
+        if (!N.ok)
+          throw new Error(`HTTP error! status: ${N.status}`);
         if (!S && t.endpoint !== "brief-planner") {
-          const D = await k.json();
-          b(D.conversationId);
-          const r = `${l}/api/conversation/${D.conversationId}`, R = await fetch(r, {
+          const D = await N.json();
+          _(D.conversationId);
+          const r = `${l}/api/conversation/${D.conversationId}`, $ = await fetch(r, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -223,38 +220,38 @@ function me({
               }
             },
             body: JSON.stringify({ message: e.trim() }),
-            signal: v.current.signal
+            signal: A.current.signal
           });
-          if (!R.ok)
-            throw new Error(`HTTP error! status: ${R.status}`);
-          await Q(R);
+          if (!$.ok)
+            throw new Error(`HTTP error! status: ${$.status}`);
+          await Q($);
         } else
-          await Q(k);
+          await Q(N);
       } catch (o) {
-        o instanceof Error && o.name === "AbortError" ? console.log("Request aborted") : (console.error("Request error:", o), g((x) => ({
-          ...x,
+        o instanceof Error && o.name === "AbortError" ? console.log("Request aborted") : (console.error("Request error:", o), g((R) => ({
+          ...R,
           content: `Sorry, there was an error: ${o instanceof Error ? o.message : "Unknown error"}`,
           isStreaming: !1
         })), t.onError && t.onError(
           o instanceof Error ? o : new Error("Unknown error")
         ));
       } finally {
-        w(!1), T(""), M(!1), O(""), v.current = null, J.current = null;
+        w(!1), T(""), O(!1), x(""), A.current = null, F.current = null;
       }
     },
     [
       m,
-      B,
+      U,
       d,
       S,
-      F,
-      _,
-      N,
-      a,
+      J,
+      b,
+      C,
+      n,
       t,
       l,
       g,
-      q
+      H
     ]
   ), Q = y(
     async (e) => {
@@ -262,36 +259,36 @@ function me({
       const c = (K = e.body) == null ? void 0 : K.getReader(), E = new TextDecoder();
       if (!c)
         throw new Error("No response body reader available");
-      let h = "";
+      let u = "";
       for (; ; ) {
-        const { done: o, value: x } = await c.read();
+        const { done: o, value: R } = await c.read();
         if (o) {
           console.log("Stream completed");
           break;
         }
-        h += E.decode(x, { stream: !0 });
-        const k = h.split(/\r?\n/);
-        h = k.pop() || "";
-        for (const D of k)
+        u += E.decode(R, { stream: !0 });
+        const N = u.split(/\r?\n/);
+        u = N.pop() || "";
+        for (const D of N)
           if (D.startsWith("data: ")) {
             const r = D.slice(6).trim();
             if (r === "[DONE]" || r === "")
               continue;
             try {
-              const R = JSON.parse(r);
-              q(R);
-            } catch (R) {
-              console.error("Failed to parse event:", R);
+              const $ = JSON.parse(r);
+              H($);
+            } catch ($) {
+              console.error("Failed to parse event:", $);
             }
           }
       }
     },
-    [q]
+    [H]
   ), Z = y(() => {
-    v.current && (v.current.abort(), w(!1), T(""), M(!1), O(""));
+    A.current && (A.current.abort(), w(!1), T(""), O(!1), x(""));
   }, []), ee = y(() => {
-    u(s), b(null), n([]), j([]), P([]), A([]), T(""), M(!1), O(""), console.log("Chat cleared");
-  }, [s]), te = ((...e) => e.filter(Boolean).join(" "))(
+    h(a), _(null), s([]), v([]), M([]), j([]), T(""), O(!1), x(""), console.log("Chat cleared");
+  }, [a]), te = ((...e) => e.filter(Boolean).join(" "))(
     "chat-wrapper",
     `chat-wrapper--${t.mode}`,
     t.position && `chat-wrapper--${t.position}`,
@@ -301,9 +298,9 @@ function me({
     /* @__PURE__ */ i("span", { children: W })
   ] }) }), se = () => {
     var e;
-    return !((e = t.features) != null && e.showToolResults) || $.length === 0 ? null : /* @__PURE__ */ f("div", { className: "chat-wrapper__tool-results", children: [
+    return !((e = t.features) != null && e.showToolResults) || P.length === 0 ? null : /* @__PURE__ */ f("div", { className: "chat-wrapper__tool-results", children: [
       /* @__PURE__ */ i("h4", { children: "Tool Results" }),
-      /* @__PURE__ */ i("div", { className: "chat-wrapper__tool-results-list", children: $.map((c) => /* @__PURE__ */ f("div", { className: "chat-wrapper__tool-result", children: [
+      /* @__PURE__ */ i("div", { className: "chat-wrapper__tool-results-list", children: P.map((c) => /* @__PURE__ */ f("div", { className: "chat-wrapper__tool-result", children: [
         /* @__PURE__ */ i("div", { className: "chat-wrapper__tool-result-title", children: c.title }),
         c.description && /* @__PURE__ */ i("div", { className: "chat-wrapper__tool-result-description", children: c.description }),
         /* @__PURE__ */ f("div", { className: "chat-wrapper__tool-result-meta", children: [
@@ -318,7 +315,7 @@ function me({
     /* @__PURE__ */ f("div", { className: te, style: t.customStyles, children: [
       /* @__PURE__ */ f("div", { className: "chat-wrapper__header", children: [
         /* @__PURE__ */ i("h2", { className: "chat-wrapper__title", children: t.appName }),
-        H && /* @__PURE__ */ i("div", { className: "chat-wrapper__status", children: H })
+        q && /* @__PURE__ */ i("div", { className: "chat-wrapper__status", children: q })
       ] }),
       ae(),
       /* @__PURE__ */ f("div", { className: "chat-wrapper__messages", children: [
@@ -346,7 +343,7 @@ function me({
           disabled: m,
           placeholder: t.placeholder || "Type a message...",
           value: I,
-          onChange: C,
+          onChange: k,
           onStop: Z,
           onClear: ee,
           showStopButton: m,
@@ -358,10 +355,10 @@ function me({
   ] });
 }
 class le {
-  constructor(t, a) {
+  constructor(t, n) {
     z(this, "baseUrl");
     z(this, "apiKey");
-    this.baseUrl = t, this.apiKey = a;
+    this.baseUrl = t, this.apiKey = n;
   }
   getHeaders() {
     const t = {
@@ -377,94 +374,94 @@ class le {
     if (!t.ok) throw new Error("Failed to initialize conversation");
     return (await t.json()).conversationId;
   }
-  async *streamMessage(t, a) {
-    const s = await fetch(
+  async *streamMessage(t, n) {
+    const a = await fetch(
       `${this.baseUrl}/api/conversation/${t}`,
       {
         method: "POST",
         headers: this.getHeaders(),
-        body: JSON.stringify({ message: a })
+        body: JSON.stringify({ message: n })
       }
     );
-    if (!s.ok) throw new Error("Failed to send message");
-    if (!s.body) throw new Error("No response body");
-    const d = s.body.getReader(), u = new TextDecoder();
+    if (!a.ok) throw new Error("Failed to send message");
+    if (!a.body) throw new Error("No response body");
+    const d = a.body.getReader(), h = new TextDecoder();
     for (; ; ) {
-      const { done: I, value: C } = await d.read();
+      const { done: I, value: k } = await d.read();
       if (I) break;
-      const w = u.decode(C).split(`
+      const w = h.decode(k).split(`
 `);
       for (const S of w)
         if (S.startsWith("data: ")) {
-          const b = S.slice(6);
-          if (b === "[DONE]") return;
+          const _ = S.slice(6);
+          if (_ === "[DONE]") return;
           try {
-            yield JSON.parse(b).content || "";
-          } catch ($) {
-            console.error("Failed to parse chunk:", $);
+            yield JSON.parse(_).content || "";
+          } catch (P) {
+            console.error("Failed to parse chunk:", P);
           }
         }
     }
   }
 }
 function fe(l, t) {
-  const [a, s] = p([]), [d, u] = p(!1), [I, C] = p(null), m = U(null), w = U(new le(l, t)), S = y(async () => {
+  const [n, a] = p([]), [d, h] = p(!1), [I, k] = p(null), m = B(null), w = B(new le(l, t)), S = y(async () => {
     try {
-      const n = await w.current.initConversation();
-      return m.current = n, n;
-    } catch (n) {
-      throw C(n), n;
+      const s = await w.current.initConversation();
+      return m.current = s, s;
+    } catch (s) {
+      throw k(s), s;
     }
-  }, []), b = y(
-    async (n) => {
+  }, []), _ = y(
+    async (s) => {
       m.current || await S();
-      const F = {
+      const J = {
         id: Date.now().toString(),
         role: "user",
-        content: n,
+        content: s,
         timestamp: /* @__PURE__ */ new Date()
       };
-      s((_) => [..._, F]), u(!0), C(null);
-      const j = {
+      a((b) => [...b, J]), h(!0), k(null);
+      const v = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: "",
         timestamp: /* @__PURE__ */ new Date(),
         isStreaming: !0
       };
-      s((_) => [..._, j]);
+      a((b) => [...b, v]);
       try {
-        const _ = w.current.streamMessage(
+        const b = w.current.streamMessage(
           m.current,
-          n
+          s
         );
-        for await (const P of _)
-          s(
-            (N) => N.map(
-              (A) => A.id === j.id ? { ...A, content: A.content + P } : A
+        for await (const M of b)
+          a(
+            (C) => C.map(
+              (j) => j.id === v.id ? { ...j, content: j.content + M } : j
             )
           );
-        s(
-          (P) => P.map(
-            (N) => N.id === j.id ? { ...N, isStreaming: !1 } : N
+        a(
+          (M) => M.map(
+            (C) => C.id === v.id ? { ...C, isStreaming: !1 } : C
           )
         );
-      } catch (_) {
-        C(_), s((P) => P.filter((N) => N.id !== j.id));
+      } catch (b) {
+        k(b), a((M) => M.filter((C) => C.id !== v.id));
       } finally {
-        u(!1);
+        h(!1);
       }
     },
     [S]
-  ), $ = y(() => {
-    s([]), m.current = null;
+  ), P = y(() => {
+    a([]), m.current = null;
   }, []);
   return {
-    messages: a,
+    messages: n,
     isLoading: d,
     error: I,
-    sendMessage: b,
-    clearMessages: $
+    sendMessage: _,
+    clearMessages: P
   };
 }
 export {

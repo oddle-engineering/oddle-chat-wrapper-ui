@@ -248,23 +248,27 @@ export function ChatWrapper({
         // Create abort controller for this request
         abortControllerRef.current = new AbortController();
 
-        const endpoint = `${apiUrl}/api/brief-planner`;
-        const requestBody =
-          config.endpoint === "brief-planner"
-            ? {
-                messages: [...messages, userMessage],
-                promptPath: config.promptPath || "briefPlanner",
-                conversationUuid,
-                todos, // Send current todos to the API
-                briefs, // Send current briefs to the API
-                media: uploadedMedia, // Send uploaded images as base64
-              }
-            : {
-                message: message.trim(),
-                tools: tools ? Object.keys(tools) : [],
-              };
+        const endpoint = true
+          ? `${apiUrl}/api/brief-planner`
+          : conversationUuid
+          ? `${apiUrl}/api/conversation/${conversationUuid}`
+          : `${apiUrl}/api/conversation/init`;
+
+        const requestBody = true
+          ? {
+              messages: [...messages, userMessage],
+              promptPath: config.promptPath || "briefPlanner",
+              conversationUuid,
+              todos, // Send current todos to the API
+              briefs, // Send current briefs to the API
+              media: media || [], // Use media from function parameter, not uploadedMedia
+            }
+          : {
+              message: message.trim(),
+            };
 
         console.log("Sending request to:", endpoint);
+        console.log("Request payload:", JSON.stringify(requestBody, null, 2));
 
         const response = await fetch(endpoint, {
           method: "POST",
