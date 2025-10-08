@@ -1,4 +1,5 @@
 import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { ReactNode } from 'react';
 
 export declare interface ChatConfig {
     mode: ChatMode;
@@ -47,6 +48,13 @@ export declare interface ConversationResponse {
     message: string;
 }
 
+export declare function Loader({ size, variant }: LoaderProps): JSX_2.Element;
+
+declare interface LoaderProps {
+    size?: number;
+    variant?: 'dots' | 'pulse' | 'spinner';
+}
+
 export declare interface Message {
     id: string;
     role: 'user' | 'assistant' | 'system';
@@ -54,6 +62,48 @@ export declare interface Message {
     timestamp: Date;
     isStreaming?: boolean;
     media?: string[];
+}
+
+export declare function Reasoning({ children }: ReasoningProps): JSX_2.Element;
+
+export declare function ReasoningContent({ children }: ReasoningContentProps): JSX_2.Element;
+
+declare interface ReasoningContentProps {
+    children: ReactNode;
+}
+
+declare interface ReasoningProps {
+    isStreaming: boolean;
+    children: ReactNode;
+}
+
+export declare function ReasoningTrigger({ title }: ReasoningTriggerProps): JSX_2.Element;
+
+declare interface ReasoningTriggerProps {
+    title: string;
+}
+
+export declare interface StreamEvent {
+    type: string;
+    event?: string;
+    data?: any;
+    content?: string;
+    error?: string;
+    done?: boolean;
+    uuid?: string;
+    result?: any;
+    tool?: string;
+    todos?: any[];
+    briefs?: any[];
+}
+
+export declare interface ToolResult {
+    id: string;
+    title: string;
+    description?: string;
+    status?: string;
+    created_at: string;
+    [key: string]: any;
 }
 
 export declare function useChatConnection(apiEndpoint: string, apiKey?: string): {

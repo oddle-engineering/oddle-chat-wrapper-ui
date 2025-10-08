@@ -4,6 +4,7 @@ import { setupMockAPI } from "./api/mockApi";
 import { apiConfig, getConfigSummary } from "./config/apiConfig";
 import { ChatWrapper, ChatWrapperProps, ChatMode, ChatPosition, ChatTheme } from "@oddle/chat-wrapper-ui";
 import { EnhancedBriefPlannerDemo } from "./components/EnhancedBriefPlannerDemo";
+import { ToolsDocumentation } from "./components/ToolsDocumentation";
 
 function App() {
   const [activeDemo, setActiveDemo] = useState<string | null>(null);
@@ -103,20 +104,178 @@ function App() {
           exportChat: false,
         },
       },
-      tools: {
-        // Example tools for demonstration
-        create_email: (subject: string, body: string) => {
-          console.log("Creating email:", { subject, body });
-          return { success: true, emailId: Date.now().toString() };
+      tools: demo.id === "sidebar" ? {
+        // Customer Support Tools
+        create_ticket: (title: string, description: string, priority: string = "medium") => {
+          console.log("Creating support ticket:", { title, description, priority });
+          const ticketId = `TICK-${Date.now()}`;
+          return { 
+            success: true, 
+            ticketId, 
+            title, 
+            description, 
+            priority,
+            status: "open",
+            created: new Date().toISOString()
+          };
         },
-        update_email: (emailId: string, updates: any) => {
-          console.log("Updating email:", emailId, updates);
-          return { success: true, emailId };
+        search_knowledge_base: (query: string) => {
+          console.log("Searching knowledge base:", query);
+          const results = [
+            { id: 1, title: `How to ${query}`, url: `/kb/how-to-${query.toLowerCase().replace(/\s+/g, '-')}`, relevance: 0.95 },
+            { id: 2, title: `${query} troubleshooting guide`, url: `/kb/${query.toLowerCase().replace(/\s+/g, '-')}-troubleshooting`, relevance: 0.87 },
+            { id: 3, title: `Common ${query} issues`, url: `/kb/common-${query.toLowerCase().replace(/\s+/g, '-')}-issues`, relevance: 0.73 }
+          ];
+          return { query, results, total: results.length };
         },
+        get_user_info: (userId: string) => {
+          console.log("Getting user info:", userId);
+          return {
+            userId,
+            name: "John Doe",
+            email: "john.doe@example.com",
+            tier: "premium",
+            joinDate: "2023-01-15",
+            lastLogin: new Date().toISOString()
+          };
+        },
+        escalate_to_human: (reason: string) => {
+          console.log("Escalating to human agent:", reason);
+          return {
+            success: true,
+            escalationId: `ESC-${Date.now()}`,
+            reason,
+            estimatedWaitTime: "5-10 minutes",
+            queuePosition: 3
+          };
+        }
+      } : demo.id === "modal" ? {
+        // AI Assistant Tools
         get_weather: (location: string) => {
           console.log("Getting weather for:", location);
-          return { location, temperature: 22, condition: "sunny" };
+          const conditions = ["sunny", "cloudy", "rainy", "snowy"];
+          const temps = [18, 22, 25, 28, 32];
+          return { 
+            location, 
+            temperature: temps[Math.floor(Math.random() * temps.length)], 
+            condition: conditions[Math.floor(Math.random() * conditions.length)],
+            humidity: Math.floor(Math.random() * 40) + 40,
+            windSpeed: Math.floor(Math.random() * 20) + 5
+          };
         },
+        set_reminder: (message: string, time: string) => {
+          console.log("Setting reminder:", { message, time });
+          return { 
+            success: true, 
+            reminderId: `REM-${Date.now()}`,
+            message,
+            scheduledFor: time,
+            status: "scheduled"
+          };
+        },
+        calculate: (expression: string) => {
+          console.log("Calculating:", expression);
+          try {
+            // Simple calculator (in real app, use a safe expression evaluator)
+            const result = eval(expression.replace(/[^0-9+\-*/().\s]/g, ''));
+            return { expression, result, success: true };
+          } catch (error) {
+            return { expression, error: "Invalid expression", success: false };
+          }
+        },
+        search_web: (query: string) => {
+          console.log("Searching web:", query);
+          return {
+            query,
+            results: [
+              { title: `${query} - Wikipedia`, url: `https://en.wikipedia.org/wiki/${query}`, snippet: `Learn about ${query} on Wikipedia...` },
+              { title: `${query} guide`, url: `https://example.com/${query}`, snippet: `Complete guide to ${query}...` },
+              { title: `Latest ${query} news`, url: `https://news.example.com/${query}`, snippet: `Recent developments in ${query}...` }
+            ]
+          };
+        }
+      } : demo.id === "fullscreen" ? {
+        // Premium Support Tools
+        diagnose_system: (component: string) => {
+          console.log("Diagnosing system component:", component);
+          const issues = ["No issues found", "Minor performance issue", "Configuration needed", "Update required"];
+          return {
+            component,
+            status: issues[Math.floor(Math.random() * issues.length)],
+            details: `Diagnostic completed for ${component}`,
+            recommendations: [`Check ${component} settings`, `Monitor ${component} performance`],
+            timestamp: new Date().toISOString()
+          };
+        },
+        deploy_fix: (fixId: string, environment: string = "staging") => {
+          console.log("Deploying fix:", { fixId, environment });
+          return {
+            success: true,
+            deploymentId: `DEP-${Date.now()}`,
+            fixId,
+            environment,
+            status: "deployed",
+            rollbackAvailable: true,
+            deployedAt: new Date().toISOString()
+          };
+        },
+        generate_report: (reportType: string, period: string = "last30days") => {
+          console.log("Generating report:", { reportType, period });
+          return {
+            reportId: `RPT-${Date.now()}`,
+            type: reportType,
+            period,
+            status: "generated",
+            downloadUrl: `/reports/download/${reportType}-${Date.now()}.pdf`,
+            generatedAt: new Date().toISOString(),
+            size: "2.3 MB"
+          };
+        },
+        schedule_maintenance: (datetime: string, duration: string) => {
+          console.log("Scheduling maintenance:", { datetime, duration });
+          return {
+            success: true,
+            maintenanceId: `MAINT-${Date.now()}`,
+            scheduledFor: datetime,
+            duration,
+            status: "scheduled",
+            affectedServices: ["API", "Dashboard", "Analytics"]
+          };
+        }
+      } : {
+        // Default Embedded Tools
+        search_docs: (query: string) => {
+          console.log("Searching documentation:", query);
+          return { 
+            query,
+            results: [
+              `Getting started with ${query}`,
+              `${query} API reference`,
+              `${query} best practices`,
+              `Common ${query} questions`
+            ] 
+          };
+        },
+        create_ticket: (title: string, description: string) => {
+          console.log("Creating help ticket:", { title, description });
+          return { 
+            ticketId: `HELP-${Date.now()}`, 
+            title,
+            description,
+            status: "open",
+            priority: "normal"
+          };
+        },
+        get_status: (service: string) => {
+          console.log("Getting service status:", service);
+          const statuses = ["operational", "degraded", "maintenance", "outage"];
+          return {
+            service,
+            status: statuses[Math.floor(Math.random() * statuses.length)],
+            lastUpdated: new Date().toISOString(),
+            uptime: "99.9%"
+          };
+        }
       },
     };
 
@@ -143,23 +302,82 @@ function App() {
       },
       tools: {
         // Custom demo tools
-        create_task: (title: string, description: string) => {
-          console.log("Creating task:", { title, description });
-          return { success: true, taskId: Date.now().toString() };
-        },
-        send_notification: (
-          message: string,
-          type: "info" | "warning" | "error"
-        ) => {
-          console.log("Sending notification:", { message, type });
-          return { success: true, notificationId: Date.now().toString() };
-        },
-        search_database: (query: string) => {
-          console.log("Searching database:", query);
-          return {
-            results: [`Result for ${query}`, `Another result for ${query}`],
+        create_task: (title: string, description: string, assignee?: string, dueDate?: string) => {
+          console.log("Creating task:", { title, description, assignee, dueDate });
+          return { 
+            success: true, 
+            taskId: `TASK-${Date.now()}`,
+            title,
+            description,
+            assignee: assignee || "Unassigned",
+            dueDate: dueDate || "No due date",
+            status: "open",
+            priority: "medium",
+            created: new Date().toISOString()
           };
         },
+        send_notification: (message: string, type: "info" | "warning" | "error" = "info", recipients?: string[]) => {
+          console.log("Sending notification:", { message, type, recipients });
+          return { 
+            success: true, 
+            notificationId: `NOTIF-${Date.now()}`,
+            message,
+            type,
+            recipients: recipients || ["current_user"],
+            sentAt: new Date().toISOString(),
+            status: "delivered"
+          };
+        },
+        search_database: (query: string, table?: string, limit: number = 10) => {
+          console.log("Searching database:", { query, table, limit });
+          const mockResults = Array.from({ length: Math.min(limit, 5) }, (_, i) => ({
+            id: `${Date.now()}-${i}`,
+            title: `${query} result ${i + 1}`,
+            table: table || "default_table",
+            relevance: Math.random() * 0.5 + 0.5,
+            lastModified: new Date(Date.now() - Math.random() * 86400000 * 30).toISOString()
+          }));
+          return {
+            query,
+            table: table || "all_tables",
+            results: mockResults,
+            total: mockResults.length,
+            executionTime: `${Math.random() * 100 + 50}ms`
+          };
+        },
+        export_data: (format: "csv" | "json" | "excel" = "csv", filters?: any) => {
+          console.log("Exporting data:", { format, filters });
+          return {
+            success: true,
+            exportId: `EXP-${Date.now()}`,
+            format,
+            filters: filters || {},
+            downloadUrl: `/exports/download-${Date.now()}.${format}`,
+            fileSize: `${Math.floor(Math.random() * 500) + 100}KB`,
+            recordCount: Math.floor(Math.random() * 1000) + 100,
+            generatedAt: new Date().toISOString()
+          };
+        },
+        analyze_metrics: (metric: string, timeRange: string = "7d") => {
+          console.log("Analyzing metrics:", { metric, timeRange });
+          return {
+            metric,
+            timeRange,
+            summary: {
+              average: Math.floor(Math.random() * 100) + 50,
+              trend: Math.random() > 0.5 ? "increasing" : "decreasing",
+              change: `${(Math.random() * 20 - 10).toFixed(1)}%`,
+              peak: Math.floor(Math.random() * 150) + 100,
+              low: Math.floor(Math.random() * 50) + 25
+            },
+            recommendations: [
+              `Consider optimizing ${metric} performance`,
+              `Monitor ${metric} trends closely`,
+              `Set up alerts for ${metric} anomalies`
+            ],
+            lastUpdated: new Date().toISOString()
+          };
+        }
       },
     };
 
@@ -316,6 +534,8 @@ function App() {
         >
           Launch Custom Demo
         </button>
+        
+        <ToolsDocumentation mode="custom" />
       </div>
 
       {/* Predefined Demos */}
@@ -362,6 +582,17 @@ function App() {
                   Position: {demo.config.position}
                 </span>
               )}
+              <span
+                style={{
+                  background: "#e6fffa",
+                  color: "#234e52",
+                  padding: "0.25rem 0.5rem",
+                  borderRadius: "4px",
+                  fontSize: "0.7rem",
+                }}
+              >
+                🛠️ Tools enabled
+              </span>
             </div>
             <button
               className="demo-button"
@@ -369,6 +600,8 @@ function App() {
             >
               Launch Demo
             </button>
+            
+            <ToolsDocumentation mode={demo.id} />
           </div>
         ))}
       </div>

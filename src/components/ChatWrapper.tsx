@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import ReactMarkdown from 'react-markdown';
 import { ChatWrapperProps, Message, StreamEvent, ToolResult } from "../types";
 import { MessageInput } from "./MessageInput";
+import { Reasoning, ReasoningTrigger, ReasoningContent } from "./Reasoning";
+import { Loader } from "./Loader";
 import "../styles/chat-wrapper.css";
 
 export function ChatWrapper({
@@ -582,9 +585,197 @@ export function ChatWrapper({
               className={`chat-wrapper__message chat-wrapper__message--${message.role}`}
             >
               <div className="chat-wrapper__message-content">
-                {message.content}
-                {message.isStreaming && (
-                  <span className="chat-wrapper__streaming-indicator">...</span>
+                {/* Assistant message with reasoning */}
+                {message.role === "assistant" && message.isStreaming && isThinking ? (
+                  <div className="chat-wrapper__message-with-reasoning">
+                    <Reasoning isStreaming={isThinking}>
+                      <ReasoningTrigger title="Planning Brief" />
+                      <ReasoningContent>
+                        {reasoningContent}
+                      </ReasoningContent>
+                    </Reasoning>
+                    {message.content && (
+                      <div className="chat-wrapper__markdown-content">
+                        <ReactMarkdown
+                          components={{
+                            pre: ({ children }) => (
+                              <pre className="chat-wrapper__code-block">
+                                {children}
+                              </pre>
+                            ),
+                            code: ({ children, className }) => {
+                              const isInline = !className;
+                              return isInline ? (
+                                <code className="chat-wrapper__inline-code">
+                                  {children}
+                                </code>
+                              ) : (
+                                <code className="chat-wrapper__code">
+                                  {children}
+                                </code>
+                              );
+                            },
+                            p: ({ children }) => (
+                              <p className="chat-wrapper__paragraph">{children}</p>
+                            ),
+                            h1: ({ children }) => (
+                              <h1 className="chat-wrapper__heading-1">
+                                {children}
+                              </h1>
+                            ),
+                            h2: ({ children }) => (
+                              <h2 className="chat-wrapper__heading-2">
+                                {children}
+                              </h2>
+                            ),
+                            h3: ({ children }) => (
+                              <h3 className="chat-wrapper__heading-3">
+                                {children}
+                              </h3>
+                            ),
+                            ul: ({ children }) => (
+                              <ul className="chat-wrapper__list">
+                                {children}
+                              </ul>
+                            ),
+                            ol: ({ children }) => (
+                              <ol className="chat-wrapper__ordered-list">
+                                {children}
+                              </ol>
+                            ),
+                            li: ({ children }) => (
+                              <li className="chat-wrapper__list-item">
+                                {children}
+                              </li>
+                            ),
+                            blockquote: ({ children }) => (
+                              <blockquote className="chat-wrapper__blockquote">
+                                {children}
+                              </blockquote>
+                            ),
+                            strong: ({ children }) => (
+                              <strong className="chat-wrapper__bold">
+                                {children}
+                              </strong>
+                            ),
+                            em: ({ children }) => (
+                              <em className="chat-wrapper__italic">
+                                {children}
+                              </em>
+                            ),
+                          }}
+                        >
+                          {message.content.trim()}
+                        </ReactMarkdown>
+                      </div>
+                    )}
+                  </div>
+                ) : message.isStreaming && message.content === "" && !isThinking ? (
+                  /* Show streaming indicator when no reasoning */
+                  <div className="chat-wrapper__streaming-placeholder">
+                    <Loader size={16} variant="dots" />
+                    <span>Creating your brief...</span>
+                    {streamingStatus && (
+                      <span className="chat-wrapper__streaming-status">
+                        ({streamingStatus})
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  /* Regular message display with markdown */
+                  <div className="chat-wrapper__regular-message">
+                    {/* Display attached images for user messages */}
+                    {message.role === "user" && message.media && message.media.length > 0 && (
+                      <div className="chat-wrapper__media-grid">
+                        {message.media.map((imageData, index) => (
+                          <div key={index} className="chat-wrapper__media-item">
+                            <img
+                              src={imageData}
+                              alt={`Attached image ${index + 1}`}
+                              className="chat-wrapper__media-image"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="chat-wrapper__markdown-content">
+                      <ReactMarkdown
+                        components={{
+                          pre: ({ children }) => (
+                            <pre className="chat-wrapper__code-block">
+                              {children}
+                            </pre>
+                          ),
+                          code: ({ children, className }) => {
+                            const isInline = !className;
+                            return isInline ? (
+                              <code className="chat-wrapper__inline-code">
+                                {children}
+                              </code>
+                            ) : (
+                              <code className="chat-wrapper__code">
+                                {children}
+                              </code>
+                            );
+                          },
+                          p: ({ children }) => (
+                            <p className="chat-wrapper__paragraph">{children}</p>
+                          ),
+                          h1: ({ children }) => (
+                            <h1 className="chat-wrapper__heading-1">
+                              {children}
+                            </h1>
+                          ),
+                          h2: ({ children }) => (
+                            <h2 className="chat-wrapper__heading-2">
+                              {children}
+                            </h2>
+                          ),
+                          h3: ({ children }) => (
+                            <h3 className="chat-wrapper__heading-3">
+                              {children}
+                            </h3>
+                          ),
+                          ul: ({ children }) => (
+                            <ul className="chat-wrapper__list">
+                              {children}
+                            </ul>
+                          ),
+                          ol: ({ children }) => (
+                            <ol className="chat-wrapper__ordered-list">
+                              {children}
+                            </ol>
+                          ),
+                          li: ({ children }) => (
+                            <li className="chat-wrapper__list-item">
+                              {children}
+                            </li>
+                          ),
+                          blockquote: ({ children }) => (
+                            <blockquote className="chat-wrapper__blockquote">
+                              {children}
+                            </blockquote>
+                          ),
+                          strong: ({ children }) => (
+                            <strong className="chat-wrapper__bold">
+                              {children}
+                            </strong>
+                          ),
+                          em: ({ children }) => (
+                            <em className="chat-wrapper__italic">
+                              {children}
+                            </em>
+                          ),
+                        }}
+                      >
+                        {message.content.trim()}
+                      </ReactMarkdown>
+                      {message.isStreaming && (
+                        <span className="chat-wrapper__streaming-indicator">...</span>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
               <div className="chat-wrapper__message-timestamp">
