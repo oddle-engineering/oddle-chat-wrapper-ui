@@ -1,0 +1,42 @@
+{
+  "name": "@your-company/chat-wrapper-ui",
+  "version": "1.0.0",
+  "description": "Reusable chat UI wrapper for company projects",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "prepublishOnly": "npm run build",
+    "release:patch": "npm version patch && git push --follow-tags",
+    "release:minor": "npm version minor && git push --follow-tags",
+    "release:major": "npm version major && git push --follow-tags"
+  },
+  "keywords": ["chat", "ui", "react", "wrapper"],
+  "author": "Your Company",
+  "license": "UNLICENSED",
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0",
+    "vite-plugin-dts": "^3.0.0"
+  },
+  "dependencies": {
+    "clsx": "^2.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-company/chat-wrapper-ui.git"
+  },
+  "publishConfig": {
+    "access": "restricted",
+    "registry": "https://npm.pkg.github.com"
+  }
+}

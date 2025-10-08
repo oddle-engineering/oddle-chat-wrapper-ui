@@ -1,0 +1,9 @@
+src/
+*.test.ts
+*.test.tsx
+tsconfig.json
+vite.config.ts
+node_modules/
+.git/
+.github/
+.vscode/
