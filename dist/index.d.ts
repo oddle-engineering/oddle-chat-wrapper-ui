@@ -26,11 +26,12 @@ export declare type ChatPosition = 'left' | 'right';
 
 export declare type ChatTheme = 'light' | 'dark' | 'auto';
 
-export declare function ChatWrapper({ apiUrl, config }: ChatWrapperProps): JSX_2.Element;
+export declare function ChatWrapper({ apiUrl, config, tools }: ChatWrapperProps): JSX_2.Element;
 
 export declare interface ChatWrapperProps {
     apiUrl: string;
     config: Omit<ChatConfig, 'apiEndpoint'>;
+    tools?: Record<string, (...args: any[]) => any>;
 }
 
 export declare interface ConversationResponse {

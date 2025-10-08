@@ -1,13 +1,13 @@
 var k = Object.defineProperty;
-var E = (r, e, a) => e in r ? k(r, e, { enumerable: !0, configurable: !0, writable: !0, value: a }) : r[e] = a;
-var S = (r, e, a) => E(r, typeof e != "symbol" ? e + "" : e, a);
-import { jsx as i, jsxs as u, Fragment as K } from "react/jsx-runtime";
-import { useState as N, useRef as C, useCallback as b, useEffect as $ } from "react";
-class D {
-  constructor(e, a) {
-    S(this, "baseUrl");
-    S(this, "apiKey");
-    this.baseUrl = e, this.apiKey = a;
+var E = (r, e, t) => e in r ? k(r, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : r[e] = t;
+var b = (r, e, t) => E(r, typeof e != "symbol" ? e + "" : e, t);
+import { jsx as i, jsxs as m, Fragment as K } from "react/jsx-runtime";
+import { useState as N, useRef as C, useCallback as S, useEffect as O } from "react";
+class $ {
+  constructor(e, t) {
+    b(this, "baseUrl");
+    b(this, "apiKey");
+    this.baseUrl = e, this.apiKey = t;
   }
   getHeaders() {
     const e = {
@@ -23,26 +23,26 @@ class D {
     if (!e.ok) throw new Error("Failed to initialize conversation");
     return (await e.json()).conversationId;
   }
-  async *streamMessage(e, a) {
-    const t = await fetch(
+  async *streamMessage(e, t) {
+    const a = await fetch(
       `${this.baseUrl}/api/conversation/${e}`,
       {
         method: "POST",
         headers: this.getHeaders(),
-        body: JSON.stringify({ message: a })
+        body: JSON.stringify({ message: t })
       }
     );
-    if (!t.ok) throw new Error("Failed to send message");
-    if (!t.body) throw new Error("No response body");
-    const n = t.body.getReader(), o = new TextDecoder();
+    if (!a.ok) throw new Error("Failed to send message");
+    if (!a.body) throw new Error("No response body");
+    const o = a.body.getReader(), s = new TextDecoder();
     for (; ; ) {
-      const { done: m, value: s } = await n.read();
-      if (m) break;
-      const h = o.decode(s).split(`
+      const { done: u, value: n } = await o.read();
+      if (u) break;
+      const w = s.decode(n).split(`
 `);
-      for (const w of h)
-        if (w.startsWith("data: ")) {
-          const f = w.slice(6);
+      for (const d of w)
+        if (d.startsWith("data: ")) {
+          const f = d.slice(6);
           if (f === "[DONE]") return;
           try {
             yield JSON.parse(f).content || "";
@@ -53,24 +53,24 @@ class D {
     }
   }
 }
-function O(r, e) {
-  const [a, t] = N([]), [n, o] = N(!1), [m, s] = N(null), p = C(null), h = C(new D(r, e)), w = b(async () => {
+function j(r, e) {
+  const [t, a] = N([]), [o, s] = N(!1), [u, n] = N(null), l = C(null), w = C(new $(r, e)), d = S(async () => {
     try {
-      const c = await h.current.initConversation();
-      return p.current = c, c;
+      const c = await w.current.initConversation();
+      return l.current = c, c;
     } catch (c) {
-      throw s(c), c;
+      throw n(c), c;
     }
-  }, []), f = b(
+  }, []), f = S(
     async (c) => {
-      p.current || await w();
+      l.current || await d();
       const M = {
         id: Date.now().toString(),
         role: "user",
         content: c,
         timestamp: /* @__PURE__ */ new Date()
       };
-      t((l) => [...l, M]), o(!0), s(null);
+      a((p) => [...p, M]), s(!0), n(null);
       const _ = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
@@ -78,48 +78,48 @@ function O(r, e) {
         timestamp: /* @__PURE__ */ new Date(),
         isStreaming: !0
       };
-      t((l) => [...l, _]);
+      a((p) => [...p, _]);
       try {
-        const l = h.current.streamMessage(
-          p.current,
+        const p = w.current.streamMessage(
+          l.current,
           c
         );
-        for await (const y of l)
-          t(
-            (d) => d.map(
+        for await (const y of p)
+          a(
+            (h) => h.map(
               (g) => g.id === _.id ? { ...g, content: g.content + y } : g
             )
           );
-        t(
+        a(
           (y) => y.map(
-            (d) => d.id === _.id ? { ...d, isStreaming: !1 } : d
+            (h) => h.id === _.id ? { ...h, isStreaming: !1 } : h
           )
         );
-      } catch (l) {
-        s(l), t((y) => y.filter((d) => d.id !== _.id));
+      } catch (p) {
+        n(p), a((y) => y.filter((h) => h.id !== _.id));
       } finally {
-        o(!1);
+        s(!1);
       }
     },
-    [w]
-  ), v = b(() => {
-    t([]), p.current = null;
+    [d]
+  ), v = S(() => {
+    a([]), l.current = null;
   }, []);
   return {
-    messages: a,
-    isLoading: n,
-    error: m,
+    messages: t,
+    isLoading: o,
+    error: u,
     sendMessage: f,
     clearMessages: v
   };
 }
-function x({ messages: r }) {
-  return /* @__PURE__ */ i("div", { className: "chat-wrapper__messages", children: r.map((e) => /* @__PURE__ */ u(
+function D({ messages: r }) {
+  return /* @__PURE__ */ i("div", { className: "chat-wrapper__messages", children: r.map((e) => /* @__PURE__ */ m(
     "div",
     {
       className: `chat-wrapper__message chat-wrapper__message--${e.role}`,
       children: [
-        /* @__PURE__ */ u("div", { className: "chat-wrapper__message-content", children: [
+        /* @__PURE__ */ m("div", { className: "chat-wrapper__message-content", children: [
           e.content,
           e.isStreaming && /* @__PURE__ */ i("span", { className: "chat-wrapper__streaming-indicator", children: "..." })
         ] }),
@@ -129,20 +129,20 @@ function x({ messages: r }) {
     e.id
   )) });
 }
-function P({ onSend: r, disabled: e, placeholder: a }) {
-  const [t, n] = N(""), o = () => {
-    t.trim() && !e && (r(t.trim()), n(""));
+function x({ onSend: r, disabled: e, placeholder: t }) {
+  const [a, o] = N(""), s = () => {
+    a.trim() && !e && (r(a.trim()), o(""));
   };
-  return /* @__PURE__ */ u("div", { className: "chat-wrapper__input", children: [
+  return /* @__PURE__ */ m("div", { className: "chat-wrapper__input", children: [
     /* @__PURE__ */ i(
       "textarea",
       {
-        value: t,
-        onChange: (s) => n(s.target.value),
-        onKeyPress: (s) => {
-          s.key === "Enter" && !s.shiftKey && (s.preventDefault(), o());
+        value: a,
+        onChange: (n) => o(n.target.value),
+        onKeyPress: (n) => {
+          n.key === "Enter" && !n.shiftKey && (n.preventDefault(), s());
         },
-        placeholder: a,
+        placeholder: t,
         disabled: e,
         className: "chat-wrapper__textarea",
         rows: 1
@@ -151,49 +151,49 @@ function P({ onSend: r, disabled: e, placeholder: a }) {
     /* @__PURE__ */ i(
       "button",
       {
-        onClick: o,
-        disabled: e || !t.trim(),
+        onClick: s,
+        disabled: e || !a.trim(),
         className: "chat-wrapper__send-button",
         children: "Send"
       }
     )
   ] });
 }
-function L({ apiUrl: r, config: e }) {
-  const { messages: a, isLoading: t, error: n, sendMessage: o } = O(
+function L({ apiUrl: r, config: e, tools: t }) {
+  const { messages: a, isLoading: o, error: s, sendMessage: u } = j(
     r,
     e.apiKey
   );
-  $(() => {
-    e.onError && n && e.onError(n);
-  }, [n, e]);
-  const s = ((...h) => h.filter(Boolean).join(" "))(
+  t && Object.keys(t).length > 0 && console.log("Available tools:", Object.keys(t)), O(() => {
+    e.onError && s && e.onError(s);
+  }, [s, e]);
+  const l = ((...d) => d.filter(Boolean).join(" "))(
     "chat-wrapper",
     `chat-wrapper--${e.mode}`,
     e.position && `chat-wrapper--${e.position}`,
     e.theme && `chat-wrapper--${e.theme}`
   );
-  return /* @__PURE__ */ u(K, { children: [
+  return /* @__PURE__ */ m(K, { children: [
     e.mode === "modal" ? /* @__PURE__ */ i("div", { className: "chat-wrapper-overlay" }) : null,
-    /* @__PURE__ */ u("div", { className: s, style: e.customStyles, children: [
+    /* @__PURE__ */ m("div", { className: l, style: e.customStyles, children: [
       /* @__PURE__ */ i("div", { className: "chat-wrapper__header", children: /* @__PURE__ */ i("h2", { className: "chat-wrapper__title", children: e.appName }) }),
-      /* @__PURE__ */ i(x, { messages: a }),
+      /* @__PURE__ */ i(D, { messages: a }),
       /* @__PURE__ */ i(
-        P,
+        x,
         {
-          onSend: o,
-          disabled: t,
+          onSend: u,
+          disabled: o,
           placeholder: e.placeholder || "Type a message..."
         }
       ),
-      n && /* @__PURE__ */ u("div", { className: "chat-wrapper__error", children: [
+      s && /* @__PURE__ */ m("div", { className: "chat-wrapper__error", children: [
         "Error: ",
-        n.message
+        s.message
       ] })
     ] })
   ] });
 }
 export {
   L as ChatWrapper,
-  O as useChatConnection
+  j as useChatConnection
 };

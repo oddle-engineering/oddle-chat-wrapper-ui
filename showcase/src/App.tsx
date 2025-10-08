@@ -95,6 +95,21 @@ function App() {
           messageHistory: true,
           exportChat: false,
         }
+      },
+      tools: {
+        // Example tools for demonstration
+        create_email: (subject: string, body: string) => {
+          console.log('Creating email:', { subject, body });
+          return { success: true, emailId: Date.now().toString() };
+        },
+        update_email: (emailId: string, updates: any) => {
+          console.log('Updating email:', emailId, updates);
+          return { success: true, emailId };
+        },
+        get_weather: (location: string) => {
+          console.log('Getting weather for:', location);
+          return { location, temperature: 22, condition: 'sunny' };
+        }
       }
     };
 
@@ -116,6 +131,21 @@ function App() {
           fileUpload: true,
           messageHistory: true,
           exportChat: true,
+        }
+      },
+      tools: {
+        // Custom demo tools
+        create_task: (title: string, description: string) => {
+          console.log('Creating task:', { title, description });
+          return { success: true, taskId: Date.now().toString() };
+        },
+        send_notification: (message: string, type: 'info' | 'warning' | 'error') => {
+          console.log('Sending notification:', { message, type });
+          return { success: true, notificationId: Date.now().toString() };
+        },
+        search_database: (query: string) => {
+          console.log('Searching database:', query);
+          return { results: [`Result for ${query}`, `Another result for ${query}`] };
         }
       }
     };

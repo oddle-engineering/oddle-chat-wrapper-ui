@@ -5,11 +5,16 @@ import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
 import '../styles/chat-wrapper.css';
 
-export function ChatWrapper({ apiUrl, config }: ChatWrapperProps) {
+export function ChatWrapper({ apiUrl, config, tools }: ChatWrapperProps) {
   const { messages, isLoading, error, sendMessage } = useChatConnection(
     apiUrl,
     config.apiKey
   );
+
+  // Log available tools for debugging (tools will be used by the chat API)
+  if (tools && Object.keys(tools).length > 0) {
+    console.log('Available tools:', Object.keys(tools));
+  }
 
   useEffect(() => {
     if (config.onError && error) {

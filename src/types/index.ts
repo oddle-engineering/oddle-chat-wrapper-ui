@@ -33,6 +33,7 @@ export interface ChatConfig {
 export interface ChatWrapperProps {
   apiUrl: string;
   config: Omit<ChatConfig, 'apiEndpoint'>;
+  tools?: Record<string, (...args: any[]) => any>;
 }
 
 export interface ConversationResponse {

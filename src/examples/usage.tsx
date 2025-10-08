@@ -27,6 +27,16 @@ export function ExampleUsage() {
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
       },
     },
+    tools: {
+      create_email: (subject: string, body: string) => {
+        console.log('Creating email:', { subject, body });
+        return { success: true, emailId: Date.now().toString() };
+      },
+      update_email: (emailId: string, updates: any) => {
+        console.log('Updating email:', emailId, updates);
+        return { success: true, emailId };
+      },
+    },
   };
 
   return <ChatWrapper {...chatConfig} />;
@@ -40,6 +50,10 @@ export const modalConfig: ChatWrapperProps = {
     appName: 'AI Assistant',
     theme: 'dark',
     placeholder: 'Ask me anything...',
+  },
+  tools: {
+    get_weather: (location: string) => ({ location, temp: 22, condition: 'sunny' }),
+    set_reminder: (_message: string, _time: string) => ({ success: true, reminderId: Date.now() }),
   },
 };
 
@@ -57,6 +71,10 @@ export const embeddedConfig: ChatWrapperProps = {
       exportChat: true,
     },
   },
+  tools: {
+    search_docs: (query: string) => ({ results: [`Doc about ${query}`, `Guide for ${query}`] }),
+    create_ticket: (_title: string, _description: string) => ({ ticketId: Date.now(), status: 'open' }),
+  },
 };
 
 export const fullscreenConfig: ChatWrapperProps = {
@@ -69,5 +87,10 @@ export const fullscreenConfig: ChatWrapperProps = {
     customStyles: {
       fontFamily: 'Inter, sans-serif',
     },
+  },
+  tools: {
+    escalate_ticket: (_ticketId: string, _reason: string) => ({ success: true, escalated: true }),
+    get_user_info: (userId: string) => ({ userId, name: 'John Doe', tier: 'premium' }),
+    schedule_callback: (_phoneNumber: string, _preferredTime: string) => ({ scheduled: true, callbackId: Date.now() }),
   },
 };
