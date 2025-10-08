@@ -8,6 +8,30 @@ export interface Message {
   content: string;
   timestamp: Date;
   isStreaming?: boolean;
+  media?: string[];
+}
+
+export interface StreamEvent {
+  type: string;
+  event?: string;
+  data?: any;
+  content?: string;
+  error?: string;
+  done?: boolean;
+  uuid?: string;
+  result?: any;
+  tool?: string;
+  todos?: any[];
+  briefs?: any[];
+}
+
+export interface ToolResult {
+  id: string;
+  title: string;
+  description?: string;
+  status?: string;
+  created_at: string;
+  [key: string]: any;
 }
 
 export interface ChatConfig {
@@ -24,16 +48,21 @@ export interface ChatConfig {
     voiceInput?: boolean;
     messageHistory?: boolean;
     exportChat?: boolean;
+    showToolResults?: boolean;
   };
   onMessage?: (message: Message) => void;
   onError?: (error: Error) => void;
+  onToolResult?: (tool: string, result: any) => void;
+  onStreamingStatusChange?: (status: string) => void;
   customStyles?: React.CSSProperties;
+  endpoint?: 'brief-planner' | 'conversation';
 }
 
 export interface ChatWrapperProps {
   apiUrl: string;
   config: Omit<ChatConfig, 'apiEndpoint'>;
   tools?: Record<string, (...args: any[]) => any>;
+  initialMessages?: Message[];
 }
 
 export interface ConversationResponse {

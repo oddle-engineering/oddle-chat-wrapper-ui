@@ -1,18 +1,36 @@
-import { useState, KeyboardEvent } from 'react';
+import { KeyboardEvent } from 'react';
 
 interface MessageInputProps {
-  onSend: (message: string) => void;
+  onSend: (message: string, media?: string[]) => void;
   disabled?: boolean;
   placeholder?: string;
+  value?: string;
+  onChange?: (value: string) => void;
+  onStop?: () => void;
+  onClear?: () => void;
+  showStopButton?: boolean;
+  showClearButton?: boolean;
 }
 
-export function MessageInput({ onSend, disabled, placeholder }: MessageInputProps) {
-  const [message, setMessage] = useState('');
+export function MessageInput({ 
+  onSend, 
+  disabled, 
+  placeholder,
+  value,
+  onChange,
+  onStop,
+  onClear,
+  showStopButton,
+  showClearButton
+}: MessageInputProps) {
 
   const handleSend = () => {
+    const message = value || '';
     if (message.trim() && !disabled) {
       onSend(message.trim());
-      setMessage('');
+      if (onChange) {
+        onChange('');
+      }
     }
   };
 
@@ -23,24 +41,56 @@ export function MessageInput({ onSend, disabled, placeholder }: MessageInputProp
     }
   };
 
+  const handleStop = () => {
+    if (onStop) {
+      onStop();
+    }
+  };
+
+  const handleClear = () => {
+    if (onClear) {
+      onClear();
+    }
+  };
+
   return (
     <div className="chat-wrapper__input">
       <textarea
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
+        value={value || ''}
+        onChange={(e) => onChange ? onChange(e.target.value) : undefined}
         onKeyPress={handleKeyPress}
         placeholder={placeholder}
         disabled={disabled}
         className="chat-wrapper__textarea"
         rows={1}
       />
-      <button
-        onClick={handleSend}
-        disabled={disabled || !message.trim()}
-        className="chat-wrapper__send-button"
-      >
-        Send
-      </button>
+      <div className="chat-wrapper__input-buttons">
+        {showStopButton && (
+          <button
+            onClick={handleStop}
+            className="chat-wrapper__stop-button"
+            title="Stop generation"
+          >
+            Stop
+          </button>
+        )}
+        {showClearButton && !disabled && (
+          <button
+            onClick={handleClear}
+            className="chat-wrapper__clear-button"
+            title="Clear chat"
+          >
+            Clear
+          </button>
+        )}
+        <button
+          onClick={handleSend}
+          disabled={disabled || !value?.trim()}
+          className="chat-wrapper__send-button"
+        >
+          {disabled ? 'Sending...' : 'Send'}
+        </button>
+      </div>
     </div>
   );
 }

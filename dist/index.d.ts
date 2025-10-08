@@ -14,10 +14,14 @@ export declare interface ChatConfig {
         voiceInput?: boolean;
         messageHistory?: boolean;
         exportChat?: boolean;
+        showToolResults?: boolean;
     };
     onMessage?: (message: Message) => void;
     onError?: (error: Error) => void;
+    onToolResult?: (tool: string, result: any) => void;
+    onStreamingStatusChange?: (status: string) => void;
     customStyles?: React.CSSProperties;
+    endpoint?: 'brief-planner' | 'conversation';
 }
 
 export declare type ChatMode = 'sidebar' | 'fullscreen' | 'modal' | 'embedded';
@@ -26,12 +30,13 @@ export declare type ChatPosition = 'left' | 'right';
 
 export declare type ChatTheme = 'light' | 'dark' | 'auto';
 
-export declare function ChatWrapper({ apiUrl, config, tools }: ChatWrapperProps): JSX_2.Element;
+export declare function ChatWrapper({ apiUrl, config, tools, initialMessages }: ChatWrapperProps): JSX_2.Element;
 
 export declare interface ChatWrapperProps {
     apiUrl: string;
     config: Omit<ChatConfig, 'apiEndpoint'>;
     tools?: Record<string, (...args: any[]) => any>;
+    initialMessages?: Message[];
 }
 
 export declare interface ConversationResponse {
@@ -45,6 +50,7 @@ export declare interface Message {
     content: string;
     timestamp: Date;
     isStreaming?: boolean;
+    media?: string[];
 }
 
 export declare function useChatConnection(apiEndpoint: string, apiKey?: string): {
