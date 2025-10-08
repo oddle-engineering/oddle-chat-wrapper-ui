@@ -1,31 +1,31 @@
-var oe = Object.defineProperty;
-var ie = (c, t, a) => t in c ? oe(c, t, { enumerable: !0, configurable: !0, writable: !0, value: a }) : c[t] = a;
-var U = (c, t, a) => ie(c, typeof t != "symbol" ? t + "" : t, a);
-import { jsxs as w, jsx as i, Fragment as ce } from "react/jsx-runtime";
-import { useState as p, useRef as F, useCallback as g, useEffect as L } from "react";
-function le({
-  onSend: c,
+var ne = Object.defineProperty;
+var oe = (l, t, a) => t in l ? ne(l, t, { enumerable: !0, configurable: !0, writable: !0, value: a }) : l[t] = a;
+var z = (l, t, a) => oe(l, typeof t != "symbol" ? t + "" : t, a);
+import { jsxs as f, jsx as i, Fragment as ie } from "react/jsx-runtime";
+import { useState as p, useRef as U, useCallback as y, useEffect as L } from "react";
+function ce({
+  onSend: l,
   disabled: t,
   placeholder: a,
   value: s,
   onChange: d,
-  onStop: m,
-  onClear: $,
+  onStop: u,
+  onClear: I,
   showStopButton: C,
-  showClearButton: f
+  showClearButton: m
 }) {
-  const y = () => {
+  const w = () => {
     const n = s || "";
-    n.trim() && !t && (c(n.trim()), d && d(""));
+    n.trim() && !t && (l(n.trim()), d && d(""));
   };
-  return /* @__PURE__ */ w("div", { className: "chat-wrapper__input", children: [
+  return /* @__PURE__ */ f("div", { className: "chat-wrapper__input", children: [
     /* @__PURE__ */ i(
       "textarea",
       {
         value: s || "",
         onChange: (n) => d ? d(n.target.value) : void 0,
         onKeyPress: (n) => {
-          n.key === "Enter" && !n.shiftKey && (n.preventDefault(), y());
+          n.key === "Enter" && !n.shiftKey && (n.preventDefault(), w());
         },
         placeholder: a,
         disabled: t,
@@ -33,23 +33,23 @@ function le({
         rows: 1
       }
     ),
-    /* @__PURE__ */ w("div", { className: "chat-wrapper__input-buttons", children: [
+    /* @__PURE__ */ f("div", { className: "chat-wrapper__input-buttons", children: [
       C && /* @__PURE__ */ i(
         "button",
         {
           onClick: () => {
-            m && m();
+            u && u();
           },
           className: "chat-wrapper__stop-button",
           title: "Stop generation",
           children: "Stop"
         }
       ),
-      f && !t && /* @__PURE__ */ i(
+      m && !t && /* @__PURE__ */ i(
         "button",
         {
           onClick: () => {
-            $ && $();
+            I && I();
           },
           className: "chat-wrapper__clear-button",
           title: "Clear chat",
@@ -59,7 +59,7 @@ function le({
       /* @__PURE__ */ i(
         "button",
         {
-          onClick: y,
+          onClick: w,
           disabled: t || !(s != null && s.trim()),
           className: "chat-wrapper__send-button",
           children: t ? "Sending..." : "Send"
@@ -68,16 +68,16 @@ function le({
     ] })
   ] });
 }
-function fe({
-  apiUrl: c,
+function me({
+  apiUrl: l,
   config: t,
   tools: a,
   initialMessages: s = []
 }) {
-  const [d, m] = p(s), [$, C] = p(""), [f, y] = p(!1), [u, b] = p(null), [I, n] = p([]), [H, v] = p([]), [_, P] = p([]), [N, A] = p([]), [J, T] = p(""), [Y, M] = p(!1), [W, O] = p(""), G = F(null), q = F(null), K = F(null), B = g(
+  const [d, u] = p(s), [I, C] = p(""), [m, w] = p(!1), [S, b] = p(null), [$, n] = p([]), [F, j] = p([]), [_, P] = p([]), [N, A] = p([]), [H, T] = p(""), [X, M] = p(!1), [W, O] = p(""), G = U(null), J = U(null), v = U(null), B = y(
     () => Math.random().toString(36).substring(2) + Date.now().toString(36),
     []
-  ), V = g(() => {
+  ), V = y(() => {
     var e;
     (e = G.current) == null || e.scrollIntoView({ behavior: "smooth" });
   }, []);
@@ -86,231 +86,248 @@ function fe({
   }, [a]), L(() => {
     V();
   }, [d, V]), L(() => {
-    t.onStreamingStatusChange && t.onStreamingStatusChange(J);
-  }, [J, t]);
-  const S = g((e) => {
-    const l = q.current;
-    l && m((E) => E.map(
-      (h) => h.id === l ? e(h) : h
-    ));
-  }, []), Q = g(() => (t.endpoint || "conversation") === "brief-planner" ? `${c}/api/brief-planner` : u ? `${c}/api/conversation/${u}` : `${c}/api/conversation/init`, [c, t.endpoint, u]), z = g((e) => {
-    var l, E, h, j, o, x, k, D;
-    switch (console.log("Processing stream event:", e.type, e), e.type) {
-      case "event":
-        e.event === "latitude-event" ? ((l = e.data) == null ? void 0 : l.type) === "chain-started" ? (T("Planning chain started"), M(!0), O("🔗 Starting comprehensive planning chain...")) : ((E = e.data) == null ? void 0 : E.type) === "step-started" ? (T("Planning step started"), M(!0), O("📊 Executing planning step...")) : ((h = e.data) == null ? void 0 : h.type) === "provider-completed" ? (T("AI planning completed"), M(!1), O(""), (j = e.data.response) != null && j.text && S((r) => ({
-          ...r,
-          content: e.data.response.text,
-          isStreaming: !1
-        }))) : ((o = e.data) == null ? void 0 : o.type) === "chain-completed" && (T("Planning completed"), M(!1), O(""), e.data.uuid && b(e.data.uuid), S((r) => ({
-          ...r,
-          isStreaming: !1
-        }))) : e.event === "provider-event" && ((x = e.data) == null ? void 0 : x.type) === "text-delta" && (M(!1), O(""), S((r) => ({
-          ...r,
-          content: r.content + e.data.textDelta
-        })));
-        break;
-      case "text-delta":
-        e.content && S((r) => ({
-          ...r,
-          content: r.content + e.content
-        }));
-        break;
-      case "tool-result":
-        if (console.log("Tool result received:", e), e.tool && e.data && (e.data.id || e.data.success)) {
-          const r = {
-            id: e.data.id || B(),
-            title: e.data.title || `${e.tool} result`,
-            description: e.data.description,
-            status: e.data.status || "completed",
-            created_at: e.data.created_at || (/* @__PURE__ */ new Date()).toISOString(),
-            ...e.data
-          };
-          n((R) => [...R, r]);
-        }
-        e.todos && (v(e.todos), t.onToolResult && t.onToolResult("todos", e.todos)), e.briefs && (P(e.briefs), t.onToolResult && t.onToolResult("briefs", e.briefs));
-        break;
-      case "finished":
-        T("Stream finished"), e.uuid && b(e.uuid), (D = (k = e.result) == null ? void 0 : k.response) != null && D.text ? S((r) => ({
-          ...r,
-          content: e.result.response.text,
-          isStreaming: !1
-        })) : S((r) => ({
-          ...r,
-          isStreaming: !1
-        }));
-        break;
-      case "stream-error":
-        console.error("Stream error:", e.error), S((r) => ({
-          ...r,
-          content: `Stream Error: ${e.error}`,
-          isStreaming: !1
-        }));
-        break;
-      case "error":
-        console.error("API error:", e.error), S((r) => ({
-          ...r,
-          content: `Error: ${e.error}`,
-          isStreaming: !1
-        }));
-        break;
-    }
-  }, [S, B, t]), Z = g(async (e, l) => {
-    if (!e.trim() || f) return;
-    const E = {
-      id: B(),
-      role: "user",
-      content: e.trim(),
-      timestamp: /* @__PURE__ */ new Date(),
-      media: l
-    };
-    m((o) => [...o, E]), y(!0), T("Starting...");
-    const h = B();
-    q.current = h;
-    const j = {
-      id: h,
-      role: "assistant",
-      content: "",
-      timestamp: /* @__PURE__ */ new Date(),
-      isStreaming: !0
-    };
-    m((o) => [...o, j]);
-    try {
-      K.current = new AbortController();
-      const o = Q(), x = t.endpoint === "brief-planner" ? {
-        messages: [...d, E],
-        promptPath: t.promptPath || "briefPlanner",
-        conversationUuid: u,
-        todos: H,
-        // Send current todos to the API
-        briefs: _,
-        // Send current briefs to the API  
-        media: N
-        // Send uploaded images as base64
-      } : {
-        message: e.trim(),
-        tools: a ? Object.keys(a) : []
+    t.onStreamingStatusChange && t.onStreamingStatusChange(H);
+  }, [H, t]);
+  const g = y(
+    (e) => {
+      const c = J.current;
+      c && u(
+        (E) => E.map((h) => h.id === c ? e(h) : h)
+      );
+    },
+    []
+  ), q = y(
+    (e) => {
+      var c, E, h, K, o, x, k, D;
+      switch (console.log("Processing stream event:", e.type, e), e.type) {
+        case "event":
+          e.event === "latitude-event" ? ((c = e.data) == null ? void 0 : c.type) === "chain-started" ? (T("Planning chain started"), M(!0), O(
+            "🔗 Starting comprehensive planning chain..."
+          )) : ((E = e.data) == null ? void 0 : E.type) === "step-started" ? (T("Planning step started"), M(!0), O("📊 Executing planning step...")) : ((h = e.data) == null ? void 0 : h.type) === "provider-completed" ? (T("AI planning completed"), M(!1), O(""), (K = e.data.response) != null && K.text && g((r) => ({
+            ...r,
+            content: e.data.response.text,
+            isStreaming: !1
+          }))) : ((o = e.data) == null ? void 0 : o.type) === "chain-completed" && (T("Planning completed"), M(!1), O(""), e.data.uuid && b(e.data.uuid), g((r) => ({
+            ...r,
+            isStreaming: !1
+          }))) : e.event === "provider-event" && ((x = e.data) == null ? void 0 : x.type) === "text-delta" && (M(!1), O(""), g((r) => ({
+            ...r,
+            content: r.content + e.data.textDelta
+          })));
+          break;
+        case "text-delta":
+          e.content && g((r) => ({
+            ...r,
+            content: r.content + e.content
+          }));
+          break;
+        case "tool-result":
+          if (console.log("Tool result received:", e), e.tool && e.data && (e.data.id || e.data.success)) {
+            const r = {
+              id: e.data.id || B(),
+              title: e.data.title || `${e.tool} result`,
+              description: e.data.description,
+              status: e.data.status || "completed",
+              created_at: e.data.created_at || (/* @__PURE__ */ new Date()).toISOString(),
+              ...e.data
+            };
+            n((R) => [...R, r]);
+          }
+          e.todos && (j(e.todos), t.onToolResult && t.onToolResult("todos", e.todos)), e.briefs && (P(e.briefs), t.onToolResult && t.onToolResult("briefs", e.briefs));
+          break;
+        case "finished":
+          T("Stream finished"), e.uuid && b(e.uuid), (D = (k = e.result) == null ? void 0 : k.response) != null && D.text ? g((r) => ({
+            ...r,
+            content: e.result.response.text,
+            isStreaming: !1
+          })) : g((r) => ({
+            ...r,
+            isStreaming: !1
+          }));
+          break;
+        case "stream-error":
+          console.error("Stream error:", e.error), g((r) => ({
+            ...r,
+            content: `Stream Error: ${e.error}`,
+            isStreaming: !1
+          }));
+          break;
+        case "error":
+          console.error("API error:", e.error), g((r) => ({
+            ...r,
+            content: `Error: ${e.error}`,
+            isStreaming: !1
+          }));
+          break;
+      }
+    },
+    [g, B, t]
+  ), Y = y(
+    async (e, c) => {
+      if (!e.trim() || m) return;
+      const E = {
+        id: B(),
+        role: "user",
+        content: e.trim(),
+        timestamp: /* @__PURE__ */ new Date(),
+        media: c
       };
-      console.log("Sending request to:", o);
-      const k = await fetch(o, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...t.apiKey && { Authorization: `Bearer ${t.apiKey}` }
-        },
-        body: JSON.stringify(x),
-        signal: K.current.signal
-      });
-      if (!k.ok)
-        throw new Error(`HTTP error! status: ${k.status}`);
-      if (!u && t.endpoint !== "brief-planner") {
-        const D = await k.json();
-        b(D.conversationId);
-        const r = `${c}/api/conversation/${D.conversationId}`, R = await fetch(r, {
+      u((o) => [...o, E]), w(!0), T("Starting...");
+      const h = B();
+      J.current = h;
+      const K = {
+        id: h,
+        role: "assistant",
+        content: "",
+        timestamp: /* @__PURE__ */ new Date(),
+        isStreaming: !0
+      };
+      u((o) => [...o, K]);
+      try {
+        v.current = new AbortController();
+        const o = `${l}/api/brief-planner`, x = t.endpoint === "brief-planner" ? {
+          messages: [...d, E],
+          promptPath: t.promptPath || "briefPlanner",
+          conversationUuid: S,
+          todos: F,
+          // Send current todos to the API
+          briefs: _,
+          // Send current briefs to the API
+          media: N
+          // Send uploaded images as base64
+        } : {
+          message: e.trim(),
+          tools: a ? Object.keys(a) : []
+        };
+        console.log("Sending request to:", o);
+        const k = await fetch(o, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             ...t.apiKey && { Authorization: `Bearer ${t.apiKey}` }
           },
-          body: JSON.stringify({ message: e.trim() }),
-          signal: K.current.signal
+          body: JSON.stringify(x),
+          signal: v.current.signal
         });
-        if (!R.ok)
-          throw new Error(`HTTP error! status: ${R.status}`);
-        await X(R);
-      } else
-        await X(k);
-    } catch (o) {
-      o instanceof Error && o.name === "AbortError" ? console.log("Request aborted") : (console.error("Request error:", o), S((x) => ({
-        ...x,
-        content: `Sorry, there was an error: ${o instanceof Error ? o.message : "Unknown error"}`,
-        isStreaming: !1
-      })), t.onError && t.onError(o instanceof Error ? o : new Error("Unknown error")));
-    } finally {
-      y(!1), T(""), M(!1), O(""), K.current = null, q.current = null;
-    }
-  }, [
-    f,
-    B,
-    d,
-    u,
-    H,
-    _,
-    N,
-    a,
-    t,
-    c,
-    Q,
-    S,
-    z
-  ]), X = g(async (e) => {
-    var j;
-    const l = (j = e.body) == null ? void 0 : j.getReader(), E = new TextDecoder();
-    if (!l)
-      throw new Error("No response body reader available");
-    let h = "";
-    for (; ; ) {
-      const { done: o, value: x } = await l.read();
-      if (o) {
-        console.log("Stream completed");
-        break;
+        if (!k.ok)
+          throw new Error(`HTTP error! status: ${k.status}`);
+        if (!S && t.endpoint !== "brief-planner") {
+          const D = await k.json();
+          b(D.conversationId);
+          const r = `${l}/api/conversation/${D.conversationId}`, R = await fetch(r, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...t.apiKey && {
+                Authorization: `Bearer ${t.apiKey}`
+              }
+            },
+            body: JSON.stringify({ message: e.trim() }),
+            signal: v.current.signal
+          });
+          if (!R.ok)
+            throw new Error(`HTTP error! status: ${R.status}`);
+          await Q(R);
+        } else
+          await Q(k);
+      } catch (o) {
+        o instanceof Error && o.name === "AbortError" ? console.log("Request aborted") : (console.error("Request error:", o), g((x) => ({
+          ...x,
+          content: `Sorry, there was an error: ${o instanceof Error ? o.message : "Unknown error"}`,
+          isStreaming: !1
+        })), t.onError && t.onError(
+          o instanceof Error ? o : new Error("Unknown error")
+        ));
+      } finally {
+        w(!1), T(""), M(!1), O(""), v.current = null, J.current = null;
       }
-      h += E.decode(x, { stream: !0 });
-      const k = h.split(/\r?\n/);
-      h = k.pop() || "";
-      for (const D of k)
-        if (D.startsWith("data: ")) {
-          const r = D.slice(6).trim();
-          if (r === "[DONE]" || r === "")
-            continue;
-          try {
-            const R = JSON.parse(r);
-            z(R);
-          } catch (R) {
-            console.error("Failed to parse event:", R);
-          }
+    },
+    [
+      m,
+      B,
+      d,
+      S,
+      F,
+      _,
+      N,
+      a,
+      t,
+      l,
+      g,
+      q
+    ]
+  ), Q = y(
+    async (e) => {
+      var K;
+      const c = (K = e.body) == null ? void 0 : K.getReader(), E = new TextDecoder();
+      if (!c)
+        throw new Error("No response body reader available");
+      let h = "";
+      for (; ; ) {
+        const { done: o, value: x } = await c.read();
+        if (o) {
+          console.log("Stream completed");
+          break;
         }
-    }
-  }, [z]), ee = g(() => {
-    K.current && (K.current.abort(), y(!1), T(""), M(!1), O(""));
-  }, []), te = g(() => {
-    m(s), b(null), n([]), v([]), P([]), A([]), T(""), M(!1), O(""), console.log("Chat cleared");
-  }, [s]), re = ((...e) => e.filter(Boolean).join(" "))(
+        h += E.decode(x, { stream: !0 });
+        const k = h.split(/\r?\n/);
+        h = k.pop() || "";
+        for (const D of k)
+          if (D.startsWith("data: ")) {
+            const r = D.slice(6).trim();
+            if (r === "[DONE]" || r === "")
+              continue;
+            try {
+              const R = JSON.parse(r);
+              q(R);
+            } catch (R) {
+              console.error("Failed to parse event:", R);
+            }
+          }
+      }
+    },
+    [q]
+  ), Z = y(() => {
+    v.current && (v.current.abort(), w(!1), T(""), M(!1), O(""));
+  }, []), ee = y(() => {
+    u(s), b(null), n([]), j([]), P([]), A([]), T(""), M(!1), O(""), console.log("Chat cleared");
+  }, [s]), te = ((...e) => e.filter(Boolean).join(" "))(
     "chat-wrapper",
     `chat-wrapper--${t.mode}`,
     t.position && `chat-wrapper--${t.position}`,
     t.theme && `chat-wrapper--${t.theme}`
-  ), ae = () => t.mode === "modal" ? /* @__PURE__ */ i("div", { className: "chat-wrapper-overlay" }) : null, se = () => !Y || !W ? null : /* @__PURE__ */ i("div", { className: "chat-wrapper__thinking", children: /* @__PURE__ */ w("div", { className: "chat-wrapper__thinking-content", children: [
+  ), re = () => t.mode === "modal" ? /* @__PURE__ */ i("div", { className: "chat-wrapper-overlay" }) : null, ae = () => !X || !W ? null : /* @__PURE__ */ i("div", { className: "chat-wrapper__thinking", children: /* @__PURE__ */ f("div", { className: "chat-wrapper__thinking-content", children: [
     /* @__PURE__ */ i("span", { className: "chat-wrapper__thinking-spinner" }),
     /* @__PURE__ */ i("span", { children: W })
-  ] }) }), ne = () => {
+  ] }) }), se = () => {
     var e;
-    return !((e = t.features) != null && e.showToolResults) || I.length === 0 ? null : /* @__PURE__ */ w("div", { className: "chat-wrapper__tool-results", children: [
+    return !((e = t.features) != null && e.showToolResults) || $.length === 0 ? null : /* @__PURE__ */ f("div", { className: "chat-wrapper__tool-results", children: [
       /* @__PURE__ */ i("h4", { children: "Tool Results" }),
-      /* @__PURE__ */ i("div", { className: "chat-wrapper__tool-results-list", children: I.map((l) => /* @__PURE__ */ w("div", { className: "chat-wrapper__tool-result", children: [
-        /* @__PURE__ */ i("div", { className: "chat-wrapper__tool-result-title", children: l.title }),
-        l.description && /* @__PURE__ */ i("div", { className: "chat-wrapper__tool-result-description", children: l.description }),
-        /* @__PURE__ */ w("div", { className: "chat-wrapper__tool-result-meta", children: [
+      /* @__PURE__ */ i("div", { className: "chat-wrapper__tool-results-list", children: $.map((c) => /* @__PURE__ */ f("div", { className: "chat-wrapper__tool-result", children: [
+        /* @__PURE__ */ i("div", { className: "chat-wrapper__tool-result-title", children: c.title }),
+        c.description && /* @__PURE__ */ i("div", { className: "chat-wrapper__tool-result-description", children: c.description }),
+        /* @__PURE__ */ f("div", { className: "chat-wrapper__tool-result-meta", children: [
           "Status: ",
-          l.status || "completed"
+          c.status || "completed"
         ] })
-      ] }, l.id)) })
+      ] }, c.id)) })
     ] });
   };
-  return /* @__PURE__ */ w(ce, { children: [
-    ae(),
-    /* @__PURE__ */ w("div", { className: re, style: t.customStyles, children: [
-      /* @__PURE__ */ w("div", { className: "chat-wrapper__header", children: [
+  return /* @__PURE__ */ f(ie, { children: [
+    re(),
+    /* @__PURE__ */ f("div", { className: te, style: t.customStyles, children: [
+      /* @__PURE__ */ f("div", { className: "chat-wrapper__header", children: [
         /* @__PURE__ */ i("h2", { className: "chat-wrapper__title", children: t.appName }),
-        J && /* @__PURE__ */ i("div", { className: "chat-wrapper__status", children: J })
+        H && /* @__PURE__ */ i("div", { className: "chat-wrapper__status", children: H })
       ] }),
-      se(),
-      /* @__PURE__ */ w("div", { className: "chat-wrapper__messages", children: [
-        d.map((e) => /* @__PURE__ */ w(
+      ae(),
+      /* @__PURE__ */ f("div", { className: "chat-wrapper__messages", children: [
+        d.map((e) => /* @__PURE__ */ f(
           "div",
           {
             className: `chat-wrapper__message chat-wrapper__message--${e.role}`,
             children: [
-              /* @__PURE__ */ w("div", { className: "chat-wrapper__message-content", children: [
+              /* @__PURE__ */ f("div", { className: "chat-wrapper__message-content", children: [
                 e.content,
                 e.isStreaming && /* @__PURE__ */ i("span", { className: "chat-wrapper__streaming-indicator", children: "..." })
               ] }),
@@ -321,18 +338,18 @@ function fe({
         )),
         /* @__PURE__ */ i("div", { ref: G })
       ] }),
-      ne(),
+      se(),
       /* @__PURE__ */ i(
-        le,
+        ce,
         {
-          onSend: Z,
-          disabled: f,
+          onSend: Y,
+          disabled: m,
           placeholder: t.placeholder || "Type a message...",
-          value: $,
+          value: I,
           onChange: C,
-          onStop: ee,
-          onClear: te,
-          showStopButton: f,
+          onStop: Z,
+          onClear: ee,
+          showStopButton: m,
           showClearButton: d.length > 0
         }
       ),
@@ -340,10 +357,10 @@ function fe({
     ] })
   ] });
 }
-class de {
+class le {
   constructor(t, a) {
-    U(this, "baseUrl");
-    U(this, "apiKey");
+    z(this, "baseUrl");
+    z(this, "apiKey");
     this.baseUrl = t, this.apiKey = a;
   }
   getHeaders() {
@@ -371,86 +388,86 @@ class de {
     );
     if (!s.ok) throw new Error("Failed to send message");
     if (!s.body) throw new Error("No response body");
-    const d = s.body.getReader(), m = new TextDecoder();
+    const d = s.body.getReader(), u = new TextDecoder();
     for (; ; ) {
-      const { done: $, value: C } = await d.read();
-      if ($) break;
-      const y = m.decode(C).split(`
+      const { done: I, value: C } = await d.read();
+      if (I) break;
+      const w = u.decode(C).split(`
 `);
-      for (const u of y)
-        if (u.startsWith("data: ")) {
-          const b = u.slice(6);
+      for (const S of w)
+        if (S.startsWith("data: ")) {
+          const b = S.slice(6);
           if (b === "[DONE]") return;
           try {
             yield JSON.parse(b).content || "";
-          } catch (I) {
-            console.error("Failed to parse chunk:", I);
+          } catch ($) {
+            console.error("Failed to parse chunk:", $);
           }
         }
     }
   }
 }
-function we(c, t) {
-  const [a, s] = p([]), [d, m] = p(!1), [$, C] = p(null), f = F(null), y = F(new de(c, t)), u = g(async () => {
+function fe(l, t) {
+  const [a, s] = p([]), [d, u] = p(!1), [I, C] = p(null), m = U(null), w = U(new le(l, t)), S = y(async () => {
     try {
-      const n = await y.current.initConversation();
-      return f.current = n, n;
+      const n = await w.current.initConversation();
+      return m.current = n, n;
     } catch (n) {
       throw C(n), n;
     }
-  }, []), b = g(
+  }, []), b = y(
     async (n) => {
-      f.current || await u();
-      const H = {
+      m.current || await S();
+      const F = {
         id: Date.now().toString(),
         role: "user",
         content: n,
         timestamp: /* @__PURE__ */ new Date()
       };
-      s((_) => [..._, H]), m(!0), C(null);
-      const v = {
+      s((_) => [..._, F]), u(!0), C(null);
+      const j = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: "",
         timestamp: /* @__PURE__ */ new Date(),
         isStreaming: !0
       };
-      s((_) => [..._, v]);
+      s((_) => [..._, j]);
       try {
-        const _ = y.current.streamMessage(
-          f.current,
+        const _ = w.current.streamMessage(
+          m.current,
           n
         );
         for await (const P of _)
           s(
             (N) => N.map(
-              (A) => A.id === v.id ? { ...A, content: A.content + P } : A
+              (A) => A.id === j.id ? { ...A, content: A.content + P } : A
             )
           );
         s(
           (P) => P.map(
-            (N) => N.id === v.id ? { ...N, isStreaming: !1 } : N
+            (N) => N.id === j.id ? { ...N, isStreaming: !1 } : N
           )
         );
       } catch (_) {
-        C(_), s((P) => P.filter((N) => N.id !== v.id));
+        C(_), s((P) => P.filter((N) => N.id !== j.id));
       } finally {
-        m(!1);
+        u(!1);
       }
     },
-    [u]
-  ), I = g(() => {
-    s([]), f.current = null;
+    [S]
+  ), $ = y(() => {
+    s([]), m.current = null;
   }, []);
   return {
     messages: a,
     isLoading: d,
-    error: $,
+    error: I,
     sendMessage: b,
-    clearMessages: I
+    clearMessages: $
   };
 }
 export {
-  fe as ChatWrapper,
-  we as useChatConnection
+  me as ChatWrapper,
+  fe as useChatConnection
 };
