@@ -5,13 +5,13 @@ Reusable chat interface component for company projects.
 ## Installation
 
 ```bash
-npm install @your-company/chat-wrapper-ui
+npm install @oddle/chat-wrapper-ui
 ```
 
 ## Usage
 
 ```tsx
-import { ChatWrapper } from '@your-company/chat-wrapper-ui';
+import { ChatWrapper } from '@oddle/chat-wrapper-ui';
 
 function App() {
   return (
