@@ -13,6 +13,7 @@ export declare interface ChatConfig {
     welcomeMessage?: string;
     promptPath?: string;
     bubbleText?: string;
+    constrainedHeight?: boolean;
     features?: {
         fileUpload?: boolean;
         voiceInput?: boolean;
@@ -160,6 +161,7 @@ export declare interface StreamEvent {
     uuid?: string;
     result?: any;
     tool?: string;
+    parameters?: any[] | Record<string, any> | any;
     todos?: any[];
     briefs?: any[];
 }
