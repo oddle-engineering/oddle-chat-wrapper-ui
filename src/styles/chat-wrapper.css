@@ -1237,14 +1237,14 @@
 
 /* Button Variants */
 .chat-wrapper__prompt-button--default {
-  background-color: #3b82f6;
+  background-color: #410099;
   color: #ffffff;
-  border-color: #3b82f6;
+  border-color: #410099;
 }
 
 .chat-wrapper__prompt-button--default:hover:not(:disabled) {
-  background-color: #2563eb;
-  border-color: #2563eb;
+  background-color: #330077;
+  border-color: #330077;
 }
 
 .chat-wrapper__prompt-button--ghost {
@@ -1319,14 +1319,14 @@
 
 /* Submit Button Variants */
 .chat-wrapper__prompt-submit--default {
-  background-color: #3b82f6;
+  background-color: #410099;
   color: #ffffff;
-  border-color: #3b82f6;
+  border-color: #410099;
 }
 
 .chat-wrapper__prompt-submit--default:hover:not(:disabled) {
-  background-color: #2563eb;
-  border-color: #2563eb;
+  background-color: #330077;
+  border-color: #330077;
 }
 
 .chat-wrapper__prompt-submit--ghost {
