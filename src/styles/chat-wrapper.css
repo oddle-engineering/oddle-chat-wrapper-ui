@@ -668,6 +668,20 @@
   background-color: #2d3748;
 }
 
+/* Dark theme fullscreen button */
+.chat-wrapper--dark .chat-wrapper__fullscreen-button {
+  color: #cbd5e0;
+}
+
+.chat-wrapper--dark .chat-wrapper__fullscreen-button:hover {
+  background-color: #4a5568;
+  color: #f7fafc;
+}
+
+.chat-wrapper--dark .chat-wrapper__fullscreen-button:active {
+  background-color: #2d3748;
+}
+
 /* Dark theme collapse button */
 .chat-wrapper--dark .chat-wrapper__collapse-button {
   color: #cbd5e0;
@@ -721,6 +735,31 @@
   position: absolute;
   top: 12px;
   right: 12px;
+}
+
+/* Fullscreen Button Styles */
+.chat-wrapper__fullscreen-button {
+  width: 36px;
+  height: 36px;
+  background-color: transparent;
+  border: none;
+  border-radius: 18px;
+  color: #718096;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.chat-wrapper__fullscreen-button:hover {
+  background-color: #f1f5f9;
+  color: #2d3748;
+}
+
+.chat-wrapper__fullscreen-button:active {
+  background-color: #e2e8f0;
 }
 
 /* Collapse Button Styles */

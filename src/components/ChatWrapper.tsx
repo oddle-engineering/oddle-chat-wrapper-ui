@@ -20,8 +20,6 @@ export function ChatWrapper({
   tools,
   initialMessages = [],
 }: ChatWrapperProps) {
-  // Debug: Log the configuration
-  console.log('ChatWrapper config:', config);
   // Core chat state
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
@@ -30,6 +28,7 @@ export function ChatWrapper({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [chatStatus, setChatStatus] = useState<ChatStatus>("idle");
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [currentMode, setCurrentMode] = useState(config.mode);
 
   // Advanced state for tool results and streaming
   const [toolResults, setToolResults] = useState<ToolResult[]>([]);
@@ -439,19 +438,24 @@ export function ChatWrapper({
     setIsCollapsed(prev => !prev);
   }, []);
 
+  // Mode switching controls
+  const toggleFullscreen = useCallback(() => {
+    setCurrentMode(prev => prev === "sidebar" ? "fullscreen" : "sidebar");
+  }, []);
+
   // Handle escape key for modal
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && config.mode === "modal" && isModalOpen) {
+      if (event.key === "Escape" && currentMode === "modal" && isModalOpen) {
         closeModal();
       }
     };
 
-    if (config.mode === "modal" && isModalOpen) {
+    if (currentMode === "modal" && isModalOpen) {
       document.addEventListener("keydown", handleEscape);
       return () => document.removeEventListener("keydown", handleEscape);
     }
-  }, [config.mode, isModalOpen, closeModal]);
+  }, [currentMode, isModalOpen, closeModal]);
 
   // Build CSS classes without external library
   const buildClasses = (...classes: (string | undefined | false)[]): string => {
@@ -460,7 +464,7 @@ export function ChatWrapper({
 
   const containerClasses = buildClasses(
     "chat-wrapper",
-    `chat-wrapper--${config.mode}`,
+    `chat-wrapper--${currentMode}`,
     config.position && `chat-wrapper--${config.position}`,
     config.theme && `chat-wrapper--${config.theme}`,
     isCollapsed && "chat-wrapper--collapsed"
@@ -468,7 +472,7 @@ export function ChatWrapper({
 
   // Render modal overlay if needed
   const renderModalOverlay = () => {
-    if (config.mode === "modal" && isModalOpen) {
+    if (currentMode === "modal" && isModalOpen) {
       return <div className="chat-wrapper-overlay" onClick={closeModal} />;
     }
     return null;
@@ -477,13 +481,13 @@ export function ChatWrapper({
   // Render bubble button for modal, sidebar (collapsed), and fullscreen (collapsed) modes
   const renderBubbleButton = () => {
     const shouldShowBubble = 
-      (config.mode === "modal" && !isModalOpen) ||
-      (config.mode === "sidebar" && isCollapsed) ||
-      (config.mode === "fullscreen" && isCollapsed);
+      (currentMode === "modal" && !isModalOpen) ||
+      (currentMode === "sidebar" && isCollapsed) ||
+      (currentMode === "fullscreen" && isCollapsed);
 
     if (shouldShowBubble) {
-      const handleClick = config.mode === "modal" ? openModal : toggleCollapse;
-      const title = config.mode === "modal" 
+      const handleClick = currentMode === "modal" ? openModal : toggleCollapse;
+      const title = currentMode === "modal" 
         ? `Open ${config.appName}` 
         : `Expand ${config.appName}`;
 
@@ -522,7 +526,7 @@ export function ChatWrapper({
 
   // Render close button for modal mode
   const renderCloseButton = () => {
-    if (config.mode === "modal" && isModalOpen) {
+    if (currentMode === "modal" && isModalOpen) {
       return (
         <button
           className="chat-wrapper__close-button"
@@ -547,10 +551,39 @@ export function ChatWrapper({
     return null;
   };
 
+  // Render fullscreen toggle button for sidebar mode
+  const renderFullscreenButton = () => {
+    if (currentMode === "sidebar" && !isCollapsed) {
+      return (
+        <button
+          className="chat-wrapper__fullscreen-button"
+          onClick={toggleFullscreen}
+          title={currentMode === "sidebar" ? "Switch to fullscreen" : "Switch to sidebar"}
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M7 14H5v5h5v-2M5 10V5h5v2M17 14h2v5h-5v-2M19 10V5h-5v2"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      );
+    }
+    return null;
+  };
+
   // Render collapse button for sidebar and fullscreen modes (only when expanded)
   const renderCollapseButton = () => {
-    const shouldShow = (config.mode === "sidebar" || config.mode === "fullscreen") && !isCollapsed;
-    console.log('renderCollapseButton - mode:', config.mode, 'isCollapsed:', isCollapsed, 'shouldShow:', shouldShow);
+    const shouldShow = (currentMode === "sidebar" || currentMode === "fullscreen") && !isCollapsed;
     
     if (shouldShow) {
       return (
@@ -558,9 +591,22 @@ export function ChatWrapper({
           className="chat-wrapper__collapse-button"
           onClick={toggleCollapse}
           title="Collapse chat"
-          style={{ background: 'red', color: 'white' }} // Temporary debug style
         >
-          ⬇
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M18 12l-3 3-3-3m-6 3l-3 3-3-3"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
       );
     }
@@ -599,11 +645,11 @@ export function ChatWrapper({
 
   // For modal mode, only render when open
   // For sidebar and fullscreen modes, render bubble when collapsed
-  if (config.mode === "modal" && !isModalOpen) {
+  if (currentMode === "modal" && !isModalOpen) {
     return renderBubbleButton();
   }
 
-  if ((config.mode === "sidebar" || config.mode === "fullscreen") && isCollapsed) {
+  if ((currentMode === "sidebar" || currentMode === "fullscreen") && isCollapsed) {
     return renderBubbleButton();
   }
 
@@ -614,6 +660,7 @@ export function ChatWrapper({
         <div className="chat-wrapper__header">
           <h2 className="chat-wrapper__title">{config.appName}</h2>
           <div className="chat-wrapper__header-controls">
+            {renderFullscreenButton()}
             {renderCollapseButton()}
             {renderCloseButton()}
           </div>
