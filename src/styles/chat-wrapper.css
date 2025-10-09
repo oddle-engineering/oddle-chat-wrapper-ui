@@ -1158,8 +1158,8 @@
 }
 
 .chat-wrapper__prompt-input:focus-within {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #410099;
+  box-shadow: 0 0 0 3px rgba(65, 0, 153, 0.1), 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .chat-wrapper__prompt-textarea {
@@ -1429,8 +1429,8 @@
 }
 
 .chat-wrapper__prompt-select:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #410099;
+  box-shadow: 0 0 0 3px rgba(65, 0, 153, 0.1);
 }
 
 .chat-wrapper__prompt-select-trigger {
@@ -1455,8 +1455,8 @@
 }
 
 .chat-wrapper__prompt-select-trigger:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #410099;
+  box-shadow: 0 0 0 3px rgba(65, 0, 153, 0.1);
 }
 
 .chat-wrapper__prompt-select-content {
@@ -1486,7 +1486,7 @@
 }
 
 .chat-wrapper__prompt-select-item[data-selected="true"] {
-  background-color: #3b82f6;
+  background-color: #410099;
   color: #ffffff;
 }
 
@@ -1507,8 +1507,8 @@
 }
 
 .chat-wrapper--dark .chat-wrapper__prompt-input:focus-within {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 4px 12px rgba(0, 0, 0, 0.2);
+  border-color: #410099;
+  box-shadow: 0 0 0 3px rgba(65, 0, 153, 0.1), 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .chat-wrapper--dark .chat-wrapper__prompt-textarea {
