@@ -1,7 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown from "react-markdown";
 import { ChatWrapperProps, Message, StreamEvent, ToolResult } from "../types";
-import { MessageInput } from "./MessageInput";
+import {
+  PromptInput,
+  PromptInputTextarea,
+  PromptInputToolbar,
+  PromptInputTools,
+  PromptInputButton,
+  PromptInputSubmit,
+  ChatStatus,
+} from "./PromptInput";
 import { Reasoning, ReasoningTrigger, ReasoningContent } from "./Reasoning";
 import { Loader } from "./Loader";
 import "../styles/chat-wrapper.css";
@@ -18,6 +26,8 @@ export function ChatWrapper({
   const [isStreaming, setIsStreaming] = useState(false);
   const [conversationUuid, setConversationUuid] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [chatStatus, setChatStatus] = useState<ChatStatus>("idle");
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Advanced state for tool results and streaming
   const [toolResults, setToolResults] = useState<ToolResult[]>([]);
@@ -234,6 +244,7 @@ export function ChatWrapper({
 
       setMessages((prev) => [...prev, userMessage]);
       setIsStreaming(true);
+      setChatStatus("submitted");
       setStreamingStatus("Starting...");
 
       // Create assistant message placeholder
@@ -252,25 +263,27 @@ export function ChatWrapper({
         // Create abort controller for this request
         abortControllerRef.current = new AbortController();
 
-        const endpoint = config.endpoint === 'brief-planner'
-          ? `${apiUrl}/api/brief-planner`
-          : conversationUuid
-          ? `${apiUrl}/api/conversation/${conversationUuid}`
-          : `${apiUrl}/api/conversation/init`;
+        const endpoint =
+          config.endpoint === "brief-planner"
+            ? `${apiUrl}/api/brief-planner`
+            : conversationUuid
+            ? `${apiUrl}/api/conversation/${conversationUuid}`
+            : `${apiUrl}/api/conversation/init`;
 
-        const requestBody = config.endpoint === 'brief-planner'
-          ? {
-              messages: [...messages, userMessage],
-              promptPath: config.promptPath || "briefPlanner",
-              conversationUuid,
-              todos, // Send current todos to the API
-              briefs, // Send current briefs to the API
-              media: media || [], // Use media from function parameter, not uploadedMedia
-            }
-          : {
-              message: message.trim(),
-              tools: tools ? Object.keys(tools) : [],
-            };
+        const requestBody =
+          config.endpoint === "brief-planner"
+            ? {
+                messages: [...messages, userMessage],
+                promptPath: config.promptPath || "briefPlanner",
+                conversationUuid,
+                todos, // Send current todos to the API
+                briefs, // Send current briefs to the API
+                media: media || [], // Use media from function parameter, not uploadedMedia
+              }
+            : {
+                message: message.trim(),
+                tools: tools ? Object.keys(tools) : [],
+              };
 
         console.log("Sending request to:", endpoint);
         console.log("Request payload:", JSON.stringify(requestBody, null, 2));
@@ -290,12 +303,14 @@ export function ChatWrapper({
         }
 
         // Always process as streaming response since your API returns SSE
+        setChatStatus("streaming");
         await processStreamingResponse(response);
       } catch (error) {
         if (error instanceof Error && error.name === "AbortError") {
           console.log("Request aborted");
         } else {
           console.error("Request error:", error);
+          setChatStatus("error");
           updateAssistantMessage((msg) => ({
             ...msg,
             content: `Sorry, there was an error: ${
@@ -312,6 +327,7 @@ export function ChatWrapper({
         }
       } finally {
         setIsStreaming(false);
+        setChatStatus("idle");
         setStreamingStatus("");
         setIsThinking(false);
         setReasoningContent("");
@@ -385,6 +401,7 @@ export function ChatWrapper({
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       setIsStreaming(false);
+      setChatStatus("idle");
       setStreamingStatus("");
       setIsThinking(false);
       setReasoningContent("");
@@ -399,6 +416,7 @@ export function ChatWrapper({
     setTodos([]);
     setBriefs([]);
     setUploadedMedia([]);
+    setChatStatus("idle");
     setStreamingStatus("");
     setIsThinking(false);
     setReasoningContent("");
@@ -414,17 +432,22 @@ export function ChatWrapper({
     setIsModalOpen(false);
   }, []);
 
+  // Collapse controls
+  const toggleCollapse = useCallback(() => {
+    setIsCollapsed(prev => !prev);
+  }, []);
+
   // Handle escape key for modal
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && config.mode === 'modal' && isModalOpen) {
+      if (event.key === "Escape" && config.mode === "modal" && isModalOpen) {
         closeModal();
       }
     };
 
-    if (config.mode === 'modal' && isModalOpen) {
-      document.addEventListener('keydown', handleEscape);
-      return () => document.removeEventListener('keydown', handleEscape);
+    if (config.mode === "modal" && isModalOpen) {
+      document.addEventListener("keydown", handleEscape);
+      return () => document.removeEventListener("keydown", handleEscape);
     }
   }, [config.mode, isModalOpen, closeModal]);
 
@@ -437,18 +460,14 @@ export function ChatWrapper({
     "chat-wrapper",
     `chat-wrapper--${config.mode}`,
     config.position && `chat-wrapper--${config.position}`,
-    config.theme && `chat-wrapper--${config.theme}`
+    config.theme && `chat-wrapper--${config.theme}`,
+    isCollapsed && "chat-wrapper--collapsed"
   );
 
   // Render modal overlay if needed
   const renderModalOverlay = () => {
     if (config.mode === "modal" && isModalOpen) {
-      return (
-        <div 
-          className="chat-wrapper-overlay" 
-          onClick={closeModal}
-        />
-      );
+      return <div className="chat-wrapper-overlay" onClick={closeModal} />;
     }
     return null;
   };
@@ -462,25 +481,25 @@ export function ChatWrapper({
           onClick={openModal}
           title={`Open ${config.appName}`}
         >
-          <svg 
-            width="24" 
-            height="24" 
-            viewBox="0 0 24 24" 
-            fill="none" 
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
             xmlns="http://www.w3.org/2000/svg"
             className="chat-wrapper__bubble-icon"
           >
-            <path 
-              d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H5.17L4 17.17V4H20V16Z" 
+            <path
+              d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H5.17L4 17.17V4H20V16Z"
               fill="currentColor"
             />
-            <circle cx="7" cy="10" r="1" fill="currentColor"/>
-            <circle cx="12" cy="10" r="1" fill="currentColor"/>
-            <circle cx="17" cy="10" r="1" fill="currentColor"/>
+            <circle cx="7" cy="10" r="1" fill="currentColor" />
+            <circle cx="12" cy="10" r="1" fill="currentColor" />
+            <circle cx="17" cy="10" r="1" fill="currentColor" />
           </svg>
           {config.features?.showBubbleText !== false && (
             <span className="chat-wrapper__bubble-text">
-              {config.bubbleText || 'Chat'}
+              {config.bubbleText || "Chat"}
             </span>
           )}
         </button>
@@ -498,17 +517,59 @@ export function ChatWrapper({
           onClick={closeModal}
           title="Close chat"
         >
-          <svg 
-            width="20" 
-            height="20" 
-            viewBox="0 0 24 24" 
-            fill="none" 
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <path 
-              d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z" 
+            <path
+              d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z"
               fill="currentColor"
             />
+          </svg>
+        </button>
+      );
+    }
+    return null;
+  };
+
+  // Render collapse button for sidebar and fullscreen modes
+  const renderCollapseButton = () => {
+    if (config.mode === "sidebar" || config.mode === "fullscreen") {
+      return (
+        <button
+          className="chat-wrapper__collapse-button"
+          onClick={toggleCollapse}
+          title={isCollapsed ? "Expand chat" : "Collapse chat"}
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {isCollapsed ? (
+              // Expand icon (double arrow right/up)
+              <path
+                d="M6 12l3-3 3 3m6-3l3-3 3 3"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            ) : (
+              // Collapse icon (double arrow left/down)
+              <path
+                d="M18 12l-3 3-3-3m-6 3l-3 3-3-3"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            )}
           </svg>
         </button>
       );
@@ -570,15 +631,16 @@ export function ChatWrapper({
       <div className={containerClasses} style={config.customStyles}>
         <div className="chat-wrapper__header">
           <h2 className="chat-wrapper__title">{config.appName}</h2>
-          {renderCloseButton()}
-          {streamingStatus && (
-            <div className="chat-wrapper__status">{streamingStatus}</div>
-          )}
+          <div className="chat-wrapper__header-controls">
+            {renderCollapseButton()}
+            {renderCloseButton()}
+          </div>
         </div>
 
-        {renderThinkingIndicator()}
+        {/* {renderThinkingIndicator()} */}
 
-        <div className="chat-wrapper__messages">
+        {!isCollapsed && (
+          <div className="chat-wrapper__messages">
           {messages.map((message) => (
             <div
               key={message.id}
@@ -586,13 +648,13 @@ export function ChatWrapper({
             >
               <div className="chat-wrapper__message-content">
                 {/* Assistant message with reasoning */}
-                {message.role === "assistant" && message.isStreaming && isThinking ? (
+                {message.role === "assistant" &&
+                message.isStreaming &&
+                isThinking ? (
                   <div className="chat-wrapper__message-with-reasoning">
                     <Reasoning isStreaming={isThinking}>
-                      <ReasoningTrigger title="Planning Brief" />
-                      <ReasoningContent>
-                        {reasoningContent}
-                      </ReasoningContent>
+                      <ReasoningTrigger title="Thinking..." />
+                      <ReasoningContent>{reasoningContent}</ReasoningContent>
                     </Reasoning>
                     {message.content && (
                       <div className="chat-wrapper__markdown-content">
@@ -616,7 +678,9 @@ export function ChatWrapper({
                               );
                             },
                             p: ({ children }) => (
-                              <p className="chat-wrapper__paragraph">{children}</p>
+                              <p className="chat-wrapper__paragraph">
+                                {children}
+                              </p>
                             ),
                             h1: ({ children }) => (
                               <h1 className="chat-wrapper__heading-1">
@@ -634,9 +698,7 @@ export function ChatWrapper({
                               </h3>
                             ),
                             ul: ({ children }) => (
-                              <ul className="chat-wrapper__list">
-                                {children}
-                              </ul>
+                              <ul className="chat-wrapper__list">{children}</ul>
                             ),
                             ol: ({ children }) => (
                               <ol className="chat-wrapper__ordered-list">
@@ -670,34 +732,41 @@ export function ChatWrapper({
                       </div>
                     )}
                   </div>
-                ) : message.isStreaming && message.content === "" && !isThinking ? (
+                ) : message.isStreaming &&
+                  message.content === "" &&
+                  !isThinking ? (
                   /* Show streaming indicator when no reasoning */
                   <div className="chat-wrapper__streaming-placeholder">
                     <Loader size={16} variant="dots" />
-                    <span>Creating your brief...</span>
-                    {streamingStatus && (
+                    <span>{`Thinking`}</span>
+                    {/* {streamingStatus && (
                       <span className="chat-wrapper__streaming-status">
                         ({streamingStatus})
                       </span>
-                    )}
+                    )} */}
                   </div>
                 ) : (
                   /* Regular message display with markdown */
                   <div className="chat-wrapper__regular-message">
                     {/* Display attached images for user messages */}
-                    {message.role === "user" && message.media && message.media.length > 0 && (
-                      <div className="chat-wrapper__media-grid">
-                        {message.media.map((imageData, index) => (
-                          <div key={index} className="chat-wrapper__media-item">
-                            <img
-                              src={imageData}
-                              alt={`Attached image ${index + 1}`}
-                              className="chat-wrapper__media-image"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    {message.role === "user" &&
+                      message.media &&
+                      message.media.length > 0 && (
+                        <div className="chat-wrapper__media-grid">
+                          {message.media.map((imageData, index) => (
+                            <div
+                              key={index}
+                              className="chat-wrapper__media-item"
+                            >
+                              <img
+                                src={imageData}
+                                alt={`Attached image ${index + 1}`}
+                                className="chat-wrapper__media-image"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
 
                     <div className="chat-wrapper__markdown-content">
                       <ReactMarkdown
@@ -720,7 +789,9 @@ export function ChatWrapper({
                             );
                           },
                           p: ({ children }) => (
-                            <p className="chat-wrapper__paragraph">{children}</p>
+                            <p className="chat-wrapper__paragraph">
+                              {children}
+                            </p>
                           ),
                           h1: ({ children }) => (
                             <h1 className="chat-wrapper__heading-1">
@@ -738,9 +809,7 @@ export function ChatWrapper({
                             </h3>
                           ),
                           ul: ({ children }) => (
-                            <ul className="chat-wrapper__list">
-                              {children}
-                            </ul>
+                            <ul className="chat-wrapper__list">{children}</ul>
                           ),
                           ol: ({ children }) => (
                             <ol className="chat-wrapper__ordered-list">
@@ -763,42 +832,98 @@ export function ChatWrapper({
                             </strong>
                           ),
                           em: ({ children }) => (
-                            <em className="chat-wrapper__italic">
-                              {children}
-                            </em>
+                            <em className="chat-wrapper__italic">{children}</em>
                           ),
                         }}
                       >
                         {message.content.trim()}
                       </ReactMarkdown>
                       {message.isStreaming && (
-                        <span className="chat-wrapper__streaming-indicator">...</span>
+                        <span className="chat-wrapper__streaming-indicator">
+                          ...
+                        </span>
                       )}
                     </div>
                   </div>
                 )}
               </div>
-              <div className="chat-wrapper__message-timestamp">
-                {message.timestamp.toLocaleTimeString()}
-              </div>
             </div>
           ))}
           <div ref={messagesEndRef} />
-        </div>
+          </div>
 
-        {renderToolResults()}
+          {renderToolResults()}
 
-        <MessageInput
-          onSend={handleSubmit}
-          disabled={isStreaming}
-          placeholder={config.placeholder || "Type a message..."}
-          value={input}
-          onChange={setInput}
-          onStop={stopGeneration}
-          onClear={clearChat}
-          showStopButton={isStreaming}
-          showClearButton={messages.length > 0}
-        />
+          <PromptInput
+          onSubmit={(e) => {
+            e.preventDefault();
+            const formData = new FormData(e.currentTarget);
+            const message = formData.get("message") as string;
+            if (message?.trim()) {
+              handleSubmit(message.trim());
+              setInput("");
+            }
+          }}
+        >
+          <PromptInputTextarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder={config.placeholder || "What would you like to know?"}
+            disabled={isStreaming}
+          />
+          <PromptInputToolbar>
+            <PromptInputTools>
+              {messages.length > 0 && (
+                <PromptInputButton
+                  variant="ghost"
+                  size="icon"
+                  onClick={clearChat}
+                  title="Clear chat"
+                  disabled={isStreaming}
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </PromptInputButton>
+              )}
+              {tools && Object.keys(tools).length > 0 && (
+                <PromptInputButton
+                  variant="ghost"
+                  size="sm"
+                  disabled={isStreaming}
+                  title={`${Object.keys(tools).length} tools available`}
+                >
+                  🛠️ Tools ({Object.keys(tools).length})
+                </PromptInputButton>
+              )}
+            </PromptInputTools>
+            <PromptInputSubmit
+              status={chatStatus}
+              disabled={!input.trim() && chatStatus !== "streaming"}
+              onClick={chatStatus === "streaming" ? stopGeneration : undefined}
+              title={
+                chatStatus === "streaming"
+                  ? "Stop generation"
+                  : chatStatus === "submitted"
+                  ? "Submitting..."
+                  : "Send message"
+              }
+            />
+          </PromptInputToolbar>
+        </PromptInput>
+        )}
 
         {config.onError && <div className="chat-wrapper__error-boundary" />}
       </div>

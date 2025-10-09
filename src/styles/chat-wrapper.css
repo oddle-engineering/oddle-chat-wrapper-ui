@@ -107,6 +107,7 @@
 
 /* Header */
 .chat-wrapper__header {
+  position: relative;
   padding: 16px;
   background-color: #f8fafc;
   border-bottom: 1px solid #e2e8f0;
@@ -588,9 +589,6 @@
 
 /* Close Button for Modal Mode */
 .chat-wrapper__close-button {
-  position: absolute;
-  top: 12px;
-  right: 12px;
   width: 36px;
   height: 36px;
   background-color: transparent;
@@ -638,6 +636,20 @@
   background-color: #2d3748;
 }
 
+/* Dark theme collapse button */
+.chat-wrapper--dark .chat-wrapper__collapse-button {
+  color: #cbd5e0;
+}
+
+.chat-wrapper--dark .chat-wrapper__collapse-button:hover {
+  background-color: #4a5568;
+  color: #f7fafc;
+}
+
+.chat-wrapper--dark .chat-wrapper__collapse-button:active {
+  background-color: #2d3748;
+}
+
 /* Modal positioning adjustments */
 .chat-wrapper--modal {
   position: fixed;
@@ -667,6 +679,88 @@
 .chat-wrapper--modal .chat-wrapper__header {
   position: relative;
   padding-right: 50px;
+}
+
+/* Header controls container */
+.chat-wrapper__header-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+/* Collapse Button Styles */
+.chat-wrapper__collapse-button {
+  width: 36px;
+  height: 36px;
+  background-color: transparent;
+  border: none;
+  border-radius: 18px;
+  color: #718096;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.chat-wrapper__collapse-button:hover {
+  background-color: #f1f5f9;
+  color: #2d3748;
+}
+
+.chat-wrapper__collapse-button:active {
+  background-color: #e2e8f0;
+}
+
+/* Collapsed State Styles */
+.chat-wrapper--collapsed {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Sidebar collapsed state */
+.chat-wrapper--sidebar.chat-wrapper--collapsed {
+  width: 60px;
+  overflow: hidden;
+}
+
+.chat-wrapper--sidebar.chat-wrapper--collapsed .chat-wrapper__title {
+  display: none;
+}
+
+.chat-wrapper--sidebar.chat-wrapper--collapsed .chat-wrapper__header {
+  padding: 12px;
+  text-align: center;
+}
+
+/* Fullscreen collapsed state */
+.chat-wrapper--fullscreen.chat-wrapper--collapsed {
+  height: 60px;
+  overflow: hidden;
+}
+
+.chat-wrapper--fullscreen.chat-wrapper--collapsed .chat-wrapper__title {
+  display: none;
+}
+
+.chat-wrapper--fullscreen.chat-wrapper--collapsed .chat-wrapper__header {
+  padding: 12px;
+  text-align: center;
+}
+
+
+/* When collapsed, center the collapse button */
+.chat-wrapper--sidebar.chat-wrapper--collapsed .chat-wrapper__header-controls {
+  position: static;
+  justify-content: center;
+}
+
+.chat-wrapper--fullscreen.chat-wrapper--collapsed .chat-wrapper__header-controls {
+  position: static;
+  justify-content: center;
 }
 
 /* Responsive modal adjustments */
@@ -942,10 +1036,452 @@
   display: block;
 }
 
+/* PromptInput Components */
+.chat-wrapper__prompt-input {
+  position: relative;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease-in-out;
+  overflow: hidden;
+}
+
+.chat-wrapper__prompt-input:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.chat-wrapper__prompt-textarea {
+  width: 100%;
+  min-height: 48px;
+  max-height: 164px;
+  padding: 12px 16px;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1f2937;
+  background: transparent;
+  field-sizing: content;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
+
+.chat-wrapper__prompt-textarea::placeholder {
+  color: #9ca3af;
+}
+
+.chat-wrapper__prompt-textarea::-webkit-scrollbar {
+  width: 4px;
+}
+
+.chat-wrapper__prompt-textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-wrapper__prompt-textarea::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 2px;
+}
+
+.chat-wrapper__prompt-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-top: 1px solid #f3f4f6;
+  background-color: #fafafa;
+}
+
+.chat-wrapper__prompt-tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Button Base Styles */
+.chat-wrapper__prompt-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: 1px solid transparent;
+  outline: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.chat-wrapper__prompt-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Button Variants */
+.chat-wrapper__prompt-button--default {
+  background-color: #3b82f6;
+  color: #ffffff;
+  border-color: #3b82f6;
+}
+
+.chat-wrapper__prompt-button--default:hover:not(:disabled) {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.chat-wrapper__prompt-button--ghost {
+  background-color: transparent;
+  color: #6b7280;
+  border-color: transparent;
+}
+
+.chat-wrapper__prompt-button--ghost:hover:not(:disabled) {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.chat-wrapper__prompt-button--outline {
+  background-color: transparent;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.chat-wrapper__prompt-button--outline:hover:not(:disabled) {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+}
+
+/* Button Sizes */
+.chat-wrapper__prompt-button--default {
+  height: 36px;
+  padding: 0 16px;
+  gap: 8px;
+}
+
+.chat-wrapper__prompt-button--icon {
+  height: 32px;
+  width: 32px;
+  padding: 0;
+}
+
+.chat-wrapper__prompt-button--sm {
+  height: 28px;
+  padding: 0 12px;
+  font-size: 12px;
+  gap: 6px;
+}
+
+.chat-wrapper__prompt-button--lg {
+  height: 44px;
+  padding: 0 20px;
+  font-size: 16px;
+  gap: 10px;
+}
+
+/* Submit Button Specific Styles */
+.chat-wrapper__prompt-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: 1px solid transparent;
+  outline: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.chat-wrapper__prompt-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Submit Button Variants */
+.chat-wrapper__prompt-submit--default {
+  background-color: #3b82f6;
+  color: #ffffff;
+  border-color: #3b82f6;
+}
+
+.chat-wrapper__prompt-submit--default:hover:not(:disabled) {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.chat-wrapper__prompt-submit--ghost {
+  background-color: transparent;
+  color: #6b7280;
+  border-color: transparent;
+}
+
+.chat-wrapper__prompt-submit--ghost:hover:not(:disabled) {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.chat-wrapper__prompt-submit--outline {
+  background-color: transparent;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.chat-wrapper__prompt-submit--outline:hover:not(:disabled) {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+}
+
+/* Submit Button Sizes */
+.chat-wrapper__prompt-submit--default {
+  height: 36px;
+  padding: 0 16px;
+  gap: 8px;
+}
+
+.chat-wrapper__prompt-submit--icon {
+  height: 32px;
+  width: 32px;
+  padding: 0;
+}
+
+.chat-wrapper__prompt-submit--sm {
+  height: 28px;
+  padding: 0 12px;
+  font-size: 12px;
+  gap: 6px;
+}
+
+.chat-wrapper__prompt-submit--lg {
+  height: 44px;
+  padding: 0 20px;
+  font-size: 16px;
+  gap: 10px;
+}
+
+/* Stop Button Styling */
+.chat-wrapper__prompt-submit--stop {
+  background-color: #ef4444;
+  border-color: #ef4444;
+  color: #ffffff;
+}
+
+.chat-wrapper__prompt-submit--stop:hover:not(:disabled) {
+  background-color: #dc2626;
+  border-color: #dc2626;
+}
+
+/* Icon Styles */
+.chat-wrapper__prompt-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.chat-wrapper__prompt-icon--spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Select Components */
+.chat-wrapper__prompt-select {
+  appearance: none;
+  background-color: transparent;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.chat-wrapper__prompt-select:hover {
+  border-color: #9ca3af;
+}
+
+.chat-wrapper__prompt-select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.chat-wrapper__prompt-select-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: transparent;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s;
+  min-width: 120px;
+}
+
+.chat-wrapper__prompt-select-trigger:hover {
+  border-color: #9ca3af;
+  background-color: #f9fafb;
+}
+
+.chat-wrapper__prompt-select-trigger:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.chat-wrapper__prompt-select-content {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 50;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.chat-wrapper__prompt-select-item {
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.chat-wrapper__prompt-select-item:hover {
+  background-color: #f3f4f6;
+}
+
+.chat-wrapper__prompt-select-item[data-selected="true"] {
+  background-color: #3b82f6;
+  color: #ffffff;
+}
+
+.chat-wrapper__prompt-select-value {
+  font-size: 14px;
+  color: #374151;
+}
+
 /* Dark Theme Styles */
 .chat-wrapper--dark .chat-wrapper__reasoning {
   border-color: #4a5568;
   background-color: #2d3748;
+}
+
+.chat-wrapper--dark .chat-wrapper__prompt-input {
+  background-color: #2d3748;
+  border-color: #4a5568;
+}
+
+.chat-wrapper--dark .chat-wrapper__prompt-input:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.chat-wrapper--dark .chat-wrapper__prompt-textarea {
+  color: #f7fafc;
+}
+
+.chat-wrapper--dark .chat-wrapper__prompt-textarea::placeholder {
+  color: #a0aec0;
+}
+
+.chat-wrapper--dark .chat-wrapper__prompt-textarea::-webkit-scrollbar-thumb {
+  background-color: #4a5568;
+}
+
+.chat-wrapper--dark .chat-wrapper__prompt-toolbar {
+  border-top-color: #4a5568;
+  background-color: #374151;
+}
+
+.chat-wrapper--dark .chat-wrapper__prompt-button--ghost {
+  color: #a0aec0;
+}
+
+.chat-wrapper--dark .chat-wrapper__prompt-button--ghost:hover:not(:disabled) {
+  background-color: #4a5568;
+  color: #f7fafc;
+}
+
+.chat-wrapper--dark .chat-wrapper__prompt-button--outline {
+  color: #f7fafc;
+  border-color: #4a5568;
+}
+
+.chat-wrapper--dark .chat-wrapper__prompt-button--outline:hover:not(:disabled) {
+  background-color: #374151;
+  border-color: #718096;
+}
+
+.chat-wrapper--dark .chat-wrapper__prompt-submit--ghost {
+  color: #a0aec0;
+}
+
+.chat-wrapper--dark .chat-wrapper__prompt-submit--ghost:hover:not(:disabled) {
+  background-color: #4a5568;
+  color: #f7fafc;
+}
+
+.chat-wrapper--dark .chat-wrapper__prompt-select {
+  border-color: #4a5568;
+  color: #f7fafc;
+  background-color: #2d3748;
+}
+
+.chat-wrapper--dark .chat-wrapper__prompt-select:hover {
+  border-color: #718096;
+}
+
+.chat-wrapper--dark .chat-wrapper__prompt-select-trigger {
+  border-color: #4a5568;
+  color: #f7fafc;
+  background-color: transparent;
+}
+
+.chat-wrapper--dark .chat-wrapper__prompt-select-trigger:hover {
+  border-color: #718096;
+  background-color: #374151;
+}
+
+.chat-wrapper--dark .chat-wrapper__prompt-select-content {
+  background-color: #2d3748;
+  border-color: #4a5568;
+}
+
+.chat-wrapper--dark .chat-wrapper__prompt-select-item {
+  color: #f7fafc;
+}
+
+.chat-wrapper--dark .chat-wrapper__prompt-select-item:hover {
+  background-color: #4a5568;
+}
+
+.chat-wrapper--dark .chat-wrapper__prompt-select-value {
+  color: #f7fafc;
 }
 
 .chat-wrapper--dark .chat-wrapper__reasoning-content {

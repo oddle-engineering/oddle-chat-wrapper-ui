@@ -1,3 +1,4 @@
+import { default as default_2 } from 'react';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { ReactNode } from 'react';
 
@@ -32,6 +33,8 @@ export declare type ChatMode = 'sidebar' | 'fullscreen' | 'modal' | 'embedded';
 
 export declare type ChatPosition = 'left' | 'right';
 
+export declare type ChatStatus = 'idle' | 'submitted' | 'streaming' | 'error';
+
 export declare type ChatTheme = 'light' | 'dark' | 'auto';
 
 export declare function ChatWrapper({ apiUrl, config, tools, initialMessages, }: ChatWrapperProps): JSX_2.Element | null;
@@ -62,6 +65,70 @@ export declare interface Message {
     timestamp: Date;
     isStreaming?: boolean;
     media?: string[];
+}
+
+export declare const PromptInput: ({ className, ...props }: PromptInputProps) => JSX_2.Element;
+
+export declare const PromptInputButton: ({ variant, size, className, children, ...props }: PromptInputButtonProps) => JSX_2.Element;
+
+declare interface PromptInputButtonProps extends default_2.ButtonHTMLAttributes<HTMLButtonElement> {
+    variant?: 'default' | 'ghost' | 'outline';
+    size?: 'default' | 'icon' | 'sm' | 'lg';
+}
+
+export declare const PromptInputModelSelect: ({ className, children, ...props }: PromptInputModelSelectProps) => JSX_2.Element;
+
+export declare const PromptInputModelSelectContent: ({ className, ...props }: PromptInputModelSelectContentProps) => JSX_2.Element;
+
+declare interface PromptInputModelSelectContentProps extends default_2.HTMLAttributes<HTMLDivElement> {
+}
+
+export declare const PromptInputModelSelectItem: ({ className, value, ...props }: PromptInputModelSelectItemProps) => JSX_2.Element;
+
+declare interface PromptInputModelSelectItemProps extends default_2.HTMLAttributes<HTMLDivElement> {
+    value: string;
+}
+
+declare interface PromptInputModelSelectProps extends default_2.SelectHTMLAttributes<HTMLSelectElement> {
+}
+
+export declare const PromptInputModelSelectTrigger: ({ className, children, ...props }: PromptInputModelSelectTriggerProps) => JSX_2.Element;
+
+declare interface PromptInputModelSelectTriggerProps extends default_2.ButtonHTMLAttributes<HTMLButtonElement> {
+}
+
+export declare const PromptInputModelSelectValue: ({ className, placeholder, ...props }: PromptInputModelSelectValueProps) => JSX_2.Element;
+
+declare interface PromptInputModelSelectValueProps extends default_2.HTMLAttributes<HTMLSpanElement> {
+    placeholder?: string;
+}
+
+declare interface PromptInputProps extends default_2.HTMLAttributes<HTMLFormElement> {
+}
+
+export declare const PromptInputSubmit: ({ className, variant, size, status, children, disabled, ...props }: PromptInputSubmitProps) => JSX_2.Element;
+
+declare interface PromptInputSubmitProps extends default_2.ButtonHTMLAttributes<HTMLButtonElement> {
+    variant?: 'default' | 'ghost' | 'outline';
+    size?: 'default' | 'icon' | 'sm' | 'lg';
+    status?: ChatStatus;
+}
+
+export declare const PromptInputTextarea: default_2.ForwardRefExoticComponent<PromptInputTextareaProps & default_2.RefAttributes<HTMLTextAreaElement>>;
+
+declare interface PromptInputTextareaProps extends default_2.TextareaHTMLAttributes<HTMLTextAreaElement> {
+    minHeight?: number;
+    maxHeight?: number;
+}
+
+export declare const PromptInputToolbar: ({ className, ...props }: PromptInputToolbarProps) => JSX_2.Element;
+
+declare interface PromptInputToolbarProps extends default_2.HTMLAttributes<HTMLDivElement> {
+}
+
+export declare const PromptInputTools: ({ className, ...props }: PromptInputToolsProps) => JSX_2.Element;
+
+declare interface PromptInputToolsProps extends default_2.HTMLAttributes<HTMLDivElement> {
 }
 
 export declare function Reasoning({ children }: ReasoningProps): JSX_2.Element;
