@@ -20,6 +20,8 @@ export function ChatWrapper({
   tools,
   initialMessages = [],
 }: ChatWrapperProps) {
+  // Debug: Log the configuration
+  console.log('ChatWrapper config:', config);
   // Core chat state
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
@@ -547,47 +549,24 @@ export function ChatWrapper({
 
   // Render collapse button for sidebar and fullscreen modes (only when expanded)
   const renderCollapseButton = () => {
-    if ((config.mode === "sidebar" || config.mode === "fullscreen") && !isCollapsed) {
+    const shouldShow = (config.mode === "sidebar" || config.mode === "fullscreen") && !isCollapsed;
+    console.log('renderCollapseButton - mode:', config.mode, 'isCollapsed:', isCollapsed, 'shouldShow:', shouldShow);
+    
+    if (shouldShow) {
       return (
         <button
           className="chat-wrapper__collapse-button"
           onClick={toggleCollapse}
           title="Collapse chat"
+          style={{ background: 'red', color: 'white' }} // Temporary debug style
         >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M18 12l-3 3-3-3m-6 3l-3 3-3-3"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          ⬇
         </button>
       );
     }
     return null;
   };
 
-  // Render thinking indicator
-  const renderThinkingIndicator = () => {
-    if (!isThinking || !reasoningContent) return null;
-
-    return (
-      <div className="chat-wrapper__thinking">
-        <div className="chat-wrapper__thinking-content">
-          <span className="chat-wrapper__thinking-spinner" />
-          <span>{reasoningContent}</span>
-        </div>
-      </div>
-    );
-  };
 
   // Render tool results panel (if enabled)
   const renderToolResults = () => {
