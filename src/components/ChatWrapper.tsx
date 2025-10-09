@@ -445,20 +445,51 @@ export function ChatWrapper({
     }
   }, []);
 
-  // Clear chat
-  const clearChat = useCallback(() => {
-    setMessages(initialMessages);
-    setConversationUuid(null);
-    setToolResults([]);
-    setTodos([]);
-    setBriefs([]);
-    setUploadedMedia([]);
-    setChatStatus("idle");
-    setStreamingStatus("");
-    setIsThinking(false);
-    setReasoningContent("");
-    console.log("Chat cleared");
-  }, [initialMessages]);
+  // Handle file upload
+  const handleFileUpload = useCallback(async (files: File[]) => {
+    console.log("Files selected:", files);
+
+    const newMedia: string[] = [];
+
+    for (const file of files) {
+      try {
+        // Convert file to base64 for images or read as text for text files
+        if (file.type.startsWith("image/")) {
+          const reader = new FileReader();
+          const result = await new Promise<string>((resolve, reject) => {
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+          newMedia.push(result);
+        } else if (
+          file.type.startsWith("text/") ||
+          file.name.endsWith(".txt")
+        ) {
+          const reader = new FileReader();
+          const text = await new Promise<string>((resolve, reject) => {
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsText(file);
+          });
+          // For text files, we can add them as a message or store as metadata
+          console.log("Text file content:", text);
+          // Could add as a system message or handle differently
+        } else {
+          console.log("File type not supported for preview:", file.type);
+          // For other files, just store the name/metadata
+          newMedia.push(`data:application/octet-stream;base64,${file.name}`);
+        }
+      } catch (error) {
+        console.error("Error processing file:", error);
+      }
+    }
+
+    if (newMedia.length > 0) {
+      setUploadedMedia((prev) => [...prev, ...newMedia]);
+      console.log("Added media:", newMedia);
+    }
+  }, []);
 
   // Modal controls
   const openModal = useCallback(() => {
@@ -509,7 +540,9 @@ export function ChatWrapper({
     config.position && `chat-wrapper--${config.position}`,
     config.theme && `chat-wrapper--${config.theme}`,
     isCollapsed && "chat-wrapper--collapsed",
-    currentMode === "embedded" && config.constrainedHeight && "chat-wrapper--constrained"
+    currentMode === "embedded" &&
+      config.constrainedHeight &&
+      "chat-wrapper--constrained"
   );
 
   // Render modal overlay if needed
@@ -960,14 +993,106 @@ export function ChatWrapper({
 
             {renderToolResults()}
 
+            {/* Media preview section */}
+            {uploadedMedia.length > 0 && (
+              <div
+                style={{
+                  padding: "12px 16px",
+                  borderTop: "1px solid #e2e8f0",
+                  backgroundColor: "#f8fafc",
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "8px",
+                  alignItems: "center",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "12px",
+                    color: "#6b7280",
+                    fontWeight: "500",
+                  }}
+                >
+                  {uploadedMedia.length} file
+                  {uploadedMedia.length > 1 ? "s" : ""} attached:
+                </span>
+                {uploadedMedia.map((media, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      position: "relative",
+                      display: "inline-block",
+                    }}
+                  >
+                    {media.startsWith("data:image/") ? (
+                      <img
+                        src={media}
+                        alt={`Attachment ${index + 1}`}
+                        style={{
+                          width: "40px",
+                          height: "40px",
+                          objectFit: "cover",
+                          borderRadius: "4px",
+                          border: "1px solid #e2e8f0",
+                        }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: "40px",
+                          height: "40px",
+                          backgroundColor: "#e2e8f0",
+                          borderRadius: "4px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "12px",
+                          color: "#6b7280",
+                        }}
+                      >
+                        📎
+                      </div>
+                    )}
+                    <button
+                      onClick={() => {
+                        setUploadedMedia((prev) =>
+                          prev.filter((_, i) => i !== index)
+                        );
+                      }}
+                      style={{
+                        position: "absolute",
+                        top: "-4px",
+                        right: "-4px",
+                        width: "16px",
+                        height: "16px",
+                        borderRadius: "50%",
+                        backgroundColor: "#ef4444",
+                        color: "white",
+                        border: "none",
+                        fontSize: "10px",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                      title="Remove attachment"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <PromptInput
               onSubmit={(e) => {
                 e.preventDefault();
                 const formData = new FormData(e.currentTarget);
                 const message = formData.get("message") as string;
                 if (message?.trim()) {
-                  handleSubmit(message.trim());
+                  handleSubmit(message.trim(), uploadedMedia);
                   setInput("");
+                  setUploadedMedia([]); // Clear uploaded media after sending
                 }
               }}
             >
@@ -981,13 +1106,33 @@ export function ChatWrapper({
               />
               <PromptInputToolbar>
                 <PromptInputTools>
-                  {messages.length > 0 && (
+                  {config.features?.fileUpload && (
                     <PromptInputButton
                       variant="ghost"
                       size="icon"
-                      onClick={clearChat}
-                      title="Clear chat"
+                      onClick={() => {
+                        const input = document.createElement("input");
+                        input.type = "file";
+                        input.accept = "image/*,text/*,.pdf,.doc,.docx";
+                        input.multiple = true;
+                        input.onchange = (e) => {
+                          const files = (e.target as HTMLInputElement).files;
+                          if (files) {
+                            handleFileUpload(Array.from(files));
+                          }
+                        };
+                        input.click();
+                      }}
+                      title={
+                        uploadedMedia.length > 0
+                          ? `${uploadedMedia.length} file(s) attached`
+                          : "Attach files"
+                      }
                       disabled={isStreaming}
+                      style={{
+                        position: "relative",
+                        color: uploadedMedia.length > 0 ? "#3b82f6" : undefined,
+                      }}
                     >
                       <svg
                         width="16"
@@ -997,13 +1142,36 @@ export function ChatWrapper({
                         xmlns="http://www.w3.org/2000/svg"
                       >
                         <path
-                          d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"
+                          d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49L13.1 2.41a4 4 0 015.66 5.66L9.41 17.41a2 2 0 01-2.83-2.83L15.9 5.24"
                           stroke="currentColor"
                           strokeWidth="2"
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         />
                       </svg>
+                      {uploadedMedia.length > 0 && (
+                        <span
+                          style={{
+                            position: "absolute",
+                            top: "-2px",
+                            right: "-2px",
+                            backgroundColor: "#3b82f6",
+                            color: "white",
+                            borderRadius: "50%",
+                            width: "12px",
+                            height: "12px",
+                            fontSize: "8px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          {uploadedMedia.length > 9
+                            ? "9+"
+                            : uploadedMedia.length}
+                        </span>
+                      )}
                     </PromptInputButton>
                   )}
                 </PromptInputTools>
