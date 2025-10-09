@@ -527,11 +527,9 @@
   color: #cbd5e0;
 }
 
-/* Bubble Button for Modal Mode */
+/* Bubble Button for Modal, Sidebar (collapsed), and Fullscreen (collapsed) Modes */
 .chat-wrapper__bubble-button {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
   width: auto;
   min-width: 60px;
   height: 60px;
@@ -551,6 +549,40 @@
   font-family: inherit;
   font-size: 14px;
   font-weight: 500;
+}
+
+/* Default positioning for modal mode */
+.chat-wrapper__bubble-button {
+  bottom: 20px;
+  right: 20px;
+}
+
+/* Positioning for sidebar mode when collapsed - inherit from position variants */
+.chat-wrapper--sidebar.chat-wrapper--collapsed.chat-wrapper--left .chat-wrapper__bubble-button {
+  left: 20px;
+  bottom: 20px;
+  right: auto;
+}
+
+.chat-wrapper--sidebar.chat-wrapper--collapsed.chat-wrapper--right .chat-wrapper__bubble-button {
+  right: 20px;
+  bottom: 20px;
+  left: auto;
+}
+
+/* For sidebar without specific position, default to right */
+.chat-wrapper--sidebar.chat-wrapper--collapsed .chat-wrapper__bubble-button {
+  right: 20px;
+  bottom: 20px;
+  left: auto;
+}
+
+/* Positioning for fullscreen mode when collapsed */
+.chat-wrapper--fullscreen.chat-wrapper--collapsed .chat-wrapper__bubble-button {
+  top: 20px;
+  left: 20px;
+  bottom: auto;
+  right: auto;
 }
 
 .chat-wrapper__bubble-button:hover {
@@ -716,52 +748,7 @@
   background-color: #e2e8f0;
 }
 
-/* Collapsed State Styles */
-.chat-wrapper--collapsed {
-  transition: all 0.3s ease-in-out;
-}
-
-/* Sidebar collapsed state */
-.chat-wrapper--sidebar.chat-wrapper--collapsed {
-  width: 60px;
-  overflow: hidden;
-}
-
-.chat-wrapper--sidebar.chat-wrapper--collapsed .chat-wrapper__title {
-  display: none;
-}
-
-.chat-wrapper--sidebar.chat-wrapper--collapsed .chat-wrapper__header {
-  padding: 12px;
-  text-align: center;
-}
-
-/* Fullscreen collapsed state */
-.chat-wrapper--fullscreen.chat-wrapper--collapsed {
-  height: 60px;
-  overflow: hidden;
-}
-
-.chat-wrapper--fullscreen.chat-wrapper--collapsed .chat-wrapper__title {
-  display: none;
-}
-
-.chat-wrapper--fullscreen.chat-wrapper--collapsed .chat-wrapper__header {
-  padding: 12px;
-  text-align: center;
-}
-
-
-/* When collapsed, center the collapse button */
-.chat-wrapper--sidebar.chat-wrapper--collapsed .chat-wrapper__header-controls {
-  position: static;
-  justify-content: center;
-}
-
-.chat-wrapper--fullscreen.chat-wrapper--collapsed .chat-wrapper__header-controls {
-  position: static;
-  justify-content: center;
-}
+/* Note: Collapsed states now use bubble button instead of showing collapsed header */
 
 /* Responsive modal adjustments */
 @media (max-width: 768px) {

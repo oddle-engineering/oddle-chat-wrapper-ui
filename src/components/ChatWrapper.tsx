@@ -472,14 +472,24 @@ export function ChatWrapper({
     return null;
   };
 
-  // Render bubble button for modal mode
+  // Render bubble button for modal, sidebar (collapsed), and fullscreen (collapsed) modes
   const renderBubbleButton = () => {
-    if (config.mode === "modal" && !isModalOpen) {
+    const shouldShowBubble = 
+      (config.mode === "modal" && !isModalOpen) ||
+      (config.mode === "sidebar" && isCollapsed) ||
+      (config.mode === "fullscreen" && isCollapsed);
+
+    if (shouldShowBubble) {
+      const handleClick = config.mode === "modal" ? openModal : toggleCollapse;
+      const title = config.mode === "modal" 
+        ? `Open ${config.appName}` 
+        : `Expand ${config.appName}`;
+
       return (
         <button
           className="chat-wrapper__bubble-button"
-          onClick={openModal}
-          title={`Open ${config.appName}`}
+          onClick={handleClick}
+          title={title}
         >
           <svg
             width="24"
@@ -535,14 +545,14 @@ export function ChatWrapper({
     return null;
   };
 
-  // Render collapse button for sidebar and fullscreen modes
+  // Render collapse button for sidebar and fullscreen modes (only when expanded)
   const renderCollapseButton = () => {
-    if (config.mode === "sidebar" || config.mode === "fullscreen") {
+    if ((config.mode === "sidebar" || config.mode === "fullscreen") && !isCollapsed) {
       return (
         <button
           className="chat-wrapper__collapse-button"
           onClick={toggleCollapse}
-          title={isCollapsed ? "Expand chat" : "Collapse chat"}
+          title="Collapse chat"
         >
           <svg
             width="20"
@@ -551,25 +561,13 @@ export function ChatWrapper({
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
-            {isCollapsed ? (
-              // Expand icon (double arrow right/up)
-              <path
-                d="M6 12l3-3 3 3m6-3l3-3 3 3"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            ) : (
-              // Collapse icon (double arrow left/down)
-              <path
-                d="M18 12l-3 3-3-3m-6 3l-3 3-3-3"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            )}
+            <path
+              d="M18 12l-3 3-3-3m-6 3l-3 3-3-3"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </button>
       );
@@ -621,7 +619,12 @@ export function ChatWrapper({
   };
 
   // For modal mode, only render when open
+  // For sidebar and fullscreen modes, render bubble when collapsed
   if (config.mode === "modal" && !isModalOpen) {
+    return renderBubbleButton();
+  }
+
+  if ((config.mode === "sidebar" || config.mode === "fullscreen") && isCollapsed) {
     return renderBubbleButton();
   }
 
@@ -640,6 +643,7 @@ export function ChatWrapper({
         {/* {renderThinkingIndicator()} */}
 
         {!isCollapsed && (
+          <>
           <div className="chat-wrapper__messages">
           {messages.map((message) => (
             <div
@@ -923,6 +927,7 @@ export function ChatWrapper({
             />
           </PromptInputToolbar>
         </PromptInput>
+          </>
         )}
 
         {config.onError && <div className="chat-wrapper__error-boundary" />}
