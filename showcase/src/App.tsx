@@ -5,6 +5,10 @@ import { apiConfig, getConfigSummary } from "./config/apiConfig";
 import { ChatWrapper, ChatWrapperProps, ChatMode, ChatPosition, ChatTheme } from "@oddle/chat-wrapper-ui";
 import { EnhancedBriefPlannerDemo } from "./components/EnhancedBriefPlannerDemo";
 import { ToolsDocumentation } from "./components/ToolsDocumentation";
+import { IntegratedChatDemo } from "./components/IntegratedChatDemo";
+import { UD21Demo } from "./components/UD21Demo";
+import { ReserveDemo } from "./components/ReserveDemo";
+import { ShopDemo } from "./components/ShopDemo";
 
 function App() {
   const [activeDemo, setActiveDemo] = useState<string | null>(null);
@@ -83,6 +87,54 @@ function App() {
         appName: "Brief Planner",
         theme: "light" as ChatTheme,
         placeholder: "Create marketing briefs and manage tasks...",
+      },
+    },
+    {
+      id: "integrated-workspace",
+      title: "Integrated Workspace",
+      description:
+        "Chat interface with integrated TodoPanel and EmailPanel for comprehensive task and communication management.",
+      config: {
+        mode: "embedded" as ChatMode,
+        appName: "Integrated Workspace",
+        theme: "light" as ChatTheme,
+        placeholder: "Manage todos and emails with AI assistance...",
+      },
+    },
+    {
+      id: "ud21-demo",
+      title: "UD21 Email System",
+      description:
+        "Email management system with create_email and update_email tools for comprehensive email automation.",
+      config: {
+        mode: "embedded" as ChatMode,
+        appName: "UD21 Email System",
+        theme: "light" as ChatTheme,
+        placeholder: "Manage emails with AI assistance...",
+      },
+    },
+    {
+      id: "reserve-demo",
+      title: "Restaurant Reservations",
+      description:
+        "Restaurant reservation management with update_reservation tools for booking and table management.",
+      config: {
+        mode: "embedded" as ChatMode,
+        appName: "Restaurant Reservations",
+        theme: "light" as ChatTheme,
+        placeholder: "Manage reservations with AI help...",
+      },
+    },
+    {
+      id: "shop-demo",
+      title: "Shop Inventory",
+      description:
+        "Inventory management system with add_random_item_to_shop and comprehensive stock control tools.",
+      config: {
+        mode: "embedded" as ChatMode,
+        appName: "Shop Inventory",
+        theme: "light" as ChatTheme,
+        placeholder: "Manage inventory with AI assistance...",
       },
     },
   ];
@@ -628,6 +680,94 @@ function App() {
         </div>
       )}
 
+      {/* Integrated Workspace Demo Container */}
+      {activeDemo === "integrated-workspace" && (
+        <div
+          style={{
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "95vw",
+            maxWidth: "1400px",
+            height: "85vh",
+            zIndex: 1000,
+            border: "2px solid #4299e1",
+            borderRadius: "12px",
+            overflow: "hidden",
+            backgroundColor: "white",
+          }}
+        >
+          <IntegratedChatDemo />
+        </div>
+      )}
+
+      {/* UD21 Demo Container */}
+      {activeDemo === "ud21-demo" && (
+        <div
+          style={{
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "95vw",
+            maxWidth: "1200px",
+            height: "85vh",
+            zIndex: 1000,
+            border: "2px solid #7c3aed",
+            borderRadius: "12px",
+            overflow: "hidden",
+            backgroundColor: "white",
+          }}
+        >
+          <UD21Demo />
+        </div>
+      )}
+
+      {/* Reserve Demo Container */}
+      {activeDemo === "reserve-demo" && (
+        <div
+          style={{
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "95vw",
+            maxWidth: "1200px",
+            height: "85vh",
+            zIndex: 1000,
+            border: "2px solid #dc2626",
+            borderRadius: "12px",
+            overflow: "hidden",
+            backgroundColor: "white",
+          }}
+        >
+          <ReserveDemo />
+        </div>
+      )}
+
+      {/* Shop Demo Container */}
+      {activeDemo === "shop-demo" && (
+        <div
+          style={{
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "95vw",
+            maxWidth: "1200px",
+            height: "85vh",
+            zIndex: 1000,
+            border: "2px solid #059669",
+            borderRadius: "12px",
+            overflow: "hidden",
+            backgroundColor: "white",
+          }}
+        >
+          <ShopDemo />
+        </div>
+      )}
+
       {/* Embedded Demo Container */}
       {activeDemo === "embedded" && (
         <div
@@ -651,6 +791,10 @@ function App() {
       {activeDemo &&
         activeDemo !== "embedded" &&
         activeDemo !== "brief-planner" &&
+        activeDemo !== "integrated-workspace" &&
+        activeDemo !== "ud21-demo" &&
+        activeDemo !== "reserve-demo" &&
+        activeDemo !== "shop-demo" &&
         activeDemo !== "modal" && (
           <>
             {activeDemo === "fullscreen" && (
@@ -685,9 +829,9 @@ function App() {
       )}
 
       {/* Close button for special demos */}
-      {(activeDemo === "embedded" || activeDemo === "brief-planner") && (
+      {(activeDemo === "embedded" || activeDemo === "brief-planner" || activeDemo === "integrated-workspace" || activeDemo === "ud21-demo" || activeDemo === "reserve-demo" || activeDemo === "shop-demo") && (
         <>
-          {activeDemo === "brief-planner" && (
+          {(activeDemo === "brief-planner" || activeDemo === "integrated-workspace" || activeDemo === "ud21-demo" || activeDemo === "reserve-demo" || activeDemo === "shop-demo") && (
             <div className="active-demo-overlay" />
           )}
           <button
@@ -696,6 +840,14 @@ function App() {
           >
             {activeDemo === "brief-planner"
               ? "Close Brief Planner"
+              : activeDemo === "integrated-workspace"
+              ? "Close Integrated Workspace"
+              : activeDemo === "ud21-demo"
+              ? "Close UD21 Demo"
+              : activeDemo === "reserve-demo"
+              ? "Close Reserve Demo"
+              : activeDemo === "shop-demo"
+              ? "Close Shop Demo"
               : "Close Embedded Demo"}
           </button>
         </>

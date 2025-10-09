@@ -7,13 +7,15 @@ export function EnhancedBriefPlannerDemo() {
   const [briefs, setBriefs] = useState<any[]>([]);
 
   const chatProps: ChatWrapperProps = {
-    apiUrl: apiConfig.baseUrl,
+    apiUrl: apiConfig.baseUrl + '/api/brief-planner', // Using brief-planner endpoint
     config: {
       mode: "embedded",
       appName: "Middle Child Bar Brief Planner",
       theme: "light",
       placeholder: "Ask about Middle Child Bar planning, create todos, or generate briefs...",
-      endpoint: "brief-planner",
+      constrainedHeight: true, // Fill parent container completely
+      // Using default conversation endpoint instead of brief-planner
+      // endpoint: "brief-planner",  // Removed - now uses default conversation endpoint
       promptPath: "briefPlanner",
       features: {
         showToolResults: true,

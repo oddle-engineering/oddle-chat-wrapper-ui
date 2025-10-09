@@ -21,6 +21,7 @@ export interface StreamEvent {
   uuid?: string;
   result?: any;
   tool?: string;
+  parameters?: any[] | Record<string, any> | any;
   todos?: any[];
   briefs?: any[];
 }
@@ -45,6 +46,7 @@ export interface ChatConfig {
   welcomeMessage?: string;
   promptPath?: string;
   bubbleText?: string;
+  constrainedHeight?: boolean; // When true, embedded mode will fill parent container completely
   features?: {
     fileUpload?: boolean;
     voiceInput?: boolean;

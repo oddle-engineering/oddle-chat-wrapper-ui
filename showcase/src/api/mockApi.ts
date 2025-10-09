@@ -102,9 +102,9 @@ export function setupMockAPI(_baseUrl?: string) {
   window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     const url = typeof input === 'string' ? input : input.toString();
     
-    // Intercept brief-planner requests (new Latitude-style endpoint)
+    // Intercept brief-planner requests (legacy endpoint for backward compatibility)
     if (url.includes('/api/brief-planner') && init?.method === 'POST') {
-      console.log('Mock API: Intercepting brief-planner request');
+      console.log('Mock API: Intercepting brief-planner request (legacy)');
       const requestData = init.body ? JSON.parse(init.body as string) : {};
       return await mockAPI.sendBriefPlannerMessage(requestData);
     }
@@ -112,6 +112,15 @@ export function setupMockAPI(_baseUrl?: string) {
     // Intercept conversation init
     if (url.includes('/api/conversation/init') && init?.method === 'POST') {
       console.log('Mock API: Intercepting conversation init');
+      const requestData = init.body ? JSON.parse(init.body as string) : {};
+      
+      // If the request includes brief planner tools, use the Latitude mock
+      if (requestData.tools && requestData.tools.includes('create_brief')) {
+        console.log('Mock API: Using brief planner functionality for conversation init');
+        return await mockAPI.sendBriefPlannerMessage(requestData);
+      }
+      
+      // Otherwise use standard conversation init
       const data = await mockAPI.initConversation();
       return new Response(JSON.stringify(data), {
         headers: { 'Content-Type': 'application/json' }

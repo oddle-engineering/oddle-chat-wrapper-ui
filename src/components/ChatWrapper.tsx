@@ -57,7 +57,7 @@ export function ChatWrapper({
   // Log available tools for debugging
   useEffect(() => {
     if (tools && Object.keys(tools).length > 0) {
-      console.log("Available tools:", Object.keys(tools));
+      console.log("Available tools:", tools);
     }
   }, [tools]);
 
@@ -153,6 +153,53 @@ export function ChatWrapper({
 
         case "tool-result":
           console.log("Tool result received:", event);
+
+          // Auto-execute registered tools when receiving tool-result events
+          if (event.tool && tools && tools[event.tool]) {
+            try {
+              console.log(`Auto-executing tool: ${event.tool}`, event.data);
+              const toolFunction = tools[event.tool];
+
+              // Handle different parameter formats
+              let result;
+              result = toolFunction(event.data);
+
+              console.log(
+                `✅ Tool ${event.tool} executed successfully:`,
+                result
+              );
+
+              // Call onToolResult callback if provided to notify the parent component
+              if (config.onToolResult) {
+                config.onToolResult(event.tool, result);
+              }
+
+              // Update assistant message with tool execution confirmation if desired
+              if (result && result.message) {
+                updateAssistantMessage((msg) => ({
+                  ...msg,
+                  content: msg.content + `\n\n*${result.message}*`,
+                }));
+              }
+            } catch (error) {
+              console.error(`❌ Error executing tool ${event.tool}:`, error);
+
+              // Optionally update the UI to show the error
+              updateAssistantMessage((msg) => ({
+                ...msg,
+                content:
+                  msg.content +
+                  `\n\n*Error executing ${event.tool}: ${
+                    error instanceof Error ? error.message : "Unknown error"
+                  }*`,
+              }));
+            }
+          } else if (event.tool && tools) {
+            console.warn(
+              `⚠️ Tool ${event.tool} not found in registered tools. Available tools:`,
+              Object.keys(tools)
+            );
+          }
 
           // Handle different tool results
           if (event.tool && event.data) {
@@ -264,27 +311,16 @@ export function ChatWrapper({
         // Create abort controller for this request
         abortControllerRef.current = new AbortController();
 
-        const endpoint =
-          config.endpoint === "brief-planner"
-            ? `${apiUrl}/api/brief-planner`
-            : conversationUuid
-            ? `${apiUrl}/api/conversation/${conversationUuid}`
-            : `${apiUrl}/api/conversation/init`;
+        const endpoint = `${apiUrl}`;
 
-        const requestBody =
-          config.endpoint === "brief-planner"
-            ? {
-                messages: [...messages, userMessage],
-                promptPath: config.promptPath || "briefPlanner",
-                conversationUuid,
-                todos, // Send current todos to the API
-                briefs, // Send current briefs to the API
-                media: media || [], // Use media from function parameter, not uploadedMedia
-              }
-            : {
-                message: message.trim(),
-                tools: tools ? Object.keys(tools) : [],
-              };
+        const requestBody = {
+          messages: [...messages, userMessage],
+          promptPath: config.promptPath || "briefPlanner",
+          conversationUuid,
+          todos, // Send current todos to the API
+          briefs, // Send current briefs to the API
+          media: media || [], // Use media from function parameter, not uploadedMedia
+        };
 
         console.log("Sending request to:", endpoint);
         console.log("Request payload:", JSON.stringify(requestBody, null, 2));
@@ -435,16 +471,21 @@ export function ChatWrapper({
 
   // Collapse controls
   const toggleCollapse = useCallback(() => {
-    setIsCollapsed(prev => !prev);
+    setIsCollapsed((prev) => !prev);
   }, []);
 
   // Mode switching controls
   const toggleFullscreen = useCallback(() => {
-    setCurrentMode(prev => prev === "sidebar" ? "fullscreen" : "sidebar");
+    setCurrentMode((prev) => (prev === "sidebar" ? "fullscreen" : "sidebar"));
   }, []);
 
   // Handle escape key for modal
   useEffect(() => {
+    // Only run in browser environment
+    if (typeof window === "undefined" || typeof document === "undefined") {
+      return;
+    }
+
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape" && currentMode === "modal" && isModalOpen) {
         closeModal();
@@ -467,7 +508,8 @@ export function ChatWrapper({
     `chat-wrapper--${currentMode}`,
     config.position && `chat-wrapper--${config.position}`,
     config.theme && `chat-wrapper--${config.theme}`,
-    isCollapsed && "chat-wrapper--collapsed"
+    isCollapsed && "chat-wrapper--collapsed",
+    currentMode === "embedded" && config.constrainedHeight && "chat-wrapper--constrained"
   );
 
   // Render modal overlay if needed
@@ -480,16 +522,17 @@ export function ChatWrapper({
 
   // Render bubble button for modal, sidebar (collapsed), and fullscreen (collapsed) modes
   const renderBubbleButton = () => {
-    const shouldShowBubble = 
+    const shouldShowBubble =
       (currentMode === "modal" && !isModalOpen) ||
       (currentMode === "sidebar" && isCollapsed) ||
       (currentMode === "fullscreen" && isCollapsed);
 
     if (shouldShowBubble) {
       const handleClick = currentMode === "modal" ? openModal : toggleCollapse;
-      const title = currentMode === "modal" 
-        ? `Open ${config.appName}` 
-        : `Expand ${config.appName}`;
+      const title =
+        currentMode === "modal"
+          ? `Open ${config.appName}`
+          : `Expand ${config.appName}`;
 
       return (
         <button
@@ -551,14 +594,23 @@ export function ChatWrapper({
     return null;
   };
 
-  // Render fullscreen toggle button for sidebar mode
-  const renderFullscreenButton = () => {
-    if (currentMode === "sidebar" && !isCollapsed) {
+  // Render fullscreen toggle button for sidebar mode and minimize button for fullscreen mode
+  const renderModeToggleButton = () => {
+    if (
+      (currentMode === "sidebar" || currentMode === "fullscreen") &&
+      !isCollapsed
+    ) {
+      const isFullscreen = currentMode === "fullscreen";
+
       return (
         <button
-          className="chat-wrapper__fullscreen-button"
+          className={
+            isFullscreen
+              ? "chat-wrapper__minimize-button"
+              : "chat-wrapper__fullscreen-button"
+          }
           onClick={toggleFullscreen}
-          title={currentMode === "sidebar" ? "Switch to fullscreen" : "Switch to sidebar"}
+          title={isFullscreen ? "Switch to sidebar" : "Switch to fullscreen"}
         >
           <svg
             width="20"
@@ -567,13 +619,25 @@ export function ChatWrapper({
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <path
-              d="M7 14H5v5h5v-2M5 10V5h5v2M17 14h2v5h-5v-2M19 10V5h-5v2"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+            {isFullscreen ? (
+              // Minimize icon (arrows pointing inward)
+              <path
+                d="M8 3v3a2 2 0 01-2 2H3M21 8h-3a2 2 0 01-2-2V3M3 16h3a2 2 0 012 2v3M16 21v-3a2 2 0 012-2h3"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            ) : (
+              // Fullscreen icon (arrows pointing outward)
+              <path
+                d="M7 14H5v5h5v-2M5 10V5h5v2M17 14h2v5h-5v-2M19 10V5h-5v2"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            )}
           </svg>
         </button>
       );
@@ -583,8 +647,10 @@ export function ChatWrapper({
 
   // Render collapse button for sidebar and fullscreen modes (only when expanded)
   const renderCollapseButton = () => {
-    const shouldShow = (currentMode === "sidebar" || currentMode === "fullscreen") && !isCollapsed;
-    
+    const shouldShow =
+      (currentMode === "sidebar" || currentMode === "fullscreen") &&
+      !isCollapsed;
+
     if (shouldShow) {
       return (
         <button
@@ -612,7 +678,6 @@ export function ChatWrapper({
     }
     return null;
   };
-
 
   // Render tool results panel (if enabled)
   const renderToolResults = () => {
@@ -649,7 +714,10 @@ export function ChatWrapper({
     return renderBubbleButton();
   }
 
-  if ((currentMode === "sidebar" || currentMode === "fullscreen") && isCollapsed) {
+  if (
+    (currentMode === "sidebar" || currentMode === "fullscreen") &&
+    isCollapsed
+  ) {
     return renderBubbleButton();
   }
 
@@ -660,7 +728,7 @@ export function ChatWrapper({
         <div className="chat-wrapper__header">
           <h2 className="chat-wrapper__title">{config.appName}</h2>
           <div className="chat-wrapper__header-controls">
-            {renderFullscreenButton()}
+            {renderModeToggleButton()}
             {renderCollapseButton()}
             {renderCloseButton()}
           </div>
@@ -670,289 +738,291 @@ export function ChatWrapper({
 
         {!isCollapsed && (
           <>
-          <div className="chat-wrapper__messages">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`chat-wrapper__message chat-wrapper__message--${message.role}`}
-            >
-              <div className="chat-wrapper__message-content">
-                {/* Assistant message with reasoning */}
-                {message.role === "assistant" &&
-                message.isStreaming &&
-                isThinking ? (
-                  <div className="chat-wrapper__message-with-reasoning">
-                    <Reasoning isStreaming={isThinking}>
-                      <ReasoningTrigger title="Thinking..." />
-                      <ReasoningContent>{reasoningContent}</ReasoningContent>
-                    </Reasoning>
-                    {message.content && (
-                      <div className="chat-wrapper__markdown-content">
-                        <ReactMarkdown
-                          components={{
-                            pre: ({ children }) => (
-                              <pre className="chat-wrapper__code-block">
-                                {children}
-                              </pre>
-                            ),
-                            code: ({ children, className }) => {
-                              const isInline = !className;
-                              return isInline ? (
-                                <code className="chat-wrapper__inline-code">
-                                  {children}
-                                </code>
-                              ) : (
-                                <code className="chat-wrapper__code">
-                                  {children}
-                                </code>
-                              );
-                            },
-                            p: ({ children }) => (
-                              <p className="chat-wrapper__paragraph">
-                                {children}
-                              </p>
-                            ),
-                            h1: ({ children }) => (
-                              <h1 className="chat-wrapper__heading-1">
-                                {children}
-                              </h1>
-                            ),
-                            h2: ({ children }) => (
-                              <h2 className="chat-wrapper__heading-2">
-                                {children}
-                              </h2>
-                            ),
-                            h3: ({ children }) => (
-                              <h3 className="chat-wrapper__heading-3">
-                                {children}
-                              </h3>
-                            ),
-                            ul: ({ children }) => (
-                              <ul className="chat-wrapper__list">{children}</ul>
-                            ),
-                            ol: ({ children }) => (
-                              <ol className="chat-wrapper__ordered-list">
-                                {children}
-                              </ol>
-                            ),
-                            li: ({ children }) => (
-                              <li className="chat-wrapper__list-item">
-                                {children}
-                              </li>
-                            ),
-                            blockquote: ({ children }) => (
-                              <blockquote className="chat-wrapper__blockquote">
-                                {children}
-                              </blockquote>
-                            ),
-                            strong: ({ children }) => (
-                              <strong className="chat-wrapper__bold">
-                                {children}
-                              </strong>
-                            ),
-                            em: ({ children }) => (
-                              <em className="chat-wrapper__italic">
-                                {children}
-                              </em>
-                            ),
-                          }}
-                        >
-                          {message.content.trim()}
-                        </ReactMarkdown>
+            <div className="chat-wrapper__messages">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`chat-wrapper__message chat-wrapper__message--${message.role}`}
+                >
+                  <div className="chat-wrapper__message-content">
+                    {/* Assistant message with reasoning */}
+                    {message.role === "assistant" &&
+                    message.isStreaming &&
+                    isThinking ? (
+                      <div className="chat-wrapper__message-with-reasoning">
+                        <Reasoning isStreaming={isThinking}>
+                          <ReasoningTrigger title="Thinking..." />
+                          <ReasoningContent>
+                            {reasoningContent}
+                          </ReasoningContent>
+                        </Reasoning>
+                        {message.content && (
+                          <div className="chat-wrapper__markdown-content">
+                            <ReactMarkdown
+                              components={{
+                                pre: ({ children }) => (
+                                  <pre className="chat-wrapper__code-block">
+                                    {children}
+                                  </pre>
+                                ),
+                                code: ({ children, className }) => {
+                                  const isInline = !className;
+                                  return isInline ? (
+                                    <code className="chat-wrapper__inline-code">
+                                      {children}
+                                    </code>
+                                  ) : (
+                                    <code className="chat-wrapper__code">
+                                      {children}
+                                    </code>
+                                  );
+                                },
+                                p: ({ children }) => (
+                                  <p className="chat-wrapper__paragraph">
+                                    {children}
+                                  </p>
+                                ),
+                                h1: ({ children }) => (
+                                  <h1 className="chat-wrapper__heading-1">
+                                    {children}
+                                  </h1>
+                                ),
+                                h2: ({ children }) => (
+                                  <h2 className="chat-wrapper__heading-2">
+                                    {children}
+                                  </h2>
+                                ),
+                                h3: ({ children }) => (
+                                  <h3 className="chat-wrapper__heading-3">
+                                    {children}
+                                  </h3>
+                                ),
+                                ul: ({ children }) => (
+                                  <ul className="chat-wrapper__list">
+                                    {children}
+                                  </ul>
+                                ),
+                                ol: ({ children }) => (
+                                  <ol className="chat-wrapper__ordered-list">
+                                    {children}
+                                  </ol>
+                                ),
+                                li: ({ children }) => (
+                                  <li className="chat-wrapper__list-item">
+                                    {children}
+                                  </li>
+                                ),
+                                blockquote: ({ children }) => (
+                                  <blockquote className="chat-wrapper__blockquote">
+                                    {children}
+                                  </blockquote>
+                                ),
+                                strong: ({ children }) => (
+                                  <strong className="chat-wrapper__bold">
+                                    {children}
+                                  </strong>
+                                ),
+                                em: ({ children }) => (
+                                  <em className="chat-wrapper__italic">
+                                    {children}
+                                  </em>
+                                ),
+                              }}
+                            >
+                              {message.content.trim()}
+                            </ReactMarkdown>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                ) : message.isStreaming &&
-                  message.content === "" &&
-                  !isThinking ? (
-                  /* Show streaming indicator when no reasoning */
-                  <div className="chat-wrapper__streaming-placeholder">
-                    <Loader size={16} variant="dots" />
-                    <span>{`Thinking`}</span>
-                    {/* {streamingStatus && (
+                    ) : message.isStreaming &&
+                      message.content === "" &&
+                      !isThinking ? (
+                      /* Show streaming indicator when no reasoning */
+                      <div className="chat-wrapper__streaming-placeholder">
+                        <Loader size={16} variant="dots" />
+                        <span>{`Thinking`}</span>
+                        {/* {streamingStatus && (
                       <span className="chat-wrapper__streaming-status">
                         ({streamingStatus})
                       </span>
                     )} */}
-                  </div>
-                ) : (
-                  /* Regular message display with markdown */
-                  <div className="chat-wrapper__regular-message">
-                    {/* Display attached images for user messages */}
-                    {message.role === "user" &&
-                      message.media &&
-                      message.media.length > 0 && (
-                        <div className="chat-wrapper__media-grid">
-                          {message.media.map((imageData, index) => (
-                            <div
-                              key={index}
-                              className="chat-wrapper__media-item"
-                            >
-                              <img
-                                src={imageData}
-                                alt={`Attached image ${index + 1}`}
-                                className="chat-wrapper__media-image"
-                              />
+                      </div>
+                    ) : (
+                      /* Regular message display with markdown */
+                      <div className="chat-wrapper__regular-message">
+                        {/* Display attached images for user messages */}
+                        {message.role === "user" &&
+                          message.media &&
+                          message.media.length > 0 && (
+                            <div className="chat-wrapper__media-grid">
+                              {message.media.map((imageData, index) => (
+                                <div
+                                  key={index}
+                                  className="chat-wrapper__media-item"
+                                >
+                                  <img
+                                    src={imageData}
+                                    alt={`Attached image ${index + 1}`}
+                                    className="chat-wrapper__media-image"
+                                  />
+                                </div>
+                              ))}
                             </div>
-                          ))}
+                          )}
+
+                        <div className="chat-wrapper__markdown-content">
+                          <ReactMarkdown
+                            components={{
+                              pre: ({ children }) => (
+                                <pre className="chat-wrapper__code-block">
+                                  {children}
+                                </pre>
+                              ),
+                              code: ({ children, className }) => {
+                                const isInline = !className;
+                                return isInline ? (
+                                  <code className="chat-wrapper__inline-code">
+                                    {children}
+                                  </code>
+                                ) : (
+                                  <code className="chat-wrapper__code">
+                                    {children}
+                                  </code>
+                                );
+                              },
+                              p: ({ children }) => (
+                                <p className="chat-wrapper__paragraph">
+                                  {children}
+                                </p>
+                              ),
+                              h1: ({ children }) => (
+                                <h1 className="chat-wrapper__heading-1">
+                                  {children}
+                                </h1>
+                              ),
+                              h2: ({ children }) => (
+                                <h2 className="chat-wrapper__heading-2">
+                                  {children}
+                                </h2>
+                              ),
+                              h3: ({ children }) => (
+                                <h3 className="chat-wrapper__heading-3">
+                                  {children}
+                                </h3>
+                              ),
+                              ul: ({ children }) => (
+                                <ul className="chat-wrapper__list">
+                                  {children}
+                                </ul>
+                              ),
+                              ol: ({ children }) => (
+                                <ol className="chat-wrapper__ordered-list">
+                                  {children}
+                                </ol>
+                              ),
+                              li: ({ children }) => (
+                                <li className="chat-wrapper__list-item">
+                                  {children}
+                                </li>
+                              ),
+                              blockquote: ({ children }) => (
+                                <blockquote className="chat-wrapper__blockquote">
+                                  {children}
+                                </blockquote>
+                              ),
+                              strong: ({ children }) => (
+                                <strong className="chat-wrapper__bold">
+                                  {children}
+                                </strong>
+                              ),
+                              em: ({ children }) => (
+                                <em className="chat-wrapper__italic">
+                                  {children}
+                                </em>
+                              ),
+                            }}
+                          >
+                            {message.content.trim()}
+                          </ReactMarkdown>
+                          {message.isStreaming && (
+                            <span className="chat-wrapper__streaming-indicator">
+                              ...
+                            </span>
+                          )}
                         </div>
-                      )}
-
-                    <div className="chat-wrapper__markdown-content">
-                      <ReactMarkdown
-                        components={{
-                          pre: ({ children }) => (
-                            <pre className="chat-wrapper__code-block">
-                              {children}
-                            </pre>
-                          ),
-                          code: ({ children, className }) => {
-                            const isInline = !className;
-                            return isInline ? (
-                              <code className="chat-wrapper__inline-code">
-                                {children}
-                              </code>
-                            ) : (
-                              <code className="chat-wrapper__code">
-                                {children}
-                              </code>
-                            );
-                          },
-                          p: ({ children }) => (
-                            <p className="chat-wrapper__paragraph">
-                              {children}
-                            </p>
-                          ),
-                          h1: ({ children }) => (
-                            <h1 className="chat-wrapper__heading-1">
-                              {children}
-                            </h1>
-                          ),
-                          h2: ({ children }) => (
-                            <h2 className="chat-wrapper__heading-2">
-                              {children}
-                            </h2>
-                          ),
-                          h3: ({ children }) => (
-                            <h3 className="chat-wrapper__heading-3">
-                              {children}
-                            </h3>
-                          ),
-                          ul: ({ children }) => (
-                            <ul className="chat-wrapper__list">{children}</ul>
-                          ),
-                          ol: ({ children }) => (
-                            <ol className="chat-wrapper__ordered-list">
-                              {children}
-                            </ol>
-                          ),
-                          li: ({ children }) => (
-                            <li className="chat-wrapper__list-item">
-                              {children}
-                            </li>
-                          ),
-                          blockquote: ({ children }) => (
-                            <blockquote className="chat-wrapper__blockquote">
-                              {children}
-                            </blockquote>
-                          ),
-                          strong: ({ children }) => (
-                            <strong className="chat-wrapper__bold">
-                              {children}
-                            </strong>
-                          ),
-                          em: ({ children }) => (
-                            <em className="chat-wrapper__italic">{children}</em>
-                          ),
-                        }}
-                      >
-                        {message.content.trim()}
-                      </ReactMarkdown>
-                      {message.isStreaming && (
-                        <span className="chat-wrapper__streaming-indicator">
-                          ...
-                        </span>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
             </div>
-          ))}
-          <div ref={messagesEndRef} />
-          </div>
 
-          {renderToolResults()}
+            {renderToolResults()}
 
-          <PromptInput
-          onSubmit={(e) => {
-            e.preventDefault();
-            const formData = new FormData(e.currentTarget);
-            const message = formData.get("message") as string;
-            if (message?.trim()) {
-              handleSubmit(message.trim());
-              setInput("");
-            }
-          }}
-        >
-          <PromptInputTextarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder={config.placeholder || "What would you like to know?"}
-            disabled={isStreaming}
-          />
-          <PromptInputToolbar>
-            <PromptInputTools>
-              {messages.length > 0 && (
-                <PromptInputButton
-                  variant="ghost"
-                  size="icon"
-                  onClick={clearChat}
-                  title="Clear chat"
-                  disabled={isStreaming}
-                >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </PromptInputButton>
-              )}
-              {tools && Object.keys(tools).length > 0 && (
-                <PromptInputButton
-                  variant="ghost"
-                  size="sm"
-                  disabled={isStreaming}
-                  title={`${Object.keys(tools).length} tools available`}
-                >
-                  🛠️ Tools ({Object.keys(tools).length})
-                </PromptInputButton>
-              )}
-            </PromptInputTools>
-            <PromptInputSubmit
-              status={chatStatus}
-              disabled={!input.trim() && chatStatus !== "streaming"}
-              onClick={chatStatus === "streaming" ? stopGeneration : undefined}
-              title={
-                chatStatus === "streaming"
-                  ? "Stop generation"
-                  : chatStatus === "submitted"
-                  ? "Submitting..."
-                  : "Send message"
-              }
-            />
-          </PromptInputToolbar>
-        </PromptInput>
+            <PromptInput
+              onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const message = formData.get("message") as string;
+                if (message?.trim()) {
+                  handleSubmit(message.trim());
+                  setInput("");
+                }
+              }}
+            >
+              <PromptInputTextarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder={
+                  config.placeholder || "What would you like to know?"
+                }
+                disabled={isStreaming}
+              />
+              <PromptInputToolbar>
+                <PromptInputTools>
+                  {messages.length > 0 && (
+                    <PromptInputButton
+                      variant="ghost"
+                      size="icon"
+                      onClick={clearChat}
+                      title="Clear chat"
+                      disabled={isStreaming}
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </PromptInputButton>
+                  )}
+                </PromptInputTools>
+                <PromptInputSubmit
+                  status={chatStatus}
+                  disabled={!input.trim() && chatStatus !== "streaming"}
+                  onClick={
+                    chatStatus === "streaming" ? stopGeneration : undefined
+                  }
+                  title={
+                    chatStatus === "streaming"
+                      ? "Stop generation"
+                      : chatStatus === "submitted"
+                      ? "Submitting..."
+                      : "Send message"
+                  }
+                />
+              </PromptInputToolbar>
+            </PromptInput>
           </>
         )}
 

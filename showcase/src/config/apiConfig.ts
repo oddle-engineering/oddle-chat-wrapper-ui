@@ -2,8 +2,8 @@
 
 export interface ApiConfig {
   useMockApi: boolean;
-  briefPlannerEndpoint: string;
-  conversationEndpoint: string;
+  briefPlannerEndpoint: string; // Legacy endpoint for backward compatibility
+  conversationEndpoint: string; // Default endpoint now used for all demos
   baseUrl: string;
 }
 
