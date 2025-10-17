@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { ChatWrapper, ChatWrapperProps } from "@oddle/chat-wrapper-ui";
+import {
+  ChatWrapper,
+  ChatWrapperProps,
+  ClientTools,
+} from "@oddle/chat-wrapper-ui";
 import { apiConfig } from "../config/apiConfig";
 
 // Types for reservation system
@@ -20,6 +24,243 @@ interface Reservation {
   updated_at?: string;
 }
 
+// Tool schema generation function
+const generateReservationToolSchemas = (): ClientTools => {
+  return [
+    // To-do management tools
+    {
+      name: "create_to_do",
+      description: "Create a new to-do task",
+      parameters: [
+        {
+          name: "task_description",
+          type: "string",
+          description: "Description of the task to be created",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+      ],
+    },
+    {
+      name: "read_to_dos",
+      description: "Read all existing to-do items",
+      parameters: [],
+    },
+
+    // Reservation management tools
+    {
+      name: "create_reservation",
+      description: "Create a new restaurant reservation",
+      parameters: [
+        {
+          name: "customerName",
+          type: "string",
+          description: "Name of the customer",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "email",
+          type: "string",
+          description: "Customer email address",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "date",
+          type: "string",
+          description: "Reservation date (YYYY-MM-DD)",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "time",
+          type: "string",
+          description: "Reservation time (HH:MM)",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "partySize",
+          type: "number",
+          description: "Number of guests",
+          isRequired: true,
+          schema: { type: "number" },
+        },
+        {
+          name: "phone",
+          type: "string",
+          description: "Customer phone number",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+        {
+          name: "specialRequests",
+          type: "string",
+          description: "Special requests or dietary restrictions",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+      ],
+    },
+    {
+      name: "update_reservation",
+      description: "Update an existing reservation",
+      parameters: [
+        {
+          name: "reservation_id",
+          type: "string",
+          description: "ID of the reservation to update",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "new_time",
+          type: "string",
+          description: "New time for the reservation",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+        {
+          name: "new_date",
+          type: "string",
+          description: "New date for the reservation",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+        {
+          name: "party_size",
+          type: "number",
+          description: "New party size",
+          isRequired: false,
+          schema: { type: "number" },
+        },
+        {
+          name: "special_requests",
+          type: "string",
+          description: "Updated special requests",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+      ],
+    },
+    {
+      name: "cancel_reservation",
+      description: "Cancel a reservation",
+      parameters: [
+        {
+          name: "id",
+          type: "string",
+          description: "ID of the reservation to cancel",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "reason",
+          type: "string",
+          description: "Reason for cancellation",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+      ],
+    },
+    {
+      name: "confirm_reservation",
+      description: "Confirm a reservation",
+      parameters: [
+        {
+          name: "id",
+          type: "string",
+          description: "ID of the reservation to confirm",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "table",
+          type: "string",
+          description: "Table number to assign",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+      ],
+    },
+    {
+      name: "mark_no_show",
+      description: "Mark a reservation as no-show",
+      parameters: [
+        {
+          name: "id",
+          type: "string",
+          description: "ID of the reservation to mark as no-show",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+      ],
+    },
+    {
+      name: "complete_reservation",
+      description: "Mark a reservation as completed",
+      parameters: [
+        {
+          name: "id",
+          type: "string",
+          description: "ID of the reservation to complete",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+      ],
+    },
+    {
+      name: "list_reservations",
+      description: "List reservations with optional filters",
+      parameters: [
+        {
+          name: "status",
+          type: "string",
+          description: "Filter by reservation status",
+          isRequired: false,
+          schema: {
+            type: "string",
+            enum: ["pending", "confirmed", "cancelled", "no_show", "completed"],
+          },
+        },
+        {
+          name: "date",
+          type: "string",
+          description: "Filter by date (YYYY-MM-DD)",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+      ],
+    },
+    {
+      name: "get_availability",
+      description: "Check table availability for a date and time",
+      parameters: [
+        {
+          name: "date",
+          type: "string",
+          description: "Date to check (YYYY-MM-DD)",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "time",
+          type: "string",
+          description: "Time to check (HH:MM)",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+      ],
+    },
+    {
+      name: "get_reservation_stats",
+      description: "Get reservation statistics and summary",
+      parameters: [],
+    },
+  ];
+};
+
 // ReservationPanel Component
 const ReservationPanel = ({
   reservations,
@@ -29,7 +270,9 @@ const ReservationPanel = ({
   isLoading,
 }: {
   reservations: Reservation[];
-  onCreateReservation: (reservation: Omit<Reservation, "id" | "created_at">) => void;
+  onCreateReservation: (
+    reservation: Omit<Reservation, "id" | "created_at">
+  ) => void;
   onUpdateReservation: (id: string, updates: Partial<Reservation>) => void;
   onDeleteReservation: (id: string) => void;
   isLoading: boolean;
@@ -47,8 +290,14 @@ const ReservationPanel = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newReservation.customerName.trim() || !newReservation.email.trim() || !newReservation.date || !newReservation.time) return;
-    
+    if (
+      !newReservation.customerName.trim() ||
+      !newReservation.email.trim() ||
+      !newReservation.date ||
+      !newReservation.time
+    )
+      return;
+
     onCreateReservation({
       customerName: newReservation.customerName.trim(),
       email: newReservation.email.trim(),
@@ -59,7 +308,7 @@ const ReservationPanel = ({
       status: "confirmed",
       specialRequests: newReservation.specialRequests.trim() || undefined,
     });
-    
+
     setNewReservation({
       customerName: "",
       email: "",
@@ -73,128 +322,163 @@ const ReservationPanel = ({
   };
 
   return (
-    <div style={{
-      width: '400px',
-      borderLeft: '1px solid #e2e8f0',
-      backgroundColor: 'white',
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%'
-    }}>
+    <div
+      style={{
+        width: "400px",
+        borderLeft: "1px solid #e2e8f0",
+        backgroundColor: "white",
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+      }}
+    >
       {/* Header */}
-      <div style={{
-        padding: '16px',
-        borderBottom: '1px solid #e2e8f0',
-        backgroundColor: '#f8fafc'
-      }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between'
-        }}>
-          <h3 style={{
-            fontWeight: '600',
-            color: '#1a202c',
-            margin: 0
-          }}>Reservations</h3>
+      <div
+        style={{
+          padding: "16px",
+          borderBottom: "1px solid #e2e8f0",
+          backgroundColor: "#f8fafc",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <h3
+            style={{
+              fontWeight: "600",
+              color: "#1a202c",
+              margin: 0,
+            }}
+          >
+            Reservations
+          </h3>
           <button
             onClick={() => setShowForm(!showForm)}
             style={{
-              padding: '4px 12px',
-              fontSize: '14px',
-              backgroundColor: '#dc2626',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              transition: 'background-color 0.2s'
+              padding: "4px 12px",
+              fontSize: "14px",
+              backgroundColor: "#dc2626",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              transition: "background-color 0.2s",
             }}
-            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#b91c1c'}
-            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
+            onMouseOver={(e) =>
+              (e.currentTarget.style.backgroundColor = "#b91c1c")
+            }
+            onMouseOut={(e) =>
+              (e.currentTarget.style.backgroundColor = "#dc2626")
+            }
             disabled={isLoading}
           >
             {showForm ? "Cancel" : "New Reservation"}
           </button>
         </div>
-        
+
         {showForm && (
-          <form onSubmit={handleSubmit} style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <form
+            onSubmit={handleSubmit}
+            style={{
+              marginTop: "12px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "8px",
+            }}
+          >
             <input
               type="text"
               value={newReservation.customerName}
-              onChange={(e) => setNewReservation({ ...newReservation, customerName: e.target.value })}
+              onChange={(e) =>
+                setNewReservation({
+                  ...newReservation,
+                  customerName: e.target.value,
+                })
+              }
               placeholder="Customer Name"
               style={{
-                width: '100%',
-                padding: '8px 12px',
-                border: '1px solid #d1d5db',
-                borderRadius: '4px',
-                fontSize: '14px',
-                outline: 'none',
-                boxSizing: 'border-box'
+                width: "100%",
+                padding: "8px 12px",
+                border: "1px solid #d1d5db",
+                borderRadius: "4px",
+                fontSize: "14px",
+                outline: "none",
+                boxSizing: "border-box",
               }}
               disabled={isLoading}
             />
             <input
               type="email"
               value={newReservation.email}
-              onChange={(e) => setNewReservation({ ...newReservation, email: e.target.value })}
+              onChange={(e) =>
+                setNewReservation({ ...newReservation, email: e.target.value })
+              }
               placeholder="Email"
               style={{
-                width: '100%',
-                padding: '8px 12px',
-                border: '1px solid #d1d5db',
-                borderRadius: '4px',
-                fontSize: '14px',
-                outline: 'none',
-                boxSizing: 'border-box'
+                width: "100%",
+                padding: "8px 12px",
+                border: "1px solid #d1d5db",
+                borderRadius: "4px",
+                fontSize: "14px",
+                outline: "none",
+                boxSizing: "border-box",
               }}
               disabled={isLoading}
             />
             <input
               type="tel"
               value={newReservation.phone}
-              onChange={(e) => setNewReservation({ ...newReservation, phone: e.target.value })}
+              onChange={(e) =>
+                setNewReservation({ ...newReservation, phone: e.target.value })
+              }
               placeholder="Phone (optional)"
               style={{
-                width: '100%',
-                padding: '8px 12px',
-                border: '1px solid #d1d5db',
-                borderRadius: '4px',
-                fontSize: '14px',
-                outline: 'none',
-                boxSizing: 'border-box'
+                width: "100%",
+                padding: "8px 12px",
+                border: "1px solid #d1d5db",
+                borderRadius: "4px",
+                fontSize: "14px",
+                outline: "none",
+                boxSizing: "border-box",
               }}
               disabled={isLoading}
             />
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: "flex", gap: "8px" }}>
               <input
                 type="date"
                 value={newReservation.date}
-                onChange={(e) => setNewReservation({ ...newReservation, date: e.target.value })}
+                onChange={(e) =>
+                  setNewReservation({ ...newReservation, date: e.target.value })
+                }
                 style={{
                   flex: 1,
-                  padding: '8px 12px',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '4px',
-                  fontSize: '14px',
-                  outline: 'none',
-                  boxSizing: 'border-box'
+                  padding: "8px 12px",
+                  border: "1px solid #d1d5db",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                  outline: "none",
+                  boxSizing: "border-box",
                 }}
                 disabled={isLoading}
               />
               <input
                 type="time"
                 value={newReservation.time}
-                onChange={(e) => setNewReservation({ ...newReservation, time: e.target.value })}
+                onChange={(e) =>
+                  setNewReservation({ ...newReservation, time: e.target.value })
+                }
                 style={{
                   flex: 1,
-                  padding: '8px 12px',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '4px',
-                  fontSize: '14px',
-                  outline: 'none',
-                  boxSizing: 'border-box'
+                  padding: "8px 12px",
+                  border: "1px solid #d1d5db",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                  outline: "none",
+                  boxSizing: "border-box",
                 }}
                 disabled={isLoading}
               />
@@ -204,32 +488,42 @@ const ReservationPanel = ({
               min="1"
               max="20"
               value={newReservation.partySize}
-              onChange={(e) => setNewReservation({ ...newReservation, partySize: parseInt(e.target.value) || 1 })}
+              onChange={(e) =>
+                setNewReservation({
+                  ...newReservation,
+                  partySize: parseInt(e.target.value) || 1,
+                })
+              }
               placeholder="Party Size"
               style={{
-                width: '100%',
-                padding: '8px 12px',
-                border: '1px solid #d1d5db',
-                borderRadius: '4px',
-                fontSize: '14px',
-                outline: 'none',
-                boxSizing: 'border-box'
+                width: "100%",
+                padding: "8px 12px",
+                border: "1px solid #d1d5db",
+                borderRadius: "4px",
+                fontSize: "14px",
+                outline: "none",
+                boxSizing: "border-box",
               }}
               disabled={isLoading}
             />
             <textarea
               value={newReservation.specialRequests}
-              onChange={(e) => setNewReservation({ ...newReservation, specialRequests: e.target.value })}
+              onChange={(e) =>
+                setNewReservation({
+                  ...newReservation,
+                  specialRequests: e.target.value,
+                })
+              }
               placeholder="Special requests (optional)"
               style={{
-                width: '100%',
-                padding: '8px 12px',
-                border: '1px solid #d1d5db',
-                borderRadius: '4px',
-                fontSize: '14px',
-                resize: 'none',
-                outline: 'none',
-                boxSizing: 'border-box'
+                width: "100%",
+                padding: "8px 12px",
+                border: "1px solid #d1d5db",
+                borderRadius: "4px",
+                fontSize: "14px",
+                resize: "none",
+                outline: "none",
+                boxSizing: "border-box",
               }}
               rows={2}
               disabled={isLoading}
@@ -237,19 +531,29 @@ const ReservationPanel = ({
             <button
               type="submit"
               style={{
-                width: '100%',
-                padding: '8px 12px',
-                fontSize: '14px',
-                backgroundColor: '#059669',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                transition: 'background-color 0.2s'
+                width: "100%",
+                padding: "8px 12px",
+                fontSize: "14px",
+                backgroundColor: "#059669",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                transition: "background-color 0.2s",
               }}
-              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#047857'}
-              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#059669'}
-              disabled={isLoading || !newReservation.customerName.trim() || !newReservation.email.trim() || !newReservation.date || !newReservation.time}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.backgroundColor = "#047857")
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.backgroundColor = "#059669")
+              }
+              disabled={
+                isLoading ||
+                !newReservation.customerName.trim() ||
+                !newReservation.email.trim() ||
+                !newReservation.date ||
+                !newReservation.time
+              }
             >
               Create Reservation
             </button>
@@ -258,81 +562,98 @@ const ReservationPanel = ({
       </div>
 
       {/* Reservation List */}
-      <div style={{
-        flex: 1,
-        overflowY: 'auto',
-        padding: '16px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px'
-      }}>
+      <div
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          padding: "16px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+        }}
+      >
         {reservations.length === 0 ? (
-          <div style={{
-            textAlign: 'center',
-            color: '#6b7280',
-            padding: '32px 0'
-          }}>
-            <p style={{ margin: '0 0 8px 0' }}>No reservations yet</p>
-            <p style={{ fontSize: '14px', margin: 0 }}>Create one or ask the AI to help!</p>
+          <div
+            style={{
+              textAlign: "center",
+              color: "#6b7280",
+              padding: "32px 0",
+            }}
+          >
+            <p style={{ margin: "0 0 8px 0" }}>No reservations yet</p>
+            <p style={{ fontSize: "14px", margin: 0 }}>
+              Create one or ask the AI to help!
+            </p>
           </div>
         ) : (
           reservations.map((reservation) => (
             <div
               key={reservation.id}
               style={{
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                padding: '12px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-                transition: 'box-shadow 0.2s'
+                border: "1px solid #e5e7eb",
+                borderRadius: "8px",
+                padding: "12px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "8px",
+                transition: "box-shadow 0.2s",
               }}
-              onMouseOver={(e) => e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1)'}
-              onMouseOut={(e) => e.currentTarget.style.boxShadow = 'none'}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.boxShadow =
+                  "0 1px 3px 0 rgba(0, 0, 0, 0.1)")
+              }
+              onMouseOut={(e) => (e.currentTarget.style.boxShadow = "none")}
             >
               {/* Reservation Header */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                justifyContent: 'space-between',
-                gap: '8px'
-              }}>
-                <div style={{
-                  flex: 1,
-                  minWidth: 0
-                }}>
-                  <h4 style={{
-                    fontWeight: '500',
-                    color: '#1a202c',
-                    fontSize: '14px',
-                    lineHeight: '1.25',
-                    margin: 0
-                  }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  justifyContent: "space-between",
+                  gap: "8px",
+                }}
+              >
+                <div
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                  }}
+                >
+                  <h4
+                    style={{
+                      fontWeight: "500",
+                      color: "#1a202c",
+                      fontSize: "14px",
+                      lineHeight: "1.25",
+                      margin: 0,
+                    }}
+                  >
                     {reservation.customerName}
                   </h4>
-                  <p style={{
-                    fontSize: '12px',
-                    color: '#6b7280',
-                    margin: '4px 0 0 0'
-                  }}>
+                  <p
+                    style={{
+                      fontSize: "12px",
+                      color: "#6b7280",
+                      margin: "4px 0 0 0",
+                    }}
+                  >
                     {reservation.email}
                   </p>
                 </div>
                 <button
                   onClick={() => onDeleteReservation(reservation.id)}
                   style={{
-                    color: '#9ca3af',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
+                    color: "#9ca3af",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
                     flexShrink: 0,
-                    fontSize: '18px',
+                    fontSize: "18px",
                     padding: 0,
-                    transition: 'color 0.2s'
+                    transition: "color 0.2s",
                   }}
-                  onMouseOver={(e) => e.currentTarget.style.color = '#dc2626'}
-                  onMouseOut={(e) => e.currentTarget.style.color = '#9ca3af'}
+                  onMouseOver={(e) => (e.currentTarget.style.color = "#dc2626")}
+                  onMouseOut={(e) => (e.currentTarget.style.color = "#9ca3af")}
                   disabled={isLoading}
                 >
                   ×
@@ -340,61 +661,91 @@ const ReservationPanel = ({
               </div>
 
               {/* Reservation Details */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                fontSize: '13px',
-                color: '#4b5563'
-              }}>
-                <span>📅 {new Date(reservation.date).toLocaleDateString()}</span>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  fontSize: "13px",
+                  color: "#4b5563",
+                }}
+              >
+                <span>
+                  📅 {new Date(reservation.date).toLocaleDateString()}
+                </span>
                 <span>🕐 {reservation.time}</span>
                 <span>👥 {reservation.partySize}</span>
               </div>
 
               {/* Special Requests */}
               {reservation.specialRequests && (
-                <p style={{
-                  color: '#4b5563',
-                  fontSize: '13px',
-                  margin: 0,
-                  fontStyle: 'italic'
-                }}>
+                <p
+                  style={{
+                    color: "#4b5563",
+                    fontSize: "13px",
+                    margin: 0,
+                    fontStyle: "italic",
+                  }}
+                >
                   "{reservation.specialRequests}"
                 </p>
               )}
 
               {/* Status and Table */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                fontSize: '12px'
-              }}>
-                <span style={{
-                  padding: '2px 8px',
-                  borderRadius: '4px',
-                  border: '1px solid',
-                  backgroundColor: reservation.status === 'confirmed' ? '#dcfce7' : 
-                                 reservation.status === 'completed' ? '#dbeafe' : 
-                                 reservation.status === 'cancelled' ? '#fecaca' : 
-                                 reservation.status === 'no_show' ? '#fed7d7' : '#fef3c7',
-                  color: reservation.status === 'confirmed' ? '#166534' : 
-                         reservation.status === 'completed' ? '#1e40af' : 
-                         reservation.status === 'cancelled' ? '#991b1b' : 
-                         reservation.status === 'no_show' ? '#922b21' : '#92400e',
-                  borderColor: reservation.status === 'confirmed' ? '#bbf7d0' : 
-                              reservation.status === 'completed' ? '#bfdbfe' : 
-                              reservation.status === 'cancelled' ? '#fca5a5' : 
-                              reservation.status === 'no_show' ? '#f3a8a8' : '#fde68a'
-                }}>
-                  {reservation.status.replace('_', ' ')}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  fontSize: "12px",
+                }}
+              >
+                <span
+                  style={{
+                    padding: "2px 8px",
+                    borderRadius: "4px",
+                    border: "1px solid",
+                    backgroundColor:
+                      reservation.status === "confirmed"
+                        ? "#dcfce7"
+                        : reservation.status === "completed"
+                        ? "#dbeafe"
+                        : reservation.status === "cancelled"
+                        ? "#fecaca"
+                        : reservation.status === "no_show"
+                        ? "#fed7d7"
+                        : "#fef3c7",
+                    color:
+                      reservation.status === "confirmed"
+                        ? "#166534"
+                        : reservation.status === "completed"
+                        ? "#1e40af"
+                        : reservation.status === "cancelled"
+                        ? "#991b1b"
+                        : reservation.status === "no_show"
+                        ? "#922b21"
+                        : "#92400e",
+                    borderColor:
+                      reservation.status === "confirmed"
+                        ? "#bbf7d0"
+                        : reservation.status === "completed"
+                        ? "#bfdbfe"
+                        : reservation.status === "cancelled"
+                        ? "#fca5a5"
+                        : reservation.status === "no_show"
+                        ? "#f3a8a8"
+                        : "#fde68a",
+                  }}
+                >
+                  {reservation.status.replace("_", " ")}
                 </span>
                 {reservation.table && (
-                  <span style={{
-                    fontWeight: '500',
-                    color: '#374151'
-                  }}>
+                  <span
+                    style={{
+                      fontWeight: "500",
+                      color: "#374151",
+                    }}
+                  >
                     Table {reservation.table}
                   </span>
                 )}
@@ -402,42 +753,60 @@ const ReservationPanel = ({
 
               {/* Action Buttons */}
               {reservation.status === "pending" && (
-                <div style={{
-                  display: 'flex',
-                  gap: '4px'
-                }}>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "4px",
+                  }}
+                >
                   <button
-                    onClick={() => onUpdateReservation(reservation.id, { status: "confirmed" })}
+                    onClick={() =>
+                      onUpdateReservation(reservation.id, {
+                        status: "confirmed",
+                      })
+                    }
                     style={{
-                      padding: '2px 8px',
-                      fontSize: '12px',
-                      backgroundColor: '#dcfce7',
-                      color: '#166534',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      transition: 'background-color 0.2s'
+                      padding: "2px 8px",
+                      fontSize: "12px",
+                      backgroundColor: "#dcfce7",
+                      color: "#166534",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      transition: "background-color 0.2s",
                     }}
-                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#bbf7d0'}
-                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#dcfce7'}
+                    onMouseOver={(e) =>
+                      (e.currentTarget.style.backgroundColor = "#bbf7d0")
+                    }
+                    onMouseOut={(e) =>
+                      (e.currentTarget.style.backgroundColor = "#dcfce7")
+                    }
                     disabled={isLoading}
                   >
                     Confirm
                   </button>
                   <button
-                    onClick={() => onUpdateReservation(reservation.id, { status: "cancelled" })}
+                    onClick={() =>
+                      onUpdateReservation(reservation.id, {
+                        status: "cancelled",
+                      })
+                    }
                     style={{
-                      padding: '2px 8px',
-                      fontSize: '12px',
-                      backgroundColor: '#fecaca',
-                      color: '#991b1b',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      transition: 'background-color 0.2s'
+                      padding: "2px 8px",
+                      fontSize: "12px",
+                      backgroundColor: "#fecaca",
+                      color: "#991b1b",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      transition: "background-color 0.2s",
                     }}
-                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#fca5a5'}
-                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#fecaca'}
+                    onMouseOver={(e) =>
+                      (e.currentTarget.style.backgroundColor = "#fca5a5")
+                    }
+                    onMouseOut={(e) =>
+                      (e.currentTarget.style.backgroundColor = "#fecaca")
+                    }
                     disabled={isLoading}
                   >
                     Cancel
@@ -446,10 +815,12 @@ const ReservationPanel = ({
               )}
 
               {/* Created Date */}
-              <div style={{
-                fontSize: '12px',
-                color: '#9ca3af'
-              }}>
+              <div
+                style={{
+                  fontSize: "12px",
+                  color: "#9ca3af",
+                }}
+              >
                 Created: {new Date(reservation.created_at).toLocaleDateString()}
               </div>
             </div>
@@ -466,7 +837,9 @@ export const ReserveDemo = () => {
   const [showReservationPanel, setShowReservationPanel] = useState(true);
 
   // Reservation management functions
-  const handleCreateReservation = (reservation: Omit<Reservation, "id" | "created_at">) => {
+  const handleCreateReservation = (
+    reservation: Omit<Reservation, "id" | "created_at">
+  ) => {
     const newReservation: Reservation = {
       ...reservation,
       id: Date.now().toString(),
@@ -475,10 +848,13 @@ export const ReserveDemo = () => {
     setReservations((prev) => [...prev, newReservation]);
   };
 
-  const handleUpdateReservation = (id: string, updates: Partial<Reservation>) => {
+  const handleUpdateReservation = (
+    id: string,
+    updates: Partial<Reservation>
+  ) => {
     setReservations((prev) =>
-      prev.map((reservation) => 
-        reservation.id === id 
+      prev.map((reservation) =>
+        reservation.id === id
           ? { ...reservation, ...updates, updated_at: new Date().toISOString() }
           : reservation
       )
@@ -486,12 +862,14 @@ export const ReserveDemo = () => {
   };
 
   const handleDeleteReservation = (id: string) => {
-    setReservations((prev) => prev.filter((reservation) => reservation.id !== id));
+    setReservations((prev) =>
+      prev.filter((reservation) => reservation.id !== id)
+    );
   };
 
   // Chat wrapper props with integrated tools
   const chatProps: ChatWrapperProps = {
-    apiUrl: apiConfig.baseUrl + '/api/reserve-agent', // Using conversation endpoint
+    apiUrl: apiConfig.baseUrl + "/api/reserve-agent", // Using conversation endpoint
     config: {
       mode: "embedded",
       appName: "Restaurant Reservations",
@@ -520,229 +898,281 @@ export const ReserveDemo = () => {
     },
     tools: {
       // To-do management tools for reserveAgent
-      create_to_do: (task_description: string) => {
-        console.log("Creating to-do:", { task_description });
-        return { 
-          success: true, 
-          task_id: Date.now().toString(),
-          task_description,
-          message: `Created to-do: "${task_description}"` 
+      create_to_do: async (params: { task_description: string }) => {
+        console.log("Creating to-do:", params);
+        const newTodo = {
+          id: Date.now().toString(),
+          task: params.task_description,
+          status: "pending",
+          created_at: new Date().toISOString(),
+        };
+        return {
+          success: true,
+          task_id: newTodo.id,
+          task_description: params.task_description,
+          message: `Created to-do: "${params.task_description}"`,
         };
       },
-      
-      read_to_dos: () => {
+
+      read_to_dos: async () => {
         console.log("Reading to-dos");
         // Mock to-dos for demonstration
         const mockTodos = [
-          { id: "1", task: "Confirm party size for tonight's reservation", status: "pending" },
-          { id: "2", task: "Call customer about dietary restrictions", status: "completed" }
+          {
+            id: "1",
+            task: "Confirm party size for tonight's reservation",
+            status: "pending",
+          },
+          {
+            id: "2",
+            task: "Call customer about dietary restrictions",
+            status: "completed",
+          },
         ];
-        return { 
-          success: true, 
+        return {
+          success: true,
           todos: mockTodos,
-          message: `Retrieved ${mockTodos.length} to-do items` 
+          message: `Retrieved ${mockTodos.length} to-do items`,
         };
       },
 
       // Reservation management tools
-      create_reservation: (customerName: string, email: string, date: string, time: string, partySize: number, phone?: string, specialRequests?: string) => {
-        console.log("Creating reservation:", { customerName, email, date, time, partySize, phone, specialRequests });
+      create_reservation: async (params: any) => {
+        console.log("Creating reservation:", params);
         const newReservation: Reservation = {
           id: Date.now().toString(),
-          customerName,
-          email,
-          phone,
-          date,
-          time,
-          partySize,
+          customerName: params.customerName,
+          email: params.email,
+          phone: params.phone,
+          date: params.date,
+          time: params.time,
+          partySize: params.partySize,
           status: "confirmed",
-          specialRequests,
+          specialRequests: params.specialRequests,
           created_at: new Date().toISOString(),
         };
         setReservations((prev) => [...prev, newReservation]);
-        return { 
-          success: true, 
+        return {
+          success: true,
           reservation: newReservation,
-          message: `Created reservation for ${customerName} on ${date} at ${time}` 
+          message: `Created reservation for ${params.customerName} on ${params.date} at ${params.time}`,
         };
       },
-      
-      update_reservation: (reservation_id: string, new_time?: string, new_date?: string, party_size?: number, special_requests?: string) => {
-        console.log("Updating reservation:", { reservation_id, new_time, new_date, party_size, special_requests });
-        const reservation = reservations.find(r => r.id === reservation_id);
+
+      update_reservation: async (params: any) => {
+        console.log("Updating reservation:", params);
+        const reservation = reservations.find(
+          (r) => r.id === params.reservation_id
+        );
         if (!reservation) {
           return { success: false, error: "Reservation not found" };
         }
-        
+
         const updates: Partial<Reservation> = {
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         };
-        
-        if (new_time) updates.time = new_time;
-        if (new_date) updates.date = new_date;
-        if (party_size !== undefined) updates.partySize = party_size;
-        if (special_requests !== undefined) updates.specialRequests = special_requests;
-        
+
+        if (params.new_time) updates.time = params.new_time;
+        if (params.new_date) updates.date = params.new_date;
+        if (params.party_size !== undefined)
+          updates.partySize = params.party_size;
+        if (params.special_requests !== undefined)
+          updates.specialRequests = params.special_requests;
+
         const updatedReservation = { ...reservation, ...updates };
-        setReservations((prev) => prev.map(r => r.id === reservation_id ? updatedReservation : r));
-        return { 
-          success: true, 
+        setReservations((prev) =>
+          prev.map((r) =>
+            r.id === params.reservation_id ? updatedReservation : r
+          )
+        );
+        return {
+          success: true,
           reservation: updatedReservation,
-          message: `Updated reservation for ${reservation.customerName}` 
+          message: `Updated reservation for ${reservation.customerName}`,
         };
       },
-      
-      cancel_reservation: (id: string, reason?: string) => {
-        console.log("Cancelling reservation:", { id, reason });
-        const reservation = reservations.find(r => r.id === id);
+
+      cancel_reservation: async (params: { id: string; reason?: string }) => {
+        console.log("Cancelling reservation:", params);
+        const reservation = reservations.find((r) => r.id === params.id);
         if (!reservation) {
           return { success: false, error: "Reservation not found" };
         }
-        
-        const updatedReservation = { 
-          ...reservation, 
-          status: "cancelled" as const, 
-          updated_at: new Date().toISOString() 
+
+        const updatedReservation = {
+          ...reservation,
+          status: "cancelled" as const,
+          updated_at: new Date().toISOString(),
         };
-        setReservations((prev) => prev.map(r => r.id === id ? updatedReservation : r));
-        return { 
-          success: true, 
+        setReservations((prev) =>
+          prev.map((r) => (r.id === params.id ? updatedReservation : r))
+        );
+        return {
+          success: true,
           reservation: updatedReservation,
-          message: `Cancelled reservation for ${reservation.customerName}${reason ? `: ${reason}` : ''}` 
+          message: `Cancelled reservation for ${reservation.customerName}${
+            params.reason ? `: ${params.reason}` : ""
+          }`,
         };
       },
-      
-      confirm_reservation: (id: string, table?: string) => {
-        console.log("Confirming reservation:", { id, table });
-        const reservation = reservations.find(r => r.id === id);
+
+      confirm_reservation: async (params: { id: string; table?: string }) => {
+        console.log("Confirming reservation:", params);
+        const reservation = reservations.find((r) => r.id === params.id);
         if (!reservation) {
           return { success: false, error: "Reservation not found" };
         }
-        
-        const updatedReservation = { 
-          ...reservation, 
+
+        const updatedReservation = {
+          ...reservation,
           status: "confirmed" as const,
-          table,
-          updated_at: new Date().toISOString() 
+          table: params.table,
+          updated_at: new Date().toISOString(),
         };
-        setReservations((prev) => prev.map(r => r.id === id ? updatedReservation : r));
-        return { 
-          success: true, 
+        setReservations((prev) =>
+          prev.map((r) => (r.id === params.id ? updatedReservation : r))
+        );
+        return {
+          success: true,
           reservation: updatedReservation,
-          message: `Confirmed reservation for ${reservation.customerName}${table ? ` at table ${table}` : ''}` 
+          message: `Confirmed reservation for ${reservation.customerName}${
+            params.table ? ` at table ${params.table}` : ""
+          }`,
         };
       },
-      
-      mark_no_show: (id: string) => {
-        console.log("Marking reservation as no-show:", id);
-        const reservation = reservations.find(r => r.id === id);
+
+      mark_no_show: async (params: { id: string }) => {
+        console.log("Marking reservation as no-show:", params.id);
+        const reservation = reservations.find((r) => r.id === params.id);
         if (!reservation) {
           return { success: false, error: "Reservation not found" };
         }
-        
-        const updatedReservation = { 
-          ...reservation, 
+
+        const updatedReservation = {
+          ...reservation,
           status: "no_show" as const,
-          updated_at: new Date().toISOString() 
+          updated_at: new Date().toISOString(),
         };
-        setReservations((prev) => prev.map(r => r.id === id ? updatedReservation : r));
-        return { 
-          success: true, 
+        setReservations((prev) =>
+          prev.map((r) => (r.id === params.id ? updatedReservation : r))
+        );
+        return {
+          success: true,
           reservation: updatedReservation,
-          message: `Marked ${reservation.customerName} as no-show` 
+          message: `Marked ${reservation.customerName} as no-show`,
         };
       },
-      
-      complete_reservation: (id: string) => {
-        console.log("Completing reservation:", id);
-        const reservation = reservations.find(r => r.id === id);
+
+      complete_reservation: async (params: { id: string }) => {
+        console.log("Completing reservation:", params.id);
+        const reservation = reservations.find((r) => r.id === params.id);
         if (!reservation) {
           return { success: false, error: "Reservation not found" };
         }
-        
-        const updatedReservation = { 
-          ...reservation, 
+
+        const updatedReservation = {
+          ...reservation,
           status: "completed" as const,
-          updated_at: new Date().toISOString() 
+          updated_at: new Date().toISOString(),
         };
-        setReservations((prev) => prev.map(r => r.id === id ? updatedReservation : r));
-        return { 
-          success: true, 
+        setReservations((prev) =>
+          prev.map((r) => (r.id === params.id ? updatedReservation : r))
+        );
+        return {
+          success: true,
           reservation: updatedReservation,
-          message: `Completed reservation for ${reservation.customerName}` 
+          message: `Completed reservation for ${reservation.customerName}`,
         };
       },
-      
-      list_reservations: (status?: Reservation["status"], date?: string) => {
-        console.log("Listing reservations:", { status, date });
+
+      list_reservations: async (params?: {
+        status?: Reservation["status"];
+        date?: string;
+      }) => {
+        console.log("Listing reservations:", params);
         let filteredReservations = reservations;
-        
-        if (status) {
-          filteredReservations = filteredReservations.filter(r => r.status === status);
+
+        if (params?.status) {
+          filteredReservations = filteredReservations.filter(
+            (r) => r.status === params.status
+          );
         }
-        
-        if (date) {
-          filteredReservations = filteredReservations.filter(r => r.date === date);
+
+        if (params?.date) {
+          filteredReservations = filteredReservations.filter(
+            (r) => r.date === params.date
+          );
         }
-        
-        return { 
-          success: true, 
+
+        return {
+          success: true,
           reservations: filteredReservations,
           total: filteredReservations.length,
-          message: `Found ${filteredReservations.length} reservation${filteredReservations.length !== 1 ? 's' : ''}` 
+          message: `Found ${filteredReservations.length} reservation${
+            filteredReservations.length !== 1 ? "s" : ""
+          }`,
         };
       },
-      
-      get_availability: (date: string, time?: string) => {
-        console.log("Checking availability:", { date, time });
-        const dayReservations = reservations.filter(r => r.date === date && r.status !== 'cancelled');
+
+      get_availability: async (params: { date: string; time?: string }) => {
+        console.log("Checking availability:", params);
+        const dayReservations = reservations.filter(
+          (r) => r.date === params.date && r.status !== "cancelled"
+        );
         const totalTables = 20; // Mock restaurant capacity
         const bookedTables = dayReservations.length;
         const availableTables = totalTables - bookedTables;
-        
+
         return {
           success: true,
-          date,
-          time: time || "all day",
+          date: params.date,
+          time: params.time || "all day",
           availableTables,
           totalTables,
           bookedTables,
           availability: availableTables > 0 ? "available" : "fully_booked",
-          message: `${availableTables} tables available on ${date}${time ? ` at ${time}` : ''}`
+          message: `${availableTables} tables available on ${params.date}${
+            params.time ? ` at ${params.time}` : ""
+          }`,
         };
       },
 
-      // Restaurant specific tools
-      get_reservation_stats: () => {
+      get_reservation_stats: async () => {
         console.log("Getting reservation statistics");
         const stats = {
           total: reservations.length,
-          confirmed: reservations.filter(r => r.status === "confirmed").length,
-          pending: reservations.filter(r => r.status === "pending").length,
-          cancelled: reservations.filter(r => r.status === "cancelled").length,
-          completed: reservations.filter(r => r.status === "completed").length,
-          no_shows: reservations.filter(r => r.status === "no_show").length,
+          confirmed: reservations.filter((r) => r.status === "confirmed")
+            .length,
+          pending: reservations.filter((r) => r.status === "pending").length,
+          cancelled: reservations.filter((r) => r.status === "cancelled")
+            .length,
+          completed: reservations.filter((r) => r.status === "completed")
+            .length,
+          no_shows: reservations.filter((r) => r.status === "no_show").length,
         };
-        
+
         return {
           success: true,
           stats,
-          message: `Reservation stats: ${stats.total} total, ${stats.confirmed} confirmed, ${stats.pending} pending`
+          message: `Reservation stats: ${stats.total} total, ${stats.confirmed} confirmed, ${stats.pending} pending`,
         };
       },
     },
+    clientTools: generateReservationToolSchemas(),
   };
 
   return (
-    <div style={{
-      height: '100%',
-      width: '100%',
-      display: 'flex',
-      overflow: 'hidden',
-      backgroundColor: '#fef2f2',
-      position: 'relative',
-      isolation: 'isolate'
-    }}>
+    <div
+      style={{
+        height: "100%",
+        width: "100%",
+        display: "flex",
+        overflow: "hidden",
+        backgroundColor: "#fef2f2",
+        position: "relative",
+        isolation: "isolate",
+      }}
+    >
       {/* Left Side Reservation Panel */}
       {showReservationPanel && (
         <ReservationPanel
@@ -755,56 +1185,73 @@ export const ReserveDemo = () => {
       )}
 
       {/* Main Chat Area on the Right */}
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        minWidth: 0
-      }}>
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          minWidth: 0,
+        }}
+      >
         {/* Header */}
-        <div style={{
-          backgroundColor: 'white',
-          borderBottom: '1px solid #e2e8f0',
-          padding: '16px 24px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between'
-        }}>
+        <div
+          style={{
+            backgroundColor: "white",
+            borderBottom: "1px solid #e2e8f0",
+            padding: "16px 24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
           <div>
-            <h1 style={{
-              fontSize: '20px',
-              fontWeight: '600',
-              color: '#1a202c',
-              margin: '0 0 4px 0'
-            }}>Restaurant Reservations</h1>
-            <p style={{
-              fontSize: '14px',
-              color: '#6b7280',
-              margin: 0
-            }}>Manage table bookings and customer reservations</p>
+            <h1
+              style={{
+                fontSize: "20px",
+                fontWeight: "600",
+                color: "#1a202c",
+                margin: "0 0 4px 0",
+              }}
+            >
+              Restaurant Reservations
+            </h1>
+            <p
+              style={{
+                fontSize: "14px",
+                color: "#6b7280",
+                margin: 0,
+              }}
+            >
+              Manage table bookings and customer reservations
+            </p>
           </div>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
             <button
               onClick={() => setShowReservationPanel(!showReservationPanel)}
               style={{
-                padding: '4px 12px',
-                fontSize: '14px',
-                borderRadius: '4px',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'background-color 0.2s',
-                backgroundColor: showReservationPanel ? '#fee2e2' : '#f3f4f6',
-                color: showReservationPanel ? '#991b1b' : '#374151'
+                padding: "4px 12px",
+                fontSize: "14px",
+                borderRadius: "4px",
+                border: "none",
+                cursor: "pointer",
+                transition: "background-color 0.2s",
+                backgroundColor: showReservationPanel ? "#fee2e2" : "#f3f4f6",
+                color: showReservationPanel ? "#991b1b" : "#374151",
               }}
               onMouseOver={(e) => {
-                if (!showReservationPanel) e.currentTarget.style.backgroundColor = '#e5e7eb';
+                if (!showReservationPanel)
+                  e.currentTarget.style.backgroundColor = "#e5e7eb";
               }}
               onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = showReservationPanel ? '#fee2e2' : '#f3f4f6';
+                e.currentTarget.style.backgroundColor = showReservationPanel
+                  ? "#fee2e2"
+                  : "#f3f4f6";
               }}
             >
               {showReservationPanel ? "Hide" : "Show"} Reservations
@@ -813,19 +1260,23 @@ export const ReserveDemo = () => {
         </div>
 
         {/* Chat Wrapper */}
-        <div style={{
-          flex: 1,
-          position: 'relative',
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column'
-        }}>
-          <div style={{
+        <div
+          style={{
             flex: 1,
-            position: 'relative',
-            maxWidth: '100%',
-            maxHeight: '100%'
-          }}>
+            position: "relative",
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <div
+            style={{
+              flex: 1,
+              position: "relative",
+              maxWidth: "100%",
+              maxHeight: "100%",
+            }}
+          >
             <ChatWrapper {...chatProps} />
           </div>
         </div>

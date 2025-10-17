@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { ChatWrapper, ChatWrapperProps } from "@oddle/chat-wrapper-ui";
+import {
+  ChatWrapper,
+  ChatWrapperProps,
+  ClientTools,
+} from "@oddle/chat-wrapper-ui";
 import { apiConfig } from "../config/apiConfig";
 
 // Types for shop inventory system
@@ -19,6 +23,663 @@ interface InventoryItem {
   created_at: string;
   updated_at?: string;
 }
+
+// Types for reservation system
+interface Reservation {
+  id: string;
+  customerName: string;
+  email: string;
+  phone?: string;
+  date: string;
+  time: string;
+  partySize: number;
+  status: "pending" | "confirmed" | "cancelled" | "no_show" | "completed";
+  specialRequests?: string;
+  table?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
+// Types for todo system
+interface Todo {
+  id: string;
+  task: string;
+  status: "pending" | "completed";
+  created_at: string;
+  updated_at?: string;
+}
+
+const generateShopToolSchemas = (): ClientTools => {
+  return [
+    {
+      name: "add_item",
+      description: "Add a new item to the inventory",
+      parameters: [
+        {
+          name: "name",
+          type: "string",
+          description: "Name of the item",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "sku",
+          type: "string",
+          description: "SKU identifier for the item",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "price",
+          type: "number",
+          description: "Price of the item",
+          isRequired: true,
+          schema: { type: "number" },
+        },
+        {
+          name: "quantity",
+          type: "number",
+          description: "Quantity in stock",
+          isRequired: true,
+          schema: { type: "number" },
+        },
+        {
+          name: "category",
+          type: "string",
+          description: "Category of the item",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+        {
+          name: "description",
+          type: "string",
+          description: "Description of the item",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+        {
+          name: "supplier",
+          type: "string",
+          description: "Supplier of the item",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+        {
+          name: "reorderLevel",
+          type: "number",
+          description: "Reorder level threshold",
+          isRequired: false,
+          schema: { type: "number" },
+        },
+      ],
+    },
+    {
+      name: "update_item",
+      description: "Update an existing inventory item",
+      parameters: [
+        {
+          name: "id",
+          type: "string",
+          description: "ID of the item to update",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "updates",
+          type: "object",
+          description: "Object containing the fields to update",
+          isRequired: true,
+          schema: { type: "object", additionalProperties: true },
+        },
+      ],
+    },
+    {
+      name: "restock_item",
+      description: "Add stock to an existing item",
+      parameters: [
+        {
+          name: "id",
+          type: "string",
+          description: "ID of the item to restock",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "quantity",
+          type: "number",
+          description: "Quantity to add to stock",
+          isRequired: true,
+          schema: { type: "number" },
+        },
+      ],
+    },
+    {
+      name: "sell_item",
+      description: "Sell/remove stock from an item",
+      parameters: [
+        {
+          name: "id",
+          type: "string",
+          description: "ID of the item to sell",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "quantity",
+          type: "number",
+          description: "Quantity to sell/remove",
+          isRequired: true,
+          schema: { type: "number" },
+        },
+      ],
+    },
+    {
+      name: "delete_item",
+      description: "Delete an item from inventory",
+      parameters: [
+        {
+          name: "id",
+          type: "string",
+          description: "ID of the item to delete",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+      ],
+    },
+    {
+      name: "list_items",
+      description: "List inventory items with optional filters",
+      parameters: [
+        {
+          name: "category",
+          type: "string",
+          description: "Filter by category",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+        {
+          name: "status",
+          type: "string",
+          description: "Filter by status",
+          isRequired: false,
+          schema: {
+            type: "string",
+            enum: ["in_stock", "low_stock", "out_of_stock", "discontinued"],
+          },
+        },
+      ],
+    },
+    {
+      name: "get_low_stock_items",
+      description: "Get items that need restocking",
+      parameters: [],
+    },
+    {
+      name: "add_random_item_to_shop",
+      description: "Add a random item to the shop inventory",
+      parameters: [],
+    },
+    {
+      name: "get_inventory_stats",
+      description: "Get comprehensive inventory statistics",
+      parameters: [],
+    },
+    {
+      name: "search_items",
+      description: "Search items by name, SKU, category or description",
+      parameters: [
+        {
+          name: "query",
+          type: "string",
+          description: "Search query",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+      ],
+    },
+
+    // To-do management tool schemas
+    {
+      name: "create_to_do",
+      description: "Create a new to-do task",
+      parameters: [
+        {
+          name: "task_description",
+          type: "string",
+          description: "Description of the task to be created",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+      ],
+    },
+    {
+      name: "read_to_dos",
+      description: "Read all existing to-do items",
+      parameters: [],
+    },
+
+    // Reservation management tool schemas
+    {
+      name: "create_reservation",
+      description: "Create a new restaurant reservation",
+      parameters: [
+        {
+          name: "customerName",
+          type: "string",
+          description: "Name of the customer",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "email",
+          type: "string",
+          description: "Customer email address",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "date",
+          type: "string",
+          description: "Reservation date (YYYY-MM-DD)",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "time",
+          type: "string",
+          description: "Reservation time (HH:MM)",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "partySize",
+          type: "number",
+          description: "Number of guests",
+          isRequired: true,
+          schema: { type: "number" },
+        },
+        {
+          name: "phone",
+          type: "string",
+          description: "Customer phone number",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+        {
+          name: "specialRequests",
+          type: "string",
+          description: "Special requests or dietary restrictions",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+      ],
+    },
+    {
+      name: "update_reservation",
+      description: "Update an existing reservation",
+      parameters: [
+        {
+          name: "reservation_id",
+          type: "string",
+          description: "ID of the reservation to update",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "new_time",
+          type: "string",
+          description: "New time for the reservation",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+        {
+          name: "new_date",
+          type: "string",
+          description: "New date for the reservation",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+        {
+          name: "party_size",
+          type: "number",
+          description: "New party size",
+          isRequired: false,
+          schema: { type: "number" },
+        },
+        {
+          name: "special_requests",
+          type: "string",
+          description: "Updated special requests",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+      ],
+    },
+    {
+      name: "cancel_reservation",
+      description: "Cancel a reservation",
+      parameters: [
+        {
+          name: "id",
+          type: "string",
+          description: "ID of the reservation to cancel",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "reason",
+          type: "string",
+          description: "Reason for cancellation",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+      ],
+    },
+    {
+      name: "confirm_reservation",
+      description: "Confirm a reservation",
+      parameters: [
+        {
+          name: "id",
+          type: "string",
+          description: "ID of the reservation to confirm",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "table",
+          type: "string",
+          description: "Table number to assign",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+      ],
+    },
+    {
+      name: "mark_no_show",
+      description: "Mark a reservation as no-show",
+      parameters: [
+        {
+          name: "id",
+          type: "string",
+          description: "ID of the reservation to mark as no-show",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+      ],
+    },
+    {
+      name: "complete_reservation",
+      description: "Mark a reservation as completed",
+      parameters: [
+        {
+          name: "id",
+          type: "string",
+          description: "ID of the reservation to complete",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+      ],
+    },
+    {
+      name: "list_reservations",
+      description: "List reservations with optional filters",
+      parameters: [
+        {
+          name: "status",
+          type: "string",
+          description: "Filter by reservation status",
+          isRequired: false,
+          schema: {
+            type: "string",
+            enum: [
+              "pending",
+              "confirmed",
+              "cancelled",
+              "no_show",
+              "completed",
+            ],
+          },
+        },
+        {
+          name: "date",
+          type: "string",
+          description: "Filter by date (YYYY-MM-DD)",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+      ],
+    },
+    {
+      name: "get_availability",
+      description: "Check table availability for a date and time",
+      parameters: [
+        {
+          name: "date",
+          type: "string",
+          description: "Date to check (YYYY-MM-DD)",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "time",
+          type: "string",
+          description: "Time to check (HH:MM)",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+      ],
+    },
+    {
+      name: "get_reservation_stats",
+      description: "Get reservation statistics and summary",
+      parameters: [],
+    },
+  ];
+};
+
+// ReservationsPanel Component
+const ReservationsPanel = ({ reservations }: { reservations: Reservation[] }) => {
+  return (
+    <div style={{ padding: "16px", height: "100%", overflow: "auto" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <h3 style={{ margin: 0, color: "#10b981", fontSize: "18px", fontWeight: "600" }}>
+          Reservations ({reservations.length})
+        </h3>
+      </div>
+      
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        {reservations.length === 0 ? (
+          <div style={{ 
+            textAlign: "center", 
+            color: "#6b7280", 
+            padding: "40px 20px",
+            border: "2px dashed #d1d5db",
+            borderRadius: "8px"
+          }}>
+            <p style={{ margin: 0, fontSize: "14px" }}>No reservations yet</p>
+            <p style={{ margin: "8px 0 0 0", fontSize: "12px" }}>Ask the AI to create a reservation!</p>
+          </div>
+        ) : (
+          reservations.map((reservation) => (
+            <div
+              key={reservation.id}
+              style={{
+                backgroundColor: "white",
+                border: "1px solid #e5e7eb",
+                borderRadius: "8px",
+                padding: "16px",
+                boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
+                <div>
+                  <h4 style={{ margin: "0 0 4px 0", fontSize: "16px", fontWeight: "600", color: "#111827" }}>
+                    {reservation.customerName}
+                  </h4>
+                  <p style={{ margin: 0, fontSize: "12px", color: "#6b7280" }}>
+                    ID: {reservation.id}
+                  </p>
+                </div>
+                <span
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: "500",
+                    padding: "4px 8px",
+                    borderRadius: "4px",
+                    backgroundColor: 
+                      reservation.status === "confirmed" ? "#dcfce7" :
+                      reservation.status === "pending" ? "#fef3c7" :
+                      reservation.status === "cancelled" ? "#fee2e2" :
+                      reservation.status === "completed" ? "#dbeafe" :
+                      "#f3f4f6",
+                    color:
+                      reservation.status === "confirmed" ? "#166534" :
+                      reservation.status === "pending" ? "#92400e" :
+                      reservation.status === "cancelled" ? "#dc2626" :
+                      reservation.status === "completed" ? "#1e40af" :
+                      "#4b5563",
+                  }}
+                >
+                  {reservation.status.replace("_", " ").toUpperCase()}
+                </span>
+              </div>
+              
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", fontSize: "13px" }}>
+                <div>
+                  <span style={{ fontWeight: "500", color: "#374151" }}>Date:</span>
+                  <span style={{ marginLeft: "4px", color: "#6b7280" }}>{reservation.date}</span>
+                </div>
+                <div>
+                  <span style={{ fontWeight: "500", color: "#374151" }}>Time:</span>
+                  <span style={{ marginLeft: "4px", color: "#6b7280" }}>{reservation.time}</span>
+                </div>
+                <div>
+                  <span style={{ fontWeight: "500", color: "#374151" }}>Party Size:</span>
+                  <span style={{ marginLeft: "4px", color: "#6b7280" }}>{reservation.partySize}</span>
+                </div>
+                <div>
+                  <span style={{ fontWeight: "500", color: "#374151" }}>Email:</span>
+                  <span style={{ marginLeft: "4px", color: "#6b7280" }}>{reservation.email}</span>
+                </div>
+                {reservation.phone && (
+                  <div>
+                    <span style={{ fontWeight: "500", color: "#374151" }}>Phone:</span>
+                    <span style={{ marginLeft: "4px", color: "#6b7280" }}>{reservation.phone}</span>
+                  </div>
+                )}
+                {reservation.table && (
+                  <div>
+                    <span style={{ fontWeight: "500", color: "#374151" }}>Table:</span>
+                    <span style={{ marginLeft: "4px", color: "#6b7280" }}>{reservation.table}</span>
+                  </div>
+                )}
+              </div>
+              
+              {reservation.specialRequests && (
+                <div style={{ marginTop: "12px", padding: "8px", backgroundColor: "#f9fafb", borderRadius: "4px" }}>
+                  <span style={{ fontSize: "12px", fontWeight: "500", color: "#374151" }}>Special Requests:</span>
+                  <p style={{ margin: "4px 0 0 0", fontSize: "12px", color: "#6b7280" }}>
+                    {reservation.specialRequests}
+                  </p>
+                </div>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+// TodosPanel Component
+const TodosPanel = ({ todos }: { todos: Todo[] }) => {
+  return (
+    <div style={{ padding: "16px", height: "100%", overflow: "auto" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <h3 style={{ margin: 0, color: "#10b981", fontSize: "18px", fontWeight: "600" }}>
+          To-Dos ({todos.length})
+        </h3>
+      </div>
+      
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+        {todos.length === 0 ? (
+          <div style={{ 
+            textAlign: "center", 
+            color: "#6b7280", 
+            padding: "40px 20px",
+            border: "2px dashed #d1d5db",
+            borderRadius: "8px"
+          }}>
+            <p style={{ margin: 0, fontSize: "14px" }}>No to-dos yet</p>
+            <p style={{ margin: "8px 0 0 0", fontSize: "12px" }}>Ask the AI to create a to-do item!</p>
+          </div>
+        ) : (
+          todos.map((todo) => (
+            <div
+              key={todo.id}
+              style={{
+                backgroundColor: "white",
+                border: "1px solid #e5e7eb",
+                borderRadius: "6px",
+                padding: "12px",
+                boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+              }}
+            >
+              <div
+                style={{
+                  width: "16px",
+                  height: "16px",
+                  borderRadius: "50%",
+                  backgroundColor: todo.status === "completed" ? "#10b981" : "#d1d5db",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                {todo.status === "completed" && (
+                  <span style={{ color: "white", fontSize: "10px", fontWeight: "bold" }}>✓</span>
+                )}
+              </div>
+              
+              <div style={{ flex: 1 }}>
+                <p style={{ 
+                  margin: 0, 
+                  fontSize: "14px", 
+                  color: todo.status === "completed" ? "#6b7280" : "#111827",
+                  textDecoration: todo.status === "completed" ? "line-through" : "none",
+                  fontWeight: todo.status === "completed" ? "normal" : "500"
+                }}>
+                  {todo.task}
+                </p>
+                <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "#9ca3af" }}>
+                  Created: {new Date(todo.created_at).toLocaleDateString()}
+                </p>
+              </div>
+              
+              <span
+                style={{
+                  fontSize: "11px",
+                  fontWeight: "500",
+                  padding: "2px 6px",
+                  borderRadius: "3px",
+                  backgroundColor: todo.status === "completed" ? "#dcfce7" : "#fef3c7",
+                  color: todo.status === "completed" ? "#166534" : "#92400e",
+                }}
+              >
+                {todo.status.toUpperCase()}
+              </span>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
 
 // InventoryPanel Component
 const InventoryPanel = ({
@@ -425,7 +1086,7 @@ const InventoryPanel = ({
                       margin: 0,
                     }}
                   >
-                    {item.name}
+                    {JSON.stringify(item.name)}
                   </h4>
                   <p
                     style={{
@@ -434,7 +1095,7 @@ const InventoryPanel = ({
                       margin: "4px 0 0 0",
                     }}
                   >
-                    SKU: {item.sku}
+                    SKU: {JSON.stringify(item.sku)}
                   </p>
                 </div>
                 <button
@@ -466,7 +1127,7 @@ const InventoryPanel = ({
                     margin: 0,
                   }}
                 >
-                  {item.description}
+                  {JSON.stringify(item.description)}
                 </p>
               )}
 
@@ -480,63 +1141,9 @@ const InventoryPanel = ({
                   color: "#4b5563",
                 }}
               >
-                <span>💰 ${item.price}</span>
-                <span>📦 {item.quantity}</span>
-                <span>📂 {item.category}</span>
-              </div>
-
-              {/* Status and Quantity */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  fontSize: "12px",
-                }}
-              >
-                <span
-                  style={{
-                    padding: "2px 8px",
-                    borderRadius: "4px",
-                    border: "1px solid",
-                    backgroundColor:
-                      item.status === "in_stock"
-                        ? "#dcfce7"
-                        : item.status === "low_stock"
-                        ? "#fef3c7"
-                        : item.status === "out_of_stock"
-                        ? "#fecaca"
-                        : "#f3f4f6",
-                    color:
-                      item.status === "in_stock"
-                        ? "#166534"
-                        : item.status === "low_stock"
-                        ? "#92400e"
-                        : item.status === "out_of_stock"
-                        ? "#991b1b"
-                        : "#374151",
-                    borderColor:
-                      item.status === "in_stock"
-                        ? "#bbf7d0"
-                        : item.status === "low_stock"
-                        ? "#fde68a"
-                        : item.status === "out_of_stock"
-                        ? "#fca5a5"
-                        : "#d1d5db",
-                  }}
-                >
-                  {item.status.replace("_", " ")}
-                </span>
-                {item.quantity <= item.reorder_level && (
-                  <span
-                    style={{
-                      fontWeight: "500",
-                      color: "#dc2626",
-                    }}
-                  >
-                    ⚠️ Reorder
-                  </span>
-                )}
+                <span>💰 ${JSON.stringify(item.price)}</span>
+                <span>📦 {JSON.stringify(item.quantity)}</span>
+                <span>📂 {JSON.stringify(item.category)}</span>
               </div>
 
               {/* Quick Actions */}
@@ -632,7 +1239,7 @@ const InventoryPanel = ({
                     color: "#9ca3af",
                   }}
                 >
-                  Supplier: {item.supplier}
+                  Supplier: {JSON.stringify(item.supplier)}
                 </div>
               )}
 
@@ -656,7 +1263,10 @@ const InventoryPanel = ({
 // Main Shop Demo Component
 export const ShopDemo = () => {
   const [items, setItems] = useState<InventoryItem[]>([]);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [todos, setTodos] = useState<Todo[]>([]);
   const [showInventoryPanel, setShowInventoryPanel] = useState(true);
+  const [activeTab, setActiveTab] = useState<"inventory" | "reservations" | "todos">("inventory");
 
   // Inventory management functions
   const handleCreateItem = (item: Omit<InventoryItem, "id" | "created_at">) => {
@@ -772,16 +1382,27 @@ export const ShopDemo = () => {
     },
     tools: {
       // Inventory management tools
-      add_item: (
-        name: string,
-        sku: string,
-        price: number,
-        quantity: number,
-        category?: string,
-        description?: string,
-        supplier?: string,
-        reorderLevel: number = 5
-      ) => {
+      add_item: (parameters: {
+        name: string;
+        sku: string;
+        price: number;
+        quantity: number;
+        category?: string;
+        description?: string;
+        supplier?: string;
+        reorderLevel: number;
+      }) => {
+        const {
+          name,
+          sku,
+          price,
+          quantity,
+          category,
+          description,
+          supplier,
+          reorderLevel,
+        } = parameters;
+
         console.log("Adding item:", {
           name,
           sku,
@@ -934,13 +1555,13 @@ export const ShopDemo = () => {
         console.log("Listing items:", { category, status });
         let filteredItems = items;
 
-        if (category) {
+        if (category && typeof category === "string") {
           filteredItems = filteredItems.filter(
             (i) => i.category.toLowerCase() === category.toLowerCase()
           );
         }
 
-        if (status) {
+        if (status && typeof status === "string") {
           filteredItems = filteredItems.filter((i) => i.status === status);
         }
 
@@ -1011,6 +1632,16 @@ export const ShopDemo = () => {
 
       search_items: (query: string) => {
         console.log("Searching items:", query);
+        if (!query || typeof query !== "string") {
+          return {
+            success: false,
+            error: "Search query must be a non-empty string",
+            items: [],
+            total: 0,
+            message: "Invalid search query",
+          };
+        }
+
         const searchResults = items.filter(
           (item) =>
             item.name.toLowerCase().includes(query.toLowerCase()) ||
@@ -1030,7 +1661,257 @@ export const ShopDemo = () => {
           } matching "${query}"`,
         };
       },
+
+      // To-do management tools
+      create_to_do: async (params: { task_description: string }) => {
+        console.log("Creating to-do:", params);
+        const newTodo = {
+          id: Date.now().toString(),
+          task: params.task_description,
+          status: "pending" as const,
+          created_at: new Date().toISOString(),
+        };
+        setTodos((prev) => [...prev, newTodo]);
+        return {
+          success: true,
+          task_id: newTodo.id,
+          task_description: params.task_description,
+          message: `Created to-do: "${params.task_description}"`,
+        };
+      },
+
+      read_to_dos: async () => {
+        console.log("Reading to-dos");
+        return {
+          success: true,
+          todos: todos,
+          message: `Retrieved ${todos.length} to-do items`,
+        };
+      },
+
+      // Reservation management tools
+      create_reservation: async (params: any) => {
+        console.log("Creating reservation:", params);
+        const newReservation: Reservation = {
+          id: Date.now().toString(),
+          customerName: params.customerName,
+          email: params.email,
+          phone: params.phone,
+          date: params.date,
+          time: params.time,
+          partySize: params.partySize,
+          status: "confirmed",
+          specialRequests: params.specialRequests,
+          created_at: new Date().toISOString(),
+        };
+        setReservations((prev) => [...prev, newReservation]);
+        return {
+          success: true,
+          reservation: newReservation,
+          message: `Created reservation for ${params.customerName} on ${params.date} at ${params.time}`,
+        };
+      },
+
+      update_reservation: async (params: any) => {
+        console.log("Updating reservation:", params);
+        const reservation = reservations.find(
+          (r) => r.id === params.reservation_id
+        );
+        if (!reservation) {
+          return { success: false, error: "Reservation not found" };
+        }
+
+        const updates: Partial<Reservation> = {
+          updated_at: new Date().toISOString(),
+        };
+
+        if (params.new_time) updates.time = params.new_time;
+        if (params.new_date) updates.date = params.new_date;
+        if (params.party_size !== undefined)
+          updates.partySize = params.party_size;
+        if (params.special_requests !== undefined)
+          updates.specialRequests = params.special_requests;
+
+        const updatedReservation = { ...reservation, ...updates };
+        setReservations((prev) =>
+          prev.map((r) =>
+            r.id === params.reservation_id ? updatedReservation : r
+          )
+        );
+        return {
+          success: true,
+          reservation: updatedReservation,
+          message: `Updated reservation for ${reservation.customerName}`,
+        };
+      },
+
+      cancel_reservation: async (params: { id: string; reason?: string }) => {
+        console.log("Cancelling reservation:", params);
+        const reservation = reservations.find((r) => r.id === params.id);
+        if (!reservation) {
+          return { success: false, error: "Reservation not found" };
+        }
+
+        const updatedReservation = {
+          ...reservation,
+          status: "cancelled" as const,
+          updated_at: new Date().toISOString(),
+        };
+        setReservations((prev) =>
+          prev.map((r) => (r.id === params.id ? updatedReservation : r))
+        );
+        return {
+          success: true,
+          reservation: updatedReservation,
+          message: `Cancelled reservation for ${reservation.customerName}${
+            params.reason ? `: ${params.reason}` : ""
+          }`,
+        };
+      },
+
+      confirm_reservation: async (params: { id: string; table?: string }) => {
+        console.log("Confirming reservation:", params);
+        const reservation = reservations.find((r) => r.id === params.id);
+        if (!reservation) {
+          return { success: false, error: "Reservation not found" };
+        }
+
+        const updatedReservation = {
+          ...reservation,
+          status: "confirmed" as const,
+          table: params.table,
+          updated_at: new Date().toISOString(),
+        };
+        setReservations((prev) =>
+          prev.map((r) => (r.id === params.id ? updatedReservation : r))
+        );
+        return {
+          success: true,
+          reservation: updatedReservation,
+          message: `Confirmed reservation for ${reservation.customerName}${
+            params.table ? ` at table ${params.table}` : ""
+          }`,
+        };
+      },
+
+      mark_no_show: async (params: { id: string }) => {
+        console.log("Marking reservation as no-show:", params.id);
+        const reservation = reservations.find((r) => r.id === params.id);
+        if (!reservation) {
+          return { success: false, error: "Reservation not found" };
+        }
+
+        const updatedReservation = {
+          ...reservation,
+          status: "no_show" as const,
+          updated_at: new Date().toISOString(),
+        };
+        setReservations((prev) =>
+          prev.map((r) => (r.id === params.id ? updatedReservation : r))
+        );
+        return {
+          success: true,
+          reservation: updatedReservation,
+          message: `Marked ${reservation.customerName} as no-show`,
+        };
+      },
+
+      complete_reservation: async (params: { id: string }) => {
+        console.log("Completing reservation:", params.id);
+        const reservation = reservations.find((r) => r.id === params.id);
+        if (!reservation) {
+          return { success: false, error: "Reservation not found" };
+        }
+
+        const updatedReservation = {
+          ...reservation,
+          status: "completed" as const,
+          updated_at: new Date().toISOString(),
+        };
+        setReservations((prev) =>
+          prev.map((r) => (r.id === params.id ? updatedReservation : r))
+        );
+        return {
+          success: true,
+          reservation: updatedReservation,
+          message: `Completed reservation for ${reservation.customerName}`,
+        };
+      },
+
+      list_reservations: async (params?: {
+        status?: Reservation["status"];
+        date?: string;
+      }) => {
+        console.log("Listing reservations:", params);
+        let filteredReservations = reservations;
+
+        if (params?.status) {
+          filteredReservations = filteredReservations.filter(
+            (r) => r.status === params.status
+          );
+        }
+
+        if (params?.date) {
+          filteredReservations = filteredReservations.filter(
+            (r) => r.date === params.date
+          );
+        }
+
+        return {
+          success: true,
+          reservations: filteredReservations,
+          total: filteredReservations.length,
+          message: `Found ${filteredReservations.length} reservation${
+            filteredReservations.length !== 1 ? "s" : ""
+          }`,
+        };
+      },
+
+      get_availability: async (params: { date: string; time?: string }) => {
+        console.log("Checking availability:", params);
+        const dayReservations = reservations.filter(
+          (r) => r.date === params.date && r.status !== "cancelled"
+        );
+        const totalTables = 20; // Mock restaurant capacity
+        const bookedTables = dayReservations.length;
+        const availableTables = totalTables - bookedTables;
+
+        return {
+          success: true,
+          date: params.date,
+          time: params.time || "all day",
+          availableTables,
+          totalTables,
+          bookedTables,
+          availability: availableTables > 0 ? "available" : "fully_booked",
+          message: `${availableTables} tables available on ${params.date}${
+            params.time ? ` at ${params.time}` : ""
+          }`,
+        };
+      },
+
+      get_reservation_stats: async () => {
+        console.log("Getting reservation statistics");
+        const stats = {
+          total: reservations.length,
+          confirmed: reservations.filter((r) => r.status === "confirmed")
+            .length,
+          pending: reservations.filter((r) => r.status === "pending").length,
+          cancelled: reservations.filter((r) => r.status === "cancelled")
+            .length,
+          completed: reservations.filter((r) => r.status === "completed")
+            .length,
+          no_shows: reservations.filter((r) => r.status === "no_show").length,
+        };
+
+        return {
+          success: true,
+          stats,
+          message: `Reservation stats: ${stats.total} total, ${stats.confirmed} confirmed, ${stats.pending} pending`,
+        };
+      },
     },
+    clientTools: generateShopToolSchemas(),
   };
 
   return (
@@ -1045,15 +1926,81 @@ export const ShopDemo = () => {
         isolation: "isolate",
       }}
     >
-      {/* Left Side Inventory Panel */}
+      {/* Left Side Data Panel */}
       {showInventoryPanel && (
-        <InventoryPanel
-          items={items}
-          onCreateItem={handleCreateItem}
-          onUpdateItem={handleUpdateItem}
-          onDeleteItem={handleDeleteItem}
-          isLoading={false}
-        />
+        <div
+          style={{
+            width: "400px",
+            backgroundColor: "#f8fafc",
+            borderRight: "1px solid #e2e8f0",
+            display: "flex",
+            flexDirection: "column",
+            height: "100%",
+          }}
+        >
+          {/* Tab Navigation */}
+          <div
+            style={{
+              display: "flex",
+              borderBottom: "1px solid #e2e8f0",
+              backgroundColor: "white",
+            }}
+          >
+            {(["inventory", "reservations", "todos"] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                style={{
+                  flex: 1,
+                  padding: "12px 16px",
+                  border: "none",
+                  backgroundColor: activeTab === tab ? "#10b981" : "transparent",
+                  color: activeTab === tab ? "white" : "#6b7280",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  cursor: "pointer",
+                  textTransform: "capitalize",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseOver={(e) => {
+                  if (activeTab !== tab) {
+                    e.currentTarget.style.backgroundColor = "#f3f4f6";
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (activeTab !== tab) {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }
+                }}
+              >
+                {tab} ({
+                  tab === "inventory" ? items.length :
+                  tab === "reservations" ? reservations.length :
+                  todos.length
+                })
+              </button>
+            ))}
+          </div>
+
+          {/* Tab Content */}
+          <div style={{ flex: 1, overflow: "hidden" }}>
+            {activeTab === "inventory" && (
+              <InventoryPanel
+                items={items}
+                onCreateItem={handleCreateItem}
+                onUpdateItem={handleUpdateItem}
+                onDeleteItem={handleDeleteItem}
+                isLoading={false}
+              />
+            )}
+            {activeTab === "reservations" && (
+              <ReservationsPanel reservations={reservations} />
+            )}
+            {activeTab === "todos" && (
+              <TodosPanel todos={todos} />
+            )}
+          </div>
+        </div>
       )}
 
       {/* Main Chat Area on the Right */}

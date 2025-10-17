@@ -27,6 +27,9 @@ export type {
   ChatPosition,
   ConversationResponse,
   StreamEvent,
-  ToolResult
+  ToolResult,
+  ToolParameter,
+  ClientTool,
+  ClientTools
 } from './types';
 export type { ChatStatus } from './components/PromptInput';

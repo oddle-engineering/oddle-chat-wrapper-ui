@@ -1,151 +1,220 @@
-import React, { ReactNode, KeyboardEventHandler, forwardRef } from 'react';
+import React, { ReactNode, KeyboardEventHandler, forwardRef } from "react";
 
 // Base utility function for class names (simplified version of cn)
 const cn = (...classes: (string | undefined | false | null)[]): string => {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(" ");
 };
 
 // Status type for the submit button
-export type ChatStatus = 'idle' | 'submitted' | 'streaming' | 'error';
+export type ChatStatus = "idle" | "submitted" | "streaming" | "error";
 
 // Icons as SVG components
-const SendIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" fill="currentColor"/>
+const SendIcon = () => (
+  <svg
+    width="54"
+    height="55"
+    viewBox="0 0 54 55"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <g filter="url(#filter0_dd_121_23927)">
+      <path
+        d="M3 26.3541C3 13.0993 13.7452 2.35413 27 2.35413C40.2548 2.35413 51 13.0993 51 26.3541C51 39.609 40.2548 50.3541 27 50.3541C13.7452 50.3541 3 39.609 3 26.3541Z"
+        fill="#3D0099"
+        shape-rendering="crispEdges"
+      />
+      <g clip-path="url(#clip0_121_23927)">
+        <path
+          d="M16.3333 26.3541L18.2133 28.2341L25.6666 20.7941V37.0208H28.3333V20.7941L35.7733 28.2474L37.6666 26.3541L26.9999 15.6874L16.3333 26.3541Z"
+          fill="white"
+        />
+      </g>
+    </g>
+    <defs>
+      <filter
+        id="filter0_dd_121_23927"
+        x="0"
+        y="0.354126"
+        width="54"
+        height="54"
+        filterUnits="userSpaceOnUse"
+        color-interpolation-filters="sRGB"
+      >
+        <feFlood flood-opacity="0" result="BackgroundImageFix" />
+        <feColorMatrix
+          in="SourceAlpha"
+          type="matrix"
+          values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+          result="hardAlpha"
+        />
+        <feOffset dy="1" />
+        <feGaussianBlur stdDeviation="1" />
+        <feComposite in2="hardAlpha" operator="out" />
+        <feColorMatrix
+          type="matrix"
+          values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.06 0"
+        />
+        <feBlend
+          mode="normal"
+          in2="BackgroundImageFix"
+          result="effect1_dropShadow_121_23927"
+        />
+        <feColorMatrix
+          in="SourceAlpha"
+          type="matrix"
+          values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+          result="hardAlpha"
+        />
+        <feOffset dy="1" />
+        <feGaussianBlur stdDeviation="1.5" />
+        <feComposite in2="hardAlpha" operator="out" />
+        <feColorMatrix
+          type="matrix"
+          values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0"
+        />
+        <feBlend
+          mode="normal"
+          in2="effect1_dropShadow_121_23927"
+          result="effect2_dropShadow_121_23927"
+        />
+        <feBlend
+          mode="normal"
+          in="SourceGraphic"
+          in2="effect2_dropShadow_121_23927"
+          result="shape"
+        />
+      </filter>
+      <clipPath id="clip0_121_23927">
+        <rect
+          width="32"
+          height="32"
+          fill="white"
+          transform="translate(11 10.3541)"
+        />
+      </clipPath>
+    </defs>
   </svg>
 );
 
-const LoaderIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 2V6M12 18V22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12H6M18 12H22M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-  </svg>
-);
-
-const SquareIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="3" y="3" width="18" height="18" rx="2" fill="currentColor"/>
-  </svg>
-);
-
-const XIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-  </svg>
-);
 
 // Main PromptInput container
-export interface PromptInputProps extends React.HTMLAttributes<HTMLFormElement> {}
+export interface PromptInputProps
+  extends React.HTMLAttributes<HTMLFormElement> {}
 
 export const PromptInput = ({ className, ...props }: PromptInputProps) => (
-  <form
-    className={cn(
-      'chat-wrapper__prompt-input',
-      className
-    )}
-    {...props}
-  />
+  <form className={cn("chat-wrapper__prompt-input", className)} {...props} />
 );
 
 // Textarea component
-export interface PromptInputTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+export interface PromptInputTextareaProps
+  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   minHeight?: number;
   maxHeight?: number;
 }
 
-export const PromptInputTextarea = forwardRef<HTMLTextAreaElement, PromptInputTextareaProps>(({
-  onChange,
-  className,
-  placeholder = 'What would you like to know?',
-  minHeight = 48,
-  maxHeight = 164,
-  onKeyDown,
-  ...props
-}, ref) => {
-  const handleKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
-    if (e.key === 'Enter') {
-      if (e.shiftKey) {
-        // Allow newline
-        return;
+export const PromptInputTextarea = forwardRef<
+  HTMLTextAreaElement,
+  PromptInputTextareaProps
+>(
+  (
+    {
+      onChange,
+      className,
+      placeholder = "What would you like to know?",
+      minHeight = 48,
+      maxHeight = 164,
+      onKeyDown,
+      ...props
+    },
+    ref
+  ) => {
+    const handleKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
+      if (e.key === "Enter") {
+        if (e.shiftKey) {
+          // Allow newline
+          return;
+        }
+        // Submit on Enter (without Shift)
+        e.preventDefault();
+        const form = e.currentTarget.form;
+        if (form) {
+          const submitEvent = new Event("submit", {
+            cancelable: true,
+            bubbles: true,
+          });
+          form.dispatchEvent(submitEvent);
+        }
       }
-      // Submit on Enter (without Shift)
-      e.preventDefault();
-      const form = e.currentTarget.form;
-      if (form) {
-        const submitEvent = new Event('submit', { cancelable: true, bubbles: true });
-        form.dispatchEvent(submitEvent);
-      }
-    }
-    onKeyDown?.(e);
-  };
+      onKeyDown?.(e);
+    };
 
-  return (
-    <textarea
-      ref={ref}
-      className={cn(
-        'chat-wrapper__prompt-textarea',
-        className
-      )}
-      name="message"
-      onChange={onChange}
-      onKeyDown={handleKeyDown}
-      placeholder={placeholder}
-      style={{
-        minHeight: `${minHeight}px`,
-        maxHeight: `${maxHeight}px`,
-      }}
-      {...props}
-    />
-  );
-});
+    return (
+      <textarea
+        ref={ref}
+        className={cn("chat-wrapper__prompt-textarea", className)}
+        name="message"
+        onChange={onChange}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
+        style={{
+          minHeight: `${minHeight}px`,
+          maxHeight: `${maxHeight}px`,
+        }}
+        {...props}
+      />
+    );
+  }
+);
 
-PromptInputTextarea.displayName = 'PromptInputTextarea';
+PromptInputTextarea.displayName = "PromptInputTextarea";
 
 // Toolbar container
-export interface PromptInputToolbarProps extends React.HTMLAttributes<HTMLDivElement> {}
+export interface PromptInputToolbarProps
+  extends React.HTMLAttributes<HTMLDivElement> {}
 
 export const PromptInputToolbar = ({
   className,
   ...props
 }: PromptInputToolbarProps) => (
-  <div
-    className={cn('chat-wrapper__prompt-toolbar', className)}
-    {...props}
-  />
+  <div className={cn("chat-wrapper__prompt-toolbar", className)} {...props} />
 );
 
 // Tools container (left side of toolbar)
-export interface PromptInputToolsProps extends React.HTMLAttributes<HTMLDivElement> {}
+export interface PromptInputToolsProps
+  extends React.HTMLAttributes<HTMLDivElement> {}
 
 export const PromptInputTools = ({
   className,
   ...props
 }: PromptInputToolsProps) => (
-  <div
-    className={cn('chat-wrapper__prompt-tools', className)}
-    {...props}
-  />
+  <div className={cn("chat-wrapper__prompt-tools", className)} {...props} />
 );
 
 // Generic button component
-export interface PromptInputButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'ghost' | 'outline';
-  size?: 'default' | 'icon' | 'sm' | 'lg';
+export interface PromptInputButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: "default" | "ghost" | "outline";
+  size?: "default" | "icon" | "sm" | "lg";
 }
 
 export const PromptInputButton = ({
-  variant = 'ghost',
-  size = 'default',
+  variant = "ghost",
+  size = "default",
   className,
   children,
   ...props
 }: PromptInputButtonProps) => {
   // Auto-detect size based on children content
-  const autoSize = size === 'default' && (typeof children === 'string' || React.Children.count(children) === 1) ? 'icon' : size;
-  
+  const autoSize =
+    size === "default" &&
+    (typeof children === "string" || React.Children.count(children) === 1)
+      ? "icon"
+      : size;
+
   return (
     <button
       className={cn(
-        'chat-wrapper__prompt-button',
+        "chat-wrapper__prompt-button",
         `chat-wrapper__prompt-button--${variant}`,
         `chat-wrapper__prompt-button--${autoSize}`,
         className
@@ -159,40 +228,34 @@ export const PromptInputButton = ({
 };
 
 // Submit button with status awareness
-export interface PromptInputSubmitProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'ghost' | 'outline';
-  size?: 'default' | 'icon' | 'sm' | 'lg';
+export interface PromptInputSubmitProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: "default" | "ghost" | "outline";
+  size?: "default" | "icon" | "sm" | "lg";
   status?: ChatStatus;
 }
 
 export const PromptInputSubmit = ({
   className,
-  variant = 'default',
-  size = 'icon',
-  status = 'idle',
+  variant = "default",
+  size = "icon",
+  status = "idle",
   children,
   disabled,
   ...props
 }: PromptInputSubmitProps) => {
-  let Icon: ReactNode = <SendIcon className="chat-wrapper__prompt-icon" />;
-  
-  if (status === 'submitted') {
-    Icon = <LoaderIcon className="chat-wrapper__prompt-icon chat-wrapper__prompt-icon--spin" />;
-  } else if (status === 'streaming') {
-    Icon = <SquareIcon className="chat-wrapper__prompt-icon" />;
-  } else if (status === 'error') {
-    Icon = <XIcon className="chat-wrapper__prompt-icon" />;
-  }
+  let Icon: ReactNode = <SendIcon />;
 
-  const isDisabled = disabled || status === 'submitted' || status === 'streaming';
+  const isDisabled =
+    disabled || status === "submitted" || status === "streaming";
 
   return (
     <button
       className={cn(
-        'chat-wrapper__prompt-submit',
+        "chat-wrapper__prompt-submit",
         `chat-wrapper__prompt-submit--${variant}`,
         `chat-wrapper__prompt-submit--${size}`,
-        status === 'streaming' && 'chat-wrapper__prompt-submit--stop',
+        // status === "streaming" && "chat-wrapper__prompt-submit--stop",
         className
       )}
       type="submit"
@@ -205,18 +268,21 @@ export const PromptInputSubmit = ({
 };
 
 // Model select components (placeholder structure)
-export interface PromptInputModelSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {}
+export interface PromptInputModelSelectProps
+  extends React.SelectHTMLAttributes<HTMLSelectElement> {}
 
-export const PromptInputModelSelect = ({ className, children, ...props }: PromptInputModelSelectProps) => (
-  <select
-    className={cn('chat-wrapper__prompt-select', className)}
-    {...props}
-  >
+export const PromptInputModelSelect = ({
+  className,
+  children,
+  ...props
+}: PromptInputModelSelectProps) => (
+  <select className={cn("chat-wrapper__prompt-select", className)} {...props}>
     {children}
   </select>
 );
 
-export interface PromptInputModelSelectTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {}
+export interface PromptInputModelSelectTriggerProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {}
 
 export const PromptInputModelSelectTrigger = ({
   className,
@@ -224,7 +290,7 @@ export const PromptInputModelSelectTrigger = ({
   ...props
 }: PromptInputModelSelectTriggerProps) => (
   <button
-    className={cn('chat-wrapper__prompt-select-trigger', className)}
+    className={cn("chat-wrapper__prompt-select-trigger", className)}
     type="button"
     {...props}
   >
@@ -232,19 +298,21 @@ export const PromptInputModelSelectTrigger = ({
   </button>
 );
 
-export interface PromptInputModelSelectContentProps extends React.HTMLAttributes<HTMLDivElement> {}
+export interface PromptInputModelSelectContentProps
+  extends React.HTMLAttributes<HTMLDivElement> {}
 
 export const PromptInputModelSelectContent = ({
   className,
   ...props
 }: PromptInputModelSelectContentProps) => (
   <div
-    className={cn('chat-wrapper__prompt-select-content', className)}
+    className={cn("chat-wrapper__prompt-select-content", className)}
     {...props}
   />
 );
 
-export interface PromptInputModelSelectItemProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface PromptInputModelSelectItemProps
+  extends React.HTMLAttributes<HTMLDivElement> {
   value: string;
 }
 
@@ -254,13 +322,14 @@ export const PromptInputModelSelectItem = ({
   ...props
 }: PromptInputModelSelectItemProps) => (
   <div
-    className={cn('chat-wrapper__prompt-select-item', className)}
+    className={cn("chat-wrapper__prompt-select-item", className)}
     data-value={value}
     {...props}
   />
 );
 
-export interface PromptInputModelSelectValueProps extends React.HTMLAttributes<HTMLSpanElement> {
+export interface PromptInputModelSelectValueProps
+  extends React.HTMLAttributes<HTMLSpanElement> {
   placeholder?: string;
 }
 
@@ -270,7 +339,7 @@ export const PromptInputModelSelectValue = ({
   ...props
 }: PromptInputModelSelectValueProps) => (
   <span
-    className={cn('chat-wrapper__prompt-select-value', className)}
+    className={cn("chat-wrapper__prompt-select-value", className)}
     {...props}
   >
     {placeholder}

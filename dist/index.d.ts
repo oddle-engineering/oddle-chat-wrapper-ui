@@ -1,5 +1,6 @@
 import { default as default_2 } from 'react';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { MemoExoticComponent } from 'react';
 import { ReactNode } from 'react';
 
 export declare interface ChatConfig {
@@ -26,26 +27,38 @@ export declare interface ChatConfig {
     onError?: (error: Error) => void;
     onToolResult?: (tool: string, result: any) => void;
     onStreamingStatusChange?: (status: string) => void;
+    onBusinessDataUpdate?: (data: any) => void;
     customStyles?: React.CSSProperties;
-    endpoint?: 'brief-planner' | 'conversation';
+    endpoint?: "brief-planner" | "conversation";
 }
 
-export declare type ChatMode = 'sidebar' | 'fullscreen' | 'modal' | 'embedded';
+export declare type ChatMode = "sidebar" | "fullscreen" | "modal" | "embedded";
 
-export declare type ChatPosition = 'left' | 'right';
+export declare type ChatPosition = "left" | "right";
 
-export declare type ChatStatus = 'idle' | 'submitted' | 'streaming' | 'error';
+export declare type ChatStatus = "idle" | "submitted" | "streaming" | "error";
 
-export declare type ChatTheme = 'light' | 'dark' | 'auto';
+export declare type ChatTheme = "light" | "dark" | "auto";
 
-export declare function ChatWrapper({ apiUrl, config, tools, initialMessages, }: ChatWrapperProps): JSX_2.Element | null;
+export declare const ChatWrapper: MemoExoticComponent<typeof ChatWrapper_2>;
+
+declare function ChatWrapper_2({ apiUrl, config, tools, clientTools, initialMessages, }: ChatWrapperProps): JSX_2.Element | null;
 
 export declare interface ChatWrapperProps {
     apiUrl: string;
-    config: Omit<ChatConfig, 'apiEndpoint'>;
+    config: Omit<ChatConfig, "apiEndpoint">;
     tools?: Record<string, (...args: any[]) => any>;
+    clientTools?: ClientTools;
     initialMessages?: Message[];
 }
+
+export declare interface ClientTool {
+    name: string;
+    description: string;
+    parameters: ToolParameter[];
+}
+
+export declare type ClientTools = ClientTool[];
 
 export declare interface ConversationResponse {
     conversationId: string;
@@ -61,11 +74,18 @@ declare interface LoaderProps {
 
 export declare interface Message {
     id: string;
-    role: 'user' | 'assistant' | 'system';
+    role: "user" | "assistant" | "system" | "reasoning" | "tooling";
     content: string;
     timestamp: Date;
     isStreaming?: boolean;
     media?: string[];
+    toolData?: {
+        toolName: string;
+        callId: string;
+        parameters?: Record<string, any>;
+        result?: any;
+        status?: "processing" | "completed" | "error";
+    };
 }
 
 export declare const PromptInput: ({ className, ...props }: PromptInputProps) => JSX_2.Element;
@@ -73,8 +93,8 @@ export declare const PromptInput: ({ className, ...props }: PromptInputProps) =>
 export declare const PromptInputButton: ({ variant, size, className, children, ...props }: PromptInputButtonProps) => JSX_2.Element;
 
 declare interface PromptInputButtonProps extends default_2.ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'default' | 'ghost' | 'outline';
-    size?: 'default' | 'icon' | 'sm' | 'lg';
+    variant?: "default" | "ghost" | "outline";
+    size?: "default" | "icon" | "sm" | "lg";
 }
 
 export declare const PromptInputModelSelect: ({ className, children, ...props }: PromptInputModelSelectProps) => JSX_2.Element;
@@ -110,8 +130,8 @@ declare interface PromptInputProps extends default_2.HTMLAttributes<HTMLFormElem
 export declare const PromptInputSubmit: ({ className, variant, size, status, children, disabled, ...props }: PromptInputSubmitProps) => JSX_2.Element;
 
 declare interface PromptInputSubmitProps extends default_2.ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'default' | 'ghost' | 'outline';
-    size?: 'default' | 'icon' | 'sm' | 'lg';
+    variant?: "default" | "ghost" | "outline";
+    size?: "default" | "icon" | "sm" | "lg";
     status?: ChatStatus;
 }
 
@@ -145,10 +165,11 @@ declare interface ReasoningProps {
     children: ReactNode;
 }
 
-export declare function ReasoningTrigger({ title }: ReasoningTriggerProps): JSX_2.Element;
+export declare function ReasoningTrigger({ title, status, }: ReasoningTriggerProps): JSX_2.Element;
 
 declare interface ReasoningTriggerProps {
     title: string;
+    status?: "processing" | "completed" | "error";
 }
 
 export declare interface StreamEvent {
@@ -164,6 +185,22 @@ export declare interface StreamEvent {
     parameters?: any[] | Record<string, any> | any;
     todos?: any[];
     briefs?: any[];
+}
+
+export declare interface ToolParameter {
+    name: string;
+    type: string;
+    description: string;
+    isRequired: boolean;
+    schema: {
+        type: string;
+        properties?: Record<string, any>;
+        required?: string[];
+        additionalProperties?: boolean;
+        $schema?: string;
+        enum?: string[];
+        items?: any;
+    };
 }
 
 export declare interface ToolResult {

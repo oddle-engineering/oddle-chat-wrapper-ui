@@ -1,14 +1,21 @@
-export type ChatMode = 'sidebar' | 'fullscreen' | 'modal' | 'embedded';
-export type ChatPosition = 'left' | 'right';
-export type ChatTheme = 'light' | 'dark' | 'auto';
+export type ChatMode = "sidebar" | "fullscreen" | "modal" | "embedded";
+export type ChatPosition = "left" | "right";
+export type ChatTheme = "light" | "dark" | "auto";
 
 export interface Message {
   id: string;
-  role: 'user' | 'assistant' | 'system';
+  role: "user" | "assistant" | "system" | "reasoning" | "tooling";
   content: string;
   timestamp: Date;
   isStreaming?: boolean;
   media?: string[];
+  toolData?: {
+    toolName: string;
+    callId: string;
+    parameters?: Record<string, any>;
+    result?: any;
+    status?: "processing" | "completed" | "error";
+  };
 }
 
 export interface StreamEvent {
@@ -59,18 +66,85 @@ export interface ChatConfig {
   onError?: (error: Error) => void;
   onToolResult?: (tool: string, result: any) => void;
   onStreamingStatusChange?: (status: string) => void;
+  onBusinessDataUpdate?: (data: any) => void;
   customStyles?: React.CSSProperties;
-  endpoint?: 'brief-planner' | 'conversation';
+  endpoint?: "brief-planner" | "conversation";
 }
 
 export interface ChatWrapperProps {
   apiUrl: string;
-  config: Omit<ChatConfig, 'apiEndpoint'>;
+  config: Omit<ChatConfig, "apiEndpoint">;
   tools?: Record<string, (...args: any[]) => any>;
+  clientTools?: ClientTools;
   initialMessages?: Message[];
 }
 
 export interface ConversationResponse {
   conversationId: string;
   message: string;
+}
+
+export interface ToolParameter {
+  name: string;
+  type: string;
+  description: string;
+  isRequired: boolean;
+  schema: {
+    type: string;
+    properties?: Record<string, any>;
+    required?: string[];
+    additionalProperties?: boolean;
+    $schema?: string;
+    enum?: string[];
+    items?: any;
+  };
+}
+
+export interface ClientTool {
+  name: string;
+  description: string;
+  parameters: ToolParameter[];
+}
+
+export type ClientTools = ClientTool[];
+
+export interface BusinessData {
+  [key: string]: any;
+}
+
+export interface BusinessAgentClientProps {
+  toolSchemas?: any[];
+  clientTools?: Record<string, Function>;
+  businessContext: BusinessData;
+  onSetMessage?: (char: string) => void;
+  onSystemMessage?: (message: string) => void;
+  onBusinessDataUpdate?: (data: any) => void;
+  onReasoningUpdate?: (isThinking: boolean, content: string, toolCallRequest?: ToolCallRequest) => void;
+}
+
+export interface ToolCallRequest {
+  toolName: string;
+  parameters: Record<string, any>;
+  callId: string;
+}
+
+export interface WebSocketMessage {
+  type: string;
+  sessionId?: string;
+  content?: string;
+  data?: any;
+  event?: string;
+  error?: string;
+  toolName?: string;
+  parameters?: Record<string, any>;
+  callId?: string;
+  result?: any;
+  timestamp?: string;
+  uuid?: string;
+  connectionInfo?: any;
+  toolSchemas?: any[];
+  businessContext?: BusinessData;
+  agentType?: string;
+  pingTime?: string;
+  originalTimestamp?: string;
 }
