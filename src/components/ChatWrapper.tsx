@@ -8,302 +8,431 @@ import {
   ToolCallRequest,
 } from "../types";
 import { ChatStatus } from "./PromptInput";
-import { ChatInput } from "./ChatInput";
+import { ChatInput, ChatInputRef } from "./ChatInput";
 import { Reasoning, ReasoningTrigger, ReasoningContent } from "./Reasoning";
-import {
-  ToolingHandle,
-  ToolingHandleTrigger,
-} from "./ToolingHandle";
+import { ToolingHandle, ToolingHandleTrigger } from "./ToolingHandle";
 import { Loader } from "./Loader";
 import { BusinessAgentClient } from "../utils/BusinessAgentClient";
 import { sanitizeMessage } from "../utils/security";
 import "../styles/chat-wrapper.css";
 
 // Memoized Message Component to prevent unnecessary re-renders
-const MessageComponent = memo(({ 
-  message,
-  getReasoningTitle,
-  getReasoningStatus,
-  getToolingTitle,
-  getToolingStatus,
-  clientTools,
-  currentAssistantMessageIdRef
-}: {
-  message: Message;
-  getReasoningTitle: (content: string, isStreaming?: boolean) => string;
-  getReasoningStatus: (content: string, isStreaming?: boolean) => "processing" | "completed" | "error";
-  getToolingTitle: (content: string, isStreaming?: boolean) => string;
-  getToolingStatus: (content: string, isStreaming?: boolean) => "processing" | "completed" | "error";
-  clientTools: any[];
-  currentAssistantMessageIdRef: React.MutableRefObject<string | null>;
-}) => {
-  return (
-    <div
-      className={`chat-wrapper__message chat-wrapper__message--${
-        message.role === "system"
-          ? "assistant"
-          : message.role === "reasoning"
-          ? "reasoning"
-          : message.role === "tooling"
-          ? "tooling"
-          : message.role
-      }`}
-    >
-      {message.role === "reasoning" ? (
-        /* Reasoning message - no content wrapper */
-        <Reasoning isStreaming={message.isStreaming || false}>
-          <ReasoningTrigger
-            title={getReasoningTitle(
-              message.content,
-              message.isStreaming
-            )}
-            status={getReasoningStatus(
-              message.content,
-              message.isStreaming
-            )}
-          />
-          <ReasoningContent>{message.content}</ReasoningContent>
-        </Reasoning>
-      ) : message.role === "tooling" ? (
-        /* Tooling message - no content wrapper */
-        <ToolingHandle isStreaming={message.isStreaming || false}>
-          <ToolingHandleTrigger
-            title={getToolingTitle(
-              message.content,
-              message.isStreaming
-            )}
-            status={getToolingStatus(
-              message.content,
-              message.isStreaming
-            )}
-            toolData={message.toolData}
-            toolName={message.toolData?.toolName}
-            clientTools={clientTools}
-          />
-        </ToolingHandle>
-      ) : (
-        <div className="chat-wrapper__message-content">
-          {message.role === "assistant" &&
-          message.isStreaming &&
-          message.content === "" &&
-          message.id === currentAssistantMessageIdRef.current ? (
-            /* Show streaming indicator when no content yet */
-            <div className="chat-wrapper__streaming-placeholder">
-              <Loader size={16} variant="dots" />
-              <span>{`Thinking`}</span>
-            </div>
-          ) : message.role === "system" ? (
-            /* System message with collapsible tool result */
-            <SystemMessageCollapsible message={message} />
-          ) : message.role === "assistant" ? (
-            /* Assistant message with regular markdown display */
-            <div className="chat-wrapper__regular-message">
-              <div className="chat-wrapper__markdown-content">
-                <ReactMarkdown
-                  components={{
-                    pre: ({ children }) => (
-                      <pre className="chat-wrapper__code-block">
-                        {children}
-                      </pre>
-                    ),
-                    code: ({ children, className }) => {
-                      const isInline = !className;
-                      return isInline ? (
-                        <code className="chat-wrapper__inline-code">
-                          {children}
-                        </code>
-                      ) : (
-                        <code className="chat-wrapper__code-block">
-                          {children}
-                        </code>
-                      );
-                    },
-                    ul: ({ children }) => (
-                      <ul className="chat-wrapper__list">
-                        {children}
-                      </ul>
-                    ),
-                    ol: ({ children }) => (
-                      <ol className="chat-wrapper__ordered-list">
-                        {children}
-                      </ol>
-                    ),
-                    li: ({ children }) => (
-                      <li className="chat-wrapper__list-item">
-                        {children}
-                      </li>
-                    ),
-                  }}
-                >
-                  {message.content}
-                </ReactMarkdown>
+const MessageComponent = memo(
+  ({
+    message,
+    getReasoningTitle,
+    getReasoningStatus,
+    getToolingTitle,
+    getToolingStatus,
+    clientTools,
+    currentAssistantMessageIdRef,
+  }: {
+    message: Message;
+    getReasoningTitle: (content: string, isStreaming?: boolean) => string;
+    getReasoningStatus: (
+      content: string,
+      isStreaming?: boolean
+    ) => "processing" | "completed" | "error";
+    getToolingTitle: (content: string, isStreaming?: boolean) => string;
+    getToolingStatus: (
+      content: string,
+      isStreaming?: boolean
+    ) => "processing" | "completed" | "error";
+    clientTools: any[];
+    currentAssistantMessageIdRef: React.MutableRefObject<string | null>;
+  }) => {
+    return (
+      <div
+        className={`chat-wrapper__message chat-wrapper__message--${
+          message.role === "system"
+            ? "assistant"
+            : message.role === "reasoning"
+            ? "reasoning"
+            : message.role === "tooling"
+            ? "tooling"
+            : message.role
+        }`}
+      >
+        {message.role === "reasoning" ? (
+          /* Reasoning message - no content wrapper */
+          <Reasoning isStreaming={message.isStreaming || false}>
+            <ReasoningTrigger
+              title={getReasoningTitle(message.content, message.isStreaming)}
+              status={getReasoningStatus(message.content, message.isStreaming)}
+            />
+            <ReasoningContent>{message.content}</ReasoningContent>
+          </Reasoning>
+        ) : message.role === "tooling" ? (
+          /* Tooling message - no content wrapper */
+          <ToolingHandle isStreaming={message.isStreaming || false}>
+            <ToolingHandleTrigger
+              title={getToolingTitle(message.content, message.isStreaming)}
+              status={getToolingStatus(message.content, message.isStreaming)}
+              toolData={message.toolData}
+              toolName={message.toolData?.toolName}
+              clientTools={clientTools}
+            />
+          </ToolingHandle>
+        ) : (
+          <div className="chat-wrapper__message-content">
+            {message.role === "assistant" &&
+            message.isStreaming &&
+            message.content === "" &&
+            message.id === currentAssistantMessageIdRef.current ? (
+              /* Show streaming indicator when no content yet */
+              <div className="chat-wrapper__streaming-placeholder">
+                <Loader size={16} variant="dots" />
+                <span>{`Thinking`}</span>
               </div>
-            </div>
-          ) : (
-            /* User message display with markdown */
-            <div className="chat-wrapper__regular-message">
-              <div className="chat-wrapper__markdown-content">
-                <ReactMarkdown
-                  components={{
-                    pre: ({ children }) => (
-                      <pre className="chat-wrapper__code-block">
-                        {children}
-                      </pre>
-                    ),
-                    code: ({ children, className }) => {
-                      const isInline = !className;
-                      return isInline ? (
-                        <code className="chat-wrapper__inline-code">
+            ) : message.role === "system" ? (
+              /* System message with collapsible tool result */
+              <SystemMessageCollapsible message={message} />
+            ) : message.role === "assistant" ? (
+              /* Assistant message with regular markdown display */
+              <div className="chat-wrapper__regular-message">
+                <div className="chat-wrapper__markdown-content">
+                  <ReactMarkdown
+                    components={{
+                      pre: ({ children }) => (
+                        <pre className="chat-wrapper__code-block">
                           {children}
-                        </code>
-                      ) : (
-                        <code className="chat-wrapper__code">
+                        </pre>
+                      ),
+                      code: ({ children, className }) => {
+                        const isInline = !className;
+                        return isInline ? (
+                          <code className="chat-wrapper__inline-code">
+                            {children}
+                          </code>
+                        ) : (
+                          <code className="chat-wrapper__code-block">
+                            {children}
+                          </code>
+                        );
+                      },
+                      ul: ({ children }) => (
+                        <ul className="chat-wrapper__list">{children}</ul>
+                      ),
+                      ol: ({ children }) => (
+                        <ol className="chat-wrapper__ordered-list">
                           {children}
-                        </code>
-                      );
-                    },
-                    p: ({ children }) => (
-                      <p className="chat-wrapper__paragraph">
-                        {children}
-                      </p>
-                    ),
-                    h1: ({ children }) => (
-                      <h1 className="chat-wrapper__heading-1">
-                        {children}
-                      </h1>
-                    ),
-                    h2: ({ children }) => (
-                      <h2 className="chat-wrapper__heading-2">
-                        {children}
-                      </h2>
-                    ),
-                    h3: ({ children }) => (
-                      <h3 className="chat-wrapper__heading-3">
-                        {children}
-                      </h3>
-                    ),
-                    ul: ({ children }) => (
-                      <ul className="chat-wrapper__list">
-                        {children}
-                      </ul>
-                    ),
-                    ol: ({ children }) => (
-                      <ol className="chat-wrapper__ordered-list">
-                        {children}
-                      </ol>
-                    ),
-                    li: ({ children }) => (
-                      <li className="chat-wrapper__list-item">
-                        {children}
-                      </li>
-                    ),
-                    blockquote: ({ children }) => (
-                      <blockquote className="chat-wrapper__blockquote">
-                        {children}
-                      </blockquote>
-                    ),
-                    strong: ({ children }) => (
-                      <strong className="chat-wrapper__bold">
-                        {children}
-                      </strong>
-                    ),
-                    em: ({ children }) => (
-                      <em className="chat-wrapper__italic">
-                        {children}
-                      </em>
-                    ),
-                  }}
-                >
-                  {message.content.trim()}
-                </ReactMarkdown>
+                        </ol>
+                      ),
+                      li: ({ children }) => (
+                        <li className="chat-wrapper__list-item">{children}</li>
+                      ),
+                    }}
+                  >
+                    {message.content}
+                  </ReactMarkdown>
+                </div>
               </div>
-              {message.role === "user" &&
-                message.media &&
-                message.media.length > 0 && (
-                  <div className="chat-wrapper__media-grid">
-                    {message.media.map((imageData, index) => (
-                      <div
-                        key={index}
-                        className="chat-wrapper__media-item"
-                      >
-                        <img
-                          src={imageData}
-                          alt={`Attached image ${index + 1}`}
-                          className="chat-wrapper__media-image"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-});
+            ) : (
+              /* User message display with markdown */
+              <div className="chat-wrapper__regular-message">
+                <div className="chat-wrapper__markdown-content">
+                  <ReactMarkdown
+                    components={{
+                      pre: ({ children }) => (
+                        <pre className="chat-wrapper__code-block">
+                          {children}
+                        </pre>
+                      ),
+                      code: ({ children, className }) => {
+                        const isInline = !className;
+                        return isInline ? (
+                          <code className="chat-wrapper__inline-code">
+                            {children}
+                          </code>
+                        ) : (
+                          <code className="chat-wrapper__code">{children}</code>
+                        );
+                      },
+                      p: ({ children }) => (
+                        <p className="chat-wrapper__paragraph">{children}</p>
+                      ),
+                      h1: ({ children }) => (
+                        <h1 className="chat-wrapper__heading-1">{children}</h1>
+                      ),
+                      h2: ({ children }) => (
+                        <h2 className="chat-wrapper__heading-2">{children}</h2>
+                      ),
+                      h3: ({ children }) => (
+                        <h3 className="chat-wrapper__heading-3">{children}</h3>
+                      ),
+                      ul: ({ children }) => (
+                        <ul className="chat-wrapper__list">{children}</ul>
+                      ),
+                      ol: ({ children }) => (
+                        <ol className="chat-wrapper__ordered-list">
+                          {children}
+                        </ol>
+                      ),
+                      li: ({ children }) => (
+                        <li className="chat-wrapper__list-item">{children}</li>
+                      ),
+                      blockquote: ({ children }) => (
+                        <blockquote className="chat-wrapper__blockquote">
+                          {children}
+                        </blockquote>
+                      ),
+                      strong: ({ children }) => (
+                        <strong className="chat-wrapper__bold">
+                          {children}
+                        </strong>
+                      ),
+                      em: ({ children }) => (
+                        <em className="chat-wrapper__italic">{children}</em>
+                      ),
+                    }}
+                  >
+                    {message.content.trim()}
+                  </ReactMarkdown>
+                </div>
+                {message.role === "user" &&
+                  message.media &&
+                  message.media.length > 0 && (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "8px",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      {message.media.map((media, index) => (
+                        <div
+                          key={index}
+                          style={{
+                            position: "relative",
+                            display: "inline-block",
+                          }}
+                        >
+                          {media.startsWith("data:image/") ? (
+                            <div
+                              style={{
+                                position: "relative",
+                                width: "56px",
+                                height: "56px",
+                                borderRadius: "8px",
+                                overflow: "hidden",
+                                border: "1px solid #e2e8f0",
+                              }}
+                            >
+                              {/* Main image */}
+                              <img
+                                src={media}
+                                alt={`Attachment ${index + 1}`}
+                                style={{
+                                  width: "100%",
+                                  height: "100%",
+                                  objectFit: "cover",
+                                }}
+                              />
+                              {/* Dark overlay on top of image */}
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  top: 0,
+                                  left: 0,
+                                  right: 0,
+                                  bottom: 0,
+                                  backgroundColor: "rgba(0, 0, 0, 0.2)",
+                                  zIndex: 1,
+                                }}
+                              />
+                            </div>
+                          ) : (
+                            <div
+                              style={{
+                                position: "relative",
+                                display: "flex",
+                                alignItems: "center",
+                                backgroundColor: "#1f2937",
+                                borderRadius: "8px",
+                                padding: "8px",
+                                minWidth: "200px",
+                                maxWidth: "300px",
+                                height: "56px",
+                              }}
+                            >
+                              {/* File icon */}
+                              <div
+                                style={{
+                                  width: "40px",
+                                  height: "40px",
+                                  backgroundColor: "#8b5cf6",
+                                  borderRadius: "8px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  marginRight: "12px",
+                                  flexShrink: 0,
+                                }}
+                              >
+                                <svg
+                                  width="20"
+                                  height="20"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z"
+                                    fill="white"
+                                  />
+                                  <path
+                                    d="M14 2V8H20"
+                                    fill="none"
+                                    stroke="white"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  />
+                                </svg>
+                              </div>
+
+                              {/* File info */}
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div
+                                  style={{
+                                    color: "white",
+                                    fontSize: "14px",
+                                    fontWeight: "500",
+                                    marginBottom: "2px",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap",
+                                    maxWidth: "200px",
+                                  }}
+                                >
+                                  {/* Extract filename from media string */}
+                                  {(() => {
+                                    const nameMatch =
+                                      media.match(/name=([^;]+)/);
+                                    if (nameMatch) {
+                                      return decodeURIComponent(nameMatch[1]);
+                                    }
+                                    return "document.pdf";
+                                  })()}
+                                </div>
+                                <div
+                                  style={{
+                                    color: "#9ca3af",
+                                    fontSize: "12px",
+                                    textTransform: "uppercase",
+                                  }}
+                                >
+                                  {/* Extract file type from media string */}
+                                  {(() => {
+                                    const typeMatch =
+                                      media.match(/data:([^;]+)/);
+                                    if (typeMatch) {
+                                      const mimeType = typeMatch[1];
+                                      switch (mimeType) {
+                                        case "application/pdf":
+                                          return "PDF";
+                                        case "application/msword":
+                                        case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+                                          return "DOC";
+                                        case "application/vnd.ms-excel":
+                                        case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+                                          return "XLS";
+                                        case "application/vnd.ms-powerpoint":
+                                        case "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+                                          return "PPT";
+                                        case "text/plain":
+                                          return "TXT";
+                                        case "text/csv":
+                                          return "CSV";
+                                        case "application/json":
+                                          return "JSON";
+                                        case "application/xml":
+                                        case "text/xml":
+                                          return "XML";
+                                        case "application/zip":
+                                          return "ZIP";
+                                        case "application/x-rar-compressed":
+                                          return "RAR";
+                                        default:
+                                          // Extract the subtype after the slash
+                                          const subtype =
+                                            mimeType.split("/")[1];
+                                          return subtype
+                                            ? subtype
+                                                .toUpperCase()
+                                                .substring(0, 4)
+                                            : "FILE";
+                                      }
+                                    }
+                                    return "FILE";
+                                  })()}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+);
 
 MessageComponent.displayName = "MessageComponent";
 
 // Separate component for streaming message to avoid re-rendering message list
-const StreamingMessage = memo(({ 
-  content, 
-  messageId
-}: { 
-  content: string; 
-  messageId: string | null;
-}) => {
-  if (!messageId || !content) return null;
+const StreamingMessage = memo(
+  ({ content, messageId }: { content: string; messageId: string | null }) => {
+    if (!messageId || !content) return null;
 
-  return (
-    <div className="chat-wrapper__message chat-wrapper__message--assistant">
-      <div className="chat-wrapper__message-content">
-        <div className="chat-wrapper__regular-message">
-          <div className="chat-wrapper__markdown-content">
-            <ReactMarkdown
-              components={{
-                pre: ({ children }) => (
-                  <pre className="chat-wrapper__code-block">
-                    {children}
-                  </pre>
-                ),
-                code: ({ children, className }) => {
-                  const isInline = !className;
-                  return isInline ? (
-                    <code className="chat-wrapper__inline-code">
-                      {children}
-                    </code>
-                  ) : (
-                    <code className="chat-wrapper__code-block">
-                      {children}
-                    </code>
-                  );
-                },
-                ul: ({ children }) => (
-                  <ul className="chat-wrapper__list">
-                    {children}
-                  </ul>
-                ),
-                ol: ({ children }) => (
-                  <ol className="chat-wrapper__ordered-list">
-                    {children}
-                  </ol>
-                ),
-                li: ({ children }) => (
-                  <li className="chat-wrapper__list-item">
-                    {children}
-                  </li>
-                ),
-              }}
-            >
-              {content}
-            </ReactMarkdown>
+    return (
+      <div className="chat-wrapper__message chat-wrapper__message--assistant">
+        <div className="chat-wrapper__message-content">
+          <div className="chat-wrapper__regular-message">
+            <div className="chat-wrapper__markdown-content">
+              <ReactMarkdown
+                components={{
+                  pre: ({ children }) => (
+                    <pre className="chat-wrapper__code-block">{children}</pre>
+                  ),
+                  code: ({ children, className }) => {
+                    const isInline = !className;
+                    return isInline ? (
+                      <code className="chat-wrapper__inline-code">
+                        {children}
+                      </code>
+                    ) : (
+                      <code className="chat-wrapper__code-block">
+                        {children}
+                      </code>
+                    );
+                  },
+                  ul: ({ children }) => (
+                    <ul className="chat-wrapper__list">{children}</ul>
+                  ),
+                  ol: ({ children }) => (
+                    <ol className="chat-wrapper__ordered-list">{children}</ol>
+                  ),
+                  li: ({ children }) => (
+                    <li className="chat-wrapper__list-item">{children}</li>
+                  ),
+                }}
+              >
+                {content}
+              </ReactMarkdown>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
-});
+    );
+  }
+);
 
 StreamingMessage.displayName = "StreamingMessage";
 
@@ -609,7 +738,6 @@ function ChatWrapper({
 
   // Advanced state for tool results and streaming
   const [toolResults] = useState<ToolResult[]>([]);
-  const [uploadedMedia, setUploadedMedia] = useState<string[]>([]);
   const [streamingStatus, setStreamingStatus] = useState("");
   const [isThinking, setIsThinking] = useState(false);
   const [, setReasoningContent] = useState("");
@@ -619,12 +747,13 @@ function ChatWrapper({
   const [isHandlingTool, setIsHandlingTool] = useState(false);
 
   // Tooling handling state
-  const [, setToolingMessagesByCallId] = useState<
-    Map<string, string>
-  >(new Map()); // Map callId -> messageId
+  const [, setToolingMessagesByCallId] = useState<Map<string, string>>(
+    new Map()
+  ); // Map callId -> messageId
 
   // Refs for managing streaming
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatInputRef = useRef<ChatInputRef>(null);
   const currentAssistantMessageIdRef = useRef<string | null>(null);
   const shouldUpdateMessageRef = useRef<boolean>(true);
   const streamingContentRef = useRef<string>("");
@@ -637,60 +766,70 @@ function ChatWrapper({
 
   // Memoized helper functions to prevent unnecessary re-renders
   const getReasoningStatus = useMemo(
-    () => (content: string, isStreaming?: boolean): "processing" | "completed" | "error" => {
-      if (isStreaming === false) {
+    () =>
+      (
+        content: string,
+        isStreaming?: boolean
+      ): "processing" | "completed" | "error" => {
+        if (isStreaming === false) {
+          if (content.includes("❌")) return "error";
+          return "completed";
+        }
+        if (content.includes("✅ Completed:") || content.includes("✅"))
+          return "completed";
         if (content.includes("❌")) return "error";
-        return "completed";
-      }
-      if (content.includes("✅ Completed:") || content.includes("✅"))
-        return "completed";
-      if (content.includes("❌")) return "error";
-      return "processing";
-    },
+        return "processing";
+      },
     []
   );
 
   const getReasoningTitle = useMemo(
-    () => (content: string, isStreaming?: boolean): string => {
-      if (isStreaming === false) {
+    () =>
+      (content: string, isStreaming?: boolean): string => {
+        if (isStreaming === false) {
+          if (content.includes("❌")) return "Error";
+          return "Completed";
+        }
+        if (content.includes("✅ Completed:") || content.includes("✅"))
+          return "Completed";
         if (content.includes("❌")) return "Error";
-        return "Completed";
-      }
-      if (content.includes("✅ Completed:") || content.includes("✅"))
-        return "Completed";
-      if (content.includes("❌")) return "Error";
-      if (content.includes("🔧 Handling:")) return "Thinking...";
-      return "Thinking...";
-    },
+        if (content.includes("🔧 Handling:")) return "Thinking...";
+        return "Thinking...";
+      },
     []
   );
 
   const getToolingTitle = useMemo(
-    () => (content: string, isStreaming?: boolean): string => {
-      if (isStreaming === false) {
+    () =>
+      (content: string, isStreaming?: boolean): string => {
+        if (isStreaming === false) {
+          if (content.includes("❌")) return "Tool Error";
+          return "Tool Completed";
+        }
+        if (content.includes("✅ Completed:") || content.includes("✅"))
+          return "Tool Completed";
         if (content.includes("❌")) return "Tool Error";
-        return "Tool Completed";
-      }
-      if (content.includes("✅ Completed:") || content.includes("✅"))
-        return "Tool Completed";
-      if (content.includes("❌")) return "Tool Error";
-      if (content.includes("🔧 Handling:")) return "Tool Processing...";
-      return "Tool Processing...";
-    },
+        if (content.includes("🔧 Handling:")) return "Tool Processing...";
+        return "Tool Processing...";
+      },
     []
   );
 
   const getToolingStatus = useMemo(
-    () => (content: string, isStreaming?: boolean): "processing" | "completed" | "error" => {
-      if (isStreaming === false) {
+    () =>
+      (
+        content: string,
+        isStreaming?: boolean
+      ): "processing" | "completed" | "error" => {
+        if (isStreaming === false) {
+          if (content.includes("❌")) return "error";
+          return "completed";
+        }
+        if (content.includes("✅ Completed:") || content.includes("✅"))
+          return "completed";
         if (content.includes("❌")) return "error";
-        return "completed";
-      }
-      if (content.includes("✅ Completed:") || content.includes("✅"))
-        return "completed";
-      if (content.includes("❌")) return "error";
-      return "processing";
-    },
+        return "processing";
+      },
     []
   );
 
@@ -700,7 +839,7 @@ function ChatWrapper({
       // Sanitize content based on role
       const isAssistant = role === "assistant";
       const sanitizedContent = sanitizeMessage(content, isAssistant);
-      
+
       setMessages((prev) => [
         ...prev,
         {
@@ -714,15 +853,16 @@ function ChatWrapper({
     [generateId]
   );
 
-
-
   // Handle chat finished event
   // Helper function to finalize any current streaming message
   const finalizeCurrentStreamingMessage = useCallback(() => {
     if (currentAssistantMessageIdRef.current && streamingContentRef.current) {
       // Final sanitization check before storing the complete message
-      const sanitizedContent = sanitizeMessage(streamingContentRef.current, true);
-      
+      const sanitizedContent = sanitizeMessage(
+        streamingContentRef.current,
+        true
+      );
+
       const finalMessage: Message = {
         id: currentAssistantMessageIdRef.current,
         role: "assistant",
@@ -730,30 +870,32 @@ function ChatWrapper({
         timestamp: new Date(),
         isStreaming: false,
       };
-      
+
       setMessages((prev) => [...prev, finalMessage]);
-      
+
       // Reset streaming state
       currentAssistantMessageIdRef.current = null;
       streamingContentRef.current = "";
       setStreamingContent("");
-      
+
       return true; // Indicates a message was finalized
     }
     return false; // No streaming message to finalize
   }, []);
 
-  const handleChatFinished = useCallback(
-    () => {
-      setIsStreaming(false);
-      setIsThinking(false); // Hide thinking bubble when chat completes
-      setChatStatus("idle");
+  const handleChatFinished = useCallback(() => {
+    setIsStreaming(false);
+    setIsThinking(false); // Hide thinking bubble when chat completes
+    setChatStatus("idle");
 
-      // Finalize any current streaming message
-      finalizeCurrentStreamingMessage();
-    },
-    [finalizeCurrentStreamingMessage]
-  );
+    // Finalize any current streaming message
+    finalizeCurrentStreamingMessage();
+    console.log("clog focus...");
+    // Focus the input after assistant response completes
+    setTimeout(() => {
+      chatInputRef.current?.focus();
+    }, 0);
+  }, [finalizeCurrentStreamingMessage]);
 
   // Handle chat error event
   const handleChatError = useCallback(
@@ -762,10 +904,10 @@ function ChatWrapper({
       setIsStreaming(false);
       setIsThinking(false); // Hide thinking bubble on error
       setChatStatus("error");
-      
+
       // Finalize any current streaming message before showing error
       finalizeCurrentStreamingMessage();
-      
+
       addMessage("system", `❌ Chat error: ${error}`);
     },
     [addMessage, finalizeCurrentStreamingMessage]
@@ -788,7 +930,7 @@ function ChatWrapper({
         onSetMessage: (char: string) => {
           // Sanitize incoming character data from assistant
           const sanitizedChar = sanitizeMessage(char, true);
-          
+
           // Check if we're already streaming
           if (currentAssistantMessageIdRef.current) {
             // Update streaming content without re-rendering messages array
@@ -858,7 +1000,7 @@ function ChatWrapper({
             if (isToolStarted && !existingMessageId) {
               // Cut off any current streaming message before creating tooling message
               finalizeCurrentStreamingMessage();
-              
+
               // Extract tool name from content
               const toolNameMatch = content.match(/🔧 Handling: (.+)/);
               const toolName = toolNameMatch
@@ -1002,9 +1144,7 @@ function ChatWrapper({
 
   // DEBUG: Track isHandlingReasoning state changes
   useEffect(() => {
-    console.log(
-      "💭 DEBUG: isHandlingReasoning state changed:"
-    );
+    console.log("💭 DEBUG: isHandlingReasoning state changed:");
   }, []);
 
   // BusinessAgentClient connection management
@@ -1087,60 +1227,65 @@ function ChatWrapper({
     setStreamingStatus("");
     setIsThinking(false);
     setReasoningContent("");
-    
+
     // Clean up streaming state
     currentAssistantMessageIdRef.current = null;
     streamingContentRef.current = "";
     setStreamingContent("");
-    
+
     resetToolHandling(); // Clear any ongoing tool handling
   }, [resetToolHandling]);
 
   // Handle file upload
-  const handleFileUpload = useCallback(async (files: File[]) => {
-    console.log("Files selected:", files);
+  const handleFileUpload = useCallback(
+    async (files: File[]): Promise<string[]> => {
+      console.log("Files selected:", files);
 
-    const newMedia: string[] = [];
+      const newMedia: string[] = [];
 
-    for (const file of files) {
-      try {
-        // Convert file to base64 for images or read as text for text files
-        if (file.type.startsWith("image/")) {
-          const reader = new FileReader();
-          const result = await new Promise<string>((resolve, reject) => {
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-          });
-          newMedia.push(result);
-        } else if (
-          file.type.startsWith("text/") ||
-          file.name.endsWith(".txt")
-        ) {
-          const reader = new FileReader();
-          const text = await new Promise<string>((resolve, reject) => {
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsText(file);
-          });
-          // For text files, we can add them as a message or store as metadata
-          console.log("Text file content:", text);
-          // Could add as a system message or handle differently
-        } else {
-          console.log("File type not supported for preview:", file.type);
-          // For other files, just store the name/metadata
-          newMedia.push(`data:application/octet-stream;base64,${file.name}`);
+      for (const file of files) {
+        try {
+          // Convert file to base64 for images or read as text for text files
+          if (file.type.startsWith("image/")) {
+            const reader = new FileReader();
+            const result = await new Promise<string>((resolve, reject) => {
+              reader.onload = () => resolve(reader.result as string);
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            });
+            newMedia.push(result);
+          } else if (
+            file.type.startsWith("text/") ||
+            file.name.endsWith(".txt")
+          ) {
+            const reader = new FileReader();
+            const text = await new Promise<string>((resolve, reject) => {
+              reader.onload = () => resolve(reader.result as string);
+              reader.onerror = reject;
+              reader.readAsText(file);
+            });
+            // For text files, we can add them as a message or store as metadata
+            console.log("Text file content:", text);
+            // Could add as a system message or handle differently
+          } else {
+            console.log("File type not supported for preview:", file.type);
+            // For other files, store metadata with filename
+            newMedia.push(
+              `data:${file.type};name=${encodeURIComponent(
+                file.name
+              )};base64,placeholder`
+            );
+          }
+        } catch (error) {
+          console.error("Error processing file:", error);
         }
-      } catch (error) {
-        console.error("Error processing file:", error);
       }
-    }
 
-    if (newMedia.length > 0) {
-      setUploadedMedia((prev) => [...prev, ...newMedia]);
       console.log("Added media:", newMedia);
-    }
-  }, []);
+      return newMedia;
+    },
+    []
+  );
 
   // Modal controls
   const openModal = useCallback(() => {
@@ -1484,106 +1629,14 @@ function ChatWrapper({
 
             {renderToolResults()}
 
-            {/* Media preview section */}
-            {uploadedMedia.length > 0 && (
-              <div
-                style={{
-                  padding: "12px 16px",
-                  borderTop: "1px solid #e2e8f0",
-                  backgroundColor: "#f8fafc",
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "8px",
-                  alignItems: "center",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: "12px",
-                    color: "#6b7280",
-                    fontWeight: "500",
-                  }}
-                >
-                  {uploadedMedia.length} file
-                  {uploadedMedia.length > 1 ? "s" : ""} attached:
-                </span>
-                {uploadedMedia.map((media, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      position: "relative",
-                      display: "inline-block",
-                    }}
-                  >
-                    {media.startsWith("data:image/") ? (
-                      <img
-                        src={media}
-                        alt={`Attachment ${index + 1}`}
-                        style={{
-                          width: "40px",
-                          height: "40px",
-                          objectFit: "cover",
-                          borderRadius: "4px",
-                          border: "1px solid #e2e8f0",
-                        }}
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          width: "40px",
-                          height: "40px",
-                          backgroundColor: "#e2e8f0",
-                          borderRadius: "4px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: "12px",
-                          color: "#6b7280",
-                        }}
-                      >
-                        📎
-                      </div>
-                    )}
-                    <button
-                      onClick={() => {
-                        setUploadedMedia((prev) =>
-                          prev.filter((_, i) => i !== index)
-                        );
-                      }}
-                      style={{
-                        position: "absolute",
-                        top: "-4px",
-                        right: "-4px",
-                        width: "16px",
-                        height: "16px",
-                        borderRadius: "50%",
-                        backgroundColor: "#ef4444",
-                        color: "white",
-                        border: "none",
-                        fontSize: "10px",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                      title="Remove attachment"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
             <ChatInput
+              ref={chatInputRef}
               placeholder={config.placeholder}
               disabled={isStreaming}
               chatStatus={chatStatus}
-              uploadedMedia={uploadedMedia}
               fileUploadEnabled={config.features?.fileUpload}
               onSubmit={(message, media) => handleSubmit(message, media)}
               onFileUpload={handleFileUpload}
-              onClearMedia={() => setUploadedMedia([])}
               onStopGeneration={stopGeneration}
             />
           </>

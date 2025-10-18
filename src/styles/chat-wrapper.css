@@ -1375,10 +1375,10 @@
 .chat-wrapper__prompt-input {
   position: relative;
   background-color: #ffffff;
-  border: 1px solid #e2e8f0;
+  border: 2px solid #e2e8f0;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  transition: all 0.2s ease-in-out;
+  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); */
+  /* transition: all 0.2s ease-in-out; */
   overflow: hidden;
   margin: 12px;
 }
