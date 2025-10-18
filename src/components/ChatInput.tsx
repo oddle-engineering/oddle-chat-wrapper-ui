@@ -8,6 +8,7 @@ import {
   PromptInputSubmit,
   ChatStatus,
 } from "./PromptInput";
+import { sanitizeMessage, sanitizeFileName } from "../utils/security";
 
 interface ChatInputProps {
   placeholder?: string;
@@ -38,15 +39,38 @@ export const ChatInput = ({
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       const formData = new FormData(e.currentTarget);
-      const message = formData.get("message") as string;
-      if (message?.trim()) {
-        onSubmit(message.trim(), uploadedMedia);
+      const rawMessage = formData.get("message") as string;
+      
+      if (rawMessage?.trim()) {
+        // Sanitize the user message for security
+        const sanitizedMessage = sanitizeMessage(rawMessage.trim(), false);
+        
+        // Check if sanitization removed everything
+        if (!sanitizedMessage.trim()) {
+          console.warn('Message was blocked due to security concerns');
+          // Optionally show user feedback
+          return;
+        }
+        
+        onSubmit(sanitizedMessage, uploadedMedia);
         setInput("");
         onClearMedia();
       }
     },
     [onSubmit, uploadedMedia, onClearMedia]
   );
+
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const rawValue = e.target.value;
+    // For real-time input, we can be less strict than final submission
+    // Just prevent the most dangerous content while typing
+    const sanitizedValue = rawValue
+      .replace(/<script[\s\S]*?<\/script>/gi, '') // Remove script tags
+      .replace(/javascript:/gi, '') // Remove javascript: URLs
+      .replace(/on\w+\s*=/gi, ''); // Remove event handlers
+    
+    setInput(sanitizedValue);
+  }, []);
 
   const handleFileUploadClick = useCallback(() => {
     const input = document.createElement("input");
@@ -56,7 +80,39 @@ export const ChatInput = ({
     input.onchange = (e) => {
       const files = (e.target as HTMLInputElement).files;
       if (files) {
-        onFileUpload(Array.from(files));
+        // Validate and sanitize file names for security
+        const validFiles = Array.from(files).filter(file => {
+          const sanitizedName = sanitizeFileName(file.name);
+          if (sanitizedName !== file.name) {
+            console.warn(`File name sanitized: ${file.name} -> ${sanitizedName}`);
+          }
+          
+          // Check file size (limit to 10MB)
+          if (file.size > 10 * 1024 * 1024) {
+            console.warn(`File too large: ${file.name} (${file.size} bytes)`);
+            return false;
+          }
+          
+          // Basic file type validation
+          const allowedTypes = [
+            'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+            'text/plain', 'text/csv',
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+          ];
+          
+          if (!allowedTypes.includes(file.type)) {
+            console.warn(`File type not allowed: ${file.name} (${file.type})`);
+            return false;
+          }
+          
+          return true;
+        });
+        
+        if (validFiles.length > 0) {
+          onFileUpload(validFiles);
+        }
       }
     };
     input.click();
@@ -67,7 +123,7 @@ export const ChatInput = ({
       <PromptInputTextarea
         name="message"
         value={input}
-        onChange={(e) => setInput(e.target.value)}
+        onChange={handleInputChange}
         placeholder={placeholder}
         disabled={disabled}
       />

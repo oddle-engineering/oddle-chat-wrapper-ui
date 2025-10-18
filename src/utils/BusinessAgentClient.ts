@@ -21,12 +21,31 @@ export class BusinessAgentClient {
   private toolSchemas: any[] = [];
   private businessContext: BusinessData = {};
   private reconnectAttempts: number = 0;
+  private maxReconnectAttempts: number = 5;
   private reconnectTimer: number | null = null;
+  private reconnectDelay: number = 1000; // Start with 1 second
+  private heartbeatInterval: number | null = null;
+  private isReconnecting: boolean = false;
+  private visibilityChangeHandler: () => void;
+  private initResolve?: (value?: any) => void;
+  private initReject?: (reason?: any) => void;
 
   constructor() {
     this.sessionId = `business_${Date.now()}_${Math.random()
       .toString(36)
       .substr(2, 9)}`;
+    
+    // Handle tab visibility changes
+    this.visibilityChangeHandler = () => {
+      if (document.visibilityState === 'visible' && !this.isConnected && !this.isReconnecting) {
+        console.log('Tab became visible, checking connection...');
+        this.attemptReconnect();
+      }
+    };
+    
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', this.visibilityChangeHandler);
+    }
   }
 
   async onInit(props: BusinessAgentClientProps): Promise<void> {
@@ -40,72 +59,201 @@ export class BusinessAgentClient {
 
     return new Promise((resolve, reject) => {
       try {
-        // Connect to WebSocket
-        this.ws = new WebSocket(`ws://localhost:3000/ws`);
-
-        if (!this.ws) {
-          reject(new Error("WebSocket not initialized"));
-          return;
-        }
-
-        this.ws.onopen = () => {
-          this.isConnected = true;
-          this.reconnectAttempts = 0; // Reset on successful connection
-          console.log("WebSocket connected");
-        };
-
-        this.ws.onerror = (error) => {
-          console.error("WebSocket connection error:", error);
-          // In demo environments, fallback to demo mode
-          if (error instanceof Event) {
-            console.log("Falling back to demo mode...");
-            this.isConnected = true;
-            if (this.onSystemMessage) {
-              this.onSystemMessage(
-                "⚠️ Using demo mode - WebSocket unavailable"
-              );
-            }
-            resolve();
-            return;
-          }
-          reject(error);
-        };
-
-        this.ws.onmessage = (event) => {
-          const data = this.handleWebSocketMessage(event);
-
-          // Resolve when client tools are configured
-          if (data && data.type === "tools_configured") {
-            if (this.onSystemMessage) {
-              this.onSystemMessage(`✅ Client tools configured successfully`);
-            }
-            resolve();
-          }
-
-          // Also resolve on session establishment if no tools to configure
-          if (
-            data &&
-            data.type === "session_established" &&
-            (!this.toolSchemas || this.toolSchemas.length === 0)
-          ) {
-            resolve();
-          }
-        };
-
-        this.ws.onclose = () => {
-          this.isConnected = false;
-          console.log("WebSocket disconnected");
-          // this.attemptReconnect();
-        };
+        // Store resolve/reject for later use
+        this.initResolve = resolve;
+        this.initReject = reject;
+        
+        // Use the new connection method
+        this.connectWebSocketForInit();
       } catch (error) {
         // Fallback to demo mode if WebSocket fails
-
+        console.log("Falling back to demo mode...");
         resolve();
       }
     });
   }
 
+  private connectWebSocketForInit(): void {
+    try {
+      this.ws = new WebSocket(`ws://localhost:3000/ws`);
 
+      if (!this.ws) {
+        this.initReject?.(new Error("WebSocket not initialized"));
+        return;
+      }
+
+      this.ws.onopen = () => {
+        this.isConnected = true;
+        this.isReconnecting = false;
+        this.reconnectAttempts = 0;
+        this.reconnectDelay = 1000;
+        console.log("WebSocket connected");
+        this.startHeartbeat();
+      };
+
+      this.ws.onerror = (error) => {
+        console.error("WebSocket connection error:", error);
+        // In demo environments, fallback to demo mode
+        if (error instanceof Event) {
+          console.log("Falling back to demo mode...");
+          this.isConnected = true;
+          if (this.onSystemMessage) {
+            this.onSystemMessage("⚠️ Using demo mode - WebSocket unavailable");
+          }
+          this.initResolve?.();
+          return;
+        }
+        this.initReject?.(error);
+      };
+
+      this.ws.onmessage = (event) => {
+        const data = this.handleWebSocketMessage(event);
+
+        // Resolve when client tools are configured
+        if (data && data.type === "tools_configured") {
+          if (this.onSystemMessage) {
+            this.onSystemMessage(`✅ Client tools configured successfully`);
+          }
+          this.initResolve?.();
+        }
+
+        // Also resolve on session establishment if no tools to configure
+        if (
+          data &&
+          data.type === "session_established" &&
+          (!this.toolSchemas || this.toolSchemas.length === 0)
+        ) {
+          this.initResolve?.();
+        }
+      };
+
+      this.ws.onclose = (event) => {
+        this.isConnected = false;
+        this.stopHeartbeat();
+        console.log("WebSocket disconnected", { code: event.code, reason: event.reason });
+        
+        // Only attempt reconnect if it wasn't a manual disconnect
+        if (event.code !== 1000 && event.code !== 1001) {
+          this.attemptReconnect();
+        }
+      };
+    } catch (error) {
+      this.initReject?.(error);
+    }
+  }
+
+  private attemptReconnect(): void {
+    if (this.isReconnecting || this.reconnectAttempts >= this.maxReconnectAttempts) {
+      if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+        console.log('Max reconnection attempts reached');
+        if (this.onSystemMessage) {
+          this.onSystemMessage('❌ Connection lost - please refresh the page');
+        }
+      }
+      return;
+    }
+
+    this.isReconnecting = true;
+    this.reconnectAttempts++;
+    
+    console.log(`Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+    
+    if (this.onSystemMessage) {
+      this.onSystemMessage(`🔄 Reconnecting... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+    }
+
+    this.reconnectTimer = window.setTimeout(() => {
+      if (!this.isConnected) {
+        this.connectWebSocket();
+      }
+    }, this.reconnectDelay);
+
+    // Exponential backoff with max cap
+    this.reconnectDelay = Math.min(this.reconnectDelay * 1.5, 30000);
+  }
+
+  private connectWebSocket(): void {
+    try {
+      if (this.ws) {
+        this.ws.close();
+      }
+
+      this.ws = new WebSocket(`ws://localhost:3000/ws`);
+
+      this.ws.onopen = () => {
+        this.isConnected = true;
+        this.isReconnecting = false;
+        this.reconnectAttempts = 0;
+        this.reconnectDelay = 1000;
+        console.log("WebSocket reconnected successfully");
+        this.startHeartbeat();
+        
+        if (this.onSystemMessage) {
+          this.onSystemMessage('✅ Connection restored');
+        }
+
+        // Re-configure tools after reconnection
+        if (this.toolSchemas && this.toolSchemas.length > 0) {
+          this.ws?.send(JSON.stringify({
+            type: "configure_tools",
+            toolSchemas: this.toolSchemas,
+            businessContext: this.businessContext,
+          }));
+        }
+      };
+
+      this.ws.onerror = (error) => {
+        console.error("WebSocket reconnection error:", error);
+        this.isReconnecting = false;
+        // Try again with backoff
+        setTimeout(() => this.attemptReconnect(), this.reconnectDelay);
+      };
+
+      this.ws.onclose = (event) => {
+        this.isConnected = false;
+        this.isReconnecting = false;
+        this.stopHeartbeat();
+        
+        if (event.code !== 1000 && event.code !== 1001) {
+          this.attemptReconnect();
+        }
+      };
+
+      this.ws.onmessage = (event) => {
+        this.handleWebSocketMessage(event);
+      };
+
+    } catch (error) {
+      console.error("Error creating WebSocket:", error);
+      this.isReconnecting = false;
+      setTimeout(() => this.attemptReconnect(), this.reconnectDelay);
+    }
+  }
+
+  private startHeartbeat(): void {
+    this.stopHeartbeat(); // Clear any existing heartbeat
+    
+    this.heartbeatInterval = window.setInterval(() => {
+      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        this.ws.send(JSON.stringify({
+          type: "heartbeat_ping",
+          timestamp: new Date().toISOString(),
+          pingTime: Date.now()
+        }));
+      } else {
+        console.log('WebSocket not ready for heartbeat, attempting reconnect...');
+        this.stopHeartbeat();
+        this.attemptReconnect();
+      }
+    }, 30000); // Send heartbeat every 30 seconds
+  }
+
+  private stopHeartbeat(): void {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
+  }
 
   private handleWebSocketMessage(event: MessageEvent): WebSocketMessage | null {
     try {
@@ -365,16 +513,29 @@ export class BusinessAgentClient {
   }
 
   disconnect(): void {
+    // Clean up timers
     if (this.reconnectTimer) {
       window.clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
     }
 
+    this.stopHeartbeat();
+
+    // Remove visibility change listener
+    if (typeof document !== 'undefined' && this.visibilityChangeHandler) {
+      document.removeEventListener('visibilitychange', this.visibilityChangeHandler);
+    }
+
+    // Close WebSocket connection
     if (this.ws) {
-      this.ws.close();
+      this.ws.close(1000, 'Manual disconnect'); // Normal closure
       this.ws = null;
     }
+
+    // Reset state
     this.isConnected = false;
+    this.isReconnecting = false;
+    this.reconnectAttempts = 0;
   }
 
   getSessionId(): string {
@@ -437,11 +598,26 @@ export class BusinessAgentClient {
     connected: boolean;
     sessionId: string;
     reconnectAttempts: number;
+    isReconnecting: boolean;
+    websocketState: string;
   } {
     return {
       connected: this.isConnected,
       sessionId: this.sessionId,
       reconnectAttempts: this.reconnectAttempts,
+      isReconnecting: this.isReconnecting,
+      websocketState: this.ws ? this.getWebSocketStateString() : 'null',
     };
+  }
+
+  private getWebSocketStateString(): string {
+    if (!this.ws) return 'null';
+    switch (this.ws.readyState) {
+      case WebSocket.CONNECTING: return 'CONNECTING';
+      case WebSocket.OPEN: return 'OPEN';
+      case WebSocket.CLOSING: return 'CLOSING';
+      case WebSocket.CLOSED: return 'CLOSED';
+      default: return 'UNKNOWN';
+    }
   }
 }

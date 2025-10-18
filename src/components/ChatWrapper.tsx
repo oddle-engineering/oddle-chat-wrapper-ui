@@ -16,6 +16,7 @@ import {
 } from "./ToolingHandle";
 import { Loader } from "./Loader";
 import { BusinessAgentClient } from "../utils/BusinessAgentClient";
+import { sanitizeMessage } from "../utils/security";
 import "../styles/chat-wrapper.css";
 
 // Memoized Message Component to prevent unnecessary re-renders
@@ -696,12 +697,16 @@ function ChatWrapper({
   // Helper function to add messages
   const addMessage = useCallback(
     (role: Message["role"], content: string) => {
+      // Sanitize content based on role
+      const isAssistant = role === "assistant";
+      const sanitizedContent = sanitizeMessage(content, isAssistant);
+      
       setMessages((prev) => [
         ...prev,
         {
           id: generateId(),
           role,
-          content,
+          content: sanitizedContent,
           timestamp: new Date(),
         },
       ]);
@@ -720,10 +725,13 @@ function ChatWrapper({
 
       // Finalize the streaming message by adding it to messages array
       if (currentAssistantMessageIdRef.current && streamingContentRef.current) {
+        // Final sanitization check before storing the complete message
+        const sanitizedContent = sanitizeMessage(streamingContentRef.current, true);
+        
         const finalMessage: Message = {
           id: currentAssistantMessageIdRef.current,
           role: "assistant",
-          content: streamingContentRef.current,
+          content: sanitizedContent,
           timestamp: new Date(),
           isStreaming: false,
         };
@@ -772,18 +780,21 @@ function ChatWrapper({
         clientTools: tools,
         businessContext,
         onSetMessage: (char: string) => {
+          // Sanitize incoming character data from assistant
+          const sanitizedChar = sanitizeMessage(char, true);
+          
           // Check if we're already streaming
           if (currentAssistantMessageIdRef.current) {
             // Update streaming content without re-rendering messages array
-            streamingContentRef.current += char;
+            streamingContentRef.current += sanitizedChar;
             setStreamingContent(streamingContentRef.current);
           } else {
             // Assistant is starting to stream - hide thinking bubble
             setIsThinking(false);
             const newAssistantMessageId = generateId();
             currentAssistantMessageIdRef.current = newAssistantMessageId;
-            streamingContentRef.current = char;
-            setStreamingContent(char);
+            streamingContentRef.current = sanitizedChar;
+            setStreamingContent(sanitizedChar);
           }
         },
         onSystemMessage: (message: string) => {

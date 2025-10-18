@@ -50,6 +50,7 @@
     "vite-plugin-dts": "^3.0.0"
   },
   "dependencies": {
+    "dompurify": "^3.3.0",
     "react-markdown": "^10.1.0"
   },
   "repository": {
