@@ -717,34 +717,42 @@ function ChatWrapper({
 
 
   // Handle chat finished event
+  // Helper function to finalize any current streaming message
+  const finalizeCurrentStreamingMessage = useCallback(() => {
+    if (currentAssistantMessageIdRef.current && streamingContentRef.current) {
+      // Final sanitization check before storing the complete message
+      const sanitizedContent = sanitizeMessage(streamingContentRef.current, true);
+      
+      const finalMessage: Message = {
+        id: currentAssistantMessageIdRef.current,
+        role: "assistant",
+        content: sanitizedContent,
+        timestamp: new Date(),
+        isStreaming: false,
+      };
+      
+      setMessages((prev) => [...prev, finalMessage]);
+      
+      // Reset streaming state
+      currentAssistantMessageIdRef.current = null;
+      streamingContentRef.current = "";
+      setStreamingContent("");
+      
+      return true; // Indicates a message was finalized
+    }
+    return false; // No streaming message to finalize
+  }, []);
+
   const handleChatFinished = useCallback(
     () => {
       setIsStreaming(false);
       setIsThinking(false); // Hide thinking bubble when chat completes
       setChatStatus("idle");
 
-      // Finalize the streaming message by adding it to messages array
-      if (currentAssistantMessageIdRef.current && streamingContentRef.current) {
-        // Final sanitization check before storing the complete message
-        const sanitizedContent = sanitizeMessage(streamingContentRef.current, true);
-        
-        const finalMessage: Message = {
-          id: currentAssistantMessageIdRef.current,
-          role: "assistant",
-          content: sanitizedContent,
-          timestamp: new Date(),
-          isStreaming: false,
-        };
-        
-        setMessages((prev) => [...prev, finalMessage]);
-        
-        // Reset streaming state
-        currentAssistantMessageIdRef.current = null;
-        streamingContentRef.current = "";
-        setStreamingContent("");
-      }
+      // Finalize any current streaming message
+      finalizeCurrentStreamingMessage();
     },
-    []
+    [finalizeCurrentStreamingMessage]
   );
 
   // Handle chat error event
@@ -755,14 +763,12 @@ function ChatWrapper({
       setIsThinking(false); // Hide thinking bubble on error
       setChatStatus("error");
       
-      // Clean up streaming state
-      currentAssistantMessageIdRef.current = null;
-      streamingContentRef.current = "";
-      setStreamingContent("");
+      // Finalize any current streaming message before showing error
+      finalizeCurrentStreamingMessage();
       
       addMessage("system", `❌ Chat error: ${error}`);
     },
-    [addMessage]
+    [addMessage, finalizeCurrentStreamingMessage]
   );
 
   // BusinessAgentClient connection management
@@ -850,6 +856,9 @@ function ChatWrapper({
             const existingMessageId = newMap.get(callId);
 
             if (isToolStarted && !existingMessageId) {
+              // Cut off any current streaming message before creating tooling message
+              finalizeCurrentStreamingMessage();
+              
               // Extract tool name from content
               const toolNameMatch = content.match(/🔧 Handling: (.+)/);
               const toolName = toolNameMatch
@@ -950,6 +959,7 @@ function ChatWrapper({
     addMessage,
     handleChatFinished,
     handleChatError,
+    finalizeCurrentStreamingMessage,
   ]);
 
   const disconnectAgentClient = useCallback(() => {

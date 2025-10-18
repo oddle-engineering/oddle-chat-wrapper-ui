@@ -40,15 +40,21 @@ export function ToolingHandleTrigger({
 
   let toolDescription;
   if (toolName?.startsWith("lat_")) {
-    toolDescription =
-      `${toolData?.parameters?.query || toolData?.parameter?.url}` ||
-      "Executing tool...";
+    const query = toolData?.parameters?.query;
+    const url = toolData?.parameters?.url; // Fixed: added 's' to 'parameters'
+    toolDescription = query || url || "Executing tool...";
   } else {
     toolDescription = getToolDescription();
   }
   if (toolDescription) {
-    toolDescription =
-      toolDescription.charAt(0).toUpperCase() + toolDescription.slice(1);
+    // TODO: refactor
+    const isUrl =
+      toolDescription.startsWith("http://") ||
+      toolDescription.startsWith("https://");
+    if (!isUrl) {
+      toolDescription =
+        toolDescription.charAt(0).toUpperCase() + toolDescription.slice(1);
+    }
   }
   const renderContent = () => {
     switch (status) {

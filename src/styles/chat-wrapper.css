@@ -209,7 +209,7 @@
 .chat-wrapper__message {
   display: flex;
   flex-direction: column;
-  max-width: 80%;
+  max-width: 100%;
   word-wrap: break-word;
   overflow-wrap: break-word;
   min-width: 0; /* Allow shrinking */
@@ -230,12 +230,12 @@
 
 .chat-wrapper__message--reasoning {
   align-self: flex-start;
-  max-width: 85%;
+  max-width: 100%;
 }
 
 .chat-wrapper__message--tooling {
   align-self: flex-start;
-  max-width: 85%;
+  max-width: 100%;
 }
 
 /* Message Content */
