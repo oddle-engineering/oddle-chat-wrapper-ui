@@ -37,7 +37,7 @@ interface Reservation {
 
 function App() {
   const [customConfig] = useState({
-    mode: "sidebar" as ChatMode,
+    mode: "fullscreen" as ChatMode,
     theme: "light" as ChatTheme,
     position: "right" as ChatPosition,
     appName: "Demo Chat",

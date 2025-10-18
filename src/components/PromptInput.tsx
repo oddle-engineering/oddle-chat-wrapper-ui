@@ -21,9 +21,9 @@ const SendIcon = () => (
       <path
         d="M3 26.3541C3 13.0993 13.7452 2.35413 27 2.35413C40.2548 2.35413 51 13.0993 51 26.3541C51 39.609 40.2548 50.3541 27 50.3541C13.7452 50.3541 3 39.609 3 26.3541Z"
         fill="#3D0099"
-        shape-rendering="crispEdges"
+        shapeRendering="crispEdges"
       />
-      <g clip-path="url(#clip0_121_23927)">
+      <g clipPath="url(#clip0_121_23927)">
         <path
           d="M16.3333 26.3541L18.2133 28.2341L25.6666 20.7941V37.0208H28.3333V20.7941L35.7733 28.2474L37.6666 26.3541L26.9999 15.6874L16.3333 26.3541Z"
           fill="white"
@@ -38,9 +38,9 @@ const SendIcon = () => (
         width="54"
         height="54"
         filterUnits="userSpaceOnUse"
-        color-interpolation-filters="sRGB"
+        colorInterpolationFilters="sRGB"
       >
-        <feFlood flood-opacity="0" result="BackgroundImageFix" />
+        <feFlood floodOpacity="0" result="BackgroundImageFix" />
         <feColorMatrix
           in="SourceAlpha"
           type="matrix"

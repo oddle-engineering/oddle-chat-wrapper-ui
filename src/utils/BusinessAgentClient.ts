@@ -34,17 +34,24 @@ export class BusinessAgentClient {
     this.sessionId = `business_${Date.now()}_${Math.random()
       .toString(36)
       .substr(2, 9)}`;
-    
+
     // Handle tab visibility changes
     this.visibilityChangeHandler = () => {
-      if (document.visibilityState === 'visible' && !this.isConnected && !this.isReconnecting) {
-        console.log('Tab became visible, checking connection...');
+      if (
+        document.visibilityState === "visible" &&
+        !this.isConnected &&
+        !this.isReconnecting
+      ) {
+        console.log("Tab became visible, checking connection...");
         this.attemptReconnect();
       }
     };
-    
-    if (typeof document !== 'undefined') {
-      document.addEventListener('visibilitychange', this.visibilityChangeHandler);
+
+    if (typeof document !== "undefined") {
+      document.addEventListener(
+        "visibilitychange",
+        this.visibilityChangeHandler
+      );
     }
   }
 
@@ -62,7 +69,7 @@ export class BusinessAgentClient {
         // Store resolve/reject for later use
         this.initResolve = resolve;
         this.initReject = reject;
-        
+
         // Use the new connection method
         this.connectWebSocketForInit();
       } catch (error) {
@@ -130,8 +137,11 @@ export class BusinessAgentClient {
       this.ws.onclose = (event) => {
         this.isConnected = false;
         this.stopHeartbeat();
-        console.log("WebSocket disconnected", { code: event.code, reason: event.reason });
-        
+        console.log("WebSocket disconnected", {
+          code: event.code,
+          reason: event.reason,
+        });
+
         // Only attempt reconnect if it wasn't a manual disconnect
         if (event.code !== 1000 && event.code !== 1001) {
           this.attemptReconnect();
@@ -143,11 +153,14 @@ export class BusinessAgentClient {
   }
 
   private attemptReconnect(): void {
-    if (this.isReconnecting || this.reconnectAttempts >= this.maxReconnectAttempts) {
+    if (
+      this.isReconnecting ||
+      this.reconnectAttempts >= this.maxReconnectAttempts
+    ) {
       if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-        console.log('Max reconnection attempts reached');
+        console.log("Max reconnection attempts reached");
         if (this.onSystemMessage) {
-          this.onSystemMessage('❌ Connection lost - please refresh the page');
+          this.onSystemMessage("❌ Connection lost - please refresh the page");
         }
       }
       return;
@@ -155,11 +168,15 @@ export class BusinessAgentClient {
 
     this.isReconnecting = true;
     this.reconnectAttempts++;
-    
-    console.log(`Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
-    
+
+    console.log(
+      `Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`
+    );
+
     if (this.onSystemMessage) {
-      this.onSystemMessage(`🔄 Reconnecting... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+      this.onSystemMessage(
+        `🔄 Reconnecting... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`
+      );
     }
 
     this.reconnectTimer = window.setTimeout(() => {
@@ -187,19 +204,20 @@ export class BusinessAgentClient {
         this.reconnectDelay = 1000;
         console.log("WebSocket reconnected successfully");
         this.startHeartbeat();
-        
+
         if (this.onSystemMessage) {
-          this.onSystemMessage('✅ Connection restored');
+          this.onSystemMessage("✅ Connection restored");
         }
 
         // Re-configure tools after reconnection
-        if (this.toolSchemas && this.toolSchemas.length > 0) {
-          this.ws?.send(JSON.stringify({
-            type: "configure_tools",
-            toolSchemas: this.toolSchemas,
-            businessContext: this.businessContext,
-          }));
-        }
+        // TODO: REVIEW - re-enable tool configuration on reconnect
+        // if (this.toolSchemas && this.toolSchemas.length > 0) {
+        //   this.ws?.send(JSON.stringify({
+        //     type: "configure_tools",
+        //     toolSchemas: this.toolSchemas,
+        //     businessContext: this.businessContext,
+        //   }));
+        // }
       };
 
       this.ws.onerror = (error) => {
@@ -213,7 +231,7 @@ export class BusinessAgentClient {
         this.isConnected = false;
         this.isReconnecting = false;
         this.stopHeartbeat();
-        
+
         if (event.code !== 1000 && event.code !== 1001) {
           this.attemptReconnect();
         }
@@ -222,7 +240,6 @@ export class BusinessAgentClient {
       this.ws.onmessage = (event) => {
         this.handleWebSocketMessage(event);
       };
-
     } catch (error) {
       console.error("Error creating WebSocket:", error);
       this.isReconnecting = false;
@@ -231,17 +248,22 @@ export class BusinessAgentClient {
   }
 
   private startHeartbeat(): void {
+    return;
     this.stopHeartbeat(); // Clear any existing heartbeat
-    
+
     this.heartbeatInterval = window.setInterval(() => {
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-        this.ws.send(JSON.stringify({
-          type: "heartbeat_ping",
-          timestamp: new Date().toISOString(),
-          pingTime: Date.now()
-        }));
+        this.ws.send(
+          JSON.stringify({
+            type: "heartbeat_ping",
+            timestamp: new Date().toISOString(),
+            pingTime: Date.now(),
+          })
+        );
       } else {
-        console.log('WebSocket not ready for heartbeat, attempting reconnect...');
+        console.log(
+          "WebSocket not ready for heartbeat, attempting reconnect..."
+        );
         this.stopHeartbeat();
         this.attemptReconnect();
       }
@@ -307,33 +329,55 @@ export class BusinessAgentClient {
             } else if (data.data?.type === "tool-call") {
               // Handle server-side tool calls from AI provider
               const toolCallData = data.data;
-              console.log("🔧 Server-side tool call detected:", toolCallData);
-              if (this.onReasoningUpdate && toolCallData.toolName && toolCallData.toolCallId) {
+              console.log(
+                "🔧 clog Server-side tool call detected:",
+                toolCallData
+              );
+              if (
+                this.onReasoningUpdate &&
+                toolCallData.toolName &&
+                toolCallData.toolCallId &&
+                toolCallData.toolName.startsWith("lat_")
+              ) {
                 // Create a synthetic ToolCallRequest for tracking
                 const syntheticRequest = {
                   toolName: toolCallData.toolName,
                   callId: toolCallData.toolCallId,
-                  parameters: toolCallData.args || {}
+                  parameters: toolCallData.args || {},
                 };
-                this.onReasoningUpdate(true, `🔧 Handling: ${toolCallData.toolName}`, syntheticRequest);
+                this.onReasoningUpdate(
+                  true,
+                  `🔧 Handling: ${toolCallData.toolName}`,
+                  syntheticRequest
+                );
               }
-            } else if (data.data?.type === "tool-result") {
+            } else if (
+              data.data?.type === "tool-result" &&
+              data.data.toolName.startsWith("lat_")
+            ) {
               // Handle server-side tool results
               const toolResultData = data.data;
-              console.log("✅ Server-side tool result detected:", toolResultData);
+              console.log(
+                "✅ clog Server-side tool result detected:",
+                toolResultData
+              );
               if (this.onReasoningUpdate && toolResultData.toolCallId) {
                 const syntheticRequest = {
                   toolName: toolResultData.toolName || "Unknown Tool",
                   callId: toolResultData.toolCallId,
-                  parameters: {}
+                  parameters: {},
                 };
-                this.onReasoningUpdate(false, `✅ Completed: ${toolResultData.toolName || "Unknown Tool"}`, syntheticRequest);
+                this.onReasoningUpdate(
+                  false,
+                  `✅ Completed: ${toolResultData.toolName || "Unknown Tool"}`,
+                  syntheticRequest
+                );
               }
             }
           } else if (data.event === "latitude-event") {
             // Handle latitude-specific events
             console.log("Latitude event:", data.data?.type, data.data);
-            
+
             // Check if this is a tool completion event
             if (data.data?.type === "tool-result" && this.onReasoningUpdate) {
               const toolResultData = data.data;
@@ -341,9 +385,13 @@ export class BusinessAgentClient {
                 const syntheticRequest = {
                   toolName: toolResultData.toolName,
                   callId: toolResultData.toolCallId,
-                  parameters: {}
+                  parameters: {},
                 };
-                this.onReasoningUpdate(false, `✅ Completed: ${toolResultData.toolName}`, syntheticRequest);
+                this.onReasoningUpdate(
+                  false,
+                  `✅ Completed: ${toolResultData.toolName}`,
+                  syntheticRequest
+                );
               }
             }
           }
@@ -522,13 +570,16 @@ export class BusinessAgentClient {
     this.stopHeartbeat();
 
     // Remove visibility change listener
-    if (typeof document !== 'undefined' && this.visibilityChangeHandler) {
-      document.removeEventListener('visibilitychange', this.visibilityChangeHandler);
+    if (typeof document !== "undefined" && this.visibilityChangeHandler) {
+      document.removeEventListener(
+        "visibilitychange",
+        this.visibilityChangeHandler
+      );
     }
 
     // Close WebSocket connection
     if (this.ws) {
-      this.ws.close(1000, 'Manual disconnect'); // Normal closure
+      this.ws.close(1000, "Manual disconnect"); // Normal closure
       this.ws = null;
     }
 
@@ -606,18 +657,23 @@ export class BusinessAgentClient {
       sessionId: this.sessionId,
       reconnectAttempts: this.reconnectAttempts,
       isReconnecting: this.isReconnecting,
-      websocketState: this.ws ? this.getWebSocketStateString() : 'null',
+      websocketState: this.ws ? this.getWebSocketStateString() : "null",
     };
   }
 
   private getWebSocketStateString(): string {
-    if (!this.ws) return 'null';
+    if (!this.ws) return "null";
     switch (this.ws.readyState) {
-      case WebSocket.CONNECTING: return 'CONNECTING';
-      case WebSocket.OPEN: return 'OPEN';
-      case WebSocket.CLOSING: return 'CLOSING';
-      case WebSocket.CLOSED: return 'CLOSED';
-      default: return 'UNKNOWN';
+      case WebSocket.CONNECTING:
+        return "CONNECTING";
+      case WebSocket.OPEN:
+        return "OPEN";
+      case WebSocket.CLOSING:
+        return "CLOSING";
+      case WebSocket.CLOSED:
+        return "CLOSED";
+      default:
+        return "UNKNOWN";
     }
   }
 }

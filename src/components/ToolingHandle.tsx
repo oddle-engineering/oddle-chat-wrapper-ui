@@ -38,7 +38,18 @@ export function ToolingHandleTrigger({
     return tool?.description || null;
   };
 
-  const toolDescription = getToolDescription();
+  let toolDescription;
+  if (toolName?.startsWith("lat_")) {
+    toolDescription =
+      `${toolData?.parameters?.query || toolData?.parameter?.url}` ||
+      "Executing tool...";
+  } else {
+    toolDescription = getToolDescription();
+  }
+  if (toolDescription) {
+    toolDescription =
+      toolDescription.charAt(0).toUpperCase() + toolDescription.slice(1);
+  }
   const renderContent = () => {
     switch (status) {
       case "processing":
@@ -365,9 +376,7 @@ export function ToolingHandleTrigger({
   );
 }
 
-export function ToolingHandleContent({
-  children,
-}: ToolingHandleContentProps) {
+export function ToolingHandleContent({ children }: ToolingHandleContentProps) {
   return (
     <div className="chat-wrapper__tooling-handle-content">
       <div className="chat-wrapper__tooling-handle-text">{children}</div>
