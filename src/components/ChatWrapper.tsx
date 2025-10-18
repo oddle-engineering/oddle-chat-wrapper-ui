@@ -7,15 +7,8 @@ import {
   BusinessData,
   ToolCallRequest,
 } from "../types";
-import {
-  PromptInput,
-  PromptInputTextarea,
-  PromptInputToolbar,
-  PromptInputTools,
-  PromptInputButton,
-  PromptInputSubmit,
-  ChatStatus,
-} from "./PromptInput";
+import { ChatStatus } from "./PromptInput";
+import { ChatInput } from "./ChatInput";
 import { Reasoning, ReasoningTrigger, ReasoningContent } from "./Reasoning";
 import {
   ToolingHandle,
@@ -319,7 +312,6 @@ function ChatWrapper({
 
   // Core chat state
   const [messages, setMessages] = useState<Message[]>(initialMessages);
-  const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [chatStatus, setChatStatus] = useState<ChatStatus>("idle");
@@ -1497,162 +1489,17 @@ function ChatWrapper({
               </div>
             )}
 
-            <PromptInput
-              onSubmit={(e) => {
-                e.preventDefault();
-                const formData = new FormData(e.currentTarget);
-                const message = formData.get("message") as string;
-                if (message?.trim()) {
-                  handleSubmit(message.trim(), uploadedMedia);
-                  setInput("");
-                  setUploadedMedia([]); // Clear uploaded media after sending
-                }
-              }}
-            >
-              <PromptInputTextarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder={
-                  config.placeholder || "What would you like to know?"
-                }
-                disabled={isStreaming}
-              />
-              <PromptInputToolbar>
-                <PromptInputTools>
-                  {config.features?.fileUpload && (
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                      }}
-                    >
-                      <PromptInputButton
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          const input = document.createElement("input");
-                          input.type = "file";
-                          input.accept = "image/*,text/*,.pdf,.doc,.docx";
-                          input.multiple = true;
-                          input.onchange = (e) => {
-                            const files = (e.target as HTMLInputElement).files;
-                            if (files) {
-                              handleFileUpload(Array.from(files));
-                            }
-                          };
-                          input.click();
-                        }}
-                        title={
-                          uploadedMedia.length > 0
-                            ? `${uploadedMedia.length} file(s) attached`
-                            : "Attach files"
-                        }
-                        disabled={isStreaming}
-                        style={{
-                          position: "relative",
-                          color:
-                            uploadedMedia.length > 0 ? "#3b82f6" : undefined,
-                        }}
-                      >
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49L13.1 2.41a4 4 0 015.66 5.66L9.41 17.41a2 2 0 01-2.83-2.83L15.9 5.24"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                        {uploadedMedia.length > 0 && (
-                          <span
-                            style={{
-                              position: "absolute",
-                              top: "-2px",
-                              right: "-2px",
-                              backgroundColor: "#3b82f6",
-                              color: "white",
-                              borderRadius: "50%",
-                              width: "12px",
-                              height: "12px",
-                              fontSize: "8px",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontWeight: "bold",
-                            }}
-                          >
-                            {uploadedMedia.length > 9
-                              ? "9+"
-                              : uploadedMedia.length}
-                          </span>
-                        )}
-                      </PromptInputButton>
-                      <span
-                        onClick={() => {
-                          const input = document.createElement("input");
-                          input.type = "file";
-                          input.accept = "image/*,text/*,.pdf,.doc,.docx";
-                          input.multiple = true;
-                          input.onchange = (e) => {
-                            const files = (e.target as HTMLInputElement).files;
-                            if (files) {
-                              handleFileUpload(Array.from(files));
-                            }
-                          };
-                          input.click();
-                        }}
-                        style={{
-                          fontSize: "14px",
-                          color: "#6b7280",
-                          fontWeight: "500",
-                          cursor: "pointer",
-                          userSelect: "none",
-                        }}
-                      >
-                        Attach
-                      </span>
-                      {uploadedMedia.length > 0 && (
-                        <div
-                          style={{
-                            backgroundColor: "#3b82f6",
-                            color: "white",
-                            fontSize: "12px",
-                            fontWeight: "600",
-                            padding: "2px 8px",
-                            borderRadius: "12px",
-                            marginLeft: "8px",
-                            minWidth: "20px",
-                            textAlign: "center",
-                          }}
-                        >
-                          Pantry at Five Cafe
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </PromptInputTools>
-                <PromptInputSubmit
-                  status={chatStatus}
-                  disabled={!input.trim() && chatStatus !== "streaming"}
-                  onClick={
-                    chatStatus === "streaming" ? stopGeneration : undefined
-                  }
-                  title={
-                    chatStatus === "streaming"
-                      ? "Stop generation"
-                      : chatStatus === "submitted"
-                      ? "Submitting..."
-                      : "Send message"
-                  }
-                />
-              </PromptInputToolbar>
-            </PromptInput>
+            <ChatInput
+              placeholder={config.placeholder}
+              disabled={isStreaming}
+              chatStatus={chatStatus}
+              uploadedMedia={uploadedMedia}
+              fileUploadEnabled={config.features?.fileUpload}
+              onSubmit={(message, media) => handleSubmit(message, media)}
+              onFileUpload={handleFileUpload}
+              onClearMedia={() => setUploadedMedia([])}
+              onStopGeneration={stopGeneration}
+            />
           </>
         )}
 
