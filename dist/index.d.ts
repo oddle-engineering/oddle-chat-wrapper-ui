@@ -19,6 +19,11 @@ export declare interface ChatConfig {
     headerVisible?: boolean;
     restaurantName?: string;
     restaurantLogo?: string;
+    suggestedPrompts?: Array<{
+        title: string;
+        description: string;
+        icon?: default_2.ReactNode;
+    }>;
     features?: {
         fileUpload?: boolean;
         voiceInput?: boolean;
@@ -32,7 +37,7 @@ export declare interface ChatConfig {
     onToolResult?: (tool: string, result: any) => void;
     onStreamingStatusChange?: (status: string) => void;
     onBusinessDataUpdate?: (data: any) => void;
-    customStyles?: React.CSSProperties;
+    customStyles?: default_2.CSSProperties;
     endpoint?: "brief-planner" | "conversation";
 }
 
@@ -189,6 +194,19 @@ export declare interface StreamEvent {
     parameters?: any[] | Record<string, any> | any;
     todos?: any[];
     briefs?: any[];
+}
+
+declare interface SuggestedPrompt {
+    title: string;
+    description: string;
+    icon?: default_2.ReactNode;
+}
+
+export declare const SuggestedPrompts: default_2.FC<SuggestedPromptsProps>;
+
+declare interface SuggestedPromptsProps {
+    prompts: SuggestedPrompt[];
+    onPromptSelect: (prompt: SuggestedPrompt) => void;
 }
 
 export declare interface ToolParameter {

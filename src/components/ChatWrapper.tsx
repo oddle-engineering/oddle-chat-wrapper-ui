@@ -9,6 +9,7 @@ import {
 } from "../types";
 import { ChatStatus } from "./PromptInput";
 import { ChatInput, ChatInputRef } from "./ChatInput";
+import { SuggestedPrompts } from "./SuggestedPrompts";
 import { Reasoning, ReasoningTrigger, ReasoningContent } from "./Reasoning";
 import { ToolingHandle, ToolingHandleTrigger } from "./ToolingHandle";
 import { Loader } from "./Loader";
@@ -1677,6 +1678,19 @@ function ChatWrapper({
                   onStopGeneration={stopGeneration}
                 />
               </div>
+
+              {/* Suggested Prompts - only show when no messages and suggestedPrompts are provided */}
+              {messages.length === 0 && !isStreaming && config.suggestedPrompts && (
+                <SuggestedPrompts
+                  prompts={config.suggestedPrompts}
+                  onPromptSelect={(prompt) => {
+                    // Copy prompt description to the input field
+                    if (chatInputRef.current) {
+                      chatInputRef.current.setText(prompt.description);
+                    }
+                  }}
+                />
+              )}
             </div>
           </>
         )}

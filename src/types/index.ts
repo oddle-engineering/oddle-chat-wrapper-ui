@@ -1,3 +1,5 @@
+import React from "react";
+
 export type ChatMode = "sidebar" | "fullscreen" | "modal" | "embedded";
 export type ChatPosition = "left" | "right";
 export type ChatTheme = "light" | "dark" | "auto";
@@ -58,6 +60,11 @@ export interface ChatConfig {
   headerVisible?: boolean; // When true, shows the header with appName and description
   restaurantName?: string; // Restaurant name to display as chip near attachment button
   restaurantLogo?: string; // Restaurant logo URL to display inside the chip
+  suggestedPrompts?: Array<{
+    title: string;
+    description: string;
+    icon?: React.ReactNode; // Optional icon component for the prompt
+  }>; // Suggested prompts to display when no messages are present
   features?: {
     fileUpload?: boolean;
     voiceInput?: boolean;

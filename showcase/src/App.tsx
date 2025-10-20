@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 
 // import { setupMockAPI } from "./api/mockApi";
 import { apiConfig } from "./config/apiConfig";
@@ -48,6 +48,29 @@ function App() {
     restaurantName: "McDonald's Downtown",
     restaurantLogo:
       "https://lounge.beta.oddle.me/_next/image?url=https%3A%2F%2Fs3-ap-southeast-1.amazonaws.com%2Fv3-beta.image.oddle.me%2Flogo%2Fmenu_logo_Nomnom5a565b.jpg&w=96&q=75",
+    
+    suggestedPrompts: [
+      {
+        title: "New Menu Launch",
+        description: "Craft a bold campaign announcing a new menu item — make it tempting, visual, and action-driven.",
+        icon: <span>📅</span>
+      },
+      {
+        title: "Re-engage Lapsed Customers",
+        description: "Craft a punchy restaurant promo email that highlights a special offer and drives bookings fast.",
+        icon: <span>🍽️</span>
+      },
+      {
+        title: "Signature dish spotlight",
+        description: "Write an irresistible dining promo email that spotlights your signature dish and encourages quick table reservations.",
+        icon: <span>⭐</span>
+      },
+      {
+        title: "Limited-Time Offer Blast",
+        description: "Create a limited-time restaurant offer email that builds excitement and gets customers to book instantly.",
+        icon: <span>⚡</span>
+      }
+    ]
   });
 
   const [todos, setTodos] = useState<any[]>([

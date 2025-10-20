@@ -30,6 +30,7 @@ interface ChatInputProps {
 
 export interface ChatInputRef {
   focus: () => void;
+  setText: (text: string) => void;
 }
 
 export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
@@ -54,6 +55,13 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
     useImperativeHandle(ref, () => ({
       focus: () => {
         textareaRef.current?.focus();
+      },
+      setText: (text: string) => {
+        setInput(text);
+        // Focus the textarea after setting text
+        setTimeout(() => {
+          textareaRef.current?.focus();
+        }, 0);
       },
     }));
 
@@ -167,9 +175,7 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
         {uploadedMedia.length > 0 && (
           <div
             style={{
-              padding: "12px 16px",
-              backgroundColor: "#f8fafc",
-              borderBottom: "1px solid #e2e8f0",
+              padding: "8px 16px",
               display: "flex",
               flexWrap: "wrap",
               gap: "8px",
