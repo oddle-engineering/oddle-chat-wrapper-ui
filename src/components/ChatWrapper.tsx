@@ -1556,89 +1556,110 @@ function ChatWrapper({
     <>
       {renderModalOverlay()}
       <div className={containerClasses} style={config.customStyles}>
-        <div className="chat-wrapper__header">
-          <div className="chat-wrapper__title-area">
-            <h2 className="chat-wrapper__title">{config.appName}</h2>
-            <div className="chat-wrapper__connection-status">
-              <span
-                className={`chat-wrapper__connection-indicator ${
-                  isConnected ? "connected" : "disconnected"
-                }`}
-                title={
-                  isConnected
-                    ? `Connected to WebSocket${
-                        sessionId ? ` (Session: ${sessionId.slice(-8)})` : ""
-                      }`
-                    : "Disconnected from WebSocket"
-                }
-              >
-                {isConnected ? "🟢" : "🔴"}
-              </span>
+        {config.headerVisible !== false && (
+          <div className="chat-wrapper__header">
+            <div className="chat-wrapper__title-area">
+              <h2 className="chat-wrapper__title">{config.appName}</h2>
+              <div className="chat-wrapper__connection-status">
+                <span
+                  className={`chat-wrapper__connection-indicator ${
+                    isConnected ? "connected" : "disconnected"
+                  }`}
+                  title={
+                    isConnected
+                      ? `Connected to WebSocket${
+                          sessionId ? ` (Session: ${sessionId.slice(-8)})` : ""
+                        }`
+                      : "Disconnected from WebSocket"
+                  }
+                >
+                  {isConnected ? "🟢" : "🔴"}
+                </span>
+              </div>
+            </div>
+            <div className="chat-wrapper__header-controls">
+              {renderModeToggleButton()}
+              {renderCollapseButton()}
+              {renderCloseButton()}
             </div>
           </div>
-          <div className="chat-wrapper__header-controls">
-            {renderModeToggleButton()}
-            {renderCollapseButton()}
-            {renderCloseButton()}
-          </div>
-        </div>
+        )}
 
         {/* {renderThinkingIndicator()} */}
 
         {!isCollapsed && (
           <>
-            <div className="chat-wrapper__messages">
-              {messages.map((message) => (
-                <MessageComponent
-                  key={message.id}
-                  message={message}
-                  getReasoningTitle={getReasoningTitle}
-                  getReasoningStatus={getReasoningStatus}
-                  getToolingTitle={getToolingTitle}
-                  getToolingStatus={getToolingStatus}
-                  clientTools={clientTools || []}
-                  currentAssistantMessageIdRef={currentAssistantMessageIdRef}
-                />
-              ))}
-
-              {/* Streaming message component */}
-              {currentAssistantMessageIdRef.current && streamingContent && (
-                <StreamingMessage
-                  content={streamingContent}
-                  messageId={currentAssistantMessageIdRef.current}
-                />
+            {/* Main Header Section */}
+            <div className="chat-wrapper__main-header">
+              <h1 className="chat-wrapper__main-title">
+                {config.appName}
+              </h1>
+              {config.description && (
+                <p className="chat-wrapper__description">
+                  {config.description}
+                </p>
               )}
+            </div>
 
-              {/* Thinking bubble for assistant streaming */}
-              {isThinking && !isHandlingTool && (
-                <div className="chat-wrapper__message chat-wrapper__message--assistant">
-                  <div className="chat-wrapper__thinking-bubble">
-                    <div className="chat-wrapper__thinking-content">
-                      <div className="chat-wrapper__thinking-dots">
-                        <span></span>
-                        <span></span>
-                        <span></span>
+            {/* Chat Content Area - flexible layout based on message state */}
+            <div className={`chat-wrapper__content ${messages.length === 0 && !isStreaming ? 'chat-wrapper__content--empty' : 'chat-wrapper__content--with-messages'}`}>
+              {/* Messages Area */}
+              <div className="chat-wrapper__messages">
+                {messages.map((message) => (
+                  <MessageComponent
+                    key={message.id}
+                    message={message}
+                    getReasoningTitle={getReasoningTitle}
+                    getReasoningStatus={getReasoningStatus}
+                    getToolingTitle={getToolingTitle}
+                    getToolingStatus={getToolingStatus}
+                    clientTools={clientTools || []}
+                    currentAssistantMessageIdRef={currentAssistantMessageIdRef}
+                  />
+                ))}
+
+                {/* Streaming message component */}
+                {currentAssistantMessageIdRef.current && streamingContent && (
+                  <StreamingMessage
+                    content={streamingContent}
+                    messageId={currentAssistantMessageIdRef.current}
+                  />
+                )}
+
+                {/* Thinking bubble for assistant streaming */}
+                {isThinking && !isHandlingTool && (
+                  <div className="chat-wrapper__message chat-wrapper__message--assistant">
+                    <div className="chat-wrapper__thinking-bubble">
+                      <div className="chat-wrapper__thinking-content">
+                        <div className="chat-wrapper__thinking-dots">
+                          <span></span>
+                          <span></span>
+                          <span></span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              <div ref={messagesEndRef} />
+                <div ref={messagesEndRef} />
+              </div>
+
+              {renderToolResults()}
+
+              {/* Chat Input - flexible sizing */}
+              <div className="chat-wrapper__input-container">
+                <ChatInput
+                  ref={chatInputRef}
+                  placeholder={config.placeholder}
+                  disabled={isStreaming}
+                  chatStatus={chatStatus}
+                  fileUploadEnabled={config.features?.fileUpload}
+                  onSubmit={(message, media) => handleSubmit(message, media)}
+                  onFileUpload={handleFileUpload}
+                  onStopGeneration={stopGeneration}
+                />
+              </div>
             </div>
-
-            {renderToolResults()}
-
-            <ChatInput
-              ref={chatInputRef}
-              placeholder={config.placeholder}
-              disabled={isStreaming}
-              chatStatus={chatStatus}
-              fileUploadEnabled={config.features?.fileUpload}
-              onSubmit={(message, media) => handleSubmit(message, media)}
-              onFileUpload={handleFileUpload}
-              onStopGeneration={stopGeneration}
-            />
           </>
         )}
 

@@ -10,11 +10,13 @@ export declare interface ChatConfig {
     apiEndpoint: string;
     apiKey?: string;
     theme?: ChatTheme;
+    description?: string;
     placeholder?: string;
     welcomeMessage?: string;
     promptPath?: string;
     bubbleText?: string;
     constrainedHeight?: boolean;
+    headerVisible?: boolean;
     features?: {
         fileUpload?: boolean;
         voiceInput?: boolean;

@@ -41,7 +41,10 @@ function App() {
     theme: "light" as ChatTheme,
     position: "right" as ChatPosition,
     appName: "Demo Chat",
+    description: 'An AI assistant to help with restaurant management tasks.',
+
     placeholder: "Ask Oddle AI to turn your ideas into a campaign...",
+    headerVisible: false,
   });
 
   const [todos, setTodos] = useState<any[]>([
@@ -478,6 +481,7 @@ function App() {
         onError: (error) => {
           console.error("Custom demo error:", error);
         },
+
         features: {
           fileUpload: true,
           messageHistory: true,

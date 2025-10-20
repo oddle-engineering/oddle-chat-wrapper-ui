@@ -8726,317 +8726,306 @@ class Bc {
     }
   }
 }
-const al = Zn(({
-  message: e,
-  getReasoningTitle: t,
-  getReasoningStatus: n,
-  getToolingTitle: r,
-  getToolingStatus: i,
-  clientTools: l,
-  currentAssistantMessageIdRef: o
-}) => {
-  var a;
-  return /* @__PURE__ */ h(
-    "div",
-    {
-      className: `chat-wrapper__message chat-wrapper__message--${e.role === "system" ? "assistant" : e.role === "reasoning" ? "reasoning" : e.role === "tooling" ? "tooling" : e.role}`,
-      children: e.role === "reasoning" ? (
-        /* Reasoning message - no content wrapper */
-        /* @__PURE__ */ O(Rc, { isStreaming: e.isStreaming || !1, children: [
-          /* @__PURE__ */ h(
-            Dc,
+const al = Zn(
+  ({
+    message: e,
+    getReasoningTitle: t,
+    getReasoningStatus: n,
+    getToolingTitle: r,
+    getToolingStatus: i,
+    clientTools: l,
+    currentAssistantMessageIdRef: o
+  }) => {
+    var a;
+    return /* @__PURE__ */ h(
+      "div",
+      {
+        className: `chat-wrapper__message chat-wrapper__message--${e.role === "system" ? "assistant" : e.role === "reasoning" ? "reasoning" : e.role === "tooling" ? "tooling" : e.role}`,
+        children: e.role === "reasoning" ? (
+          /* Reasoning message - no content wrapper */
+          /* @__PURE__ */ O(Rc, { isStreaming: e.isStreaming || !1, children: [
+            /* @__PURE__ */ h(
+              Dc,
+              {
+                title: t(e.content, e.isStreaming),
+                status: n(e.content, e.isStreaming)
+              }
+            ),
+            /* @__PURE__ */ h(Oc, { children: e.content })
+          ] })
+        ) : e.role === "tooling" ? (
+          /* Tooling message - no content wrapper */
+          /* @__PURE__ */ h(Pc, { isStreaming: e.isStreaming || !1, children: /* @__PURE__ */ h(
+            zc,
             {
-              title: t(
-                e.content,
-                e.isStreaming
-              ),
-              status: n(
-                e.content,
-                e.isStreaming
-              )
+              title: r(e.content, e.isStreaming),
+              status: i(e.content, e.isStreaming),
+              toolData: e.toolData,
+              toolName: (a = e.toolData) == null ? void 0 : a.toolName,
+              clientTools: l
             }
-          ),
-          /* @__PURE__ */ h(Oc, { children: e.content })
-        ] })
-      ) : e.role === "tooling" ? (
-        /* Tooling message - no content wrapper */
-        /* @__PURE__ */ h(Pc, { isStreaming: e.isStreaming || !1, children: /* @__PURE__ */ h(
-          zc,
-          {
-            title: r(
-              e.content,
-              e.isStreaming
-            ),
-            status: i(
-              e.content,
-              e.isStreaming
-            ),
-            toolData: e.toolData,
-            toolName: (a = e.toolData) == null ? void 0 : a.toolName,
-            clientTools: l
-          }
-        ) })
-      ) : /* @__PURE__ */ h("div", { className: "chat-wrapper__message-content", children: e.role === "assistant" && e.isStreaming && e.content === "" && e.id === o.current ? (
-        /* Show streaming indicator when no content yet */
-        /* @__PURE__ */ O("div", { className: "chat-wrapper__streaming-placeholder", children: [
-          /* @__PURE__ */ h(Fc, { size: 16, variant: "dots" }),
-          /* @__PURE__ */ h("span", { children: "Thinking" })
-        ] })
-      ) : e.role === "system" ? (
-        /* System message with collapsible tool result */
-        /* @__PURE__ */ h(Uc, { message: e })
-      ) : e.role === "assistant" ? (
-        /* Assistant message with regular markdown display */
-        /* @__PURE__ */ h("div", { className: "chat-wrapper__regular-message", children: /* @__PURE__ */ h("div", { className: "chat-wrapper__markdown-content", children: /* @__PURE__ */ h(
-          ln,
-          {
-            components: {
-              pre: ({ children: s }) => /* @__PURE__ */ h("pre", { className: "chat-wrapper__code-block", children: s }),
-              code: ({ children: s, className: c }) => !c ? /* @__PURE__ */ h("code", { className: "chat-wrapper__inline-code", children: s }) : /* @__PURE__ */ h("code", { className: "chat-wrapper__code-block", children: s }),
-              ul: ({ children: s }) => /* @__PURE__ */ h("ul", { className: "chat-wrapper__list", children: s }),
-              ol: ({ children: s }) => /* @__PURE__ */ h("ol", { className: "chat-wrapper__ordered-list", children: s }),
-              li: ({ children: s }) => /* @__PURE__ */ h("li", { className: "chat-wrapper__list-item", children: s })
-            },
-            children: e.content
-          }
-        ) }) })
-      ) : (
-        /* User message display with markdown */
-        /* @__PURE__ */ O("div", { className: "chat-wrapper__regular-message", children: [
-          /* @__PURE__ */ h("div", { className: "chat-wrapper__markdown-content", children: /* @__PURE__ */ h(
+          ) })
+        ) : /* @__PURE__ */ h("div", { className: "chat-wrapper__message-content", children: e.role === "assistant" && e.isStreaming && e.content === "" && e.id === o.current ? (
+          /* Show streaming indicator when no content yet */
+          /* @__PURE__ */ O("div", { className: "chat-wrapper__streaming-placeholder", children: [
+            /* @__PURE__ */ h(Fc, { size: 16, variant: "dots" }),
+            /* @__PURE__ */ h("span", { children: "Thinking" })
+          ] })
+        ) : e.role === "system" ? (
+          /* System message with collapsible tool result */
+          /* @__PURE__ */ h(Uc, { message: e })
+        ) : e.role === "assistant" ? (
+          /* Assistant message with regular markdown display */
+          /* @__PURE__ */ h("div", { className: "chat-wrapper__regular-message", children: /* @__PURE__ */ h("div", { className: "chat-wrapper__markdown-content", children: /* @__PURE__ */ h(
             ln,
             {
               components: {
                 pre: ({ children: s }) => /* @__PURE__ */ h("pre", { className: "chat-wrapper__code-block", children: s }),
-                code: ({ children: s, className: c }) => !c ? /* @__PURE__ */ h("code", { className: "chat-wrapper__inline-code", children: s }) : /* @__PURE__ */ h("code", { className: "chat-wrapper__code", children: s }),
-                p: ({ children: s }) => /* @__PURE__ */ h("p", { className: "chat-wrapper__paragraph", children: s }),
-                h1: ({ children: s }) => /* @__PURE__ */ h("h1", { className: "chat-wrapper__heading-1", children: s }),
-                h2: ({ children: s }) => /* @__PURE__ */ h("h2", { className: "chat-wrapper__heading-2", children: s }),
-                h3: ({ children: s }) => /* @__PURE__ */ h("h3", { className: "chat-wrapper__heading-3", children: s }),
+                code: ({ children: s, className: c }) => !c ? /* @__PURE__ */ h("code", { className: "chat-wrapper__inline-code", children: s }) : /* @__PURE__ */ h("code", { className: "chat-wrapper__code-block", children: s }),
                 ul: ({ children: s }) => /* @__PURE__ */ h("ul", { className: "chat-wrapper__list", children: s }),
                 ol: ({ children: s }) => /* @__PURE__ */ h("ol", { className: "chat-wrapper__ordered-list", children: s }),
-                li: ({ children: s }) => /* @__PURE__ */ h("li", { className: "chat-wrapper__list-item", children: s }),
-                blockquote: ({ children: s }) => /* @__PURE__ */ h("blockquote", { className: "chat-wrapper__blockquote", children: s }),
-                strong: ({ children: s }) => /* @__PURE__ */ h("strong", { className: "chat-wrapper__bold", children: s }),
-                em: ({ children: s }) => /* @__PURE__ */ h("em", { className: "chat-wrapper__italic", children: s })
+                li: ({ children: s }) => /* @__PURE__ */ h("li", { className: "chat-wrapper__list-item", children: s })
               },
-              children: e.content.trim()
+              children: e.content
             }
-          ) }),
-          e.role === "user" && e.media && e.media.length > 0 && /* @__PURE__ */ h(
-            "div",
-            {
-              style: {
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "8px",
-                marginBottom: "4px"
-              },
-              children: e.media.map((s, c) => /* @__PURE__ */ h(
-                "div",
-                {
-                  style: {
-                    position: "relative",
-                    display: "inline-block"
-                  },
-                  children: s.startsWith("data:image/") ? /* @__PURE__ */ O(
-                    "div",
-                    {
-                      style: {
-                        position: "relative",
-                        width: "56px",
-                        height: "56px",
-                        borderRadius: "8px",
-                        overflow: "hidden",
-                        border: "1px solid #e2e8f0"
-                      },
-                      children: [
-                        /* @__PURE__ */ h(
-                          "img",
-                          {
-                            src: s,
-                            alt: `Attachment ${c + 1}`,
-                            style: {
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover"
-                            }
-                          }
-                        ),
-                        /* @__PURE__ */ h(
-                          "div",
-                          {
-                            style: {
-                              position: "absolute",
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              bottom: 0,
-                              backgroundColor: "rgba(0, 0, 0, 0.2)",
-                              zIndex: 1
-                            }
-                          }
-                        )
-                      ]
-                    }
-                  ) : /* @__PURE__ */ O(
-                    "div",
-                    {
-                      style: {
-                        position: "relative",
-                        display: "flex",
-                        alignItems: "center",
-                        backgroundColor: "#1f2937",
-                        borderRadius: "8px",
-                        padding: "8px",
-                        minWidth: "200px",
-                        maxWidth: "300px",
-                        height: "56px"
-                      },
-                      children: [
-                        /* @__PURE__ */ h(
-                          "div",
-                          {
-                            style: {
-                              width: "40px",
-                              height: "40px",
-                              backgroundColor: "#8b5cf6",
-                              borderRadius: "8px",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              marginRight: "12px",
-                              flexShrink: 0
-                            },
-                            children: /* @__PURE__ */ O(
-                              "svg",
-                              {
-                                width: "20",
-                                height: "20",
-                                viewBox: "0 0 24 24",
-                                fill: "none",
-                                xmlns: "http://www.w3.org/2000/svg",
-                                children: [
-                                  /* @__PURE__ */ h(
-                                    "path",
-                                    {
-                                      d: "M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z",
-                                      fill: "white"
-                                    }
-                                  ),
-                                  /* @__PURE__ */ h(
-                                    "path",
-                                    {
-                                      d: "M14 2V8H20",
-                                      fill: "none",
-                                      stroke: "white",
-                                      strokeWidth: "2",
-                                      strokeLinecap: "round",
-                                      strokeLinejoin: "round"
-                                    }
-                                  )
-                                ]
-                              }
-                            )
-                          }
-                        ),
-                        /* @__PURE__ */ O("div", { style: { flex: 1, minWidth: 0 }, children: [
+          ) }) })
+        ) : (
+          /* User message display with markdown */
+          /* @__PURE__ */ O("div", { className: "chat-wrapper__regular-message", children: [
+            /* @__PURE__ */ h("div", { className: "chat-wrapper__markdown-content", children: /* @__PURE__ */ h(
+              ln,
+              {
+                components: {
+                  pre: ({ children: s }) => /* @__PURE__ */ h("pre", { className: "chat-wrapper__code-block", children: s }),
+                  code: ({ children: s, className: c }) => !c ? /* @__PURE__ */ h("code", { className: "chat-wrapper__inline-code", children: s }) : /* @__PURE__ */ h("code", { className: "chat-wrapper__code", children: s }),
+                  p: ({ children: s }) => /* @__PURE__ */ h("p", { className: "chat-wrapper__paragraph", children: s }),
+                  h1: ({ children: s }) => /* @__PURE__ */ h("h1", { className: "chat-wrapper__heading-1", children: s }),
+                  h2: ({ children: s }) => /* @__PURE__ */ h("h2", { className: "chat-wrapper__heading-2", children: s }),
+                  h3: ({ children: s }) => /* @__PURE__ */ h("h3", { className: "chat-wrapper__heading-3", children: s }),
+                  ul: ({ children: s }) => /* @__PURE__ */ h("ul", { className: "chat-wrapper__list", children: s }),
+                  ol: ({ children: s }) => /* @__PURE__ */ h("ol", { className: "chat-wrapper__ordered-list", children: s }),
+                  li: ({ children: s }) => /* @__PURE__ */ h("li", { className: "chat-wrapper__list-item", children: s }),
+                  blockquote: ({ children: s }) => /* @__PURE__ */ h("blockquote", { className: "chat-wrapper__blockquote", children: s }),
+                  strong: ({ children: s }) => /* @__PURE__ */ h("strong", { className: "chat-wrapper__bold", children: s }),
+                  em: ({ children: s }) => /* @__PURE__ */ h("em", { className: "chat-wrapper__italic", children: s })
+                },
+                children: e.content.trim()
+              }
+            ) }),
+            e.role === "user" && e.media && e.media.length > 0 && /* @__PURE__ */ h(
+              "div",
+              {
+                style: {
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "8px",
+                  marginBottom: "4px"
+                },
+                children: e.media.map((s, c) => /* @__PURE__ */ h(
+                  "div",
+                  {
+                    style: {
+                      position: "relative",
+                      display: "inline-block"
+                    },
+                    children: s.startsWith("data:image/") ? /* @__PURE__ */ O(
+                      "div",
+                      {
+                        style: {
+                          position: "relative",
+                          width: "56px",
+                          height: "56px",
+                          borderRadius: "8px",
+                          overflow: "hidden",
+                          border: "1px solid #e2e8f0"
+                        },
+                        children: [
                           /* @__PURE__ */ h(
-                            "div",
+                            "img",
                             {
+                              src: s,
+                              alt: `Attachment ${c + 1}`,
                               style: {
-                                color: "white",
-                                fontSize: "14px",
-                                fontWeight: "500",
-                                marginBottom: "2px",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
-                                maxWidth: "200px"
-                              },
-                              children: (() => {
-                                const u = s.match(/name=([^;]+)/);
-                                return u ? decodeURIComponent(u[1]) : "document.pdf";
-                              })()
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover"
+                              }
                             }
                           ),
                           /* @__PURE__ */ h(
                             "div",
                             {
                               style: {
-                                color: "#9ca3af",
-                                fontSize: "12px",
-                                textTransform: "uppercase"
-                              },
-                              children: (() => {
-                                const u = s.match(/data:([^;]+)/);
-                                if (u) {
-                                  const f = u[1];
-                                  switch (f) {
-                                    case "application/pdf":
-                                      return "PDF";
-                                    case "application/msword":
-                                    case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-                                      return "DOC";
-                                    case "application/vnd.ms-excel":
-                                    case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
-                                      return "XLS";
-                                    case "application/vnd.ms-powerpoint":
-                                    case "application/vnd.openxmlformats-officedocument.presentationml.presentation":
-                                      return "PPT";
-                                    case "text/plain":
-                                      return "TXT";
-                                    case "text/csv":
-                                      return "CSV";
-                                    case "application/json":
-                                      return "JSON";
-                                    case "application/xml":
-                                    case "text/xml":
-                                      return "XML";
-                                    case "application/zip":
-                                      return "ZIP";
-                                    case "application/x-rar-compressed":
-                                      return "RAR";
-                                    default:
-                                      const y = f.split("/")[1];
-                                      return y ? y.toUpperCase().substring(0, 4) : "FILE";
-                                  }
-                                }
-                                return "FILE";
-                              })()
+                                position: "absolute",
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                backgroundColor: "rgba(0, 0, 0, 0.2)",
+                                zIndex: 1
+                              }
                             }
                           )
-                        ] })
-                      ]
-                    }
-                  )
-                },
-                c
-              ))
-            }
-          )
-        ] })
-      ) })
-    }
-  );
-});
-al.displayName = "MessageComponent";
-const sl = Zn(({
-  content: e,
-  messageId: t
-}) => !t || !e ? null : /* @__PURE__ */ h("div", { className: "chat-wrapper__message chat-wrapper__message--assistant", children: /* @__PURE__ */ h("div", { className: "chat-wrapper__message-content", children: /* @__PURE__ */ h("div", { className: "chat-wrapper__regular-message", children: /* @__PURE__ */ h("div", { className: "chat-wrapper__markdown-content", children: /* @__PURE__ */ h(
-  ln,
-  {
-    components: {
-      pre: ({ children: n }) => /* @__PURE__ */ h("pre", { className: "chat-wrapper__code-block", children: n }),
-      code: ({ children: n, className: r }) => !r ? /* @__PURE__ */ h("code", { className: "chat-wrapper__inline-code", children: n }) : /* @__PURE__ */ h("code", { className: "chat-wrapper__code-block", children: n }),
-      ul: ({ children: n }) => /* @__PURE__ */ h("ul", { className: "chat-wrapper__list", children: n }),
-      ol: ({ children: n }) => /* @__PURE__ */ h("ol", { className: "chat-wrapper__ordered-list", children: n }),
-      li: ({ children: n }) => /* @__PURE__ */ h("li", { className: "chat-wrapper__list-item", children: n })
-    },
-    children: e
+                        ]
+                      }
+                    ) : /* @__PURE__ */ O(
+                      "div",
+                      {
+                        style: {
+                          position: "relative",
+                          display: "flex",
+                          alignItems: "center",
+                          backgroundColor: "#1f2937",
+                          borderRadius: "8px",
+                          padding: "8px",
+                          minWidth: "200px",
+                          maxWidth: "300px",
+                          height: "56px"
+                        },
+                        children: [
+                          /* @__PURE__ */ h(
+                            "div",
+                            {
+                              style: {
+                                width: "40px",
+                                height: "40px",
+                                backgroundColor: "#8b5cf6",
+                                borderRadius: "8px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                marginRight: "12px",
+                                flexShrink: 0
+                              },
+                              children: /* @__PURE__ */ O(
+                                "svg",
+                                {
+                                  width: "20",
+                                  height: "20",
+                                  viewBox: "0 0 24 24",
+                                  fill: "none",
+                                  xmlns: "http://www.w3.org/2000/svg",
+                                  children: [
+                                    /* @__PURE__ */ h(
+                                      "path",
+                                      {
+                                        d: "M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z",
+                                        fill: "white"
+                                      }
+                                    ),
+                                    /* @__PURE__ */ h(
+                                      "path",
+                                      {
+                                        d: "M14 2V8H20",
+                                        fill: "none",
+                                        stroke: "white",
+                                        strokeWidth: "2",
+                                        strokeLinecap: "round",
+                                        strokeLinejoin: "round"
+                                      }
+                                    )
+                                  ]
+                                }
+                              )
+                            }
+                          ),
+                          /* @__PURE__ */ O("div", { style: { flex: 1, minWidth: 0 }, children: [
+                            /* @__PURE__ */ h(
+                              "div",
+                              {
+                                style: {
+                                  color: "white",
+                                  fontSize: "14px",
+                                  fontWeight: "500",
+                                  marginBottom: "2px",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                  maxWidth: "200px"
+                                },
+                                children: (() => {
+                                  const u = s.match(/name=([^;]+)/);
+                                  return u ? decodeURIComponent(u[1]) : "document.pdf";
+                                })()
+                              }
+                            ),
+                            /* @__PURE__ */ h(
+                              "div",
+                              {
+                                style: {
+                                  color: "#9ca3af",
+                                  fontSize: "12px",
+                                  textTransform: "uppercase"
+                                },
+                                children: (() => {
+                                  const u = s.match(/data:([^;]+)/);
+                                  if (u) {
+                                    const f = u[1];
+                                    switch (f) {
+                                      case "application/pdf":
+                                        return "PDF";
+                                      case "application/msword":
+                                      case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+                                        return "DOC";
+                                      case "application/vnd.ms-excel":
+                                      case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+                                        return "XLS";
+                                      case "application/vnd.ms-powerpoint":
+                                      case "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+                                        return "PPT";
+                                      case "text/plain":
+                                        return "TXT";
+                                      case "text/csv":
+                                        return "CSV";
+                                      case "application/json":
+                                        return "JSON";
+                                      case "application/xml":
+                                      case "text/xml":
+                                        return "XML";
+                                      case "application/zip":
+                                        return "ZIP";
+                                      case "application/x-rar-compressed":
+                                        return "RAR";
+                                      default:
+                                        const y = f.split("/")[1];
+                                        return y ? y.toUpperCase().substring(0, 4) : "FILE";
+                                    }
+                                  }
+                                  return "FILE";
+                                })()
+                              }
+                            )
+                          ] })
+                        ]
+                      }
+                    )
+                  },
+                  c
+                ))
+              }
+            )
+          ] })
+        ) })
+      }
+    );
   }
-) }) }) }) }));
+);
+al.displayName = "MessageComponent";
+const sl = Zn(
+  ({ content: e, messageId: t }) => !t || !e ? null : /* @__PURE__ */ h("div", { className: "chat-wrapper__message chat-wrapper__message--assistant", children: /* @__PURE__ */ h("div", { className: "chat-wrapper__message-content", children: /* @__PURE__ */ h("div", { className: "chat-wrapper__regular-message", children: /* @__PURE__ */ h("div", { className: "chat-wrapper__markdown-content", children: /* @__PURE__ */ h(
+    ln,
+    {
+      components: {
+        pre: ({ children: n }) => /* @__PURE__ */ h("pre", { className: "chat-wrapper__code-block", children: n }),
+        code: ({ children: n, className: r }) => !r ? /* @__PURE__ */ h("code", { className: "chat-wrapper__inline-code", children: n }) : /* @__PURE__ */ h("code", { className: "chat-wrapper__code-block", children: n }),
+        ul: ({ children: n }) => /* @__PURE__ */ h("ul", { className: "chat-wrapper__list", children: n }),
+        ol: ({ children: n }) => /* @__PURE__ */ h("ol", { className: "chat-wrapper__ordered-list", children: n }),
+        li: ({ children: n }) => /* @__PURE__ */ h("li", { className: "chat-wrapper__list-item", children: n })
+      },
+      children: e
+    }
+  ) }) }) }) })
+);
 sl.displayName = "StreamingMessage";
 function Uc({ message: e }) {
   const [t, n] = fe(!0);
@@ -9316,7 +9305,9 @@ function Hc({
   var Oe;
   const [l, o] = fe(
     null
-  ), [a, s] = fe(!1), [c, u] = fe(""), f = ut(null), [y, p] = fe(i), [x, k] = fe(!1), [_, b] = fe(!1), [I, A] = fe("idle"), [N, Z] = fe(!1), [w, q] = fe(t.mode), [ie] = fe([]), [G, X] = fe(""), [L, M] = fe(!1), [, J] = fe(""), [ee, W] = fe(""), [ae, ue] = fe(!1), [, ke] = fe(/* @__PURE__ */ new Map()), Ae = ut(null), m = ut(null), j = ut(null), Ie = ut(!0), d = ut(""), ce = de(
+  ), [a, s] = fe(!1), [c, u] = fe(""), f = ut(null), [y, p] = fe(i), [x, k] = fe(!1), [_, b] = fe(!1), [I, A] = fe("idle"), [N, Z] = fe(!1), [w, q] = fe(t.mode), [ie] = fe([]), [G, X] = fe(""), [L, M] = fe(!1), [, J] = fe(""), [ee, W] = fe(""), [ae, ue] = fe(!1), [, ke] = fe(
+    /* @__PURE__ */ new Map()
+  ), Ae = ut(null), m = ut(null), j = ut(null), Ie = ut(!0), d = ut(""), ce = de(
     () => Math.random().toString(36).substring(2) + Date.now().toString(36),
     []
   ), K = $t(
@@ -9347,7 +9338,10 @@ function Hc({
     [ce]
   ), Ce = de(() => {
     if (j.current && d.current) {
-      const v = en(d.current, !0), B = {
+      const v = en(
+        d.current,
+        !0
+      ), B = {
         id: j.current,
         role: "assistant",
         content: v,
@@ -9357,13 +9351,12 @@ function Hc({
       return p((U) => [...U, B]), j.current = null, d.current = "", W(""), !0;
     }
     return !1;
-  }, []), $e = de(
-    () => {
+  }, []), $e = de(() => {
+    k(!1), M(!1), A("idle"), Ce(), console.log("clog focus..."), setTimeout(() => {
       var v;
-      k(!1), M(!1), A("idle"), Ce(), (v = m.current) == null || v.focus();
-    },
-    [Ce]
-  ), gt = de(
+      (v = m.current) == null || v.focus();
+    }, 0);
+  }, [Ce]), gt = de(
     (v) => {
       console.error("Chat error:", v), k(!1), M(!1), A("error"), Ce(), _e("system", `❌ Chat error: ${v}`);
     },
@@ -9497,9 +9490,7 @@ function Hc({
   }, [G, t]), xt(() => {
     console.log("🔍 DEBUG: isHandlingTool state changed:", ae);
   }, [ae]), xt(() => {
-    console.log(
-      "💭 DEBUG: isHandlingReasoning state changed:"
-    );
+    console.log("💭 DEBUG: isHandlingReasoning state changed:");
   }, []), xt(() => (console.log("Connecting BusinessAgentClient..."), He(), () => {
     Ke();
   }), [He, Ke]), xt(() => {
@@ -9537,28 +9528,35 @@ function Hc({
     [x, l, a, ce, _e, t]
   ), Ze = de(() => {
     k(!1), A("idle"), X(""), M(!1), J(""), j.current = null, d.current = "", W(""), De();
-  }, [De]), et = de(async (v) => {
-    console.log("Files selected:", v);
-    const B = [];
-    for (const U of v)
-      try {
-        if (U.type.startsWith("image/")) {
-          const R = new FileReader(), pe = await new Promise((oe, pt) => {
-            R.onload = () => oe(R.result), R.onerror = pt, R.readAsDataURL(U);
-          });
-          B.push(pe);
-        } else if (U.type.startsWith("text/") || U.name.endsWith(".txt")) {
-          const R = new FileReader(), pe = await new Promise((oe, pt) => {
-            R.onload = () => oe(R.result), R.onerror = pt, R.readAsText(U);
-          });
-          console.log("Text file content:", pe);
-        } else
-          console.log("File type not supported for preview:", U.type), B.push(`data:${U.type};name=${encodeURIComponent(U.name)};base64,placeholder`);
-      } catch (R) {
-        console.error("Error processing file:", R);
-      }
-    return console.log("Added media:", B), B;
-  }, []), tt = de(() => {
+  }, [De]), et = de(
+    async (v) => {
+      console.log("Files selected:", v);
+      const B = [];
+      for (const U of v)
+        try {
+          if (U.type.startsWith("image/")) {
+            const R = new FileReader(), pe = await new Promise((oe, pt) => {
+              R.onload = () => oe(R.result), R.onerror = pt, R.readAsDataURL(U);
+            });
+            B.push(pe);
+          } else if (U.type.startsWith("text/") || U.name.endsWith(".txt")) {
+            const R = new FileReader(), pe = await new Promise((oe, pt) => {
+              R.onload = () => oe(R.result), R.onerror = pt, R.readAsText(U);
+            });
+            console.log("Text file content:", pe);
+          } else
+            console.log("File type not supported for preview:", U.type), B.push(
+              `data:${U.type};name=${encodeURIComponent(
+                U.name
+              )};base64,placeholder`
+            );
+        } catch (R) {
+          console.error("Error processing file:", R);
+        }
+      return console.log("Added media:", B), B;
+    },
+    []
+  ), tt = de(() => {
     b(!0);
   }, []), nt = de(() => {
     b(!1);
@@ -9739,7 +9737,7 @@ function Hc({
   return w === "modal" && !_ || (w === "sidebar" || w === "fullscreen") && N ? T() : (console.log("clog messages", y), /* @__PURE__ */ O(Nn, { children: [
     C(),
     /* @__PURE__ */ O("div", { className: rt, style: t.customStyles, children: [
-      /* @__PURE__ */ O("div", { className: "chat-wrapper__header", children: [
+      t.headerVisible !== !1 && /* @__PURE__ */ O("div", { className: "chat-wrapper__header", children: [
         /* @__PURE__ */ O("div", { className: "chat-wrapper__title-area", children: [
           /* @__PURE__ */ h("h2", { className: "chat-wrapper__title", children: t.appName }),
           /* @__PURE__ */ h("div", { className: "chat-wrapper__connection-status", children: /* @__PURE__ */ h(
@@ -9758,48 +9756,54 @@ function Hc({
         ] })
       ] }),
       !N && /* @__PURE__ */ O(Nn, { children: [
-        /* @__PURE__ */ O("div", { className: "chat-wrapper__messages", children: [
-          y.map((v) => /* @__PURE__ */ h(
-            al,
-            {
-              message: v,
-              getReasoningTitle: le,
-              getReasoningStatus: K,
-              getToolingTitle: Ue,
-              getToolingStatus: ye,
-              clientTools: r || [],
-              currentAssistantMessageIdRef: j
-            },
-            v.id
-          )),
-          j.current && ee && /* @__PURE__ */ h(
-            sl,
-            {
-              content: ee,
-              messageId: j.current
-            }
-          ),
-          L && !ae && /* @__PURE__ */ h("div", { className: "chat-wrapper__message chat-wrapper__message--assistant", children: /* @__PURE__ */ h("div", { className: "chat-wrapper__thinking-bubble", children: /* @__PURE__ */ h("div", { className: "chat-wrapper__thinking-content", children: /* @__PURE__ */ O("div", { className: "chat-wrapper__thinking-dots", children: [
-            /* @__PURE__ */ h("span", {}),
-            /* @__PURE__ */ h("span", {}),
-            /* @__PURE__ */ h("span", {})
-          ] }) }) }) }),
-          /* @__PURE__ */ h("div", { ref: Ae })
+        /* @__PURE__ */ O("div", { className: "chat-wrapper__main-header", children: [
+          /* @__PURE__ */ h("h1", { className: "chat-wrapper__main-title", children: t.appName }),
+          t.description && /* @__PURE__ */ h("p", { className: "chat-wrapper__description", children: t.description })
         ] }),
-        we(),
-        /* @__PURE__ */ h(
-          Mc,
-          {
-            ref: m,
-            placeholder: t.placeholder,
-            disabled: x,
-            chatStatus: I,
-            fileUploadEnabled: (Oe = t.features) == null ? void 0 : Oe.fileUpload,
-            onSubmit: (v, B) => ct(v, B),
-            onFileUpload: et,
-            onStopGeneration: Ze
-          }
-        )
+        /* @__PURE__ */ O("div", { className: `chat-wrapper__content ${y.length === 0 && !x ? "chat-wrapper__content--empty" : "chat-wrapper__content--with-messages"}`, children: [
+          /* @__PURE__ */ O("div", { className: "chat-wrapper__messages", children: [
+            y.map((v) => /* @__PURE__ */ h(
+              al,
+              {
+                message: v,
+                getReasoningTitle: le,
+                getReasoningStatus: K,
+                getToolingTitle: Ue,
+                getToolingStatus: ye,
+                clientTools: r || [],
+                currentAssistantMessageIdRef: j
+              },
+              v.id
+            )),
+            j.current && ee && /* @__PURE__ */ h(
+              sl,
+              {
+                content: ee,
+                messageId: j.current
+              }
+            ),
+            L && !ae && /* @__PURE__ */ h("div", { className: "chat-wrapper__message chat-wrapper__message--assistant", children: /* @__PURE__ */ h("div", { className: "chat-wrapper__thinking-bubble", children: /* @__PURE__ */ h("div", { className: "chat-wrapper__thinking-content", children: /* @__PURE__ */ O("div", { className: "chat-wrapper__thinking-dots", children: [
+              /* @__PURE__ */ h("span", {}),
+              /* @__PURE__ */ h("span", {}),
+              /* @__PURE__ */ h("span", {})
+            ] }) }) }) }),
+            /* @__PURE__ */ h("div", { ref: Ae })
+          ] }),
+          we(),
+          /* @__PURE__ */ h("div", { className: "chat-wrapper__input-container", children: /* @__PURE__ */ h(
+            Mc,
+            {
+              ref: m,
+              placeholder: t.placeholder,
+              disabled: x,
+              chatStatus: I,
+              fileUploadEnabled: (Oe = t.features) == null ? void 0 : Oe.fileUpload,
+              onSubmit: (v, B) => ct(v, B),
+              onFileUpload: et,
+              onStopGeneration: Ze
+            }
+          ) })
+        ] })
       ] }),
       t.onError && /* @__PURE__ */ h("div", { className: "chat-wrapper__error-boundary" })
     ] })

@@ -49,11 +49,13 @@ export interface ChatConfig {
   apiEndpoint: string;
   apiKey?: string;
   theme?: ChatTheme;
+  description?: string;
   placeholder?: string;
   welcomeMessage?: string;
   promptPath?: string;
   bubbleText?: string;
   constrainedHeight?: boolean; // When true, embedded mode will fill parent container completely
+  headerVisible?: boolean; // When true, shows the header with appName and description
   features?: {
     fileUpload?: boolean;
     voiceInput?: boolean;
