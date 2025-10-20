@@ -5,10 +5,10 @@
 .chat-wrapper__restaurant-chip {
   display: inline-flex;
   align-items: center;
-  padding: 12px 6px;
+  padding: 12px 12px 12px 6px;
   height: 36px;
   border: 1px solid #d1d5db;
-  border-radius: 16px;
+  border-radius: 24px;
   font-family: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
     "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
   font-size: 12px;
@@ -303,7 +303,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 32px 16px;
+  /* padding: 32px 16px; */
   min-height: 200px;
 }
 
@@ -351,12 +351,12 @@
 .chat-wrapper__content--with-messages .chat-wrapper__messages {
   flex: 1;
   overflow-y: auto;
-  padding: 24px;
+  /* padding: 24px; */
 }
 
 .chat-wrapper__content--with-messages .chat-wrapper__input-container {
   flex: 0 0 auto;
-  padding: 16px;
+  /* padding: 16px; */
 }
 
 /* Input Container */
@@ -1325,6 +1325,13 @@
   display: flex;
 }
 
+.chat-wrapper__status-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 16px;
+}
+
 @keyframes dotPulse {
   0%,
   80%,
@@ -1548,7 +1555,7 @@
   /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); */
   /* transition: all 0.2s ease-in-out; */
   overflow: hidden;
-  margin: 12px;
+  /* margin: 12px; */
   background-image: linear-gradient(white, white), linear-gradient(135deg, #E3C7F8, #3D0099);
   background-origin: padding-box, border-box;
   background-clip: padding-box, border-box;
