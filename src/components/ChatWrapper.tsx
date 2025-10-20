@@ -271,24 +271,34 @@ const MessageComponent = memo(
                                 }}
                               >
                                 <svg
-                                  width="20"
-                                  height="20"
-                                  viewBox="0 0 24 24"
+                                  width="24"
+                                  height="25"
+                                  viewBox="0 0 24 25"
                                   fill="none"
                                   xmlns="http://www.w3.org/2000/svg"
                                 >
-                                  <path
-                                    d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z"
-                                    fill="white"
-                                  />
-                                  <path
-                                    d="M14 2V8H20"
-                                    fill="none"
-                                    stroke="white"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                  />
+                                  <mask
+                                    id="mask0_190_623"
+                                    style={{ maskType: "alpha" }}
+                                    maskUnits="userSpaceOnUse"
+                                    x="0"
+                                    y="0"
+                                    width="24"
+                                    height="25"
+                                  >
+                                    <rect
+                                      y="0.354126"
+                                      width="24"
+                                      height="24"
+                                      fill="#D9D9D9"
+                                    />
+                                  </mask>
+                                  <g mask="url(#mask0_190_623)">
+                                    <path
+                                      d="M8.19225 13.0079H15.8077V11.5079H8.19225V13.0079ZM8.19225 15.8926H15.8077V14.3926H8.19225V15.8926ZM8.19225 18.7771H12.8077V17.2771H8.19225V18.7771ZM6.30775 21.8541C5.80258 21.8541 5.375 21.6791 5.025 21.3291C4.675 20.9791 4.5 20.5515 4.5 20.0464V4.66188C4.5 4.15671 4.675 3.72913 5.025 3.37913C5.375 3.02913 5.80258 2.85413 6.30775 2.85413H14.25L19.5 8.10413V20.0464C19.5 20.5515 19.325 20.9791 18.975 21.3291C18.625 21.6791 18.1974 21.8541 17.6923 21.8541H6.30775ZM13.5 8.85413V4.35413H6.30775C6.23075 4.35413 6.16025 4.38621 6.09625 4.45038C6.03208 4.51438 6 4.58488 6 4.66188V20.0464C6 20.1234 6.03208 20.1939 6.09625 20.2579C6.16025 20.322 6.23075 20.3541 6.30775 20.3541H17.6923C17.7692 20.3541 17.8398 20.322 17.9038 20.2579C17.9679 20.1939 18 20.1234 18 20.0464V8.85413H13.5Z"
+                                      fill="white"
+                                    />
+                                  </g>
                                 </svg>
                               </div>
 
@@ -1589,20 +1599,26 @@ function ChatWrapper({
 
         {!isCollapsed && (
           <>
-            {/* Main Header Section */}
-            <div className="chat-wrapper__main-header">
-              <h1 className="chat-wrapper__main-title">
-                {config.appName}
-              </h1>
-              {config.description && (
-                <p className="chat-wrapper__description">
-                  {config.description}
-                </p>
-              )}
-            </div>
+            {/* Main Header Section - only show when no messages */}
+            {messages.length === 0 && !isStreaming && (
+              <div className="chat-wrapper__main-header">
+                <h1 className="chat-wrapper__main-title">{config.appName}</h1>
+                {config.description && (
+                  <p className="chat-wrapper__description">
+                    {config.description}
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Chat Content Area - flexible layout based on message state */}
-            <div className={`chat-wrapper__content ${messages.length === 0 && !isStreaming ? 'chat-wrapper__content--empty' : 'chat-wrapper__content--with-messages'}`}>
+            <div
+              className={`chat-wrapper__content ${
+                messages.length === 0 && !isStreaming
+                  ? "chat-wrapper__content--empty"
+                  : "chat-wrapper__content--with-messages"
+              }`}
+            >
               {/* Messages Area */}
               <div className="chat-wrapper__messages">
                 {messages.map((message) => (
@@ -1654,6 +1670,8 @@ function ChatWrapper({
                   disabled={isStreaming}
                   chatStatus={chatStatus}
                   fileUploadEnabled={config.features?.fileUpload}
+                  restaurantName={config.restaurantName}
+                  restaurantLogo={config.restaurantLogo}
                   onSubmit={(message, media) => handleSubmit(message, media)}
                   onFileUpload={handleFileUpload}
                   onStopGeneration={stopGeneration}

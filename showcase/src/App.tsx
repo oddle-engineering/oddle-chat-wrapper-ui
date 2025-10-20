@@ -41,10 +41,13 @@ function App() {
     theme: "light" as ChatTheme,
     position: "right" as ChatPosition,
     appName: "Demo Chat",
-    description: 'An AI assistant to help with restaurant management tasks.',
+    description: "An AI assistant to help with restaurant management tasks.",
 
     placeholder: "Ask Oddle AI to turn your ideas into a campaign...",
     headerVisible: false,
+    restaurantName: "McDonald's Downtown",
+    restaurantLogo:
+      "https://lounge.beta.oddle.me/_next/image?url=https%3A%2F%2Fs3-ap-southeast-1.amazonaws.com%2Fv3-beta.image.oddle.me%2Flogo%2Fmenu_logo_Nomnom5a565b.jpg&w=96&q=75",
   });
 
   const [todos, setTodos] = useState<any[]>([

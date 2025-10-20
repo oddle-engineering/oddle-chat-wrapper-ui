@@ -1,12 +1,50 @@
 /* Google Fonts Import */
-@import url('https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+/* Restaurant Name Chip */
+.chat-wrapper__restaurant-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 6px;
+  height: 36px;
+  border: 1px solid #d1d5db;
+  border-radius: 16px;
+  font-family: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+  margin-left: 0;
+  white-space: nowrap;
+  gap: 6px;
+}
+
+.chat-wrapper__restaurant-logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.chat-wrapper__restaurant-name {
+  line-height: 1;
+  font-size: 13px;
+}
+
+.chat-wrapper__divider {
+  width: 1px;
+  height: 36px;
+  background-color: #e5e7eb;
+  margin: 0 8px;
+}
 
 /* Chat Wrapper Base Styles */
 .chat-wrapper {
   display: flex;
   flex-direction: column;
-  font-family: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", sans-serif;
+  font-family: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
@@ -162,9 +200,10 @@
 }
 
 .chat-wrapper__main-title {
-  color: var(--Primary-Darker, #1A1243);
+  color: var(--Primary-Darker, #1a1243);
   text-align: center;
-  font-family: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
+  font-family: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
   font-size: 48px;
   font-style: normal;
   font-weight: 600;
@@ -191,7 +230,7 @@
     font-size: 32px;
     line-height: 40px;
   }
-  
+
   .chat-wrapper__main-header {
     padding: 16px 12px;
   }
@@ -1462,7 +1501,7 @@
 .chat-wrapper__regular-message {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 4px;
 }
 
 .chat-wrapper__streaming-placeholder {
@@ -1504,16 +1543,19 @@
 .chat-wrapper__prompt-input {
   position: relative;
   background-color: #ffffff;
-  border: 2px solid #e2e8f0;
+  border: 2px solid transparent;
   border-radius: 12px;
   /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); */
   /* transition: all 0.2s ease-in-out; */
   overflow: hidden;
   margin: 12px;
+  background-image: linear-gradient(white, white), linear-gradient(135deg, #E3C7F8, #3D0099);
+  background-origin: padding-box, border-box;
+  background-clip: padding-box, border-box;
 }
 
 .chat-wrapper__prompt-input:focus-within {
-  border: 2px solid #410099;
+  background-image: linear-gradient(white, white), linear-gradient(135deg, #3D0099, #E3C7F8);
   /* box-shadow: 0 0 0 3px rgba(65, 0, 153, 0.1), 0 4px 12px rgba(0, 0, 0, 0.1); */
 }
 
@@ -1521,12 +1563,12 @@
   width: 100%;
   min-height: 48px;
   max-height: 164px;
-  padding: 12px 16px;
+  padding: 16px 16px 8px 16px;
   border: none;
   outline: none;
   resize: none;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.5;
   color: #1f2937;
   background: transparent;
@@ -1557,15 +1599,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
-  border-top: 1px solid #f3f4f6;
-  background-color: #fafafa;
+  padding: 8px 16px 16px 16px;
 }
 
 .chat-wrapper__prompt-tools {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
 }
 
 /* Button Base Styles */
@@ -1608,10 +1648,6 @@
   border-color: transparent;
 }
 
-.chat-wrapper__prompt-button--ghost:hover:not(:disabled) {
-  background-color: #f3f4f6;
-  color: #374151;
-}
 
 .chat-wrapper__prompt-button--outline {
   background-color: transparent;
@@ -1632,8 +1668,8 @@
 }
 
 .chat-wrapper__prompt-button--icon {
-  height: 32px;
-  width: 32px;
+  height: 36px;
+  width: 36px;
   padding: 0;
 }
 
@@ -1714,8 +1750,8 @@
 }
 
 .chat-wrapper__prompt-submit--icon {
-  height: 32px;
-  width: 32px;
+  height: 36px;
+  width: 36px;
   padding: 0;
 }
 

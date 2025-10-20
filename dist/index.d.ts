@@ -17,6 +17,8 @@ export declare interface ChatConfig {
     bubbleText?: string;
     constrainedHeight?: boolean;
     headerVisible?: boolean;
+    restaurantName?: string;
+    restaurantLogo?: string;
     features?: {
         fileUpload?: boolean;
         voiceInput?: boolean;

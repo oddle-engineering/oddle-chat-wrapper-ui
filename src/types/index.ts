@@ -56,6 +56,8 @@ export interface ChatConfig {
   bubbleText?: string;
   constrainedHeight?: boolean; // When true, embedded mode will fill parent container completely
   headerVisible?: boolean; // When true, shows the header with appName and description
+  restaurantName?: string; // Restaurant name to display as chip near attachment button
+  restaurantLogo?: string; // Restaurant logo URL to display inside the chip
   features?: {
     fileUpload?: boolean;
     voiceInput?: boolean;
