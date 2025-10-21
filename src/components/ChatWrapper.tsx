@@ -201,15 +201,21 @@ const MessageComponent = memo(
                         marginBottom: "4px",
                       }}
                     >
-                      {message.media.map((media, index) => (
-                        <div
-                          key={index}
-                          style={{
-                            position: "relative",
-                            display: "inline-block",
-                          }}
-                        >
-                          {media.startsWith("data:image/") ? (
+                      {message.media.map((media, index) => {
+                        // Check if it's an image (either base64 or URL)
+                        const isImageBase64 = media.startsWith("data:image/");
+                        const isImageUrl = media.startsWith("http://") || media.startsWith("https://");
+                        const isImage = isImageBase64 || isImageUrl;
+
+                        return (
+                          <div
+                            key={index}
+                            style={{
+                              position: "relative",
+                              display: "inline-block",
+                            }}
+                          >
+                            {isImage ? (
                             <div
                               style={{
                                 position: "relative",
@@ -383,7 +389,8 @@ const MessageComponent = memo(
                             </div>
                           )}
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
               </div>
@@ -1254,49 +1261,95 @@ function ChatWrapper({
       console.log("Files selected:", files);
 
       const newMedia: string[] = [];
+      const serverUrl = apiUrl || "http://localhost:3000";
+      const folder = "chat-uploads";
 
       for (const file of files) {
         try {
-          // Convert file to base64 for images or read as text for text files
-          if (file.type.startsWith("image/")) {
-            const reader = new FileReader();
-            const result = await new Promise<string>((resolve, reject) => {
-              reader.onload = () => resolve(reader.result as string);
-              reader.onerror = reject;
-              reader.readAsDataURL(file);
-            });
-            newMedia.push(result);
-          } else if (
-            file.type.startsWith("text/") ||
-            file.name.endsWith(".txt")
-          ) {
-            const reader = new FileReader();
-            const text = await new Promise<string>((resolve, reject) => {
-              reader.onload = () => resolve(reader.result as string);
-              reader.onerror = reject;
-              reader.readAsText(file);
-            });
-            // For text files, we can add them as a message or store as metadata
-            console.log("Text file content:", text);
-            // Could add as a system message or handle differently
+          // Create FormData for file upload
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("folder", folder);
+
+          console.log(`Uploading file: ${file.name} to ${serverUrl}/upload`);
+
+          // Upload the file to the server
+          const response = await fetch(`${serverUrl}/upload`, {
+            method: "POST",
+            body: formData,
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            console.log("✅ Upload successful:", result);
+            // Store the URL from the server response
+            // For images, we can still use the URL directly
+            // For other files, store metadata with the URL
+            if (file.type.startsWith("image/")) {
+              newMedia.push(result.url);
+            } else {
+              // For non-image files, create a data URL format with metadata
+              newMedia.push(
+                `data:${file.type};name=${encodeURIComponent(
+                  result.fileName || file.name
+                )};url=${encodeURIComponent(result.url)}`
+              );
+            }
           } else {
-            console.log("File type not supported for preview:", file.type);
-            // For other files, store metadata with filename
-            newMedia.push(
-              `data:${file.type};name=${encodeURIComponent(
-                file.name
-              )};base64,placeholder`
-            );
+            console.error("❌ Upload failed:", result.error);
+            // Fallback to base64 encoding for images if upload fails
+            if (file.type.startsWith("image/")) {
+              const reader = new FileReader();
+              const base64Result = await new Promise<string>(
+                (resolve, reject) => {
+                  reader.onload = () => resolve(reader.result as string);
+                  reader.onerror = reject;
+                  reader.readAsDataURL(file);
+                }
+              );
+              newMedia.push(base64Result);
+            } else {
+              // For other files, store metadata with filename
+              newMedia.push(
+                `data:${file.type};name=${encodeURIComponent(
+                  file.name
+                )};base64,placeholder`
+              );
+            }
           }
         } catch (error) {
-          console.error("Error processing file:", error);
+          console.error("Error uploading file:", error);
+          // Fallback to base64 encoding for images on error
+          try {
+            if (file.type.startsWith("image/")) {
+              const reader = new FileReader();
+              const base64Result = await new Promise<string>(
+                (resolve, reject) => {
+                  reader.onload = () => resolve(reader.result as string);
+                  reader.onerror = reject;
+                  reader.readAsDataURL(file);
+                }
+              );
+              newMedia.push(base64Result);
+            } else {
+              // For other files, store metadata with filename
+              newMedia.push(
+                `data:${file.type};name=${encodeURIComponent(
+                  file.name
+                )};base64,placeholder`
+              );
+            }
+          } catch (fallbackError) {
+            console.error("Error in fallback encoding:", fallbackError);
+          }
         }
       }
 
       console.log("Added media:", newMedia);
       return newMedia;
     },
-    []
+    [apiUrl]
   );
 
   // Modal controls
@@ -1562,8 +1615,6 @@ function ChatWrapper({
     return renderBubbleButton();
   }
 
-  console.log("clog messages", messages);
-
   return (
     <>
       {renderModalOverlay()}
@@ -1681,17 +1732,19 @@ function ChatWrapper({
               </div>
 
               {/* Suggested Prompts - only show when no messages and suggestedPrompts are provided */}
-              {messages.length === 0 && !isStreaming && config.suggestedPrompts && (
-                <SuggestedPrompts
-                  prompts={config.suggestedPrompts}
-                  onPromptSelect={(prompt) => {
-                    // Copy prompt description to the input field
-                    if (chatInputRef.current) {
-                      chatInputRef.current.setText(prompt.description);
-                    }
-                  }}
-                />
-              )}
+              {messages.length === 0 &&
+                !isStreaming &&
+                config.suggestedPrompts && (
+                  <SuggestedPrompts
+                    prompts={config.suggestedPrompts}
+                    onPromptSelect={(prompt) => {
+                      // Copy prompt description to the input field
+                      if (chatInputRef.current) {
+                        chatInputRef.current.setText(prompt.description);
+                      }
+                    }}
+                  />
+                )}
             </div>
           </>
         )}

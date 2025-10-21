@@ -182,15 +182,21 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
               alignItems: "center",
             }}
           >
-            {uploadedMedia.map((media, index) => (
-              <div
-                key={index}
-                style={{
-                  position: "relative",
-                  display: "inline-block",
-                }}
-              >
-                {media.startsWith("data:image/") ? (
+            {uploadedMedia.map((media, index) => {
+              // Check if it's an image (either base64 or URL)
+              const isImageBase64 = media.startsWith("data:image/");
+              const isImageUrl = media.startsWith("http://") || media.startsWith("https://");
+              const isImage = isImageBase64 || isImageUrl;
+
+              return (
+                <div
+                  key={index}
+                  style={{
+                    position: "relative",
+                    display: "inline-block",
+                  }}
+                >
+                  {isImage ? (
                   <div
                     style={{
                       position: "relative",
@@ -365,8 +371,8 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
                   }}
                   style={{
                     position: "absolute",
-                    top: media.startsWith("data:image/") ? "6px" : "8px",
-                    right: media.startsWith("data:image/") ? "6px" : "8px",
+                    top: isImage ? "6px" : "8px",
+                    right: isImage ? "6px" : "8px",
                     width: "20px",
                     height: "20px",
                     borderRadius: "50%",
@@ -388,7 +394,8 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
                   ×
                 </button>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
