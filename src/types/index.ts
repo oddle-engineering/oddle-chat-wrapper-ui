@@ -124,6 +124,7 @@ export interface BusinessData {
 }
 
 export interface BusinessAgentClientProps {
+  apiUrl?: string;
   toolSchemas?: any[];
   clientTools?: Record<string, Function>;
   businessContext: BusinessData;

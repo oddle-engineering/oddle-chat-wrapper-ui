@@ -935,6 +935,7 @@ function ChatWrapper({
       const businessContext: BusinessData = {}; // You can customize this based on your needs
 
       await client.onInit({
+        apiUrl: apiUrl,
         toolSchemas: clientTools,
         clientTools: tools,
         businessContext,

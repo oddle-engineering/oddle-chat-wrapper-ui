@@ -498,7 +498,7 @@ function App() {
 
   const chatProps: ChatWrapperProps = useMemo(
     () => ({
-      apiUrl: apiConfig.baseUrl,
+      apiUrl: "http://localhost:3000",
       config: {
         ...customConfig,
         onMessage: (message) => {

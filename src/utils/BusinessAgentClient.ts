@@ -9,6 +9,7 @@ export class BusinessAgentClient {
   private sessionId: string = "";
   private ws: WebSocket | null = null;
   private isConnected: boolean = false;
+  private apiUrl: string = "http://localhost:3000";
   private onSetMessage?: (char: string) => void;
   private onSystemMessage?: (message: string) => void;
   private onBusinessDataUpdate?: (data: any) => void;
@@ -29,6 +30,7 @@ export class BusinessAgentClient {
   private visibilityChangeHandler: () => void;
   private initResolve?: (value?: any) => void;
   private initReject?: (reason?: any) => void;
+  private processedToolCalls: Set<string> = new Set(); // Track processed tool calls
 
   constructor() {
     this.sessionId = `business_${Date.now()}_${Math.random()
@@ -63,6 +65,9 @@ export class BusinessAgentClient {
     this.clientTools = props.clientTools || {};
     this.toolSchemas = props.toolSchemas || [];
     this.businessContext = props.businessContext;
+    if (props.apiUrl) {
+      this.apiUrl = props.apiUrl;
+    }
 
     return new Promise((resolve, reject) => {
       try {
@@ -82,7 +87,8 @@ export class BusinessAgentClient {
 
   private connectWebSocketForInit(): void {
     try {
-      this.ws = new WebSocket(`ws://localhost:3000/ws`);
+      const wsUrl = this.apiUrl.replace(/^https?:\/\//, 'ws://') + '/ws';
+      this.ws = new WebSocket(wsUrl);
 
       if (!this.ws) {
         this.initReject?.(new Error("WebSocket not initialized"));
@@ -195,7 +201,8 @@ export class BusinessAgentClient {
         this.ws.close();
       }
 
-      this.ws = new WebSocket(`ws://localhost:3000/ws`);
+      const wsUrl = this.apiUrl.replace(/^https?:\/\//, 'ws://') + '/ws';
+      this.ws = new WebSocket(wsUrl);
 
       this.ws.onopen = () => {
         this.isConnected = true;
@@ -421,8 +428,19 @@ export class BusinessAgentClient {
           break;
 
         case "tool_call_request":
-          console.log(">>>> tool_call_request:", data);
-          this.handleToolCallRequest(data as ToolCallRequest);
+          console.log("📥 Received tool_call_request:", data);
+          const toolRequest = data as ToolCallRequest;
+          console.log(`📋 Tool details - Name: ${toolRequest.toolName}, CallId: ${toolRequest.callId}`);
+          
+          // Check for duplicate tool calls
+          if (this.processedToolCalls.has(toolRequest.callId)) {
+            console.warn(`⚠️ Duplicate tool call detected for callId: ${toolRequest.callId}, ignoring`);
+            break;
+          }
+          
+          // Mark as being processed
+          this.processedToolCalls.add(toolRequest.callId);
+          this.handleToolCallRequest(toolRequest);
           break;
 
         case "business_data_update":
@@ -475,6 +493,8 @@ export class BusinessAgentClient {
 
   private async handleToolCallRequest(request: ToolCallRequest): Promise<void> {
     const { callId, toolName, parameters } = request;
+    
+    console.log(`🔧 Processing tool call: ${toolName} with callId: ${callId}`);
 
     // Send reasoning update with callId for tracking
     if (this.onReasoningUpdate) {
@@ -484,21 +504,27 @@ export class BusinessAgentClient {
     try {
       const toolFunction = this.clientTools[toolName];
       if (!toolFunction) {
-        throw new Error(`Tool not found: ${toolName}`);
+        const errorMsg = `Tool not found: ${toolName}`;
+        console.error(errorMsg);
+        throw new Error(errorMsg);
       }
 
       // Execute the tool function
+      console.log(`⚙️ Executing tool: ${toolName} with parameters:`, parameters);
       const result = await toolFunction(parameters);
+      console.log(`✅ Tool result for ${toolName}:`, result);
 
       // Send success response directly to the tool_response event
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-        this.ws.send(
-          JSON.stringify({
-            type: "tool_call_response",
-            callId,
-            result,
-          })
-        );
+        const response = {
+          type: "tool_call_response",
+          callId,
+          result,
+        };
+        console.log(`📤 Sending tool response:`, response);
+        this.ws.send(JSON.stringify(response));
+      } else {
+        console.error(`❌ WebSocket not ready when trying to send response for callId: ${callId}`);
       }
 
       // Send completion reasoning update with callId for tracking
@@ -506,17 +532,19 @@ export class BusinessAgentClient {
         this.onReasoningUpdate(false, `✅ Completed: ${toolName}`, request);
       }
     } catch (error) {
-      console.error("Error executing tool:", error);
+      console.error(`❌ Error executing tool ${toolName} (callId: ${callId}):`, error);
 
       // Send error response
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-        this.ws.send(
-          JSON.stringify({
-            type: "tool_call_response",
-            callId,
-            error: error instanceof Error ? error.message : "Unknown error",
-          })
-        );
+        const errorResponse = {
+          type: "tool_call_response",
+          callId,
+          error: error instanceof Error ? error.message : "Unknown error",
+        };
+        console.log(`📤 Sending error response:`, errorResponse);
+        this.ws.send(JSON.stringify(errorResponse));
+      } else {
+        console.error(`❌ WebSocket not ready when trying to send error response for callId: ${callId}`);
       }
 
       // Send error reasoning update with callId for tracking
@@ -543,6 +571,10 @@ export class BusinessAgentClient {
     }
 
     try {
+      // Clear processed tool calls for new conversation
+      this.processedToolCalls.clear();
+      console.log("🧹 Cleared processed tool calls for new message");
+      
       // Send chat message via WebSocket
       this.ws.send(
         JSON.stringify({
