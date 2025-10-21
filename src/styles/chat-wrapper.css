@@ -1336,7 +1336,8 @@
 }
 
 .chat-wrapper__suggested-prompts-title {
-  font-family: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
+  font-family: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
   font-size: 18px;
   font-weight: 600;
   color: #374151;
@@ -1345,41 +1346,31 @@
 }
 
 .chat-wrapper__suggested-prompts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  display: flex;
   gap: 16px;
-  max-width: 1200px;
+  max-width: 100%;
+  overflow-x: auto;
+  padding-bottom: 8px;
 }
 
 .chat-wrapper__suggested-prompt-card {
   display: flex;
   flex-direction: column;
-  /* align-items: flex-start; */
-  gap: 16px;
   padding: 20px;
   border: none;
-  background-color: #F4F6F8;
+  background-color: #f4f6f8;
   border-radius: 8px;
   cursor: pointer;
   text-align: left;
   transition: all 0.2s ease;
-  min-height: 120px;
+  flex: 1;
+  min-width: 200px;
 }
 
 .chat-wrapper__suggested-prompt-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.chat-wrapper__suggested-prompt-icon {
-  font-size: 24px;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin-bottom: 4px;
-}
 
 .chat-wrapper__suggested-prompt-content {
   flex: 1;
@@ -1387,16 +1378,18 @@
 }
 
 .chat-wrapper__suggested-prompt-title {
-  font-family: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
+  font-family: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
   font-size: 16px;
   font-weight: 600;
-  color: #212B36;
+  color: #212b36;
   margin: 0 0 8px 0;
   line-height: 1.4;
 }
 
 .chat-wrapper__suggested-prompt-description {
-  font-family: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
+  font-family: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
   font-size: 14px;
   font-weight: 400;
   color: #637381;
@@ -1410,12 +1403,12 @@
     grid-template-columns: 1fr;
     gap: 12px;
   }
-  
+
   .chat-wrapper__suggested-prompt-card {
-    padding: 16px;
+    padding: 24px;
     min-height: 100px;
   }
-  
+
   .chat-wrapper__suggested-prompts {
     padding: 24px 12px;
   }
@@ -1645,13 +1638,15 @@
   /* transition: all 0.2s ease-in-out; */
   overflow: hidden;
   /* margin: 12px; */
-  background-image: linear-gradient(white, white), linear-gradient(135deg, #E3C7F8, #3D0099);
+  background-image: linear-gradient(white, white),
+    linear-gradient(135deg, #e3c7f8, #3d0099);
   background-origin: padding-box, border-box;
   background-clip: padding-box, border-box;
 }
 
 .chat-wrapper__prompt-input:focus-within {
-  background-image: linear-gradient(white, white), linear-gradient(135deg, #3D0099, #E3C7F8);
+  background-image: linear-gradient(white, white),
+    linear-gradient(135deg, #3d0099, #e3c7f8);
   /* box-shadow: 0 0 0 3px rgba(65, 0, 153, 0.1), 0 4px 12px rgba(0, 0, 0, 0.1); */
 }
 
@@ -1743,7 +1738,6 @@
   color: #6b7280;
   border-color: transparent;
 }
-
 
 .chat-wrapper__prompt-button--outline {
   background-color: transparent;

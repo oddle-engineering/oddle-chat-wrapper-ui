@@ -3,7 +3,6 @@ import React from "react";
 interface SuggestedPrompt {
   title: string;
   description: string;
-  icon?: React.ReactNode;
 }
 
 interface SuggestedPromptsProps {
@@ -25,11 +24,6 @@ export const SuggestedPrompts: React.FC<SuggestedPromptsProps> = ({
             className="chat-wrapper__suggested-prompt-card"
             onClick={() => onPromptSelect(prompt)}
           >
-            {prompt.icon && (
-              <div className="chat-wrapper__suggested-prompt-icon">
-                {prompt.icon}
-              </div>
-            )}
             <div className="chat-wrapper__suggested-prompt-content">
               <h4 className="chat-wrapper__suggested-prompt-title">
                 {prompt.title}
