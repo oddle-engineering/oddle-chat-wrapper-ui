@@ -19,11 +19,18 @@ export {
   PromptInputModelSelectValue
 } from './components/PromptInput';
 export { useChatConnection } from './hooks/useChatConnection';
-export type { 
-  ChatConfig, 
+export {
+  fetchUserThreads,
+  fetchThreadByConvUuid,
+  fetchThreadMessages,
+  fetchMessagesByConvUuid,
+  createThread
+} from './utils/threadApi';
+export type {
+  ChatConfig,
   ChatWrapperProps,
-  Message, 
-  ChatMode, 
+  Message,
+  ChatMode,
   ChatTheme,
   ChatPosition,
   ConversationResponse,
@@ -31,6 +38,9 @@ export type {
   ToolResult,
   ToolParameter,
   ClientTool,
-  ClientTools
+  ClientTools,
+  Thread,
+  ThreadsResponse,
+  MessagesResponse
 } from './types';
 export type { ChatStatus } from './components/PromptInput';

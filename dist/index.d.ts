@@ -51,7 +51,7 @@ export declare type ChatTheme = "light" | "dark" | "auto";
 
 export declare const ChatWrapper: MemoExoticComponent<typeof ChatWrapper_2>;
 
-declare function ChatWrapper_2({ apiUrl, config, tools, clientTools, initialMessages, }: ChatWrapperProps): JSX_2.Element | null;
+declare function ChatWrapper_2({ apiUrl, config, tools, clientTools, initialMessages, userId, }: ChatWrapperProps): JSX_2.Element | null;
 
 export declare interface ChatWrapperProps {
     apiUrl: string;
@@ -59,6 +59,7 @@ export declare interface ChatWrapperProps {
     tools?: Record<string, (...args: any[]) => any>;
     clientTools?: ClientTools;
     initialMessages?: Message[];
+    userId?: string;
 }
 
 export declare interface ClientTool {
@@ -73,6 +74,37 @@ export declare interface ConversationResponse {
     conversationId: string;
     message: string;
 }
+
+/**
+ * Create a new thread
+ */
+export declare function createThread(apiBaseUrl: string, userId: string, convUuid: string, options?: {
+    title?: string;
+    agentType?: string;
+}): Promise<Thread>;
+
+/**
+ * Fetch messages by conversation UUID
+ */
+export declare function fetchMessagesByConvUuid(apiBaseUrl: string, convUuid: string): Promise<Message[]>;
+
+/**
+ * Fetch thread by conversation UUID
+ */
+export declare function fetchThreadByConvUuid(apiBaseUrl: string, convUuid: string): Promise<Thread>;
+
+/**
+ * Fetch messages for a thread
+ */
+export declare function fetchThreadMessages(apiBaseUrl: string, threadId: string): Promise<Message[]>;
+
+/**
+ * Fetch user threads from the API
+ */
+export declare function fetchUserThreads(apiBaseUrl: string, userId: string, options?: {
+    includeArchived?: boolean;
+    limit?: number;
+}): Promise<Thread[]>;
 
 export declare function Loader({ size, variant }: LoaderProps): JSX_2.Element;
 
@@ -95,6 +127,10 @@ export declare interface Message {
         result?: any;
         status?: "processing" | "completed" | "error";
     };
+}
+
+export declare interface MessagesResponse {
+    messages: Message[];
 }
 
 export declare const PromptInput: ({ className, ...props }: PromptInputProps) => JSX_2.Element;
@@ -199,7 +235,6 @@ export declare interface StreamEvent {
 declare interface SuggestedPrompt {
     title: string;
     description: string;
-    icon?: default_2.ReactNode;
 }
 
 export declare const SuggestedPrompts: default_2.FC<SuggestedPromptsProps>;
@@ -207,6 +242,21 @@ export declare const SuggestedPrompts: default_2.FC<SuggestedPromptsProps>;
 declare interface SuggestedPromptsProps {
     prompts: SuggestedPrompt[];
     onPromptSelect: (prompt: SuggestedPrompt) => void;
+}
+
+export declare interface Thread {
+    id: string;
+    userId: string;
+    convUuid: string;
+    title: string;
+    agentType: string;
+    isArchived: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export declare interface ThreadsResponse {
+    threads: Thread[];
 }
 
 export declare interface ToolParameter {

@@ -10,6 +10,7 @@ export class BusinessAgentClient {
   private ws: WebSocket | null = null;
   private isConnected: boolean = false;
   private apiUrl: string = "http://localhost:3000";
+  private userId: string = ""; // Store userId from props
   private onSetMessage?: (char: string) => void;
   private onSystemMessage?: (message: string) => void;
   private onBusinessDataUpdate?: (data: any) => void;
@@ -67,6 +68,9 @@ export class BusinessAgentClient {
     this.businessContext = props.businessContext;
     if (props.apiUrl) {
       this.apiUrl = props.apiUrl;
+    }
+    if (props.userId) {
+      this.userId = props.userId;
     }
 
     return new Promise((resolve, reject) => {
@@ -560,7 +564,9 @@ export class BusinessAgentClient {
 
   async onTriggerMessage(
     message: string,
-    agentType: string = "shop"
+    agentType: string = "shop",
+    media?: string[],
+    convUuid?: string
   ): Promise<void> {
     if (!this.isConnected) {
       throw new Error("Client not connected");
@@ -576,13 +582,21 @@ export class BusinessAgentClient {
       console.log("🧹 Cleared processed tool calls for new message");
       
       // Send chat message via WebSocket
-      this.ws.send(
-        JSON.stringify({
-          type: "chat_message",
-          content: message,
-          agentType: agentType,
-        })
-      );
+      const payload: any = {
+        type: "chat_message",
+        content: message,
+        agentType: agentType,
+        media: media || [],
+        saveToDatabase: true,
+        userId: this.userId || undefined, // Use stored userId or fallback
+      };
+
+      // Add convUuid if provided (to continue existing conversation)
+      if (convUuid) {
+        payload.convUuid = convUuid;
+      }
+
+      this.ws.send(JSON.stringify(payload));
     } catch (error) {
       console.error("Error sending message:", error);
       if (this.onSystemMessage) {

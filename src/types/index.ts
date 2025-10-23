@@ -88,11 +88,31 @@ export interface ChatWrapperProps {
   tools?: Record<string, (...args: any[]) => any>;
   clientTools?: ClientTools;
   initialMessages?: Message[];
+  userId?: string;
 }
 
 export interface ConversationResponse {
   conversationId: string;
   message: string;
+}
+
+export interface Thread {
+  id: string;
+  userId: string;
+  convUuid: string;
+  title: string;
+  agentType: string;
+  isArchived: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ThreadsResponse {
+  threads: Thread[];
+}
+
+export interface MessagesResponse {
+  messages: Message[];
 }
 
 export interface ToolParameter {
@@ -125,6 +145,7 @@ export interface BusinessData {
 
 export interface BusinessAgentClientProps {
   apiUrl?: string;
+  userId?: string;
   toolSchemas?: any[];
   clientTools?: Record<string, Function>;
   businessContext: BusinessData;
