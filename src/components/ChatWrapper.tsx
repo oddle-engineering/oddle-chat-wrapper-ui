@@ -474,7 +474,7 @@ function SystemMessageCollapsible({ message }: { message: Message }) {
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <div className="chat-wrapper__thinking-icon">
             <svg
-              width="16"
+              width="20"
               height="16"
               viewBox="0 0 16 16"
               fill="none"
