@@ -646,9 +646,10 @@ export class BusinessAgentClient {
 
   async onTriggerMessage(
     message: string,
-    agentType: string = "shop",
+    app: string = "UD21",
     media?: string[],
-    convUuid?: string
+    convUuid?: string,
+    agentPromptPath?: string
   ): Promise<void> {
     if (!this.isConnected) {
       throw new Error("Client not connected");
@@ -667,15 +668,20 @@ export class BusinessAgentClient {
       const payload: any = {
         type: "chat_message",
         content: message,
-        agentType: agentType,
+        app: app,
         media: media || [],
-        saveToDatabase: true,
+        saveToDatabase: false,
         userId: this.userId || undefined, // Use stored userId or fallback
       };
 
       // Add convUuid if provided (to continue existing conversation)
       if (convUuid) {
         payload.convUuid = convUuid;
+      }
+
+      // Add agent prompt path if provided (dev mode)
+      if (agentPromptPath && agentPromptPath.trim()) {
+        payload.agentPromptPath = agentPromptPath.trim();
       }
 
       this.ws.send(JSON.stringify(payload));

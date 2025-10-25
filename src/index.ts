@@ -7,6 +7,7 @@ export { Loader } from './components/Loader';
 export { InlineLoader } from './components/InlineLoader';
 export { SuggestedPrompts } from './components/SuggestedPrompts';
 export { AnimatedPlaceholder } from './components/AnimatedPlaceholder';
+export { DevSettings } from './components/DevSettings';
 export { 
   PromptInput,
   PromptInputTextarea,
@@ -35,6 +36,7 @@ export type {
   ChatMode,
   ChatTheme,
   ChatPosition,
+  App,
   ConversationResponse,
   StreamEvent,
   ToolResult,

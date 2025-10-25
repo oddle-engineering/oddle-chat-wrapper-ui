@@ -14,6 +14,7 @@ import { Reasoning, ReasoningTrigger, ReasoningContent } from "./Reasoning";
 import { ToolingHandle, ToolingHandleTrigger } from "./ToolingHandle";
 import { Loader } from "./Loader";
 import { InlineLoader } from "./InlineLoader";
+import { DevSettings } from "./DevSettings";
 import { BusinessAgentClient } from "../utils/BusinessAgentClient";
 import { sanitizeMessage } from "../utils/security";
 import { fetchUserThreads, fetchThreadMessages } from "../utils/threadApi";
@@ -748,6 +749,8 @@ function ChatWrapper({
   clientTools,
   initialMessages = [],
   userId,
+  devMode = false,
+  app,
 }: ChatWrapperProps) {
   // Convert WebSocket URL to HTTP URL for REST API calls
   const getHttpUrl = useCallback((wsUrl: string): string => {
@@ -798,6 +801,9 @@ function ChatWrapper({
   const [, setReasoningMessagesByCallId] = useState<Map<string, string>>(
     new Map()
   ); // Map callId -> messageId
+
+  // Dev mode state
+  const [isDevSettingsOpen, setIsDevSettingsOpen] = useState(false);
 
   // Refs for managing streaming
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -1446,9 +1452,10 @@ function ChatWrapper({
       try {
         await agentClient.onTriggerMessage(
           userMessage.content,
-          "shop",
+          app,
           media,
-          currentConvUuid || undefined
+          currentConvUuid || undefined,
+          undefined
         );
         setChatStatus("streaming");
       } catch (error) {
@@ -1811,6 +1818,64 @@ function ChatWrapper({
     return null;
   };
 
+  // Render settings button (only in dev mode)
+  const renderSettingsButton = () => {
+    if (!devMode) return null;
+
+    // If header is visible, render in header controls
+    if (config.headerVisible !== false) {
+      return (
+        <button
+          className="chat-wrapper__settings-button"
+          onClick={() => setIsDevSettingsOpen(true)}
+          title="Developer Settings"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.488.488 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"
+              fill="currentColor"
+            />
+          </svg>
+        </button>
+      );
+    }
+
+    // If header is not visible, render as floating button
+    return null; // We'll render this separately outside the header
+  };
+
+  // Render floating settings button when header is not visible
+  const renderFloatingSettingsButton = () => {
+    if (!devMode || config.headerVisible !== false) return null;
+
+    return (
+      <button
+        className="chat-wrapper__settings-button chat-wrapper__settings-button--floating"
+        onClick={() => setIsDevSettingsOpen(true)}
+        title="Developer Settings"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.488.488 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"
+            fill="currentColor"
+          />
+        </svg>
+      </button>
+    );
+  };
+
   // Render tool results panel (if enabled)
   const renderToolResults = () => {
     if (!config.features?.showToolResults || toolResults.length === 0)
@@ -1859,6 +1924,9 @@ function ChatWrapper({
     <>
 
       <div className={containerClasses} style={config.customStyles}>
+        {/* Floating settings button for when header is not visible */}
+        {renderFloatingSettingsButton()}
+        
         {config.headerVisible !== false && (
           <div className="chat-wrapper__header">
             <div className="chat-wrapper__title-area">
@@ -1881,6 +1949,7 @@ function ChatWrapper({
               </div>
             </div>
             <div className="chat-wrapper__header-controls">
+              {renderSettingsButton()}
               {renderModeToggleButton()}
               {renderCollapseButton()}
               {renderCloseButton()}
@@ -2009,6 +2078,14 @@ function ChatWrapper({
         )}
 
         {config.onError && <div className="chat-wrapper__error-boundary" />}
+        
+        {/* Dev Settings Popup */}
+        <DevSettings
+          isOpen={isDevSettingsOpen}
+          onClose={() => setIsDevSettingsOpen(false)}
+          app={app}
+          apiUrl={apiUrl}
+        />
       </div>
     </>
   );

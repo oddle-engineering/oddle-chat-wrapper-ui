@@ -3,6 +3,7 @@ import React from "react";
 export type ChatMode = "sidebar" | "fullscreen" | "modal" | "embedded";
 export type ChatPosition = "left" | "right";
 export type ChatTheme = "light" | "dark" | "auto";
+export type App = "UD21" | "Host" | "Reserve";
 
 export interface Message {
   id: string;
@@ -90,6 +91,8 @@ export interface ChatWrapperProps {
   clientTools?: ClientTools;
   initialMessages?: Message[];
   userId?: string;
+  devMode?: boolean;
+  app: App;
 }
 
 export interface ConversationResponse {

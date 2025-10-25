@@ -6,6 +6,7 @@ import {
   ChatMode,
   ChatPosition,
   ChatTheme,
+  App as AppType,
 } from "@oddle/chat-wrapper-ui";
 // import { EnhancedBriefPlannerDemo } from "./components/EnhancedBriefPlannerDemo";
 // import { ToolsDocumentation } from "./components/ToolsDocumentation";
@@ -505,7 +506,8 @@ function App() {
 
   const chatProps: ChatWrapperProps = useMemo(
     () => ({
-      userId: "user_123_13",
+      app: 'UD21',
+      userId: "user_123_16",
       apiUrl: "http://localhost:3000",
       config: {
         ...customConfig,
@@ -769,7 +771,7 @@ function App() {
   return (
     <div className="showcase-container">
       <div className="main-content">
-        <ChatWrapper {...chatProps} />
+        <ChatWrapper {...chatProps} devMode={true} />
 
         <div className="controls">
           <button
