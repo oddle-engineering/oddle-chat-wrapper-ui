@@ -3,6 +3,16 @@ import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { MemoExoticComponent } from 'react';
 import { ReactNode } from 'react';
 
+export declare const AnimatedPlaceholder: ({ placeholderTexts, shouldAnimate, className, }: AnimatedPlaceholderProps) => JSX_2.Element;
+
+declare interface AnimatedPlaceholderProps {
+    placeholderTexts: string[];
+    shouldAnimate: boolean;
+    className?: string;
+}
+
+export declare type App = "UD21" | "Host" | "Reserve";
+
 export declare interface ChatConfig {
     mode: ChatMode;
     position?: ChatPosition;
@@ -12,6 +22,7 @@ export declare interface ChatConfig {
     theme?: ChatTheme;
     description?: string;
     placeholder?: string;
+    placeholderTexts?: string[];
     welcomeMessage?: string;
     promptPath?: string;
     bubbleText?: string;
@@ -51,7 +62,7 @@ export declare type ChatTheme = "light" | "dark" | "auto";
 
 export declare const ChatWrapper: MemoExoticComponent<typeof ChatWrapper_2>;
 
-declare function ChatWrapper_2({ apiUrl, config, tools, clientTools, initialMessages, userId, }: ChatWrapperProps): JSX_2.Element | null;
+declare function ChatWrapper_2({ apiUrl, config, tools, clientTools, initialMessages, userId, devMode, app, }: ChatWrapperProps): JSX_2.Element | null;
 
 export declare interface ChatWrapperProps {
     apiUrl: string;
@@ -60,6 +71,8 @@ export declare interface ChatWrapperProps {
     clientTools?: ClientTools;
     initialMessages?: Message[];
     userId?: string;
+    devMode?: boolean;
+    app: App;
 }
 
 export declare interface ClientTool {
@@ -83,6 +96,15 @@ export declare function createThread(apiBaseUrl: string, userId: string, convUui
     agentType?: string;
 }): Promise<Thread>;
 
+export declare const DevSettings: ({ isOpen, onClose, app, apiUrl, }: DevSettingsProps) => JSX_2.Element | null;
+
+declare interface DevSettingsProps {
+    isOpen: boolean;
+    onClose: () => void;
+    app: App;
+    apiUrl: string;
+}
+
 /**
  * Fetch messages by conversation UUID
  */
@@ -105,6 +127,13 @@ export declare function fetchUserThreads(apiBaseUrl: string, userId: string, opt
     includeArchived?: boolean;
     limit?: number;
 }): Promise<Thread[]>;
+
+export declare const InlineLoader: ({ size, fullHeight, }: InlineLoaderProps) => JSX_2.Element;
+
+declare interface InlineLoaderProps {
+    size?: number;
+    fullHeight?: boolean;
+}
 
 export declare function Loader({ size, variant }: LoaderProps): JSX_2.Element;
 
@@ -197,12 +226,13 @@ export declare const PromptInputTools: ({ className, ...props }: PromptInputTool
 declare interface PromptInputToolsProps extends default_2.HTMLAttributes<HTMLDivElement> {
 }
 
-export declare function Reasoning({ children }: ReasoningProps): JSX_2.Element;
+export declare function Reasoning({ children, isStreaming }: ReasoningProps): JSX_2.Element;
 
-export declare function ReasoningContent({ children }: ReasoningContentProps): JSX_2.Element;
+export declare function ReasoningContent({ children, isVisible, }: ReasoningContentProps): JSX_2.Element | null;
 
 declare interface ReasoningContentProps {
     children: ReactNode;
+    isVisible?: boolean;
 }
 
 declare interface ReasoningProps {
@@ -210,11 +240,14 @@ declare interface ReasoningProps {
     children: ReactNode;
 }
 
-export declare function ReasoningTrigger({ title, status, }: ReasoningTriggerProps): JSX_2.Element;
+export declare function ReasoningTrigger({ title, status, duration, onToggle, isExpanded, }: ReasoningTriggerProps): JSX_2.Element;
 
 declare interface ReasoningTriggerProps {
     title: string;
     status?: "processing" | "completed" | "error";
+    duration?: string;
+    onToggle?: () => void;
+    isExpanded?: boolean;
 }
 
 export declare interface StreamEvent {
