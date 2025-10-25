@@ -13,6 +13,7 @@ import { SuggestedPrompts } from "./SuggestedPrompts";
 import { Reasoning, ReasoningTrigger, ReasoningContent } from "./Reasoning";
 import { ToolingHandle, ToolingHandleTrigger } from "./ToolingHandle";
 import { Loader } from "./Loader";
+import { InlineLoader } from "./InlineLoader";
 import { BusinessAgentClient } from "../utils/BusinessAgentClient";
 import { sanitizeMessage } from "../utils/security";
 import { fetchUserThreads, fetchThreadMessages } from "../utils/threadApi";
@@ -1651,14 +1652,6 @@ function ChatWrapper({
       "chat-wrapper--constrained"
   );
 
-  // Render modal overlay if needed
-  const renderModalOverlay = () => {
-    if (currentMode === "modal" && isModalOpen) {
-      return <div className="chat-wrapper-overlay" onClick={closeModal} />;
-    }
-    return null;
-  };
-
   // Render bubble button for modal, sidebar (collapsed), and fullscreen (collapsed) modes
   const renderBubbleButton = () => {
     const shouldShowBubble =
@@ -1864,16 +1857,6 @@ function ChatWrapper({
 
   return (
     <>
-      {renderModalOverlay()}
-
-      {/* Loading conversation overlay */}
-      {isLoadingConversation && (
-        <div className="chat-wrapper__loading-overlay">
-          <div className="chat-wrapper__loading-overlay-content">
-            <Loader size={32} variant="dots" />
-          </div>
-        </div>
-      )}
 
       <div className={containerClasses} style={config.customStyles}>
         {config.headerVisible !== false && (
@@ -1916,7 +1899,7 @@ function ChatWrapper({
               </div>
             )}
 
-            {/* Main Header Section - only show when no messages */}
+            {/* Main Header Section - only show when no messages and not loading */}
             {messages.length === 0 &&
               !isStreaming &&
               !isLoadingConversation && (
@@ -1933,13 +1916,18 @@ function ChatWrapper({
             {/* Chat Content Area - flexible layout based on message state */}
             <div
               className={`chat-wrapper__content ${
-                messages.length === 0 && !isStreaming
+                messages.length === 0 && !isStreaming && !isLoadingConversation
                   ? "chat-wrapper__content--empty"
                   : "chat-wrapper__content--with-messages"
               }`}
             >
               {/* Messages Area */}
               <div className="chat-wrapper__messages">
+                {/* Show inline loader when loading conversation */}
+                {isLoadingConversation && messages.length === 0 && (
+                  <InlineLoader fullHeight={true} />
+                )}
+                
                 {messages.map((message) => (
                   <MessageComponent
                     key={message.id}
@@ -2001,9 +1989,10 @@ function ChatWrapper({
                 />
               </div>
 
-              {/* Suggested Prompts - only show when no messages and suggestedPrompts are provided */}
+              {/* Suggested Prompts - only show when no messages and not loading */}
               {messages.length === 0 &&
                 !isStreaming &&
+                !isLoadingConversation &&
                 config.suggestedPrompts && (
                   <SuggestedPrompts
                     prompts={config.suggestedPrompts}
