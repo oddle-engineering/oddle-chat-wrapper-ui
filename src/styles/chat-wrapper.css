@@ -1209,7 +1209,7 @@
 .chat-wrapper__tooling-handle-trigger {
   display: flex;
   align-items: center;
-  padding: 0px 8px;
+  padding: 4px 8px;
   cursor: pointer;
   user-select: none;
 }
@@ -1457,6 +1457,7 @@
 .chat-wrapper__markdown-content {
   line-height: 1.6;
   color: inherit;
+  counter-reset: ordered-list-counter;
 }
 
 .chat-wrapper__paragraph {
@@ -1521,7 +1522,19 @@
 }
 
 .chat-wrapper__ordered-list {
-  list-style-type: decimal;
+  list-style-type: none;
+}
+
+.chat-wrapper__ordered-list .chat-wrapper__list-item {
+  counter-increment: ordered-list-counter;
+  position: relative;
+}
+
+.chat-wrapper__ordered-list .chat-wrapper__list-item::before {
+  content: counter(ordered-list-counter) ". ";
+  position: absolute;
+  left: -20px;
+  font-weight: inherit;
 }
 
 .chat-wrapper__list-item {
