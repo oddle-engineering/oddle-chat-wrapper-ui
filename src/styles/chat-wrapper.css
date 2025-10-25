@@ -383,6 +383,7 @@
 .chat-wrapper__message--user {
   align-self: flex-end;
   max-width: 80%;
+  margin-right: 8px;
 }
 
 .chat-wrapper__message--assistant {

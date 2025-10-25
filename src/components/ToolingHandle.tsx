@@ -63,7 +63,7 @@ export function ToolingHandleTrigger({
           <div className="chat-wrapper__tooling-handle-trigger-content">
             <div className="chat-wrapper__thinking-icon">
               <svg
-                width="16"
+                width="20"
                 height="16"
                 viewBox="0 0 16 16"
                 fill="none"

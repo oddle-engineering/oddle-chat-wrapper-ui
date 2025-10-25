@@ -1274,13 +1274,33 @@ function ChatWrapper({
     shouldUpdateMessageRef.current = true; // Reset to allow message updates
   }, []);
 
+  // Scroll animation frame ref
+  const scrollAnimationFrame = useRef<number | null>(null);
+  
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Cancel any pending scroll animation
+    if (scrollAnimationFrame.current) {
+      cancelAnimationFrame(scrollAnimationFrame.current);
+    }
+    
+    // Schedule smooth scroll on next frame
+    scrollAnimationFrame.current = requestAnimationFrame(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      scrollAnimationFrame.current = null;
+    });
   }, []);
+
   // Auto-scroll when messages change
   useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
+
+  // Auto-scroll when streaming content changes
+  useEffect(() => {
+    if (streamingContent) {
+      scrollToBottom();
+    }
+  }, [streamingContent, scrollToBottom]);
 
   // Handle config callbacks
   useEffect(() => {
@@ -1308,6 +1328,10 @@ function ChatWrapper({
     // Cleanup on unmount
     return () => {
       disconnectAgentClient();
+      // Cancel any pending scroll animation
+      if (scrollAnimationFrame.current) {
+        cancelAnimationFrame(scrollAnimationFrame.current);
+      }
     };
   }, [connectAgentClient, disconnectAgentClient]);
 
