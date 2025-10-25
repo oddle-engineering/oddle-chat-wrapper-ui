@@ -185,7 +185,6 @@ function App() {
         created_at: new Date().toISOString(),
       };
       setTodos((prev) => [...prev, newTodo]);
-      await new Promise((resolve) => setTimeout(resolve, 2000));
       return {
         success: true,
         task_id: newTodo.id,
@@ -500,7 +499,7 @@ function App() {
 
   const chatProps: ChatWrapperProps = useMemo(
     () => ({
-      userId: "user_123_6",
+      userId: "user_123_9",
       apiUrl: "http://localhost:3000",
       config: {
         ...customConfig,
