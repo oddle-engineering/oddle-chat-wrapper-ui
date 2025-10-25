@@ -119,8 +119,8 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
     const handleFileUploadClick = useCallback(async () => {
       const input = document.createElement("input");
       input.type = "file";
-      input.accept = "image/*,text/*,.pdf,.doc,.docx";
-      input.multiple = true;
+      input.accept = "image/*";
+      input.multiple = false;
       input.onchange = async (e) => {
         const files = (e.target as HTMLInputElement).files;
         if (files) {
@@ -139,17 +139,12 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
               return false;
             }
 
-            // Basic file type validation
+            // Basic file type validation - only images
             const allowedTypes = [
               "image/jpeg",
               "image/png",
               "image/gif",
               "image/webp",
-              "text/plain",
-              "text/csv",
-              "application/pdf",
-              "application/msword",
-              "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             ];
 
             if (!allowedTypes.includes(file.type)) {
@@ -164,7 +159,9 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
 
           if (validFiles.length > 0) {
             const newMedia = await onFileUpload(validFiles);
-            setUploadedMedia((prev) => [...prev, ...newMedia]);
+            // For now, only support 1 image - replace existing media
+            // TODO: In future, support multiple images by appending: [...prev, ...newMedia]
+            setUploadedMedia(newMedia);
           }
         }
       };
@@ -433,8 +430,8 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
                   onClick={handleFileUploadClick}
                   title={
                     uploadedMedia.length > 0
-                      ? `${uploadedMedia.length} file(s) attached`
-                      : "Attach files"
+                      ? `${uploadedMedia.length} image(s) attached`
+                      : "Attach image"
                   }
                   disabled={disabled}
                   style={{
