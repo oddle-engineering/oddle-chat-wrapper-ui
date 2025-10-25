@@ -383,8 +383,6 @@ export class BusinessAgentClient {
               const startTime = this.reasoningStartTimes.get(reasoningId);
               let durationText = "";
               if (startTime) {
-                const duration = (Date.now() - startTime) / 1000;
-                durationText = ` after ${duration.toFixed(1)} seconds`;
                 this.reasoningStartTimes.delete(reasoningId); // Clean up
               }
               

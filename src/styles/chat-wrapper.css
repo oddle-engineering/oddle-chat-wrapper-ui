@@ -1221,9 +1221,21 @@
   width: 100%;
 }
 
+.chat-wrapper__tooling-handle-trigger-content > span:not(.chat-wrapper__status-group span) {
+  color: #637381;
+  font-family: "Public Sans", sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 18px; /* 150% */
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .chat-wrapper__tooling-handle-trigger-content span {
   color: #637381;
-  text-align: center;
   font-family: "Public Sans", sans-serif;
   font-size: 12px;
   font-style: normal;

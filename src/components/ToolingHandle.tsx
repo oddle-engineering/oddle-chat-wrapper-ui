@@ -138,7 +138,7 @@ export function ToolingHandleTrigger({
               <div className="chat-wrapper__thinking-icon">
                 <div className="chat-wrapper__thinking-icon">
                   <svg
-                    width="16"
+                    width="20"
                     height="17"
                     viewBox="0 0 16 17"
                     fill="none"
@@ -173,7 +173,7 @@ export function ToolingHandleTrigger({
           <div className="chat-wrapper__tooling-handle-trigger-content">
             <div className="chat-wrapper__thinking-icon">
               {toolName?.startsWith("lat_tool_web_") ? (
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg width="20" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <mask id="mask0_210_25142" style={{maskType:"alpha"}} maskUnits="userSpaceOnUse" x="0" y="0" width="16" height="16">
                     <rect width="16" height="16" fill="#D9D9D9"/>
                   </mask>
@@ -248,7 +248,7 @@ export function ToolingHandleTrigger({
               <div className="chat-wrapper__thinking-icon">
                 <div className="chat-wrapper__thinking-icon">
                   <svg
-                    width="16"
+                    width="20"
                     height="17"
                     viewBox="0 0 16 17"
                     fill="none"
@@ -283,7 +283,7 @@ export function ToolingHandleTrigger({
           <div className="chat-wrapper__tooling-handle-trigger-content">
             <div className="chat-wrapper__tooling-handle-error">
               <svg
-                width="16"
+                width="20"
                 height="16"
                 viewBox="0 0 24 24"
                 fill="none"
@@ -306,7 +306,7 @@ export function ToolingHandleTrigger({
           <div className="chat-wrapper__tooling-handle-trigger-content">
             <div className="chat-wrapper__thinking-icon">
               {toolName?.startsWith("lat_tool_web_") ? (
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg width="20" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <mask id="mask0_210_25142" style={{maskType:"alpha"}} maskUnits="userSpaceOnUse" x="0" y="0" width="16" height="16">
                     <rect width="16" height="16" fill="#D9D9D9"/>
                   </mask>
@@ -346,7 +346,7 @@ export function ToolingHandleTrigger({
             <div className="chat-wrapper__thinking-icon">
               <div className="chat-wrapper__thinking-icon">
                 <svg
-                  width="16"
+                  width="20"
                   height="16"
                   viewBox="0 0 16 16"
                   fill="none"
@@ -380,7 +380,7 @@ export function ToolingHandleTrigger({
             <div className="chat-wrapper__thinking-icon">
               <div className="chat-wrapper__thinking-icon">
                 <svg
-                  width="16"
+                  width="20"
                   height="17"
                   viewBox="0 0 16 17"
                   fill="none"
