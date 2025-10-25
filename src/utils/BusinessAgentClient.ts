@@ -383,8 +383,17 @@ export class BusinessAgentClient {
               const startTime = this.reasoningStartTimes.get(reasoningId);
               let durationText = "";
               if (startTime) {
+                const duration = (Date.now() - startTime) / 1000;
+                durationText = ` for ${duration.toFixed(1)} seconds`;
                 this.reasoningStartTimes.delete(reasoningId); // Clean up
               }
+              
+              console.log("🧠 Reasoning end details:", {
+                reasoningId,
+                accumulatedContent: accumulatedContent.length > 0 ? accumulatedContent.substring(0, 100) + "..." : "EMPTY",
+                durationText,
+                hasStartTime: !!startTime
+              });
               
               if (this.onReasoningUpdate) {
                 const syntheticRequest = {
@@ -397,9 +406,13 @@ export class BusinessAgentClient {
                   },
                 };
                 // Send the accumulated content with completion indicator for title
+                // Use fallback content if no content was accumulated
+                const contentToShow = accumulatedContent || "Thought";
+                const finalContent = `🧠 ${contentToShow}${durationText}`;
+                console.log("🧠 Sending final reasoning update:", finalContent);
                 this.onReasoningUpdate(
                   false,
-                  `🧠 ${accumulatedContent}${durationText}`,
+                  finalContent,
                   syntheticRequest
                 );
               }

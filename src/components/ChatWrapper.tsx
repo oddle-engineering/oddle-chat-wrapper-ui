@@ -835,9 +835,9 @@ function ChatWrapper({
   const getReasoningDuration = useMemo(
     () =>
       (content: string): string | undefined => {
-        // Extract duration from content like "🧠 [content] after 2.3 seconds"
-        const match = content.match(/after ([\d.]+) seconds/);
-        return match ? ` after ${match[1]} seconds` : undefined;
+        // Extract duration from content like "🧠 [content] for 2.3 seconds"
+        const match = content.match(/for ([\d.]+) seconds/);
+        return match ? ` for ${match[1]} seconds` : undefined;
       },
     []
   );
@@ -847,7 +847,7 @@ function ChatWrapper({
       (content: string): string => {
         // Remove the brain emoji and duration, keep only the reasoning text
         let cleanContent = content.replace(/^🧠\s*/, ""); // Remove brain emoji at start
-        cleanContent = cleanContent.replace(/\s*after [\d.]+\s*seconds$/, ""); // Remove duration at end
+        cleanContent = cleanContent.replace(/\s*for [\d.]+\s*seconds$/, ""); // Remove duration at end
         
         // Replace content between ** with placeholder text
         cleanContent = cleanContent.replace(/\*\*(.*?)\*\*/g, "");
@@ -864,7 +864,7 @@ function ChatWrapper({
         
         if (isStreaming === false) {
           if (content.includes("❌")) return "Error";
-          if (content.includes("🧠") && content.includes("after") && content.includes("seconds")) {
+          if (content.includes("🧠") && content.includes("for") && content.includes("seconds")) {
             return "Thought";
           }
           if (content.includes("🧠 Thought")) {
@@ -1067,8 +1067,8 @@ function ChatWrapper({
 
           // Check if this is a reasoning event (brain icon)
           const isReasoningStarted = false; // No longer using "AI is thinking..." start message
-          const isReasoningThinking = content.includes("🧠") && !content.includes("after") && !content.includes("seconds");
-          const isReasoningCompleted = content.includes("🧠") && content.includes("after") && content.includes("seconds");
+          const isReasoningThinking = content.includes("🧠") && !content.includes("for") && !content.includes("seconds");
+          const isReasoningCompleted = content.includes("🧠") && content.includes("for") && content.includes("seconds");
           
           // Check if this is a tools-started event (processing)
           const isToolStarted = content.includes("🔧 Handling:");
