@@ -2324,3 +2324,42 @@
 .chat-wrapper--dark .chat-wrapper__conversation-error p {
   color: #fca5a5;
 }
+
+/* Animated Placeholder Styles */
+.animated-placeholder-container {
+  position: absolute;
+  top: 16px; /* Match textarea padding-top */
+  left: 16px; /* Match textarea padding-left */
+  pointer-events: none;
+  z-index: 1;
+  width: calc(100% - 32px);
+}
+
+.animated-placeholder-text {
+  display: block;
+  color: #9ca3af;
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 1;
+  transform: translateY(0px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: slideInFromBottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animated-placeholder-text.transitioning {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+@keyframes slideInFromBottom {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}

@@ -1988,11 +1988,13 @@ function ChatWrapper({
                 <ChatInput
                   ref={chatInputRef}
                   placeholder={config.placeholder}
+                  placeholderTexts={config.placeholderTexts}
                   disabled={isStreaming}
                   chatStatus={chatStatus}
                   fileUploadEnabled={config.features?.fileUpload}
                   restaurantName={config.restaurantName}
                   restaurantLogo={config.restaurantLogo}
+                  hasMessages={messages.length > 0}
                   onSubmit={(message, media) => handleSubmit(message, media)}
                   onFileUpload={handleFileUpload}
                   onStopGeneration={stopGeneration}

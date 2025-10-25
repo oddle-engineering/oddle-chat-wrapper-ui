@@ -53,6 +53,7 @@ export interface ChatConfig {
   theme?: ChatTheme;
   description?: string;
   placeholder?: string;
+  placeholderTexts?: string[];
   welcomeMessage?: string;
   promptPath?: string;
   bubbleText?: string;

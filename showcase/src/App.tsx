@@ -41,7 +41,13 @@ function App() {
     appName: "Demo Chat",
     description: "An AI assistant to help with restaurant management tasks.",
 
-    placeholder: "Ask Oddle AI to turn your ideas into a campaign...",
+    placeholderTexts: [
+      "Ask Oddle AI to write email for a promo or menu update…",
+      "Ask Oddle AI to turn your ideas into a campaign...",
+      "Ask Oddle AI to write engaging subject lines...",
+      "Ask Oddle AI to craft newsletter in seconds...",
+      "Ask Oddle AI to generate irresistible offers.."
+    ],
     headerVisible: false,
     restaurantName: "McDonald's Downtown",
     restaurantLogo:
@@ -499,7 +505,7 @@ function App() {
 
   const chatProps: ChatWrapperProps = useMemo(
     () => ({
-      userId: "user_123_9",
+      userId: "user_123_11",
       apiUrl: "http://localhost:3000",
       config: {
         ...customConfig,

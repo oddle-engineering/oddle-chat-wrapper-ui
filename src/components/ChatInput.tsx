@@ -14,15 +14,18 @@ import {
   PromptInputSubmit,
   ChatStatus,
 } from "./PromptInput";
+import { AnimatedPlaceholder } from "./AnimatedPlaceholder";
 import { sanitizeMessage, sanitizeFileName } from "../utils/security";
 
 interface ChatInputProps {
   placeholder?: string;
+  placeholderTexts?: string[];
   disabled?: boolean;
   chatStatus: ChatStatus;
   fileUploadEnabled?: boolean;
   restaurantName?: string;
   restaurantLogo?: string;
+  hasMessages?: boolean;
   onSubmit: (message: string, media: string[]) => void;
   onFileUpload: (files: File[]) => Promise<string[]>;
   onStopGeneration?: () => void;
@@ -37,11 +40,13 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
   (
     {
       placeholder = "What would you like to know?",
+      placeholderTexts,
       disabled = false,
       chatStatus,
       fileUploadEnabled = false,
       restaurantName,
       restaurantLogo,
+      hasMessages = false,
       onSubmit,
       onFileUpload,
       onStopGeneration,
@@ -51,6 +56,12 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
     const [input, setInput] = useState("");
     const [uploadedMedia, setUploadedMedia] = useState<string[]>([]);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    // Determine which placeholders to use
+    const activePlaceholderTexts = placeholderTexts && placeholderTexts.length > 0 ? placeholderTexts : [placeholder];
+    
+    // Determine if animation should be active
+    const shouldAnimate = input.length === 0 && !hasMessages && activePlaceholderTexts.length > 1;
 
     useImperativeHandle(ref, () => ({
       focus: () => {
@@ -161,15 +172,23 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
     }, [onFileUpload]);
 
     return (
-      <PromptInput onSubmit={handleSubmit}>
+      <PromptInput onSubmit={handleSubmit} style={{ position: "relative" }}>
         <PromptInputTextarea
           ref={textareaRef}
           name="message"
           value={input}
           onChange={handleInputChange}
-          placeholder={placeholder}
+          placeholder="" // Empty placeholder since we'll use our custom animated one
           disabled={disabled}
         />
+        
+        {/* Animated placeholder component */}
+        {!input.trim() && (
+          <AnimatedPlaceholder
+            placeholderTexts={activePlaceholderTexts}
+            shouldAnimate={shouldAnimate}
+          />
+        )}
 
         {/* Media preview section - above the textarea */}
         {uploadedMedia.length > 0 && (

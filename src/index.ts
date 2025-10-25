@@ -5,6 +5,7 @@ export { ChatWrapper } from './components/ChatWrapper';
 export { Reasoning, ReasoningTrigger, ReasoningContent } from './components/Reasoning';
 export { Loader } from './components/Loader';
 export { SuggestedPrompts } from './components/SuggestedPrompts';
+export { AnimatedPlaceholder } from './components/AnimatedPlaceholder';
 export { 
   PromptInput,
   PromptInputTextarea,
