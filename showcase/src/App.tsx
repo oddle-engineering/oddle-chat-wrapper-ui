@@ -500,7 +500,7 @@ function App() {
 
   const chatProps: ChatWrapperProps = useMemo(
     () => ({
-      userId: "user_123_2",
+      userId: "user_123_6",
       apiUrl: "http://localhost:3000",
       config: {
         ...customConfig,

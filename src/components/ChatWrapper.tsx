@@ -24,6 +24,8 @@ const MessageComponent = memo(
     message,
     getReasoningTitle,
     getReasoningStatus,
+    getReasoningDuration,
+    getReasoningContentOnly,
     getToolingTitle,
     getToolingStatus,
     clientTools,
@@ -35,6 +37,8 @@ const MessageComponent = memo(
       content: string,
       isStreaming?: boolean
     ) => "processing" | "completed" | "error";
+    getReasoningDuration: (content: string) => string | undefined;
+    getReasoningContentOnly: (content: string) => string;
     getToolingTitle: (content: string, isStreaming?: boolean) => string;
     getToolingStatus: (
       content: string,
@@ -61,8 +65,9 @@ const MessageComponent = memo(
             <ReasoningTrigger
               title={getReasoningTitle(message.content, message.isStreaming)}
               status={getReasoningStatus(message.content, message.isStreaming)}
+              duration={getReasoningDuration(message.content)}
             />
-            <ReasoningContent>{message.content}</ReasoningContent>
+            <ReasoningContent>{getReasoningContentOnly(message.content)}</ReasoningContent>
           </Reasoning>
         ) : message.role === "tooling" ? (
           /* Tooling message - no content wrapper */
@@ -788,6 +793,11 @@ function ChatWrapper({
     new Map()
   ); // Map callId -> messageId
 
+  // Reasoning handling state
+  const [, setReasoningMessagesByCallId] = useState<Map<string, string>>(
+    new Map()
+  ); // Map callId -> messageId
+
   // Refs for managing streaming
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<ChatInputRef>(null);
@@ -821,17 +831,54 @@ function ChatWrapper({
     []
   );
 
+  const getReasoningDuration = useMemo(
+    () =>
+      (content: string): string | undefined => {
+        // Extract duration from content like "🧠 [content] after 2.3 seconds"
+        const match = content.match(/after ([\d.]+) seconds/);
+        return match ? ` after ${match[1]} seconds` : undefined;
+      },
+    []
+  );
+
+  const getReasoningContentOnly = useMemo(
+    () =>
+      (content: string): string => {
+        // Remove the brain emoji and duration, keep only the reasoning text
+        let cleanContent = content.replace(/^🧠\s*/, ""); // Remove brain emoji at start
+        cleanContent = cleanContent.replace(/\s*after [\d.]+\s*seconds$/, ""); // Remove duration at end
+        
+        // Replace content between ** with placeholder text
+        cleanContent = cleanContent.replace(/\*\*(.*?)\*\*/g, "");
+        
+        return cleanContent;
+      },
+    []
+  );
+
   const getReasoningTitle = useMemo(
     () =>
       (content: string, isStreaming?: boolean): string => {
+        console.log("🔍 getReasoningTitle:", { content, isStreaming });
+        
         if (isStreaming === false) {
           if (content.includes("❌")) return "Error";
-          return "Completed";
+          if (content.includes("🧠") && content.includes("after") && content.includes("seconds")) {
+            return "Thought";
+          }
+          if (content.includes("🧠 Thought")) {
+            return "Thought";
+          }
+          return "Thought";
         }
+        
+        // For streaming content
         if (content.includes("✅ Completed:") || content.includes("✅"))
           return "Completed";
         if (content.includes("❌")) return "Error";
         if (content.includes("🔧 Handling:")) return "Thinking...";
+        if (content.includes("🧠") && !content.includes("AI is thinking"))
+          return "Thinking...";
         return "Thinking...";
       },
     []
@@ -1017,6 +1064,11 @@ function ChatWrapper({
             return;
           }
 
+          // Check if this is a reasoning event (brain icon)
+          const isReasoningStarted = false; // No longer using "AI is thinking..." start message
+          const isReasoningThinking = content.includes("🧠") && !content.includes("after") && !content.includes("seconds");
+          const isReasoningCompleted = content.includes("🧠") && content.includes("after") && content.includes("seconds");
+          
           // Check if this is a tools-started event (processing)
           const isToolStarted = content.includes("🔧 Handling:");
           // Check if this is a tool-completed event (completed)
@@ -1025,12 +1077,73 @@ function ChatWrapper({
           const isToolError = content.includes("❌ Error:");
 
           console.log("🔍 Debug reasoning conditions:", {
+            isReasoningStarted,
+            isReasoningThinking,
+            isReasoningCompleted,
             isToolStarted,
             isToolCompleted,
             isToolError,
             callId,
             isHandlingTool,
           });
+
+          // Handle reasoning events separately from tool events
+          if (isReasoningThinking || isReasoningCompleted) {
+            setReasoningMessagesByCallId((prevMap) => {
+              const newMap = new Map(prevMap);
+              const existingMessageId = newMap.get(callId);
+
+              if (isReasoningThinking && !existingMessageId) {
+                // Cut off any current streaming message before creating reasoning message
+                finalizeCurrentStreamingMessage();
+
+                // Create a new reasoning message on first thinking content
+                const reasoningMessageId = generateId();
+                newMap.set(callId, reasoningMessageId);
+
+                const reasoningMessage: Message = {
+                  id: reasoningMessageId,
+                  role: "reasoning" as any,
+                  content: content,
+                  timestamp: new Date(),
+                  isStreaming: true,
+                };
+
+                setMessages((prev) => [...prev, reasoningMessage]);
+              } else if (isReasoningCompleted && existingMessageId) {
+                // Update existing reasoning message to completed state
+                setMessages((prev) =>
+                  prev.map((msg) =>
+                    msg.id === existingMessageId
+                      ? {
+                          ...msg,
+                          content: content,
+                          isStreaming: false, // Mark as completed
+                        }
+                      : msg
+                  )
+                );
+
+                // Remove from tracking map since it's completed
+                newMap.delete(callId);
+              } else if (existingMessageId && isReasoningThinking) {
+                // Update existing reasoning message content (during thinking)
+                setMessages((prev) =>
+                  prev.map((msg) =>
+                    msg.id === existingMessageId
+                      ? {
+                          ...msg,
+                          content: content,
+                          isStreaming: true,
+                        }
+                      : msg
+                  )
+                );
+              }
+
+              return newMap;
+            });
+          }
 
           // Create tooling messages instead of reasoning messages for tool handling
           setToolingMessagesByCallId((prevMap) => {
@@ -1723,6 +1836,8 @@ function ChatWrapper({
     return renderBubbleButton();
   }
 
+  console.log('clog messages', messages)
+
   return (
     <>
       {renderModalOverlay()}
@@ -1807,6 +1922,8 @@ function ChatWrapper({
                     message={message}
                     getReasoningTitle={getReasoningTitle}
                     getReasoningStatus={getReasoningStatus}
+                    getReasoningDuration={getReasoningDuration}
+                    getReasoningContentOnly={getReasoningContentOnly}
                     getToolingTitle={getToolingTitle}
                     getToolingStatus={getToolingStatus}
                     clientTools={clientTools || []}

@@ -1113,10 +1113,7 @@
 
 /* Reasoning Component Styles */
 .chat-wrapper__reasoning {
-  margin-bottom: 12px;
-  border: 1px solid #e2e8f0;
   border-radius: 8px;
-  background-color: #f8fafc;
   overflow: hidden;
 }
 
@@ -1124,10 +1121,15 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 16px;
-  cursor: pointer;
+  padding: 4px 8px;
   user-select: none;
 }
+
+.chat-wrapper__reasoning-trigger--clickable {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
 
 .chat-wrapper__reasoning-icon {
   display: flex;
@@ -1165,22 +1167,33 @@
 }
 
 .chat-wrapper__reasoning-title {
-  font-size: 14px;
-  font-weight: 500;
-  color: #374151;
+  font-size: 12px;
+  color: #637381;
+}
+.chat-wrapper__reasoning-duration {
+  font-size: 12px;
+  font-weight: 400;
+  color: #6b7280;
+}
+
+.chat-wrapper__reasoning-arrow {
+  transition: transform 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.chat-wrapper__reasoning-arrow--collapsed {
+  transform: rotate(-90deg);
 }
 
 .chat-wrapper__reasoning-content {
-  padding: 0 16px 16px 16px;
-  border-top: 1px solid #e2e8f0;
-  background-color: #ffffff;
+  padding: 0px 8px;
 }
 
 .chat-wrapper__reasoning-text {
-  font-size: 13px;
-  color: #6b7280;
-  line-height: 1.5;
-  margin-top: 12px;
+  font-size: 12px;
+  color: #919EAB;
+  line-height: 18px;
 }
 
 /* ToolingHandle Component Styles */
@@ -1370,7 +1383,6 @@
 .chat-wrapper__suggested-prompt-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
-
 
 .chat-wrapper__suggested-prompt-content {
   flex: 1;
@@ -2082,6 +2094,9 @@
 
 .chat-wrapper--dark .chat-wrapper__reasoning-title {
   color: #f7fafc;
+}
+.chat-wrapper--dark .chat-wrapper__reasoning-duration {
+  color: #a0aec0;
 }
 
 .chat-wrapper--dark .chat-wrapper__reasoning-text {

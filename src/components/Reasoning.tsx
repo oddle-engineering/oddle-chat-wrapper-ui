@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import React, { ReactNode, useState } from "react";
 
 interface ReasoningProps {
   isStreaming: boolean;
@@ -8,88 +8,128 @@ interface ReasoningProps {
 interface ReasoningTriggerProps {
   title: string;
   status?: "processing" | "completed" | "error";
+  duration?: string;
+  onToggle?: () => void;
+  isExpanded?: boolean;
 }
 
 interface ReasoningContentProps {
   children: ReactNode;
+  isVisible?: boolean;
 }
 
-export function Reasoning({ children }: ReasoningProps) {
-  return <div className="chat-wrapper__reasoning">{children}</div>;
+export function Reasoning({ children, isStreaming }: ReasoningProps) {
+  const [isExpanded, setIsExpanded] = useState(true);
+  const [hasCompleted, setHasCompleted] = useState(false);
+
+  // When reasoning completes (isStreaming becomes false), auto-collapse
+  React.useEffect(() => {
+    if (!isStreaming && !hasCompleted) {
+      setHasCompleted(true);
+      setIsExpanded(false); // Auto-collapse when completed
+    } else if (isStreaming) {
+      setHasCompleted(false);
+      setIsExpanded(true); // Auto-expand when streaming starts
+    }
+  }, [isStreaming, hasCompleted]);
+
+  const handleToggle = () => {
+    // Only allow collapsing if not streaming
+    if (!isStreaming) {
+      setIsExpanded(!isExpanded);
+    }
+  };
+
+  // Clone children and pass props
+  const childrenWithProps = React.Children.map(children, (child) => {
+    if (React.isValidElement(child)) {
+      if (child.type === ReasoningTrigger) {
+        return React.cloneElement(
+          child as React.ReactElement<ReasoningTriggerProps>,
+          {
+            onToggle: handleToggle,
+            isExpanded,
+          }
+        );
+      }
+      if (child.type === ReasoningContent) {
+        return React.cloneElement(
+          child as React.ReactElement<ReasoningContentProps>,
+          {
+            isVisible: isExpanded,
+          }
+        );
+      }
+    }
+    return child;
+  });
+
+  return <div className="chat-wrapper__reasoning">{childrenWithProps}</div>;
 }
 
 export function ReasoningTrigger({
   title,
   status = "processing",
+  duration,
+  onToggle,
+  isExpanded = true,
 }: ReasoningTriggerProps) {
   const renderIcon = () => {
-    switch (status) {
-      case "completed":
-        return (
-          <div className="chat-wrapper__reasoning-checkmark">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M20 6L9 17L4 12"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-        );
-      case "error":
-        return (
-          <div className="chat-wrapper__reasoning-error">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M18 6L6 18M6 6L18 18"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-        );
-      default:
-        return (
-          <div className="chat-wrapper__reasoning-processing">
-            <svg
-              width="10"
-              height="14"
-              viewBox="0 0 10 14"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M3.79576 11.3819C3.46532 11.3819 3.18343 11.2644 2.9501 11.0294C2.71676 10.7944 2.6001 10.5119 2.6001 10.1819V9.06527C1.96676 8.65082 1.4751 8.11943 1.1251 7.4711C0.775098 6.82277 0.600098 6.12638 0.600098 5.38193C0.600098 4.15627 1.02665 3.11649 1.87976 2.2626C2.73288 1.40882 3.77176 0.981934 4.99643 0.981934C6.2211 0.981934 7.26121 1.40882 8.11676 2.2626C8.97232 3.11649 9.4001 4.15627 9.4001 5.38193C9.4001 6.12438 9.2251 6.8211 8.8751 7.4721C8.5251 8.1231 8.03343 8.65416 7.4001 9.06527V10.1819C7.4001 10.5119 7.28243 10.7944 7.0471 11.0294C6.81188 11.2644 6.52904 11.3819 6.1986 11.3819H3.79576ZM3.8001 10.1819H6.2001V8.41527L6.7501 8.06527C7.20565 7.77638 7.56121 7.39204 7.81676 6.91227C8.07232 6.43249 8.2001 5.92238 8.2001 5.38193C8.2001 4.4966 7.88771 3.74193 7.26293 3.11793C6.63826 2.49393 5.88271 2.18193 4.99626 2.18193C4.10993 2.18193 3.35565 2.49393 2.73343 3.11793C2.11121 3.74193 1.8001 4.4966 1.8001 5.38193C1.8001 5.92238 1.92788 6.43249 2.18343 6.91227C2.43899 7.39204 2.79454 7.77638 3.2501 8.06527L3.8001 8.41527V10.1819ZM3.8001 13.7819C3.57343 13.7819 3.38343 13.7053 3.2301 13.5519C3.07676 13.3986 3.0001 13.2086 3.0001 12.9819V12.5819H7.0001V12.9819C7.0001 13.2086 6.92343 13.3986 6.7701 13.5519C6.61676 13.7053 6.42676 13.7819 6.2001 13.7819H3.8001Z"
-                fill="#637381"
-              />
-            </svg>
-          </div>
-        );
-    }
+    return (
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <mask
+          id="mask0_64_36210"
+          style={{ maskType: "alpha" }}
+          maskUnits="userSpaceOnUse"
+          x="0"
+          y="0"
+          width="16"
+          height="16"
+        >
+          <rect width="16" height="16" fill="#D9D9D9" />
+        </mask>
+        <g mask="url(#mask0_64_36210)">
+          <path
+            d="M6.79576 11.9996C6.46532 11.9996 6.18343 11.8821 5.9501 11.6471C5.71676 11.4121 5.6001 11.1296 5.6001 10.7996V9.68294C4.96676 9.2685 4.4751 8.73711 4.1251 8.08878C3.7751 7.44044 3.6001 6.74405 3.6001 5.99961C3.6001 4.77394 4.02665 3.73417 4.87976 2.88028C5.73288 2.0265 6.77176 1.59961 7.99643 1.59961C9.2211 1.59961 10.2612 2.0265 11.1168 2.88028C11.9723 3.73417 12.4001 4.77394 12.4001 5.99961C12.4001 6.74205 12.2251 7.43878 11.8751 8.08978C11.5251 8.74078 11.0334 9.27183 10.4001 9.68294V10.7996C10.4001 11.1296 10.2824 11.4121 10.0471 11.6471C9.81188 11.8821 9.52904 11.9996 9.1986 11.9996H6.79576ZM6.8001 10.7996H9.2001V9.03294L9.7501 8.68294C10.2057 8.39405 10.5612 8.00972 10.8168 7.52994C11.0723 7.05017 11.2001 6.54005 11.2001 5.99961C11.2001 5.11428 10.8877 4.35961 10.2629 3.73561C9.63826 3.11161 8.88271 2.79961 7.99626 2.79961C7.10993 2.79961 6.35565 3.11161 5.73343 3.73561C5.11121 4.35961 4.8001 5.11428 4.8001 5.99961C4.8001 6.54005 4.92788 7.05017 5.18343 7.52994C5.43899 8.00972 5.79454 8.39405 6.2501 8.68294L6.8001 9.03294V10.7996ZM6.8001 14.3996C6.57343 14.3996 6.38343 14.3229 6.2301 14.1696C6.07676 14.0163 6.0001 13.8263 6.0001 13.5996V13.1996H10.0001V13.5996C10.0001 13.8263 9.92343 14.0163 9.7701 14.1696C9.61676 14.3229 9.42676 14.3996 9.2001 14.3996H6.8001Z"
+            fill="#637381"
+          />
+        </g>
+      </svg>
+    );
   };
 
+  const canToggle =
+    status === "completed" ||
+    title.includes("Thinking") ||
+    title.includes("Processing");
+
   return (
-    <div className="chat-wrapper__reasoning-trigger">
+    <div
+      className={`chat-wrapper__reasoning-trigger ${
+        canToggle ? "chat-wrapper__reasoning-trigger--clickable" : ""
+      }`}
+      onClick={canToggle ? onToggle : undefined}
+      style={{ cursor: canToggle ? "pointer" : "default" }}
+    >
       <div className="chat-wrapper__reasoning-icon">{renderIcon()}</div>
-      <span className="chat-wrapper__reasoning-title">{title}</span>
-      {(title.includes("Thinking") || title.includes("Processing")) && (
-        <div className="chat-wrapper__reasoning-arrow">
+      <span className="chat-wrapper__reasoning-title">
+        {title}
+        {duration && status === "completed" && (
+          <span className="chat-wrapper__reasoning-duration">{duration}</span>
+        )}
+      </span>
+      {canToggle && (
+        <div
+          className={`chat-wrapper__reasoning-arrow ${
+            !isExpanded ? "chat-wrapper__reasoning-arrow--collapsed" : ""
+          }`}
+        >
           <svg
             width="16"
             height="16"
@@ -121,7 +161,12 @@ export function ReasoningTrigger({
   );
 }
 
-export function ReasoningContent({ children }: ReasoningContentProps) {
+export function ReasoningContent({
+  children,
+  isVisible = true,
+}: ReasoningContentProps) {
+  if (!isVisible) return null;
+
   return (
     <div className="chat-wrapper__reasoning-content">
       <div className="chat-wrapper__reasoning-text">{children}</div>

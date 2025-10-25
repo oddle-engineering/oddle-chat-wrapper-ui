@@ -32,6 +32,8 @@ export class BusinessAgentClient {
   private initResolve?: (value?: any) => void;
   private initReject?: (reason?: any) => void;
   private processedToolCalls: Set<string> = new Set(); // Track processed tool calls
+  private reasoningStartTimes: Map<string, number> = new Map(); // Track reasoning start times by ID
+  private reasoningContent: Map<string, string> = new Map(); // Track accumulated reasoning content by ID
 
   constructor() {
     this.sessionId = `business_${Date.now()}_${Math.random()
@@ -337,6 +339,75 @@ export class BusinessAgentClient {
               data.data.textDelta
             ) {
               this.onSetMessage(data.data.textDelta);
+            } else if (data.data?.type === "reasoning-start") {
+              // Handle reasoning start event
+              console.log("🧠 Reasoning started:", data.data);
+              const reasoningId = data.data.id || "reasoning";
+              
+              // Record start time and initialize content
+              this.reasoningStartTimes.set(reasoningId, Date.now());
+              this.reasoningContent.set(reasoningId, "");
+              
+              // Don't send "AI is thinking..." message - wait for first delta
+            } else if (data.data?.type === "reasoning-delta") {
+              // Handle reasoning delta (streaming reasoning text)
+              console.log("🧠 Reasoning delta:", data.data);
+              if (this.onReasoningUpdate && data.data.text) {
+                const reasoningId = data.data.id || "reasoning";
+                
+                // Accumulate reasoning content
+                const existingContent = this.reasoningContent.get(reasoningId) || "";
+                const newContent = existingContent + data.data.text;
+                this.reasoningContent.set(reasoningId, newContent);
+                
+                const syntheticRequest = {
+                  toolName: "reasoning",
+                  callId: reasoningId,
+                  parameters: { phase: "thinking", text: newContent },
+                };
+                this.onReasoningUpdate(
+                  true,
+                  `🧠 ${newContent}`,
+                  syntheticRequest
+                );
+              }
+            } else if (data.data?.type === "reasoning-end") {
+              // Handle reasoning end event
+              console.log("🧠 Reasoning completed:", data.data);
+              const reasoningId = data.data.id || "reasoning";
+              
+              // Get the accumulated content
+              const accumulatedContent = this.reasoningContent.get(reasoningId) || "";
+              
+              // Calculate duration
+              const startTime = this.reasoningStartTimes.get(reasoningId);
+              let durationText = "";
+              if (startTime) {
+                const duration = (Date.now() - startTime) / 1000;
+                durationText = ` after ${duration.toFixed(1)} seconds`;
+                this.reasoningStartTimes.delete(reasoningId); // Clean up
+              }
+              
+              if (this.onReasoningUpdate) {
+                const syntheticRequest = {
+                  toolName: "reasoning",
+                  callId: reasoningId,
+                  parameters: { 
+                    phase: "end", 
+                    duration: durationText,
+                    fullContent: accumulatedContent 
+                  },
+                };
+                // Send the accumulated content with completion indicator for title
+                this.onReasoningUpdate(
+                  false,
+                  `🧠 ${accumulatedContent}${durationText}`,
+                  syntheticRequest
+                );
+              }
+              
+              // Clean up accumulated content
+              this.reasoningContent.delete(reasoningId);
             } else if (data.data?.type === "tool-call") {
               // Handle server-side tool calls from AI provider
               const toolCallData = data.data;
