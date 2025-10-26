@@ -122,6 +122,21 @@
   position: relative; /* Create new stacking context */
 }
 
+/* Embedded as fixed sidebar */
+.chat-wrapper--embedded.chat-wrapper--sidebar,
+.chat-wrapper--sidebar.chat-wrapper--left {
+  width: 400px;
+  height: 100vh;
+  max-height: 100vh;
+  border-right: 1px solid #e2e8f0;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  margin: 0 !important;
+  border-radius: 0;
+  top: 0;
+  left: 0;
+}
+
 /* When embedded in a constrained parent, fill the container */
 .chat-wrapper--embedded.chat-wrapper--constrained {
   max-height: none;
@@ -1685,10 +1700,34 @@
 }
 
 .chat-wrapper__prompt-input:focus-within {
-  background-image: linear-gradient(white, white),
-    linear-gradient(135deg, #3d0099, #e3c7f8);
-  /* box-shadow: 0 0 0 3px rgba(65, 0, 153, 0.1), 0 4px 12px rgba(0, 0, 0, 0.1); */
+  position: relative;
+  background: linear-gradient(white, white),
+    conic-gradient(from 0deg, #3d0099 0%, #e3c7f8 25%, #3d0099 50%, #e3c7f8 75%, #3d0099 100%);
+  background-size: 100% 100%, 200% 200%;
+  background-position: center, center;
+  background-origin: padding-box, border-box;
+  background-clip: padding-box, border-box;
+  animation: rotate-border 3s linear infinite;
 }
+
+@keyframes rotate-border {
+  0% {
+    background-position: center, 0% 50%;
+  }
+  25% {
+    background-position: center, 50% 0%;
+  }
+  50% {
+    background-position: center, 100% 50%;
+  }
+  75% {
+    background-position: center, 50% 100%;
+  }
+  100% {
+    background-position: center, 0% 50%;
+  }
+}
+
 
 .chat-wrapper__prompt-textarea {
   width: 100%;
@@ -2028,8 +2067,14 @@
 }
 
 .chat-wrapper--dark .chat-wrapper__prompt-input:focus-within {
-  border-color: #410099;
-  box-shadow: 0 0 0 3px rgba(65, 0, 153, 0.1), 0 4px 12px rgba(0, 0, 0, 0.2);
+  position: relative;
+  background: linear-gradient(#2d3748, #2d3748),
+    conic-gradient(from 0deg, #3d0099 0%, #e3c7f8 25%, #3d0099 50%, #e3c7f8 75%, #3d0099 100%);
+  background-size: 100% 100%, 200% 200%;
+  background-position: center, center;
+  background-origin: padding-box, border-box;
+  background-clip: padding-box, border-box;
+  animation: rotate-border 3s linear infinite;
 }
 
 .chat-wrapper--dark .chat-wrapper__prompt-textarea {

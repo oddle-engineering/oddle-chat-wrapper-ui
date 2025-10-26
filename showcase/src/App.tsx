@@ -36,9 +36,9 @@ interface Reservation {
 
 function App() {
   const [customConfig] = useState({
-    mode: "fullscreen" as ChatMode,
+    mode: "sidebar" as ChatMode,
     theme: "light" as ChatTheme,
-    position: "right" as ChatPosition,
+    position: "left" as ChatPosition,
     appName: "Demo Chat",
     description: "An AI assistant to help with restaurant management tasks.",
 
@@ -123,6 +123,7 @@ function App() {
     },
   ]);
   const [count, setCount] = useState(0);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
 
   // Helper functions for panels
   const handleAddTodo = useCallback(async (task: string) => {
@@ -770,10 +771,41 @@ function App() {
 
   return (
     <div className="showcase-container">
-      <div className="main-content">
-        <ChatWrapper {...chatProps} devMode={true} />
+      {/* Toggle button for sidebar */}
+      <button
+        onClick={() => setIsSidebarVisible(!isSidebarVisible)}
+        style={{
+          position: "fixed",
+          top: "20px",
+          left: isSidebarVisible ? "420px" : "20px",
+          zIndex: 1000,
+          padding: "12px",
+          background: "#3d0099",
+          color: "white",
+          border: "none",
+          borderRadius: "8px",
+          cursor: "pointer",
+          transition: "left 0.3s ease",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+        }}
+      >
+        {isSidebarVisible ? "Hide Chat" : "Show Chat"}
+      </button>
 
-        <div className="controls">
+      <div className="main-content">
+        {isSidebarVisible && (
+          <div className="chat-sidebar-container">
+            <ChatWrapper {...chatProps} devMode={true} />
+          </div>
+        )}
+
+        <div 
+          className="controls"
+          style={{
+            marginLeft: isSidebarVisible ? "420px" : "20px",
+            transition: "margin-left 0.3s ease",
+          }}
+        >
           <button
             onClick={() => {
               setCount((prev) => prev + 1);
@@ -783,7 +815,13 @@ function App() {
           </button>
         </div>
 
-        <div className="panels-container">
+        <div 
+          className="panels-container"
+          style={{
+            marginLeft: isSidebarVisible ? "420px" : "20px",
+            transition: "margin-left 0.3s ease",
+          }}
+        >
           <TodoPanel
             todos={todos}
             onAddTodo={handleAddTodo}
