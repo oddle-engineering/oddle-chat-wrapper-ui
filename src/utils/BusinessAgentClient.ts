@@ -1,5 +1,5 @@
 import {
-  BusinessData,
+  ContextHelpers,
   BusinessAgentClientProps,
   ToolCallRequest,
   WebSocketMessage,
@@ -21,7 +21,7 @@ export class BusinessAgentClient {
   ) => void;
   private clientTools: Record<string, Function> = {};
   private toolSchemas: any[] = [];
-  private businessContext: BusinessData = {};
+  private contextHelpers: ContextHelpers = {};
   private reconnectAttempts: number = 0;
   private maxReconnectAttempts: number = 5;
   private reconnectTimer: number | null = null;
@@ -67,7 +67,7 @@ export class BusinessAgentClient {
     this.onReasoningUpdate = props.onReasoningUpdate;
     this.clientTools = props.clientTools || {};
     this.toolSchemas = props.toolSchemas || [];
-    this.businessContext = props.businessContext;
+    this.contextHelpers = props.contextHelpers;
     if (props.apiUrl) {
       this.apiUrl = props.apiUrl;
     }
@@ -303,7 +303,7 @@ export class BusinessAgentClient {
               JSON.stringify({
                 type: "configure_tools",
                 toolSchemas: this.toolSchemas,
-                businessContext: this.businessContext,
+                contextHelpers: this.contextHelpers,
               })
             );
           }
@@ -745,16 +745,16 @@ export class BusinessAgentClient {
     return null;
   }
 
-  // Method to update business context
-  updateBusinessContext(newContext: BusinessData): void {
-    this.businessContext = { ...this.businessContext, ...newContext };
+  // Method to update context helpers
+  updateContextHelpers(newContext: ContextHelpers): void {
+    this.contextHelpers = { ...this.contextHelpers, ...newContext };
 
     // Send updated context to server if connected
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(
         JSON.stringify({
-          type: "update_business_context",
-          businessContext: this.businessContext,
+          type: "update_context_helpers",
+          contextHelpers: this.contextHelpers,
         })
       );
     }

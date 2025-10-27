@@ -4,7 +4,7 @@ import {
   ChatWrapperProps,
   Message,
   ToolResult,
-  BusinessData,
+  ContextHelpers,
   ToolCallRequest,
 } from "../types";
 import { ChatStatus } from "./PromptInput";
@@ -753,6 +753,7 @@ function ChatWrapper({
   userId,
   devMode = false,
   app,
+  contextHelpers,
 }: ChatWrapperProps) {
   // Convert WebSocket URL to HTTP URL for REST API calls
   const getHttpUrl = useCallback((wsUrl: string): string => {
@@ -1021,14 +1022,15 @@ function ChatWrapper({
       setAgentClient(client);
       setSessionId(client.getSessionId());
 
-      const businessContext: BusinessData = {}; // You can customize this based on your needs
+      // Use contextHelpers from props or default to empty object
+      const contextHelpersToUse: ContextHelpers = contextHelpers || {};
 
       await client.onInit({
         apiUrl: apiUrl,
         userId: userId,
         toolSchemas: clientTools,
         clientTools: tools,
-        businessContext,
+        contextHelpers: contextHelpersToUse,
         onSetMessage: (char: string) => {
           // Sanitize incoming character data from assistant
           const sanitizedChar = sanitizeMessage(char, true);

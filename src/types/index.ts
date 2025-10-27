@@ -93,6 +93,7 @@ export interface ChatWrapperProps {
   userId?: string;
   devMode?: boolean;
   app: App;
+  contextHelpers?: ContextHelpers;
 }
 
 export interface ConversationResponse {
@@ -143,7 +144,7 @@ export interface ClientTool {
 
 export type ClientTools = ClientTool[];
 
-export interface BusinessData {
+export interface ContextHelpers {
   [key: string]: any;
 }
 
@@ -152,7 +153,7 @@ export interface BusinessAgentClientProps {
   userId?: string;
   toolSchemas?: any[];
   clientTools?: Record<string, Function>;
-  businessContext: BusinessData;
+  contextHelpers: ContextHelpers;
   onSetMessage?: (char: string) => void;
   onSystemMessage?: (message: string) => void;
   onBusinessDataUpdate?: (data: any) => void;
@@ -180,7 +181,7 @@ export interface WebSocketMessage {
   uuid?: string;
   connectionInfo?: any;
   toolSchemas?: any[];
-  businessContext?: BusinessData;
+  contextHelpers?: ContextHelpers;
   agentType?: string;
   pingTime?: string;
   originalTimestamp?: string;

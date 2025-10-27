@@ -62,7 +62,7 @@ export declare type ChatTheme = "light" | "dark" | "auto";
 
 export declare const ChatWrapper: MemoExoticComponent<typeof ChatWrapper_2>;
 
-declare function ChatWrapper_2({ apiUrl, config, tools, clientTools, initialMessages, userId, devMode, app, }: ChatWrapperProps): JSX_2.Element | null;
+declare function ChatWrapper_2({ apiUrl, config, tools, clientTools, initialMessages, userId, devMode, app, contextHelpers, }: ChatWrapperProps): JSX_2.Element | null;
 
 export declare interface ChatWrapperProps {
     apiUrl: string;
@@ -73,6 +73,7 @@ export declare interface ChatWrapperProps {
     userId?: string;
     devMode?: boolean;
     app: App;
+    contextHelpers?: ContextHelpers;
 }
 
 export declare interface ClientTool {
@@ -82,6 +83,10 @@ export declare interface ClientTool {
 }
 
 export declare type ClientTools = ClientTool[];
+
+declare interface ContextHelpers {
+    [key: string]: any;
+}
 
 export declare interface ConversationResponse {
     conversationId: string;

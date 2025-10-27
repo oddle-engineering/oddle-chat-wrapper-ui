@@ -47,7 +47,7 @@ function App() {
       "Ask Oddle AI to turn your ideas into a campaign...",
       "Ask Oddle AI to write engaging subject lines...",
       "Ask Oddle AI to craft newsletter in seconds...",
-      "Ask Oddle AI to generate irresistible offers.."
+      "Ask Oddle AI to generate irresistible offers..",
     ],
     headerVisible: false,
     restaurantName: "McDonald's Downtown",
@@ -508,7 +508,7 @@ function App() {
 
   const sidebarChatProps: ChatWrapperProps = useMemo(
     () => ({
-      app: 'UD21',
+      app: "UD21",
       userId: "user_123_16",
       apiUrl: "http://localhost:3000",
       config: {
@@ -766,13 +766,20 @@ function App() {
           parameters: [],
         },
       ],
+      contextHelpers: {
+        brandInfo: {
+          id: "ud21_123",
+          brandName: "UD21 Restaurant",
+        },
+        locale: "en-US",
+      },
     }),
     [customConfig, clientTools]
   );
 
   const modalChatProps: ChatWrapperProps = useMemo(
     () => ({
-      app: 'Host',
+      app: "UD21",
       userId: "user_123_16",
       apiUrl: "http://localhost:3000",
       config: {
@@ -812,6 +819,16 @@ function App() {
           parameters: [],
         },
       ],
+      contextHelpers: {
+        brandInfo: {
+          id: "host_456",
+          brandName: "Host Management System",
+        },
+        hostInfo: {
+          name: "McDonald's Host Interface",
+          features: ["reservation", "waitlist", "seating"],
+        },
+      },
     }),
     [customConfig, clientTools]
   );
@@ -862,7 +879,7 @@ function App() {
       </button>
 
       <div className="main-content">
-        <div 
+        <div
           className="chat-sidebar-container"
           style={{
             display: isSidebarVisible ? "block" : "none",
@@ -871,7 +888,7 @@ function App() {
           <ChatWrapper {...sidebarChatProps} devMode={true} />
         </div>
 
-        <div 
+        <div
           className="controls"
           style={{
             marginLeft: isSidebarVisible ? "420px" : "20px",
@@ -887,7 +904,7 @@ function App() {
           </button>
         </div>
 
-        <div 
+        <div
           className="panels-container"
           style={{
             marginLeft: isSidebarVisible ? "420px" : "20px",
@@ -909,9 +926,7 @@ function App() {
       </div>
 
       {/* Modal Chat */}
-      {isModalOpen && (
-        <ChatWrapper {...modalChatProps} devMode={true} />
-      )}
+      {isModalOpen && <ChatWrapper {...modalChatProps} devMode={true} />}
     </div>
   );
 }
