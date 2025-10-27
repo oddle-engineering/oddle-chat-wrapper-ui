@@ -15,6 +15,7 @@ import { ToolingHandle, ToolingHandleTrigger } from "./ToolingHandle";
 import { Loader } from "./Loader";
 import { InlineLoader } from "./InlineLoader";
 import { DevSettings } from "./DevSettings";
+import { CopyIcon } from "./CopyIcon";
 import { BusinessAgentClient } from "../utils/BusinessAgentClient";
 import { sanitizeMessage } from "../utils/security";
 import { fetchThreadMessages } from "../utils/threadApi";
@@ -49,6 +50,19 @@ const MessageComponent = memo(
     clientTools: any[];
     currentAssistantMessageIdRef: React.MutableRefObject<string | null>;
   }) => {
+    const [copied, setCopied] = useState(false);
+    const [showCopyButton, setShowCopyButton] = useState(false);
+
+    const handleCopy = useCallback(async () => {
+      try {
+        await navigator.clipboard.writeText(message.content);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000); // Hide "copied" message after 2 seconds
+      } catch (err) {
+        console.error('Failed to copy message:', err);
+      }
+    }, [message.content]);
+
     return (
       <div
         className={`chat-wrapper__message chat-wrapper__message--${
@@ -60,6 +74,8 @@ const MessageComponent = memo(
             ? "tooling"
             : message.role
         }`}
+        onMouseEnter={() => message.role === "assistant" && setShowCopyButton(true)}
+        onMouseLeave={() => message.role === "assistant" && setShowCopyButton(false)}
       >
         {message.role === "reasoning" ? (
           /* Reasoning message - no content wrapper */
@@ -100,7 +116,21 @@ const MessageComponent = memo(
               <SystemMessageCollapsible message={message} />
             ) : message.role === "assistant" ? (
               /* Assistant message with regular markdown display */
-              <div className="chat-wrapper__regular-message">
+              <div className="chat-wrapper__regular-message chat-wrapper__assistant-message-container">
+                {showCopyButton && (
+                  <button
+                    className="chat-wrapper__copy-button"
+                    onClick={handleCopy}
+                    title="Copy message"
+                  >
+                    <CopyIcon />
+                  </button>
+                )}
+                {copied && (
+                  <div className="chat-wrapper__copied-notification">
+                    Copied!
+                  </div>
+                )}
                 <div className="chat-wrapper__markdown-content">
                   <ReactMarkdown
                     components={{
@@ -991,7 +1021,6 @@ function ChatWrapper({
 
     // Finalize any current streaming message
     finalizeCurrentStreamingMessage();
-    console.log("clog focus...");
     // Focus the input after assistant response completes
     setTimeout(() => {
       chatInputRef.current?.focus();
@@ -1934,8 +1963,6 @@ function ChatWrapper({
   ) {
     return renderBubbleButton();
   }
-
-  console.log("clog messages", messages);
 
   return (
     <>
