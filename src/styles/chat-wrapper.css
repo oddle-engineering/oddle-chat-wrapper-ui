@@ -2089,6 +2089,96 @@
   background-color: #4a5568;
 }
 
+/* Container-based responsive styles for chat-wrapper */
+
+/* Small containers (width < 400px) */
+.chat-wrapper {
+  container-type: inline-size;
+}
+
+@container (max-width: 400px) {
+  .chat-wrapper__main-title {
+    font-size: 24px !important;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  
+  .chat-wrapper__main-header {
+    padding: 16px 12px;
+  }
+  
+  .chat-wrapper__description {
+    font-size: 14px !important;
+    line-height: 1.4;
+  }
+  
+  .chat-wrapper__header {
+    padding: 10px 12px;
+  }
+  
+  .chat-wrapper__header h2,
+  .chat-wrapper__title {
+    font-size: 16px !important;
+  }
+}
+
+/* Very small containers (width < 300px) */
+@container (max-width: 300px) {
+  .chat-wrapper__main-title {
+    font-size: 20px !important;
+    line-height: 1.1;
+    margin-bottom: 6px;
+  }
+  
+  .chat-wrapper__main-header {
+    padding: 12px 8px;
+  }
+  
+  .chat-wrapper__description {
+    font-size: 13px !important;
+    line-height: 1.3;
+  }
+  
+  .chat-wrapper__header {
+    padding: 8px 10px;
+  }
+  
+  .chat-wrapper__header h2,
+  .chat-wrapper__title {
+    font-size: 14px !important;
+  }
+}
+
+/* Fallback for browsers without container query support */
+@supports not (container-type: inline-size) {
+  /* Viewport-based fallback for older browsers */
+  @media (max-width: 768px) {
+    .chat-wrapper__main-title {
+      font-size: 28px !important;
+      line-height: 1.3;
+    }
+    
+    .chat-wrapper__main-header {
+      padding: 16px 12px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .chat-wrapper__main-title {
+      font-size: 22px !important;
+      line-height: 1.2;
+    }
+    
+    .chat-wrapper__main-header {
+      padding: 12px 8px;
+    }
+    
+    .chat-wrapper__description {
+      font-size: 14px !important;
+    }
+  }
+}
+
 .chat-wrapper--dark .chat-wrapper__prompt-toolbar {
   border-top-color: #4a5568;
   background-color: #374151;

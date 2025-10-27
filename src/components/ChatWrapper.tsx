@@ -17,7 +17,7 @@ import { InlineLoader } from "./InlineLoader";
 import { DevSettings } from "./DevSettings";
 import { BusinessAgentClient } from "../utils/BusinessAgentClient";
 import { sanitizeMessage } from "../utils/security";
-import { fetchUserThreads, fetchThreadMessages } from "../utils/threadApi";
+import { fetchThreadMessages } from "../utils/threadApi";
 import "../styles/chat-wrapper.css";
 
 // Memoized Message Component to prevent unnecessary re-renders
@@ -69,7 +69,9 @@ const MessageComponent = memo(
               status={getReasoningStatus(message.content, message.isStreaming)}
               duration={getReasoningDuration(message.content)}
             />
-            <ReasoningContent>{getReasoningContentOnly(message.content)}</ReasoningContent>
+            <ReasoningContent>
+              {getReasoningContentOnly(message.content)}
+            </ReasoningContent>
           </Reasoning>
         ) : message.role === "tooling" ? (
           /* Tooling message - no content wrapper */
@@ -754,7 +756,9 @@ function ChatWrapper({
 }: ChatWrapperProps) {
   // Convert WebSocket URL to HTTP URL for REST API calls
   const getHttpUrl = useCallback((wsUrl: string): string => {
-    return wsUrl.replace(/^wss?:\/\//, (match) => match === 'wss://' ? 'https://' : 'http://');
+    return wsUrl.replace(/^wss?:\/\//, (match) =>
+      match === "wss://" ? "https://" : "http://"
+    );
   }, []);
 
   const httpApiUrl = useMemo(() => getHttpUrl(apiUrl), [apiUrl, getHttpUrl]);
@@ -854,10 +858,10 @@ function ChatWrapper({
         // Remove the brain emoji and duration, keep only the reasoning text
         let cleanContent = content.replace(/^🧠\s*/, ""); // Remove brain emoji at start
         cleanContent = cleanContent.replace(/\s*for [\d.]+\s*seconds$/, ""); // Remove duration at end
-        
+
         // Replace content between ** with placeholder text
         cleanContent = cleanContent.replace(/\*\*(.*?)\*\*/g, "");
-        
+
         return cleanContent;
       },
     []
@@ -867,10 +871,14 @@ function ChatWrapper({
     () =>
       (content: string, isStreaming?: boolean): string => {
         console.log("🔍 getReasoningTitle:", { content, isStreaming });
-        
+
         if (isStreaming === false) {
           if (content.includes("❌")) return "Error";
-          if (content.includes("🧠") && content.includes("for") && content.includes("seconds")) {
+          if (
+            content.includes("🧠") &&
+            content.includes("for") &&
+            content.includes("seconds")
+          ) {
             return "Thought";
           }
           if (content.includes("🧠 Thought")) {
@@ -878,7 +886,7 @@ function ChatWrapper({
           }
           return "Thought";
         }
-        
+
         // For streaming content
         if (content.includes("✅ Completed:") || content.includes("✅"))
           return "Completed";
@@ -1073,9 +1081,15 @@ function ChatWrapper({
 
           // Check if this is a reasoning event (brain icon)
           const isReasoningStarted = false; // No longer using "AI is thinking..." start message
-          const isReasoningThinking = content.includes("🧠") && !content.includes("for") && !content.includes("seconds");
-          const isReasoningCompleted = content.includes("🧠") && content.includes("for") && content.includes("seconds");
-          
+          const isReasoningThinking =
+            content.includes("🧠") &&
+            !content.includes("for") &&
+            !content.includes("seconds");
+          const isReasoningCompleted =
+            content.includes("🧠") &&
+            content.includes("for") &&
+            content.includes("seconds");
+
           // Check if this is a tools-started event (processing)
           const isToolStarted = content.includes("🔧 Handling:");
           // Check if this is a tool-completed event (completed)
@@ -1283,13 +1297,13 @@ function ChatWrapper({
 
   // Scroll animation frame ref
   const scrollAnimationFrame = useRef<number | null>(null);
-  
+
   const scrollToBottom = useCallback(() => {
     // Cancel any pending scroll animation
     if (scrollAnimationFrame.current) {
       cancelAnimationFrame(scrollAnimationFrame.current);
     }
-    
+
     // Schedule smooth scroll on next frame
     scrollAnimationFrame.current = requestAnimationFrame(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -1383,9 +1397,10 @@ function ChatWrapper({
 
         // Step 1: Fetch user's threads
         console.log(`📚 Fetching threads for user: ${userId}`);
-        const threads = await fetchUserThreads(httpApiUrl, userId, {
-          limit: 1, // Get only the first/most recent thread
-        });
+        // const threads = await fetchUserThreads(httpApiUrl, userId, {
+        //   limit: 1, // Get only the first/most recent thread
+        // });
+        const threads: string | any[] = [];
 
         if (threads.length === 0) {
           console.log("ℹ️ No threads found for user");
@@ -1918,15 +1933,14 @@ function ChatWrapper({
     return renderBubbleButton();
   }
 
-  console.log('clog messages', messages)
+  console.log("clog messages", messages);
 
   return (
     <>
-
       <div className={containerClasses} style={config.customStyles}>
         {/* Floating settings button for when header is not visible */}
         {renderFloatingSettingsButton()}
-        
+
         {config.headerVisible !== false && (
           <div className="chat-wrapper__header">
             <div className="chat-wrapper__title-area">
@@ -1996,7 +2010,7 @@ function ChatWrapper({
                 {isLoadingConversation && messages.length === 0 && (
                   <InlineLoader fullHeight={true} />
                 )}
-                
+
                 {messages.map((message) => (
                   <MessageComponent
                     key={message.id}
@@ -2078,7 +2092,7 @@ function ChatWrapper({
         )}
 
         {config.onError && <div className="chat-wrapper__error-boundary" />}
-        
+
         {/* Dev Settings Popup */}
         <DevSettings
           isOpen={isDevSettingsOpen}

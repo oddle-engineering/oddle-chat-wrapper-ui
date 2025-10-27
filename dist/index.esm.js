@@ -6937,11 +6937,11 @@ const lc = ({
       children: i ?? o
     }
   );
-}, eu = ({
+}, Qc = ({
   className: e,
   children: t,
   ...n
-}) => /* @__PURE__ */ c("select", { className: it("chat-wrapper__prompt-select", e), ...n, children: t }), tu = ({
+}) => /* @__PURE__ */ c("select", { className: it("chat-wrapper__prompt-select", e), ...n, children: t }), eu = ({
   className: e,
   children: t,
   ...n
@@ -6953,7 +6953,7 @@ const lc = ({
     ...n,
     children: t
   }
-), nu = ({
+), tu = ({
   className: e,
   ...t
 }) => /* @__PURE__ */ c(
@@ -6962,7 +6962,7 @@ const lc = ({
     className: it("chat-wrapper__prompt-select-content", e),
     ...t
   }
-), ru = ({
+), nu = ({
   className: e,
   value: t,
   ...n
@@ -6973,7 +6973,7 @@ const lc = ({
     "data-value": t,
     ...n
   }
-), iu = ({
+), ru = ({
   className: e,
   placeholder: t,
   ...n
@@ -9119,7 +9119,7 @@ class Wc {
     }
   }
 }
-async function Zc(e, t, n) {
+async function iu(e, t, n) {
   const r = new URLSearchParams();
   n != null && n.includeArchived && r.append("includeArchived", "true"), n != null && n.limit && r.append("limit", n.limit.toString());
   const i = `${e}/threads/user/${t}${r.toString() ? `?${r.toString()}` : ""}`, a = await fetch(i);
@@ -9141,7 +9141,7 @@ async function au(e, t) {
   }
   return r.json();
 }
-async function qc(e, t) {
+async function Zc(e, t) {
   const n = `${e}/messages/thread/${t}?format=client`, r = await fetch(n);
   if (!r.ok) {
     const a = await r.json().catch(() => ({
@@ -9238,7 +9238,7 @@ const da = rr(
           ] })
         ) : e.role === "system" ? (
           /* System message with collapsible tool result */
-          /* @__PURE__ */ c(Gc, { message: e })
+          /* @__PURE__ */ c(qc, { message: e })
         ) : e.role === "assistant" ? (
           /* Assistant message with regular markdown display */
           /* @__PURE__ */ c("div", { className: "chat-wrapper__regular-message", children: /* @__PURE__ */ c("div", { className: "chat-wrapper__markdown-content", children: /* @__PURE__ */ c(
@@ -9507,7 +9507,7 @@ const fa = rr(
   ) }) }) }) })
 );
 fa.displayName = "StreamingMessage";
-function Gc({ message: e }) {
+function qc({ message: e }) {
   const [t, n] = X(!0);
   return /* @__PURE__ */ I("div", { className: "chat-wrapper__system-message", children: [
     /* @__PURE__ */ c(
@@ -9775,7 +9775,7 @@ function Gc({ message: e }) {
     )
   ] });
 }
-function Yc({
+function Gc({
   apiUrl: e,
   config: t,
   tools: n,
@@ -9786,7 +9786,10 @@ function Yc({
   app: o
 }) {
   var nn;
-  const u = oe((S) => S.replace(/^wss?:\/\//, (L) => L === "wss://" ? "https://" : "http://"), []), p = St(() => u(e), [e, u]), [s, d] = X(
+  const u = oe((S) => S.replace(
+    /^wss?:\/\//,
+    (L) => L === "wss://" ? "https://" : "http://"
+  ), []), p = St(() => u(e), [e, u]), [s, d] = X(
     null
   ), [f, h] = X(!1), [y, b] = X(""), A = rt(null), [w, R] = X(i), [N, F] = X(!1), [q, k] = X(!1), [$, V] = X("idle"), [H, j] = X(!1), [T, D] = X(t.mode), [G, re] = X(!1), [Y, fe] = X(
     null
@@ -10047,10 +10050,7 @@ function Yc({
       if (a && !Xe.current && !G && !(w.length > 0))
         try {
           re(!0), fe(null), console.log(`📚 Fetching threads for user: ${a}`);
-          const L = await Zc(p, a, {
-            limit: 1
-            // Get only the first/most recent thread
-          });
+          const L = [];
           if (L.length === 0) {
             console.log("ℹ️ No threads found for user"), re(!1), Xe.current = !0;
             return;
@@ -10059,7 +10059,7 @@ function Yc({
           console.log(
             `📖 Loading thread: ${ne.id} (${ne.title})`
           ), Se(ne.id), C(ne.convUuid);
-          const B = await qc(
+          const B = await Zc(
             p,
             ne.id
           );
@@ -10502,8 +10502,8 @@ function Yc({
     )
   ] }) }));
 }
-const su = rr(Yc);
-class Xc {
+const su = rr(Gc);
+class Yc {
   constructor(t, n) {
     ae(this, "baseUrl");
     ae(this, "apiKey");
@@ -10554,7 +10554,7 @@ class Xc {
   }
 }
 function cu(e, t) {
-  const [n, r] = X([]), [i, a] = X(!1), [l, o] = X(null), u = rt(null), p = rt(new Xc(e, t)), s = oe(async () => {
+  const [n, r] = X([]), [i, a] = X(!1), [l, o] = X(null), u = rt(null), p = rt(new Yc(e, t)), s = oe(async () => {
     try {
       const h = await p.current.initConversation();
       return u.current = h, h;
@@ -10621,11 +10621,11 @@ export {
   ha as Loader,
   ac as PromptInput,
   sc as PromptInputButton,
-  eu as PromptInputModelSelect,
-  nu as PromptInputModelSelectContent,
-  ru as PromptInputModelSelectItem,
-  tu as PromptInputModelSelectTrigger,
-  iu as PromptInputModelSelectValue,
+  Qc as PromptInputModelSelect,
+  tu as PromptInputModelSelectContent,
+  nu as PromptInputModelSelectItem,
+  eu as PromptInputModelSelectTrigger,
+  ru as PromptInputModelSelectValue,
   cc as PromptInputSubmit,
   aa as PromptInputTextarea,
   lc as PromptInputToolbar,
@@ -10637,7 +10637,7 @@ export {
   ou as createThread,
   lu as fetchMessagesByConvUuid,
   au as fetchThreadByConvUuid,
-  qc as fetchThreadMessages,
-  Zc as fetchUserThreads,
+  Zc as fetchThreadMessages,
+  iu as fetchUserThreads,
   cu as useChatConnection
 };

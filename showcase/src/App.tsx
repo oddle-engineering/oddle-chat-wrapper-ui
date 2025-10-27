@@ -124,6 +124,7 @@ function App() {
   ]);
   const [count, setCount] = useState(0);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Helper functions for panels
   const handleAddTodo = useCallback(async (task: string) => {
@@ -505,7 +506,7 @@ function App() {
     ]
   );
 
-  const chatProps: ChatWrapperProps = useMemo(
+  const sidebarChatProps: ChatWrapperProps = useMemo(
     () => ({
       app: 'UD21',
       userId: "user_123_16",
@@ -769,6 +770,52 @@ function App() {
     [customConfig, clientTools]
   );
 
+  const modalChatProps: ChatWrapperProps = useMemo(
+    () => ({
+      app: 'Host',
+      userId: "user_123_16",
+      apiUrl: "http://localhost:3000",
+      config: {
+        ...customConfig,
+        mode: "modal" as ChatMode,
+        onMessage: (message) => {
+          console.log("Modal demo message:", message);
+        },
+        onError: (error) => {
+          console.error("Modal demo error:", error);
+        },
+        features: {
+          fileUpload: true,
+          messageHistory: true,
+          exportChat: true,
+        },
+      },
+      tools: clientTools,
+      clientTools: [
+        // To-do management tools
+        {
+          name: "create_to_do",
+          description: "Create a new to-do task",
+          parameters: [
+            {
+              name: "task_description",
+              type: "string",
+              description: "Description of the task to be created",
+              isRequired: true,
+              schema: { type: "string" },
+            },
+          ],
+        },
+        {
+          name: "read_to_dos",
+          description: "Read all existing to-do items",
+          parameters: [],
+        },
+      ],
+    }),
+    [customConfig, clientTools]
+  );
+
   return (
     <div className="showcase-container">
       {/* Toggle button for sidebar */}
@@ -792,12 +839,37 @@ function App() {
         {isSidebarVisible ? "Hide Chat" : "Show Chat"}
       </button>
 
+      {/* Toggle button for modal */}
+      <button
+        onClick={() => setIsModalOpen(!isModalOpen)}
+        style={{
+          position: "fixed",
+          top: "20px",
+          right: "20px",
+          zIndex: 1000,
+          padding: "12px",
+          background: "#e3c7f8",
+          color: "#3d0099",
+          border: "2px solid #3d0099",
+          borderRadius: "8px",
+          cursor: "pointer",
+          transition: "all 0.3s ease",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+          fontWeight: "600",
+        }}
+      >
+        {isModalOpen ? "Close Modal" : "Open Modal"}
+      </button>
+
       <div className="main-content">
-        {isSidebarVisible && (
-          <div className="chat-sidebar-container">
-            <ChatWrapper {...chatProps} devMode={true} />
-          </div>
-        )}
+        <div 
+          className="chat-sidebar-container"
+          style={{
+            display: isSidebarVisible ? "block" : "none",
+          }}
+        >
+          <ChatWrapper {...sidebarChatProps} devMode={true} />
+        </div>
 
         <div 
           className="controls"
@@ -835,6 +907,11 @@ function App() {
           />
         </div>
       </div>
+
+      {/* Modal Chat */}
+      {isModalOpen && (
+        <ChatWrapper {...modalChatProps} devMode={true} />
+      )}
     </div>
   );
 }
