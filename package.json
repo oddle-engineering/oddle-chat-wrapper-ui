@@ -1,6 +1,6 @@
 {
   "name": "@oddle/chat-wrapper-ui",
-  "version": "1.0.8",
+  "version": "1.0.0",
   "description": "Reusable chat UI wrapper for company projects",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
@@ -26,6 +26,11 @@
     "test": "echo \"Tests will be added in Phase 1.4\"",
     "lint": "echo \"Linting will be added in Phase 3.4\"",
     
+    "preversion": "npm run preversion:check",
+    "preversion:check": "node scripts/check-git-status.js",
+    "version": "npm run changelog && git add CHANGELOG.md",
+    "postversion": "echo '✅ Version updated successfully!'",
+    
     "version:patch": "npm run build && npm version patch",
     "version:minor": "npm run build && npm version minor", 
     "version:major": "npm run build && npm version major",
@@ -43,6 +48,11 @@
     
     "push:tags": "git push --follow-tags",
     "changelog": "node scripts/generate-changelog.js",
+    
+    "release:status": "node scripts/release-helper.js status",
+    "release:prepare": "node scripts/release-helper.js prepare",
+    "release:clean": "node scripts/release-helper.js clean",
+    "release:info": "node scripts/release-helper.js info",
     
     "showcase": "cd showcase && npm run dev",
     "showcase:install": "cd showcase && npm install",
