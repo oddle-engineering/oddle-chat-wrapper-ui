@@ -7,7 +7,9 @@
   "types": "dist/index.d.ts",
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md",
+    "VERSIONING.md"
   ],
   "exports": {
     ".": {
@@ -21,9 +23,27 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "prepublishOnly": "npm run build",
-    "release:patch": "npm version patch && git push --follow-tags",
-    "release:minor": "npm version minor && git push --follow-tags",
-    "release:major": "npm version major && git push --follow-tags",
+    "test": "echo \"Tests will be added in Phase 1.4\"",
+    "lint": "echo \"Linting will be added in Phase 3.4\"",
+    
+    "version:patch": "npm run build && npm version patch",
+    "version:minor": "npm run build && npm version minor", 
+    "version:major": "npm run build && npm version major",
+    
+    "prerelease:alpha": "npm run build && npm version prerelease --preid=alpha",
+    "prerelease:beta": "npm run build && npm version prerelease --preid=beta",
+    "prerelease:rc": "npm run build && npm version prerelease --preid=rc",
+    
+    "release:patch": "npm run version:patch && npm run push:tags",
+    "release:minor": "npm run version:minor && npm run push:tags",
+    "release:major": "npm run version:major && npm run push:tags",
+    "release:alpha": "npm run prerelease:alpha && npm run push:tags",
+    "release:beta": "npm run prerelease:beta && npm run push:tags",
+    "release:rc": "npm run prerelease:rc && npm run push:tags",
+    
+    "push:tags": "git push --follow-tags",
+    "changelog": "node scripts/generate-changelog.js",
+    
     "showcase": "cd showcase && npm run dev",
     "showcase:install": "cd showcase && npm install",
     "showcase:build": "cd showcase && npm run build"

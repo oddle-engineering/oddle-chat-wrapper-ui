@@ -17,6 +17,43 @@ A reusable, lightweight chat interface component built with pure CSS and React. 
 
 ## Installation
 
+### Latest Stable Version
+```bash
+npm install @oddle/chat-wrapper-ui@latest
+```
+
+### Specific Version
+```bash
+npm install @oddle/chat-wrapper-ui@1.0.8
+```
+
+### Beta Releases
+```bash
+npm install @oddle/chat-wrapper-ui@beta
+```
+
+## Version Support
+
+This package follows [Semantic Versioning](https://semver.org/). See [VERSIONING.md](./VERSIONING.md) for detailed versioning strategy.
+
+- **Current Version**: 1.0.8
+- **Stability**: Stable
+- **Support**: Active development
+
+### Update Strategy
+```bash
+# Recommended: Pin to specific minor version for stability
+npm install @oddle/chat-wrapper-ui@^1.0.0
+
+# Latest features (more frequent updates)
+npm install @oddle/chat-wrapper-ui@latest
+
+# For testing new features
+npm install @oddle/chat-wrapper-ui@beta
+```
+
+## Quick Start
+
 ```bash
 npm install @oddle/chat-wrapper-ui
 ```

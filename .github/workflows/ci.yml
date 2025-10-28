@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build package
+        run: npm run build
+
+      - name: Check bundle size
+        run: |
+          echo "Checking bundle size..."
+          ls -la dist/
+          
+  validate-version:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if version was bumped
+        run: |
+          # Get the version from package.json in main branch
+          git fetch origin main
+          MAIN_VERSION=$(git show origin/main:package.json | grep '"version"' | sed 's/.*"version": "\(.*\)".*/\1/')
+          CURRENT_VERSION=$(grep '"version"' package.json | sed 's/.*"version": "\(.*\)".*/\1/')
+          
+          echo "Main branch version: $MAIN_VERSION"
+          echo "Current version: $CURRENT_VERSION"
+          
+          if [ "$MAIN_VERSION" = "$CURRENT_VERSION" ]; then
+            echo "❌ Version not updated. Please bump version before merging."
+            echo "Run one of these commands:"
+            echo "  npm run version:patch  # For bug fixes"
+            echo "  npm run version:minor  # For new features" 
+            echo "  npm run version:major  # For breaking changes"
+            exit 1
+          else
+            echo "✅ Version updated from $MAIN_VERSION to $CURRENT_VERSION"
+          fi
