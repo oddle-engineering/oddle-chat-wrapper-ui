@@ -16,7 +16,7 @@ import { Loader } from "./Loader";
 import { InlineLoader } from "./InlineLoader";
 import { DevSettings } from "./DevSettings";
 import { CopyIcon } from "./CopyIcon";
-import { BusinessAgentClient } from "../utils/BusinessAgentClient";
+import { WebSocketChatClient, SystemEvent, SystemEventType } from "../client";
 import { sanitizeMessage } from "../utils/security";
 import { fetchThreadMessages } from "../utils/threadApi";
 import "../styles/chat-wrapper.css";
@@ -59,7 +59,7 @@ const MessageComponent = memo(
         setCopied(true);
         setTimeout(() => setCopied(false), 2000); // Hide "copied" message after 2 seconds
       } catch (err) {
-        console.error('Failed to copy message:', err);
+        console.error("Failed to copy message:", err);
       }
     }, [message.content]);
 
@@ -74,8 +74,12 @@ const MessageComponent = memo(
             ? "tooling"
             : message.role
         }`}
-        onMouseEnter={() => message.role === "assistant" && setShowCopyButton(true)}
-        onMouseLeave={() => message.role === "assistant" && setShowCopyButton(false)}
+        onMouseEnter={() =>
+          message.role === "assistant" && setShowCopyButton(true)
+        }
+        onMouseLeave={() =>
+          message.role === "assistant" && setShowCopyButton(false)
+        }
       >
         {message.role === "reasoning" ? (
           /* Reasoning message - no content wrapper */
@@ -793,13 +797,12 @@ function ChatWrapper({
   }, []);
 
   const httpApiUrl = useMemo(() => getHttpUrl(apiUrl), [apiUrl, getHttpUrl]);
-  // BusinessAgentClient state
-  const [agentClient, setAgentClient] = useState<BusinessAgentClient | null>(
+  // WebSocketChatClient state
+  const [agentClient, setAgentClient] = useState<WebSocketChatClient | null>(
     null
   );
   const [isConnected, setIsConnected] = useState(false);
-  const [sessionId, setSessionId] = useState<string>("");
-  const agentClientRef = useRef<BusinessAgentClient | null>(null);
+  const agentClientRef = useRef<WebSocketChatClient | null>(null);
 
   // Core chat state
   const [messages, setMessages] = useState<Message[]>(initialMessages);
@@ -1043,13 +1046,12 @@ function ChatWrapper({
     [addMessage, finalizeCurrentStreamingMessage]
   );
 
-  // BusinessAgentClient connection management
+  // WebSocketChatClient connection management
   const connectAgentClient = useCallback(async () => {
     try {
-      const client = new BusinessAgentClient();
+      const client = new WebSocketChatClient();
       agentClientRef.current = client;
       setAgentClient(client);
-      setSessionId(client.getSessionId());
 
       // Use contextHelpers from props or default to empty object
       const contextHelpersToUse: ContextHelpers = contextHelpers || {};
@@ -1078,17 +1080,27 @@ function ChatWrapper({
             setStreamingContent(sanitizedChar);
           }
         },
-        onSystemMessage: (message: string) => {
-          // Handle different types of system messages
-          if (message.includes("Chat completed")) {
-            handleChatFinished();
-          } else if (message.includes("Chat error")) {
-            const errorMatch = message.match(/Chat error: (.+)/);
-            if (errorMatch) {
-              handleChatError(errorMatch[1]);
-            }
+        onSystemEvent: (event: SystemEvent) => {
+          // Handle different types of system events with proper typing
+          switch (event.type) {
+            case SystemEventType.CHAT_COMPLETED:
+              handleChatFinished();
+              break;
+            case SystemEventType.CHAT_ERROR:
+              if (event.data?.error) {
+                handleChatError(event.data.error);
+              }
+              break;
+            case SystemEventType.CONNECTION_LOST:
+              // Handle connection lost if needed
+              break;
+            case SystemEventType.CONNECTION_RESTORED:
+              // Handle connection restored if needed
+              break;
+            default:
+              // Handle unknown events
+              break;
           }
-          // Note: Reasoning updates are now handled by onReasoningUpdate callback
         },
         onReasoningUpdate: (
           isThinking: boolean,
@@ -1292,9 +1304,9 @@ function ChatWrapper({
       });
 
       setIsConnected(true);
-      console.log("BusinessAgentClient connected");
+      console.log("WebSocketChatClient connected");
     } catch (error) {
-      console.error("Error connecting BusinessAgentClient:", error);
+      console.error("Error connecting WebSocketChatClient:", error);
       setIsConnected(false);
     }
   }, [
@@ -1316,7 +1328,6 @@ function ChatWrapper({
     }
     setAgentClient(null);
     setIsConnected(false);
-    setSessionId("");
   }, []);
 
   const resetToolHandling = useCallback(() => {
@@ -1361,20 +1372,10 @@ function ChatWrapper({
     }
   }, [streamingStatus, config]);
 
-  // DEBUG: Track isHandlingTool state changes
-  useEffect(() => {
-    console.log("🔍 DEBUG: isHandlingTool state changed:", isHandlingTool);
-  }, [isHandlingTool]);
-
-  // DEBUG: Track isHandlingReasoning state changes
-  useEffect(() => {
-    console.log("💭 DEBUG: isHandlingReasoning state changed:");
-  }, []);
-
-  // BusinessAgentClient connection management
+  // WebSocketChatClient connection management
   useEffect(() => {
     // Auto-connect on component mount
-    console.log("Connecting BusinessAgentClient...");
+    console.log("Connecting WebSocketChatClient...");
     connectAgentClient();
 
     // Cleanup on unmount
@@ -1475,7 +1476,7 @@ function ChatWrapper({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, httpApiUrl]);
 
-  // Handle message submission via BusinessAgentClient
+  // Handle message submission via WebSocketChatClient
   const handleSubmit = useCallback(
     async (message: string, media?: string[]) => {
       if (!message.trim() || isStreaming || !agentClient || !isConnected)
@@ -1560,7 +1561,7 @@ function ChatWrapper({
       console.log("Files selected:", files);
 
       const newMedia: string[] = [];
-      const serverUrl = apiUrl || "http://localhost:3000";
+      const serverUrl = apiUrl;
       const folder = "chat-uploads";
 
       for (const file of files) {
@@ -1974,22 +1975,6 @@ function ChatWrapper({
           <div className="chat-wrapper__header">
             <div className="chat-wrapper__title-area">
               <h2 className="chat-wrapper__title">{config.appName}</h2>
-              <div className="chat-wrapper__connection-status">
-                <span
-                  className={`chat-wrapper__connection-indicator ${
-                    isConnected ? "connected" : "disconnected"
-                  }`}
-                  title={
-                    isConnected
-                      ? `Connected to WebSocket${
-                          sessionId ? ` (Session: ${sessionId.slice(-8)})` : ""
-                        }`
-                      : "Disconnected from WebSocket"
-                  }
-                >
-                  {isConnected ? "🟢" : "🔴"}
-                </span>
-              </div>
             </div>
             <div className="chat-wrapper__header-controls">
               {renderSettingsButton()}

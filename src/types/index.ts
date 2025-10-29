@@ -148,17 +148,6 @@ export interface ContextHelpers {
   [key: string]: any;
 }
 
-export interface BusinessAgentClientProps {
-  apiUrl?: string;
-  userId?: string;
-  toolSchemas?: any[];
-  clientTools?: Record<string, Function>;
-  contextHelpers: ContextHelpers;
-  onSetMessage?: (char: string) => void;
-  onSystemMessage?: (message: string) => void;
-  onBusinessDataUpdate?: (data: any) => void;
-  onReasoningUpdate?: (isThinking: boolean, content: string, toolCallRequest?: ToolCallRequest) => void;
-}
 
 export interface ToolCallRequest {
   toolName: string;
@@ -167,8 +156,7 @@ export interface ToolCallRequest {
 }
 
 export interface WebSocketMessage {
-  type: string;
-  sessionId?: string;
+  type: string; // TODO: Migrate to InboundMessageType for type safety
   content?: string;
   data?: any;
   event?: string;
