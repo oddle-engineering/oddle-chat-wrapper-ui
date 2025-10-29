@@ -21,7 +21,6 @@ export {
   PromptInputModelSelectItem,
   PromptInputModelSelectValue
 } from './components/PromptInput';
-export { useChatConnection } from './hooks/useChatConnection';
 export {
   fetchUserThreads,
   fetchThreadByConvUuid,

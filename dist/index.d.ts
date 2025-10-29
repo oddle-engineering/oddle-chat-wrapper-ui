@@ -322,12 +322,4 @@ export declare interface ToolResult {
     [key: string]: any;
 }
 
-export declare function useChatConnection(apiEndpoint: string, apiKey?: string): {
-    messages: Message[];
-    isLoading: boolean;
-    error: Error | null;
-    sendMessage: (content: string) => Promise<void>;
-    clearMessages: () => void;
-};
-
 export { }
