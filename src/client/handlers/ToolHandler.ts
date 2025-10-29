@@ -1,19 +1,20 @@
 import { ToolCallRequest } from '../../types';
 import { ChatEventHandlers } from '../types';
 import { MessageFactory } from '../utils/messageFactory';
+import { ToolCallFactory } from '../utils/toolCallFactory';
+import { BaseHandler } from './BaseHandler';
 
-export class ToolHandler {
+export class ToolHandler extends BaseHandler {
   private readonly processedToolCalls = new Set<string>();
   private clientTools: Record<string, Function> = {};
-  private onReasoningUpdate?: ChatEventHandlers['onReasoningUpdate'];
   private sendMessage?: (data: string) => void;
 
   constructor(
     clientTools: Record<string, Function> = {},
     onReasoningUpdate?: ChatEventHandlers['onReasoningUpdate']
   ) {
+    super({ onReasoningUpdate });
     this.clientTools = clientTools;
-    this.onReasoningUpdate = onReasoningUpdate;
   }
 
   async handleToolCallRequest(request: ToolCallRequest): Promise<void> {
@@ -25,15 +26,15 @@ export class ToolHandler {
     }
     
     this.processedToolCalls.add(callId);
-    this.onReasoningUpdate?.(true, `🔧 Handling: ${toolName}`, request);
+    this.getHandler('onReasoningUpdate')?.(true, `🔧 Handling: ${toolName}`, request);
 
     try {
       const result = await this.executeToolFunction(toolName, parameters);
       this.sendToolResponse(callId, result);
-      this.onReasoningUpdate?.(false, `✅ Completed: ${toolName}`, request);
+      this.getHandler('onReasoningUpdate')?.(false, `✅ Completed: ${toolName}`, request);
     } catch (error) {
       this.sendToolError(callId, error);
-      this.onReasoningUpdate?.(false, `❌ Error: ${toolName} - ${error}`, request);
+      this.getHandler('onReasoningUpdate')?.(false, `❌ Error: ${toolName} - ${error}`, request);
     }
   }
 
@@ -70,35 +71,36 @@ export class ToolHandler {
 
   handleServerToolCall(toolData: any): void {
     
+    const onReasoningUpdate = this.getHandler('onReasoningUpdate');
     if (
-      this.onReasoningUpdate &&
+      onReasoningUpdate &&
       toolData.toolName?.startsWith("lat_") &&
       toolData.toolCallId
     ) {
-      const syntheticRequest: ToolCallRequest = {
-        toolName: toolData.toolName,
-        callId: toolData.toolCallId,
-        parameters: toolData.args || {},
-      };
+      const syntheticRequest = ToolCallFactory.createLatitudeToolCall(
+        toolData.toolName,
+        toolData.toolCallId,
+        toolData.args || {}
+      );
       
-      this.onReasoningUpdate(true, `🔧 Handling: ${toolData.toolName}`, syntheticRequest);
+      onReasoningUpdate(true, `🔧 Handling: ${toolData.toolName}`, syntheticRequest);
     }
   }
 
   handleServerToolResult(toolData: any): void {
     
+    const onReasoningUpdate = this.getHandler('onReasoningUpdate');
     if (
-      this.onReasoningUpdate &&
+      onReasoningUpdate &&
       toolData.toolName?.startsWith("lat_") &&
       toolData.toolCallId
     ) {
-      const syntheticRequest: ToolCallRequest = {
-        toolName: toolData.toolName,
-        callId: toolData.toolCallId,
-        parameters: {},
-      };
+      const syntheticRequest = ToolCallFactory.createLatitudeToolCall(
+        toolData.toolName,
+        toolData.toolCallId
+      );
       
-      this.onReasoningUpdate(
+      onReasoningUpdate(
         false,
         `✅ Completed: ${toolData.toolName}`,
         syntheticRequest
@@ -119,6 +121,6 @@ export class ToolHandler {
   }
 
   setReasoningUpdateHandler(handler: ChatEventHandlers['onReasoningUpdate']): void {
-    this.onReasoningUpdate = handler;
+    this.updateEventHandlers({ onReasoningUpdate: handler });
   }
 }

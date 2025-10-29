@@ -1,13 +1,17 @@
-import { ToolCallRequest } from '../../types';
 import { ChatEventHandlers } from '../types';
+import { ToolCallFactory } from '../utils/toolCallFactory';
+import { BaseHandler } from './BaseHandler';
 
-export class ReasoningHandler {
+export class ReasoningHandler extends BaseHandler {
   private readonly reasoningStartTimes = new Map<string, number>();
   private readonly reasoningContent = new Map<string, string>();
-  private onReasoningUpdate?: ChatEventHandlers['onReasoningUpdate'];
 
   constructor(onReasoningUpdate?: ChatEventHandlers['onReasoningUpdate']) {
-    this.onReasoningUpdate = onReasoningUpdate;
+    super({ onReasoningUpdate });
+  }
+
+  protected onHandlersUpdated(_handlers: Partial<ChatEventHandlers>): void {
+    // No additional logic needed for reasoning handler
   }
 
   handleReasoningStart(reasoningData: any): void {
@@ -19,20 +23,20 @@ export class ReasoningHandler {
 
   handleReasoningDelta(reasoningData: any): void {
     
-    if (this.onReasoningUpdate && reasoningData.text) {
+    if (this.getHandler('onReasoningUpdate') && reasoningData.text) {
       const reasoningId = reasoningData.id || "reasoning";
       const existingContent = this.reasoningContent.get(reasoningId) || "";
       const newContent = existingContent + reasoningData.text;
       
       this.reasoningContent.set(reasoningId, newContent);
       
-      const syntheticRequest: ToolCallRequest = {
-        toolName: "reasoning",
-        callId: reasoningId,
-        parameters: { phase: "thinking", text: newContent },
-      };
+      const syntheticRequest = ToolCallFactory.createReasoningCall(
+        reasoningId,
+        'thinking',
+        { text: newContent }
+      );
       
-      this.onReasoningUpdate(true, `🧠 ${newContent}`, syntheticRequest);
+      this.getHandler('onReasoningUpdate')?.(true, `🧠 ${newContent}`, syntheticRequest);
     }
   }
 
@@ -49,27 +53,24 @@ export class ReasoningHandler {
       this.reasoningStartTimes.delete(reasoningId);
     }
 
-    if (this.onReasoningUpdate) {
-      const syntheticRequest: ToolCallRequest = {
-        toolName: "reasoning",
-        callId: reasoningId,
-        parameters: {
-          phase: "end",
-          duration: durationText,
-          fullContent: accumulatedContent,
-        },
-      };
+    const onReasoningUpdate = this.getHandler('onReasoningUpdate');
+    if (onReasoningUpdate) {
+      const syntheticRequest = ToolCallFactory.createReasoningCall(
+        reasoningId,
+        'end',
+        { duration: durationText, fullContent: accumulatedContent }
+      );
       
       const contentToShow = accumulatedContent || "Thought";
       const finalContent = `🧠 ${contentToShow}${durationText}`;
       
-      this.onReasoningUpdate(false, finalContent, syntheticRequest);
+      onReasoningUpdate(false, finalContent, syntheticRequest);
     }
     
     this.reasoningContent.delete(reasoningId);
   }
 
   setReasoningUpdateHandler(handler: ChatEventHandlers['onReasoningUpdate']): void {
-    this.onReasoningUpdate = handler;
+    this.updateEventHandlers({ onReasoningUpdate: handler });
   }
 }

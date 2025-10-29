@@ -9,6 +9,7 @@ import { ReasoningHandler } from './ReasoningHandler';
 import { ToolHandler } from './ToolHandler';
 import { SystemEventFactory } from '../utils/eventFactory';
 import { MessageFactory } from '../utils/messageFactory';
+import { ToolCallFactory } from '../utils/toolCallFactory';
 
 export class MessageHandler {
   private reasoningHandler: ReasoningHandler;
@@ -148,11 +149,10 @@ export class MessageHandler {
       const toolResultData = data.data;
       
       if (toolResultData.toolCallId && toolResultData.toolName) {
-        const syntheticRequest: ToolCallRequest = {
-          toolName: toolResultData.toolName,
-          callId: toolResultData.toolCallId,
-          parameters: {},
-        };
+        const syntheticRequest = ToolCallFactory.createServerToolCall(
+          toolResultData.toolName,
+          toolResultData.toolCallId
+        );
         
         this.handlers.onReasoningUpdate(
           false,
@@ -216,9 +216,8 @@ export class MessageHandler {
   updateEventHandlers(handlers: Partial<ChatEventHandlers>): void {
     Object.assign(this.handlers, handlers);
     
-    if (handlers.onReasoningUpdate) {
-      this.reasoningHandler.setReasoningUpdateHandler(handlers.onReasoningUpdate);
-      this.toolHandler.setReasoningUpdateHandler(handlers.onReasoningUpdate);
-    }
+    // Update all sub-handlers
+    this.reasoningHandler.updateEventHandlers(handlers);
+    this.toolHandler.updateEventHandlers(handlers);
   }
 }

@@ -56,43 +56,58 @@ export class WebSocketManager {
   ): void {
     if (!this.ws) return;
 
-    this.ws.onopen = () => {
+    this.ws.onopen = () => this.handleConnectionOpened(resolve);
+    this.ws.onerror = (error) => this.handleConnectionError(error, resolve, reject);
+    this.ws.onmessage = (event) => this.onMessage?.(event);
+    this.ws.onclose = (event) => this.handleConnectionClosed(event);
+  }
+
+  private handleConnectionOpened(resolve?: (value?: any) => void): void {
+    this.updateConnectionState(true, false);
+    this.startHeartbeat();
+    this.onOpen?.();
+    resolve?.();
+  }
+
+  private handleConnectionError(
+    error: Event,
+    resolve?: (value?: any) => void,
+    reject?: (reason?: any) => void
+  ): void {
+    this.onError?.(error);
+
+    if (error instanceof Event && resolve) {
       this.connectionState.setConnected(true);
-      this.connectionState.setReconnecting(false);
-      this.connectionState.resetReconnectAttempts();
-      this.connectionState.updateReconnectDelay(this.config.reconnectDelay);
+      resolve();
+    } else {
+      reject?.(error);
+    }
+  }
 
-      this.startHeartbeat();
-      this.onOpen?.();
-      resolve?.();
-    };
+  private handleConnectionClosed(event: CloseEvent): void {
+    this.processConnectionClosure(event);
+    this.onClose?.(event);
 
-    this.ws.onerror = (error) => {
-      this.onError?.(error);
+    if (this.shouldReconnectAfterClose(event.code)) {
+      this.attemptReconnect();
+    }
+  }
 
-      if (error instanceof Event && resolve) {
-        this.connectionState.setConnected(true);
-        resolve();
-      } else {
-        reject?.(error);
-      }
-    };
+  private updateConnectionState(connected: boolean, reconnecting: boolean): void {
+    this.connectionState.setConnected(connected);
+    this.connectionState.setReconnecting(reconnecting);
+    this.connectionState.resetReconnectAttempts();
+    this.connectionState.updateReconnectDelay(this.config.reconnectDelay);
+  }
 
-    this.ws.onmessage = (event) => {
-      this.onMessage?.(event);
-    };
+  private processConnectionClosure(_event?: CloseEvent): void {
+    this.connectionState.setConnected(false);
+    this.stopHeartbeat();
+  }
 
-    this.ws.onclose = (event) => {
-      this.connectionState.setConnected(false);
-      this.stopHeartbeat();
-
-      this.onClose?.(event);
-
-      const { NORMAL, GOING_AWAY } = WEBSOCKET_CLOSE_CODES;
-      if (event.code !== NORMAL && event.code !== GOING_AWAY) {
-        this.attemptReconnect();
-      }
-    };
+  private shouldReconnectAfterClose(closeCode: number): boolean {
+    const { NORMAL, GOING_AWAY } = WEBSOCKET_CLOSE_CODES;
+    return closeCode !== NORMAL && closeCode !== GOING_AWAY;
   }
 
   private handleVisibilityChange(): void {
@@ -155,50 +170,45 @@ export class WebSocketManager {
       this.ws = new WebSocket(wsUrl);
       this.setupReconnectHandlers();
     } catch (error) {
-      this.connectionState.setReconnecting(false);
-      setTimeout(
-        () => this.attemptReconnect(),
-        this.connectionState.reconnectDelay
-      );
+      this.scheduleReconnectAfterError();
     }
   }
 
   private setupReconnectHandlers(): void {
     if (!this.ws) return;
 
-    this.ws.onopen = () => {
-      this.connectionState.setConnected(true);
-      this.connectionState.setReconnecting(false);
-      this.connectionState.resetReconnectAttempts();
-      this.connectionState.updateReconnectDelay(this.config.reconnectDelay);
+    this.ws.onopen = () => this.handleReconnectionOpened();
+    this.ws.onerror = () => this.handleReconnectionError();
+    this.ws.onmessage = (event) => this.onMessage?.(event);
+    this.ws.onclose = (event) => this.handleReconnectionClosed(event);
+  }
 
-      this.startHeartbeat();
-      this.onSystemEvent?.(SystemEventFactory.connectionRestored());
-      this.onOpen?.();
-    };
+  private handleReconnectionOpened(): void {
+    this.updateConnectionState(true, false);
+    this.startHeartbeat();
+    this.onSystemEvent?.(SystemEventFactory.connectionRestored());
+    this.onOpen?.();
+  }
 
-    this.ws.onerror = () => {
-      this.connectionState.setReconnecting(false);
-      setTimeout(
-        () => this.attemptReconnect(),
-        this.connectionState.reconnectDelay
-      );
-    };
+  private handleReconnectionError(): void {
+    this.scheduleReconnectAfterError();
+  }
 
-    this.ws.onclose = (event) => {
-      this.connectionState.setConnected(false);
-      this.connectionState.setReconnecting(false);
-      this.stopHeartbeat();
+  private scheduleReconnectAfterError(): void {
+    this.connectionState.setReconnecting(false);
+    setTimeout(
+      () => this.attemptReconnect(),
+      this.connectionState.reconnectDelay
+    );
+  }
 
-      const { NORMAL, GOING_AWAY } = WEBSOCKET_CLOSE_CODES;
-      if (event.code !== NORMAL && event.code !== GOING_AWAY) {
-        this.attemptReconnect();
-      }
-    };
+  private handleReconnectionClosed(event: CloseEvent): void {
+    this.processConnectionClosure(event);
+    this.connectionState.setReconnecting(false);
 
-    this.ws.onmessage = (event) => {
-      this.onMessage?.(event);
-    };
+    if (this.shouldReconnectAfterClose(event.code)) {
+      this.attemptReconnect();
+    }
   }
 
   private startHeartbeat(): void {

@@ -134,7 +134,16 @@ export class MessageFactory {
   }
 
   /**
-   * Helper method to create and serialize a message in one call
+   * Generic helper to create and serialize any message in one call
+   */
+  private static createAndSerialize<T extends OutboundMessage>(
+    creator: () => T
+  ): string {
+    return this.serialize(creator());
+  }
+
+  /**
+   * Helper methods to create and serialize messages in one call
    */
   static serializeChatMessage(params: {
     content: string;
@@ -145,40 +154,50 @@ export class MessageFactory {
     agentPromptPath?: string;
     saveToDatabase?: boolean;
   }): string {
-    return this.serialize(this.createChatMessage(params));
+    return this.createAndSerialize(() => this.createChatMessage(params));
   }
 
   static serializeConfigureTools(
     toolSchemas: any[],
     contextHelpers: ContextHelpers
   ): string {
-    return this.serialize(this.createConfigureToolsMessage(toolSchemas, contextHelpers));
+    return this.createAndSerialize(() => 
+      this.createConfigureToolsMessage(toolSchemas, contextHelpers)
+    );
   }
 
   static serializeUpdateTools(toolSchemas: any[]): string {
-    return this.serialize(this.createUpdateToolsMessage(toolSchemas));
+    return this.createAndSerialize(() => this.createUpdateToolsMessage(toolSchemas));
   }
 
   static serializeUpdateContextHelpers(contextHelpers: ContextHelpers): string {
-    return this.serialize(this.createUpdateContextHelpersMessage(contextHelpers));
+    return this.createAndSerialize(() => 
+      this.createUpdateContextHelpersMessage(contextHelpers)
+    );
   }
 
   static serializeToolCallSuccess(callId: string, result: any): string {
-    return this.serialize(this.createToolCallSuccessResponse(callId, result));
+    return this.createAndSerialize(() => 
+      this.createToolCallSuccessResponse(callId, result)
+    );
   }
 
   static serializeToolCallError(callId: string, error: string): string {
-    return this.serialize(this.createToolCallErrorResponse(callId, error));
+    return this.createAndSerialize(() => 
+      this.createToolCallErrorResponse(callId, error)
+    );
   }
 
   static serializeHeartbeatPing(): string {
-    return this.serialize(this.createHeartbeatPing());
+    return this.createAndSerialize(() => this.createHeartbeatPing());
   }
 
   static serializeHeartbeatPong(
     originalTimestamp?: string,
     pingTime?: string | number
   ): string {
-    return this.serialize(this.createHeartbeatPong(originalTimestamp, pingTime));
+    return this.createAndSerialize(() => 
+      this.createHeartbeatPong(originalTimestamp, pingTime)
+    );
   }
 }
