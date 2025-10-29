@@ -1,6 +1,7 @@
 import { ChatEventHandlers } from '../types';
 import { ToolCallFactory } from '../utils/toolCallFactory';
 import { BaseHandler } from './BaseHandler';
+import { REASONING_CONSTANTS } from '../constants/reasoning';
 
 export class ReasoningHandler extends BaseHandler {
   private readonly reasoningStartTimes = new Map<string, number>();
@@ -14,6 +15,25 @@ export class ReasoningHandler extends BaseHandler {
     // No additional logic needed for reasoning handler
   }
 
+  private triggerReasoningUpdate(
+    isStreaming: boolean,
+    content: string,
+    reasoningId: string,
+    type: 'thinking' | 'end',
+    metadata?: Record<string, any>
+  ): void {
+    const handler = this.getHandler('onReasoningUpdate');
+    if (!handler) return;
+
+    const syntheticRequest = ToolCallFactory.createReasoningCall(
+      reasoningId,
+      type,
+      metadata || {}
+    );
+
+    handler(isStreaming, content, syntheticRequest);
+  }
+
   handleReasoningStart(reasoningData: any): void {
     const reasoningId = reasoningData.id || "reasoning";
     
@@ -22,26 +42,25 @@ export class ReasoningHandler extends BaseHandler {
   }
 
   handleReasoningDelta(reasoningData: any): void {
+    if (!reasoningData.text) return;
+
+    const reasoningId = reasoningData.id || "reasoning";
+    const existingContent = this.reasoningContent.get(reasoningId) || "";
+    const newContent = existingContent + reasoningData.text;
     
-    if (this.getHandler('onReasoningUpdate') && reasoningData.text) {
-      const reasoningId = reasoningData.id || "reasoning";
-      const existingContent = this.reasoningContent.get(reasoningId) || "";
-      const newContent = existingContent + reasoningData.text;
-      
-      this.reasoningContent.set(reasoningId, newContent);
-      
-      const syntheticRequest = ToolCallFactory.createReasoningCall(
-        reasoningId,
-        'thinking',
-        { text: newContent }
-      );
-      
-      this.getHandler('onReasoningUpdate')?.(true, `🧠 ${newContent}`, syntheticRequest);
-    }
+    this.reasoningContent.set(reasoningId, newContent);
+    
+    const formattedContent = `${REASONING_CONSTANTS.THINKING_PREFIX} ${newContent}`;
+    this.triggerReasoningUpdate(
+      true,
+      formattedContent,
+      reasoningId,
+      'thinking',
+      { text: newContent }
+    );
   }
 
   handleReasoningEnd(reasoningData: any): void {
-    
     const reasoningId = reasoningData.id || "reasoning";
     const accumulatedContent = this.reasoningContent.get(reasoningId) || "";
     const startTime = this.reasoningStartTimes.get(reasoningId);
@@ -53,19 +72,16 @@ export class ReasoningHandler extends BaseHandler {
       this.reasoningStartTimes.delete(reasoningId);
     }
 
-    const onReasoningUpdate = this.getHandler('onReasoningUpdate');
-    if (onReasoningUpdate) {
-      const syntheticRequest = ToolCallFactory.createReasoningCall(
-        reasoningId,
-        'end',
-        { duration: durationText, fullContent: accumulatedContent }
-      );
-      
-      const contentToShow = accumulatedContent || "Thought";
-      const finalContent = `🧠 ${contentToShow}${durationText}`;
-      
-      onReasoningUpdate(false, finalContent, syntheticRequest);
-    }
+    const contentToShow = accumulatedContent || "Thought";
+    const finalContent = `${REASONING_CONSTANTS.THOUGHT_PREFIX} ${contentToShow}${durationText}`;
+    
+    this.triggerReasoningUpdate(
+      false,
+      finalContent,
+      reasoningId,
+      'end',
+      { duration: durationText, fullContent: accumulatedContent }
+    );
     
     this.reasoningContent.delete(reasoningId);
   }

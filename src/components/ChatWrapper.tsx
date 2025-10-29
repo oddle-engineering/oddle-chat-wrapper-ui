@@ -19,6 +19,7 @@ import { CopyIcon } from "./CopyIcon";
 import { WebSocketChatClient, SystemEvent, SystemEventType } from "../client";
 import { sanitizeMessage } from "../utils/security";
 import { fetchThreadMessages } from "../utils/threadApi";
+import { ReasoningDetector, REASONING_CONSTANTS } from "../client/constants/reasoning";
 import "../styles/chat-wrapper.css";
 
 // Memoized Message Component to prevent unnecessary re-renders
@@ -865,12 +866,12 @@ function ChatWrapper({
         isStreaming?: boolean
       ): "processing" | "completed" | "error" => {
         if (isStreaming === false) {
-          if (content.includes("❌")) return "error";
+          if (ReasoningDetector.isErrorMessage(content)) return "error";
           return "completed";
         }
-        if (content.includes("✅ Completed:") || content.includes("✅"))
+        if (ReasoningDetector.isCompletedMessage(content))
           return "completed";
-        if (content.includes("❌")) return "error";
+        if (ReasoningDetector.isErrorMessage(content)) return "error";
         return "processing";
       },
     []
@@ -879,9 +880,7 @@ function ChatWrapper({
   const getReasoningDuration = useMemo(
     () =>
       (content: string): string | undefined => {
-        // Extract duration from content like "🧠 [content] for 2.3 seconds"
-        const match = content.match(/for ([\d.]+) seconds/);
-        return match ? ` for ${match[1]} seconds` : undefined;
+        return ReasoningDetector.extractDuration(content);
       },
     []
   );
@@ -889,14 +888,7 @@ function ChatWrapper({
   const getReasoningContentOnly = useMemo(
     () =>
       (content: string): string => {
-        // Remove the brain emoji and duration, keep only the reasoning text
-        let cleanContent = content.replace(/^🧠\s*/, ""); // Remove brain emoji at start
-        cleanContent = cleanContent.replace(/\s*for [\d.]+\s*seconds$/, ""); // Remove duration at end
-
-        // Replace content between ** with placeholder text
-        cleanContent = cleanContent.replace(/\*\*(.*?)\*\*/g, "");
-
-        return cleanContent;
+        return ReasoningDetector.cleanReasoningContent(content);
       },
     []
   );
@@ -906,29 +898,19 @@ function ChatWrapper({
       (content: string, isStreaming?: boolean): string => {
         console.log("🔍 getReasoningTitle:", { content, isStreaming });
 
-        if (isStreaming === false) {
-          if (content.includes("❌")) return "Error";
-          if (
-            content.includes("🧠") &&
-            content.includes("for") &&
-            content.includes("seconds")
-          ) {
+        const messageType = ReasoningDetector.getMessageType(content, isStreaming);
+        
+        switch (messageType) {
+          case REASONING_CONSTANTS.MESSAGE_TYPES.ERROR:
+            return "Error";
+          case REASONING_CONSTANTS.MESSAGE_TYPES.COMPLETED:
+            return "Completed";
+          case REASONING_CONSTANTS.MESSAGE_TYPES.THOUGHT:
             return "Thought";
-          }
-          if (content.includes("🧠 Thought")) {
-            return "Thought";
-          }
-          return "Thought";
+          case REASONING_CONSTANTS.MESSAGE_TYPES.THINKING:
+          default:
+            return "Thinking...";
         }
-
-        // For streaming content
-        if (content.includes("✅ Completed:") || content.includes("✅"))
-          return "Completed";
-        if (content.includes("❌")) return "Error";
-        if (content.includes("🔧 Handling:")) return "Thinking...";
-        if (content.includes("🧠") && !content.includes("AI is thinking"))
-          return "Thinking...";
-        return "Thinking...";
       },
     []
   );
@@ -1122,23 +1104,23 @@ function ChatWrapper({
             return;
           }
 
-          // Check if this is a reasoning event (brain icon)
+          // Check if this is a reasoning event using proper detection
           const isReasoningStarted = false; // No longer using "AI is thinking..." start message
           const isReasoningThinking =
-            content.includes("🧠") &&
+            ReasoningDetector.isThinkingMessage(content) &&
             !content.includes("for") &&
             !content.includes("seconds");
           const isReasoningCompleted =
-            content.includes("🧠") &&
+            ReasoningDetector.isThinkingMessage(content) &&
             content.includes("for") &&
             content.includes("seconds");
 
           // Check if this is a tools-started event (processing)
-          const isToolStarted = content.includes("🔧 Handling:");
+          const isToolStarted = ReasoningDetector.isHandlingMessage(content);
           // Check if this is a tool-completed event (completed)
-          const isToolCompleted = content.includes("✅ Completed:");
+          const isToolCompleted = ReasoningDetector.isCompletedMessage(content);
           // Check if this is an error event
-          const isToolError = content.includes("❌ Error:");
+          const isToolError = ReasoningDetector.isErrorMessage(content);
 
           console.log("🔍 Debug reasoning conditions:", {
             isReasoningStarted,
