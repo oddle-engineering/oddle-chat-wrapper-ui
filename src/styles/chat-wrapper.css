@@ -2847,10 +2847,23 @@
   position: relative;
 }
 
+.chat-wrapper__assistant-content-wrapper {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  gap: 8px;
+}
+
+.chat-wrapper__assistant-content-wrapper .chat-wrapper__markdown-content {
+  flex: 1;
+}
+
+.chat-wrapper__copy-button-container {
+  position: relative;
+  flex-shrink: 0;
+}
+
 .chat-wrapper__copy-button {
-  position: absolute;
-  top: 8px;
-  right: 8px;
   background: rgba(255, 255, 255, 0.95);
   border: 1px solid #e2e8f0;
   border-radius: 6px;
@@ -2862,8 +2875,10 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  z-index: 10;
   backdrop-filter: blur(8px);
+  width: 32px;
+  height: 32px;
+  margin-top: 4px;
 }
 
 .chat-wrapper__copy-button:hover {
@@ -2881,20 +2896,20 @@
 
 .chat-wrapper__copied-notification {
   position: absolute;
-  top: 8px;
-  right: 50px;
+  top: 0px;
+  right: 40px;
   background: rgba(255, 255, 255, 0.95);
   border: 1px solid #e2e8f0;
   color: #637381;
-  padding: 4px 8px;
+  padding: 6px 12px;
   border-radius: 6px;
   font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
   animation: fadeInOut 2s ease-in-out;
-  z-index: 20;
+  z-index: 30;
   backdrop-filter: blur(8px);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 @keyframes fadeInOut {

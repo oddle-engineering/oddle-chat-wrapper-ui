@@ -16,6 +16,7 @@ import { Loader } from "./Loader";
 import { InlineLoader } from "./InlineLoader";
 import { DevSettings } from "./DevSettings";
 import { CopyIcon } from "./CopyIcon";
+import { MessagesList } from "./MessagesList";
 import { WebSocketChatClient, SystemEvent, SystemEventType } from "../client";
 import { sanitizeMessage } from "../utils/security";
 import { fetchThreadMessages } from "../utils/threadApi";
@@ -1112,7 +1113,6 @@ function ChatWrapper({
           }
 
           // Check if this is a reasoning event using proper detection
-          const isReasoningStarted = false; // No longer using "AI is thinking..." start message
           const isReasoningThinking =
             ReasoningDetector.isThinkingMessage(content) &&
             !content.includes("for") &&
@@ -1980,52 +1980,26 @@ function ChatWrapper({
               }`}
             >
               {/* Messages Area */}
-              <div className="chat-wrapper__messages">
-                {/* Show inline loader when loading conversation */}
-                {isLoadingConversation && messages.length === 0 && (
+              {isLoadingConversation && messages.length === 0 ? (
+                <div className="chat-wrapper__messages">
                   <InlineLoader fullHeight={true} />
-                )}
-
-                {messages.map((message) => (
-                  <MessageComponent
-                    key={message.id}
-                    message={message}
-                    getReasoningTitle={getReasoningTitle}
-                    getReasoningStatus={getReasoningStatus}
-                    getReasoningDuration={getReasoningDuration}
-                    getReasoningContentOnly={getReasoningContentOnly}
-                    getToolingTitle={getToolingTitle}
-                    getToolingStatus={getToolingStatus}
-                    clientTools={clientTools || []}
-                    currentAssistantMessageIdRef={currentAssistantMessageIdRef}
-                  />
-                ))}
-
-                {/* Streaming message component */}
-                {currentAssistantMessageIdRef.current && streamingContent && (
-                  <StreamingMessage
-                    content={streamingContent}
-                    messageId={currentAssistantMessageIdRef.current}
-                  />
-                )}
-
-                {/* Thinking bubble for assistant streaming */}
-                {isThinking && !isHandlingTool && (
-                  <div className="chat-wrapper__message chat-wrapper__message--assistant">
-                    <div className="chat-wrapper__thinking-bubble">
-                      <div className="chat-wrapper__thinking-content">
-                        <div className="chat-wrapper__thinking-dots">
-                          <span></span>
-                          <span></span>
-                          <span></span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div ref={messagesEndRef} />
-              </div>
+                </div>
+              ) : (
+                <MessagesList
+                  ref={messagesEndRef}
+                  messages={messages}
+                  isThinking={isThinking}
+                  isHandlingTool={isHandlingTool}
+                  getReasoningTitle={getReasoningTitle}
+                  getReasoningStatus={getReasoningStatus}
+                  getReasoningDuration={getReasoningDuration}
+                  getReasoningContentOnly={getReasoningContentOnly}
+                  getToolingTitle={getToolingTitle}
+                  getToolingStatus={getToolingStatus}
+                  clientTools={clientTools || []}
+                  currentAssistantMessageIdRef={currentAssistantMessageIdRef}
+                />
+              )}
 
               {renderToolResults()}
 
