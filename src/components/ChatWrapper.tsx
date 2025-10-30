@@ -19,7 +19,10 @@ import { CopyIcon } from "./CopyIcon";
 import { WebSocketChatClient, SystemEvent, SystemEventType } from "../client";
 import { sanitizeMessage } from "../utils/security";
 import { fetchThreadMessages } from "../utils/threadApi";
-import { ReasoningDetector, REASONING_CONSTANTS } from "../client/constants/reasoning";
+import {
+  ReasoningDetector,
+  REASONING_CONSTANTS,
+} from "../client/constants/reasoning";
 import "../styles/chat-wrapper.css";
 
 // Memoized Message Component to prevent unnecessary re-renders
@@ -869,8 +872,7 @@ function ChatWrapper({
           if (ReasoningDetector.isErrorMessage(content)) return "error";
           return "completed";
         }
-        if (ReasoningDetector.isCompletedMessage(content))
-          return "completed";
+        if (ReasoningDetector.isCompletedMessage(content)) return "completed";
         if (ReasoningDetector.isErrorMessage(content)) return "error";
         return "processing";
       },
@@ -896,10 +898,11 @@ function ChatWrapper({
   const getReasoningTitle = useMemo(
     () =>
       (content: string, isStreaming?: boolean): string => {
-        console.log("🔍 getReasoningTitle:", { content, isStreaming });
+        const messageType = ReasoningDetector.getMessageType(
+          content,
+          isStreaming
+        );
 
-        const messageType = ReasoningDetector.getMessageType(content, isStreaming);
-        
         switch (messageType) {
           case REASONING_CONSTANTS.MESSAGE_TYPES.ERROR:
             return "Error";
@@ -919,13 +922,19 @@ function ChatWrapper({
     () =>
       (content: string, isStreaming?: boolean): string => {
         if (isStreaming === false) {
-          if (content.includes(REASONING_CONSTANTS.ERROR_MARKER)) return "Tool Error";
+          if (content.includes(REASONING_CONSTANTS.ERROR_MARKER))
+            return "Tool Error";
           return "Tool Completed";
         }
-        if (content.includes(REASONING_CONSTANTS.COMPLETED_MARKER) || content.includes("✅"))
+        if (
+          content.includes(REASONING_CONSTANTS.COMPLETED_MARKER) ||
+          content.includes("✅")
+        )
           return "Tool Completed";
-        if (content.includes(REASONING_CONSTANTS.ERROR_MARKER)) return "Tool Error";
-        if (content.includes(REASONING_CONSTANTS.HANDLING_MARKER)) return "Tool Processing...";
+        if (content.includes(REASONING_CONSTANTS.ERROR_MARKER))
+          return "Tool Error";
+        if (content.includes(REASONING_CONSTANTS.HANDLING_MARKER))
+          return "Tool Processing...";
         return "Tool Processing...";
       },
     []
@@ -938,10 +947,14 @@ function ChatWrapper({
         isStreaming?: boolean
       ): "processing" | "completed" | "error" => {
         if (isStreaming === false) {
-          if (content.includes(REASONING_CONSTANTS.ERROR_MARKER)) return "error";
+          if (content.includes(REASONING_CONSTANTS.ERROR_MARKER))
+            return "error";
           return "completed";
         }
-        if (content.includes(REASONING_CONSTANTS.COMPLETED_MARKER) || content.includes("✅"))
+        if (
+          content.includes(REASONING_CONSTANTS.COMPLETED_MARKER) ||
+          content.includes("✅")
+        )
           return "completed";
         if (content.includes(REASONING_CONSTANTS.ERROR_MARKER)) return "error";
         return "processing";
@@ -1089,18 +1102,12 @@ function ChatWrapper({
           content: string,
           toolCallRequest?: ToolCallRequest
         ) => {
-          console.log("🤔 Reasoning update:", {
-            isThinking,
-            content,
-            toolCallRequest,
-          });
           const { callId } = toolCallRequest || {};
           setIsHandlingTool(isThinking);
           setReasoningContent(content);
 
           // If no callId provided, use legacy behavior
           if (!callId) {
-            console.log("⚠️ No callId provided for reasoning update");
             return;
           }
 
@@ -1121,17 +1128,6 @@ function ChatWrapper({
           const isToolCompleted = ReasoningDetector.isCompletedMessage(content);
           // Check if this is an error event
           const isToolError = ReasoningDetector.isErrorMessage(content);
-
-          console.log("🔍 Debug reasoning conditions:", {
-            isReasoningStarted,
-            isReasoningThinking,
-            isReasoningCompleted,
-            isToolStarted,
-            isToolCompleted,
-            isToolError,
-            callId,
-            isHandlingTool,
-          });
 
           // Handle reasoning events separately from tool events
           if (isReasoningThinking || isReasoningCompleted) {
@@ -1201,7 +1197,9 @@ function ChatWrapper({
               finalizeCurrentStreamingMessage();
 
               // Extract tool name from content
-              const toolNameMatch = content.match(REASONING_CONSTANTS.PATTERNS.HANDLING_TOOL);
+              const toolNameMatch = content.match(
+                REASONING_CONSTANTS.PATTERNS.HANDLING_TOOL
+              );
               const toolName = toolNameMatch
                 ? toolNameMatch[1]
                 : "Unknown Tool";
@@ -1281,7 +1279,6 @@ function ChatWrapper({
       });
 
       setIsConnected(true);
-      console.log("WebSocketChatClient connected");
     } catch (error) {
       console.error("Error connecting WebSocketChatClient:", error);
       setIsConnected(false);
@@ -1308,8 +1305,6 @@ function ChatWrapper({
   }, []);
 
   const resetToolHandling = useCallback(() => {
-    console.log("🔍 DEBUG: resetToolHandling called! Stack trace:");
-    console.trace();
     setIsHandlingTool(false);
     shouldUpdateMessageRef.current = true; // Reset to allow message updates
   }, []);
@@ -1352,7 +1347,6 @@ function ChatWrapper({
   // WebSocketChatClient connection management
   useEffect(() => {
     // Auto-connect on component mount
-    console.log("Connecting WebSocketChatClient...");
     connectAgentClient();
 
     // Cleanup on unmount
@@ -1405,14 +1399,12 @@ function ChatWrapper({
         setConversationError(null);
 
         // Step 1: Fetch user's threads
-        console.log(`📚 Fetching threads for user: ${userId}`);
         // const threads = await fetchUserThreads(httpApiUrl, userId, {
         //   limit: 1, // Get only the first/most recent thread
         // });
         const threads: string | any[] = [];
 
         if (threads.length === 0) {
-          console.log("ℹ️ No threads found for user");
           setIsLoadingConversation(false);
           hasLoadedConversationRef.current = true;
           return;
@@ -1420,9 +1412,6 @@ function ChatWrapper({
 
         // Step 2: Use the first thread
         const firstThread = threads[0];
-        console.log(
-          `📖 Loading thread: ${firstThread.id} (${firstThread.title})`
-        );
         setCurrentThreadId(firstThread.id);
         setCurrentConvUuid(firstThread.convUuid); // Store convUuid for sending with messages
 
@@ -1431,7 +1420,6 @@ function ChatWrapper({
           httpApiUrl,
           firstThread.id
         );
-        console.log(`✅ Loaded ${loadedMessages.length} messages`);
 
         // Step 4: Set messages to state
         setMessages(loadedMessages);
@@ -1479,7 +1467,7 @@ function ChatWrapper({
           app,
           media,
           convUuid: currentConvUuid || undefined,
-          agentPromptPath: undefined
+          agentPromptPath: undefined,
         });
         setChatStatus("streaming");
       } catch (error) {
@@ -1535,7 +1523,6 @@ function ChatWrapper({
   // Handle file upload
   const handleFileUpload = useCallback(
     async (files: File[]): Promise<string[]> => {
-      console.log("Files selected:", files);
 
       const newMedia: string[] = [];
       const serverUrl = apiUrl;
@@ -1548,7 +1535,6 @@ function ChatWrapper({
           formData.append("file", file);
           formData.append("folder", folder);
 
-          console.log(`Uploading file: ${file.name} to ${serverUrl}/upload`);
 
           // Upload the file to the server
           const response = await fetch(`${serverUrl}/upload`, {
@@ -1559,7 +1545,6 @@ function ChatWrapper({
           const result = await response.json();
 
           if (response.ok) {
-            console.log("✅ Upload successful:", result);
             // Store the URL from the server response
             // For images, we can still use the URL directly
             // For other files, store metadata with the URL
@@ -1623,7 +1608,6 @@ function ChatWrapper({
         }
       }
 
-      console.log("Added media:", newMedia);
       return newMedia;
     },
     [apiUrl]
