@@ -231,15 +231,18 @@ function ChatWrapper({
         true
       );
 
-      const finalMessage: Message = {
-        id: currentAssistantMessageIdRef.current,
-        role: "assistant",
-        content: sanitizedContent,
-        timestamp: new Date(),
-        isStreaming: false,
-      };
-
-      setMessages((prev) => [...prev, finalMessage]);
+      // Update the existing streaming message to mark it as complete
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === currentAssistantMessageIdRef.current
+            ? {
+                ...msg,
+                content: sanitizedContent,
+                isStreaming: false,
+              }
+            : msg
+        )
+      );
 
       // Reset streaming state
       currentAssistantMessageIdRef.current = null;
@@ -297,14 +300,27 @@ function ChatWrapper({
         clientTools: tools,
         contextHelpers: contextHelpersToUse,
         onSetMessage: (char: string) => {
-          // Sanitize incoming character data from assistantk
+          // Sanitize incoming character data from assistant
           const sanitizedChar = sanitizeMessage(char, true);
 
           // Check if we're already streaming
           if (currentAssistantMessageIdRef.current) {
-            // Update streaming content without re-rendering messages array
+            // Update streaming content
             streamingContentRef.current += sanitizedChar;
             setStreamingContent(streamingContentRef.current);
+            
+            // Update the streaming message in the messages array
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === currentAssistantMessageIdRef.current
+                  ? {
+                      ...msg,
+                      content: streamingContentRef.current,
+                      isStreaming: true,
+                    }
+                  : msg
+              )
+            );
           } else {
             // Assistant is starting to stream - hide thinking bubble
             setIsThinking(false);
@@ -312,6 +328,17 @@ function ChatWrapper({
             currentAssistantMessageIdRef.current = newAssistantMessageId;
             streamingContentRef.current = sanitizedChar;
             setStreamingContent(sanitizedChar);
+            
+            // Create new streaming assistant message
+            const streamingMessage: Message = {
+              id: newAssistantMessageId,
+              role: "assistant",
+              content: sanitizedChar,
+              timestamp: new Date(),
+              isStreaming: true,
+            };
+            
+            setMessages((prev) => [...prev, streamingMessage]);
           }
         },
         onSystemEvent: (event: SystemEvent) => {
