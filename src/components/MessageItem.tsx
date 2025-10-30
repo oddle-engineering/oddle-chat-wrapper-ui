@@ -112,15 +112,13 @@ export const MessageItem = memo<MessageItemProps>(
     const renderCopyButton = () => (
       <>
         <div className="chat-wrapper__copy-button-container">
-          {showCopyButton && (
-            <button
-              className="chat-wrapper__copy-button"
-              onClick={handleCopy}
-              title="Copy message"
-            >
-              <CopyIcon />
-            </button>
-          )}
+          <button
+            className={`chat-wrapper__copy-button ${showCopyButton ? 'chat-wrapper__copy-button--visible' : 'chat-wrapper__copy-button--hidden'}`}
+            onClick={handleCopy}
+            title="Copy message"
+          >
+            <CopyIcon />
+          </button>
         </div>
         {copied && (
           <div className="chat-wrapper__copied-notification">Copied!</div>

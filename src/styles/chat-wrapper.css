@@ -1016,6 +1016,22 @@
   animation: modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Modal-specific input sizing adjustments */
+.chat-wrapper--modal .chat-wrapper__content--empty .chat-wrapper__input-container {
+  min-height: 120px;
+  max-height: 250px;
+}
+
+.chat-wrapper--modal .chat-wrapper__content--empty .chat-wrapper__prompt-input {
+  min-height: 100px;
+  max-height: 200px;
+}
+
+.chat-wrapper--modal .chat-wrapper__content--empty .chat-wrapper__prompt-textarea {
+  min-height: 80px !important;
+  max-height: 150px !important;
+}
+
 @keyframes modalSlideIn {
   from {
     opacity: 0;
@@ -2879,6 +2895,16 @@
   width: 32px;
   height: 32px;
   margin-top: 4px;
+}
+
+.chat-wrapper__copy-button--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.chat-wrapper__copy-button--visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .chat-wrapper__copy-button:hover {
