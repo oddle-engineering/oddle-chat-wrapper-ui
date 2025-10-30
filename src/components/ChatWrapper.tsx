@@ -1,24 +1,21 @@
-import { useState, useEffect, useRef, useCallback, memo, useMemo } from "react";
+import { useEffect, useRef, useCallback, memo, useMemo } from "react";
 import {
   ChatWrapperProps,
   Message,
-  ContextHelpers,
-  ToolCallRequest,
 } from "../types";
-import { ChatStatus } from "./PromptInput";
 import { ChatInput, ChatInputRef } from "./ChatInput";
 import { SuggestedPrompts } from "./SuggestedPrompts";
 import { InlineLoader } from "./InlineLoader";
 import { DevSettings } from "./DevSettings";
 import { MessagesList } from "./MessagesList";
-import { WebSocketChatClient, SystemEvent, SystemEventType } from "../client";
-import { sanitizeMessage } from "../utils/security";
-import { fetchThreadMessages } from "../utils/threadApi";
+import { SystemEvent, SystemEventType } from "../client";
 import { buildClasses } from "../utils/classNames";
 import {
-  ReasoningDetector,
-  REASONING_CONSTANTS,
-} from "../client/constants/reasoning";
+  useWebSocketConnection,
+  useMessageHandling,
+  useUIState,
+  useConversationLoader,
+} from "../hooks";
 import {
   ChatIcon,
   CloseIcon,
@@ -47,536 +44,108 @@ function ChatWrapper({
   }, []);
 
   const httpApiUrl = useMemo(() => getHttpUrl(apiUrl), [apiUrl, getHttpUrl]);
-  // WebSocketChatClient state
-  const [agentClient, setAgentClient] = useState<WebSocketChatClient | null>(
-    null
-  );
-  const [isConnected, setIsConnected] = useState(false);
-  const agentClientRef = useRef<WebSocketChatClient | null>(null);
 
-  // Core chat state
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [chatStatus, setChatStatus] = useState<ChatStatus>("idle");
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [currentMode, setCurrentMode] = useState(config.mode);
+  // Initialize custom hooks for state management
+  const messageHandling = useMessageHandling({ initialMessages });
+  const uiState = useUIState({ initialMode: config.mode });
 
-  // Thread and conversation state
-  const [isLoadingConversation, setIsLoadingConversation] = useState(false);
-  const [conversationError, setConversationError] = useState<string | null>(
-    null
-  );
-  const [_currentThreadId, setCurrentThreadId] = useState<string | null>(null);
-  const [currentConvUuid, setCurrentConvUuid] = useState<string | null>(null);
-
-  // Advanced state for tool results and streaming
-  const [streamingStatus, setStreamingStatus] = useState("");
-  const [isThinking, setIsThinking] = useState(false);
-  const [streamingContent, setStreamingContent] = useState("");
-
-  // Tool JSON handling state
-  const [isHandlingTool, setIsHandlingTool] = useState(false);
-
-  // Tooling handling state
-  const [, setToolingMessagesByCallId] = useState<Map<string, string>>(
-    new Map()
-  ); // Map callId -> messageId
-
-  // Reasoning handling state
-  const [, setReasoningMessagesByCallId] = useState<Map<string, string>>(
-    new Map()
-  ); // Map callId -> messageId
-
-  // Dev mode state
-  const [isDevSettingsOpen, setIsDevSettingsOpen] = useState(false);
-
-  // Refs for managing streaming
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const chatInputRef = useRef<ChatInputRef>(null);
-  const currentAssistantMessageIdRef = useRef<string | null>(null);
-  const shouldUpdateMessageRef = useRef<boolean>(true);
-  const streamingContentRef = useRef<string>("");
-  const hasLoadedConversationRef = useRef<boolean>(false);
-
-  // Utility functions
-  const generateId = useCallback(
-    () => Math.random().toString(36).substring(2) + Date.now().toString(36),
-    []
-  );
-
-  // Memoized helper functions to prevent unnecessary re-renders
-  const getReasoningStatus = useMemo(
-    () =>
-      (
-        content: string,
-        isStreaming?: boolean
-      ): "processing" | "completed" | "error" => {
-        if (isStreaming === false) {
-          if (ReasoningDetector.isErrorMessage(content)) return "error";
-          return "completed";
-        }
-        if (ReasoningDetector.isCompletedMessage(content)) return "completed";
-        if (ReasoningDetector.isErrorMessage(content)) return "error";
-        return "processing";
-      },
-    []
-  );
-
-  const getReasoningDuration = useMemo(
-    () =>
-      (content: string): string | undefined => {
-        return ReasoningDetector.extractDuration(content);
-      },
-    []
-  );
-
-  const getReasoningContentOnly = useMemo(
-    () =>
-      (content: string): string => {
-        return ReasoningDetector.cleanReasoningContent(content);
-      },
-    []
-  );
-
-  const getReasoningTitle = useMemo(
-    () =>
-      (content: string, isStreaming?: boolean): string => {
-        const messageType = ReasoningDetector.getMessageType(
-          content,
-          isStreaming
-        );
-
-        switch (messageType) {
-          case REASONING_CONSTANTS.MESSAGE_TYPES.ERROR:
-            return "Error";
-          case REASONING_CONSTANTS.MESSAGE_TYPES.COMPLETED:
-            return "Completed";
-          case REASONING_CONSTANTS.MESSAGE_TYPES.THOUGHT:
-            return REASONING_CONSTANTS.UI_TEXT.THOUGHT;
-          case REASONING_CONSTANTS.MESSAGE_TYPES.THINKING:
-          default:
-            return REASONING_CONSTANTS.UI_TEXT.THINKING_ELLIPSIS;
-        }
-      },
-    []
-  );
-
-  const getToolingTitle = useMemo(
-    () =>
-      (content: string, isStreaming?: boolean): string => {
-        if (isStreaming === false) {
-          if (content.includes(REASONING_CONSTANTS.ERROR_MARKER))
-            return "Tool Error";
-          return "Tool Completed";
-        }
-        if (
-          content.includes(REASONING_CONSTANTS.COMPLETED_MARKER) ||
-          content.includes("✅")
-        )
-          return "Tool Completed";
-        if (content.includes(REASONING_CONSTANTS.ERROR_MARKER))
-          return "Tool Error";
-        if (content.includes(REASONING_CONSTANTS.HANDLING_MARKER))
-          return "Tool Processing...";
-        return "Tool Processing...";
-      },
-    []
-  );
-
-  const getToolingStatus = useMemo(
-    () =>
-      (
-        content: string,
-        isStreaming?: boolean
-      ): "processing" | "completed" | "error" => {
-        if (isStreaming === false) {
-          if (content.includes(REASONING_CONSTANTS.ERROR_MARKER))
-            return "error";
-          return "completed";
-        }
-        if (
-          content.includes(REASONING_CONSTANTS.COMPLETED_MARKER) ||
-          content.includes("✅")
-        )
-          return "completed";
-        if (content.includes(REASONING_CONSTANTS.ERROR_MARKER)) return "error";
-        return "processing";
-      },
-    []
-  );
-
-  // Helper function to add messages
-  const addMessage = useCallback(
-    (role: Message["role"], content: string) => {
-      // Sanitize content based on role
-      const isAssistant = role === "assistant";
-      const sanitizedContent = sanitizeMessage(content, isAssistant);
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: generateId(),
-          role,
-          content: sanitizedContent,
-          timestamp: new Date(),
-        },
-      ]);
-    },
-    [generateId]
-  );
-
-  // Handle chat finished event
-  // Helper function to finalize any current streaming message
-  const finalizeCurrentStreamingMessage = useCallback(() => {
-    if (currentAssistantMessageIdRef.current && streamingContentRef.current) {
-      // Final sanitization check before storing the complete message
-      const sanitizedContent = sanitizeMessage(
-        streamingContentRef.current,
-        true
-      );
-
-      // Update the existing streaming message to mark it as complete
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === currentAssistantMessageIdRef.current
-            ? {
-                ...msg,
-                content: sanitizedContent,
-                isStreaming: false,
-              }
-            : msg
-        )
-      );
-
-      // Reset streaming state
-      currentAssistantMessageIdRef.current = null;
-      streamingContentRef.current = "";
-      setStreamingContent("");
-
-      return true; // Indicates a message was finalized
-    }
-    return false; // No streaming message to finalize
-  }, []);
-
-  const handleChatFinished = useCallback(() => {
-    setIsStreaming(false);
-    setIsThinking(false); // Hide thinking bubble when chat completes
-    setChatStatus("idle");
-
-    // Finalize any current streaming message
-    finalizeCurrentStreamingMessage();
-    // Focus the input after assistant response completes
-    setTimeout(() => {
-      chatInputRef.current?.focus();
-    }, 0);
-  }, [finalizeCurrentStreamingMessage]);
-
-  // Handle chat error event
-  const handleChatError = useCallback(
-    (error: string) => {
-      console.error("Chat error:", error);
-      setIsStreaming(false);
-      setIsThinking(false); // Hide thinking bubble on error
-      setChatStatus("error");
-
-      // Finalize any current streaming message before showing error
-      finalizeCurrentStreamingMessage();
-
-      addMessage("system", `❌ Chat error: ${error}`);
-    },
-    [addMessage, finalizeCurrentStreamingMessage]
-  );
-
-  // WebSocketChatClient connection management
-  const connectAgentClient = useCallback(async () => {
-    try {
-      const client = new WebSocketChatClient();
-      agentClientRef.current = client;
-      setAgentClient(client);
-
-      // Use contextHelpers from props or default to empty object
-      const contextHelpersToUse: ContextHelpers = contextHelpers || {};
-
-      await client.onInit({
-        apiUrl: apiUrl,
-        userId: userId,
-        toolSchemas: clientTools,
-        clientTools: tools,
-        contextHelpers: contextHelpersToUse,
-        onSetMessage: (char: string) => {
-          // Sanitize incoming character data from assistant
-          const sanitizedChar = sanitizeMessage(char, true);
-
-          // Check if we're already streaming
-          if (currentAssistantMessageIdRef.current) {
-            // Update streaming content
-            streamingContentRef.current += sanitizedChar;
-            setStreamingContent(streamingContentRef.current);
-
-            // Update the streaming message in the messages array
-            setMessages((prev) =>
-              prev.map((msg) =>
-                msg.id === currentAssistantMessageIdRef.current
-                  ? {
-                      ...msg,
-                      content: streamingContentRef.current,
-                      isStreaming: true,
-                    }
-                  : msg
-              )
-            );
-          } else {
-            // Assistant is starting to stream - hide thinking bubble
-            setIsThinking(false);
-            const newAssistantMessageId = generateId();
-            currentAssistantMessageIdRef.current = newAssistantMessageId;
-            streamingContentRef.current = sanitizedChar;
-            setStreamingContent(sanitizedChar);
-
-            // Create new streaming assistant message
-            const streamingMessage: Message = {
-              id: newAssistantMessageId,
-              role: "assistant",
-              content: sanitizedChar,
-              timestamp: new Date(),
-              isStreaming: true,
-            };
-
-            setMessages((prev) => [...prev, streamingMessage]);
-          }
-        },
-        onSystemEvent: (event: SystemEvent) => {
-          // Handle different types of system events with proper typing
-          switch (event.type) {
-            case SystemEventType.CHAT_COMPLETED:
-              handleChatFinished();
-              break;
-            case SystemEventType.CHAT_ERROR:
-              if (event.data?.error) {
-                handleChatError(event.data.error);
-              }
-              break;
-            case SystemEventType.CONNECTION_LOST:
-              // Handle connection lost if needed
-              break;
-            case SystemEventType.CONNECTION_RESTORED:
-              // Handle connection restored if needed
-              break;
-            default:
-              // Handle unknown events
-              break;
-          }
-        },
-        onReasoningUpdate: (
-          isThinking: boolean,
-          content: string,
-          toolCallRequest?: ToolCallRequest
-        ) => {
-          const { callId } = toolCallRequest || {};
-          setIsHandlingTool(isThinking);
-
-          // If no callId provided, use legacy behavior
-          if (!callId) {
-            return;
-          }
-
-          // Check if this is a reasoning event using proper detection
-          const isReasoningThinking =
-            ReasoningDetector.isThinkingMessage(content) &&
-            !content.includes("for") &&
-            !content.includes("seconds");
-          const isReasoningCompleted =
-            ReasoningDetector.isThinkingMessage(content) &&
-            content.includes("for") &&
-            content.includes("seconds");
-
-          // Check if this is a tools-started event (processing)
-          const isToolStarted = ReasoningDetector.isHandlingMessage(content);
-          // Check if this is a tool-completed event (completed)
-          const isToolCompleted = ReasoningDetector.isCompletedMessage(content);
-          // Check if this is an error event
-          const isToolError = ReasoningDetector.isErrorMessage(content);
-
-          // Handle reasoning events separately from tool events
-          if (isReasoningThinking || isReasoningCompleted) {
-            setReasoningMessagesByCallId((prevMap) => {
-              const newMap = new Map(prevMap);
-              const existingMessageId = newMap.get(callId);
-
-              if (isReasoningThinking && !existingMessageId) {
-                // Cut off any current streaming message before creating reasoning message
-                finalizeCurrentStreamingMessage();
-
-                // Create a new reasoning message on first thinking content
-                const reasoningMessageId = generateId();
-                newMap.set(callId, reasoningMessageId);
-
-                const reasoningMessage: Message = {
-                  id: reasoningMessageId,
-                  role: "reasoning" as any,
-                  content: content,
-                  timestamp: new Date(),
-                  isStreaming: true,
-                };
-
-                setMessages((prev) => [...prev, reasoningMessage]);
-              } else if (isReasoningCompleted && existingMessageId) {
-                // Update existing reasoning message to completed state
-                setMessages((prev) =>
-                  prev.map((msg) =>
-                    msg.id === existingMessageId
-                      ? {
-                          ...msg,
-                          content: content,
-                          isStreaming: false, // Mark as completed
-                        }
-                      : msg
-                  )
-                );
-
-                // Remove from tracking map since it's completed
-                newMap.delete(callId);
-              } else if (existingMessageId && isReasoningThinking) {
-                // Update existing reasoning message content (during thinking)
-                setMessages((prev) =>
-                  prev.map((msg) =>
-                    msg.id === existingMessageId
-                      ? {
-                          ...msg,
-                          content: content,
-                          isStreaming: true,
-                        }
-                      : msg
-                  )
-                );
-              }
-
-              return newMap;
-            });
-          }
-
-          // Create tooling messages instead of reasoning messages for tool handling
-          setToolingMessagesByCallId((prevMap) => {
-            const newMap = new Map(prevMap);
-            const existingMessageId = newMap.get(callId);
-
-            if (isToolStarted && !existingMessageId) {
-              // Cut off any current streaming message before creating tooling message
-              finalizeCurrentStreamingMessage();
-
-              // Extract tool name from content
-              const toolNameMatch = content.match(
-                REASONING_CONSTANTS.PATTERNS.HANDLING_TOOL
-              );
-              const toolName = toolNameMatch
-                ? toolNameMatch[1]
-                : "Unknown Tool";
-
-              // Create a new tooling message when tools start
-              const toolingMessageId = generateId();
-              newMap.set(callId, toolingMessageId);
-
-              const toolingMessage: Message = {
-                id: toolingMessageId,
-                role: "tooling" as any,
-                content: content,
-                timestamp: new Date(),
-                isStreaming: true,
-                toolData: {
-                  ...toolCallRequest,
-                  toolName,
-                  callId,
-                  status: "processing",
-                },
-              };
-
-              setMessages((prev) => [...prev, toolingMessage]);
-            } else if ((isToolCompleted || isToolError) && existingMessageId) {
-              // Extract tool name from content
-              const toolNameMatch = content.match(
-                REASONING_CONSTANTS.PATTERNS.COMPLETED_OR_ERROR_TOOL
-              );
-              const toolName = toolNameMatch
-                ? toolNameMatch[1]
-                : "Unknown Tool";
-
-              // Update existing tooling message to completed state
-              setMessages((prev) =>
-                prev.map((msg) =>
-                  msg.id === existingMessageId
-                    ? {
-                        ...msg,
-                        content: content,
-                        isStreaming: false, // Mark as completed
-                        toolData: {
-                          ...msg.toolData,
-                          toolName,
-                          status: isToolError ? "error" : "completed",
-                          callId: callId ?? "",
-                        },
-                      }
-                    : msg
-                )
-              );
-
-              // Remove from tracking map since it's completed
-              newMap.delete(callId);
-            } else if (
-              existingMessageId &&
-              isHandlingTool &&
-              !isToolCompleted &&
-              !isToolError
-            ) {
-              // Update existing tooling message content (during processing only)
-              setMessages((prev) =>
-                prev.map((msg) =>
-                  msg.id === existingMessageId
-                    ? {
-                        ...msg,
-                        content: content,
-                        isStreaming: true,
-                      }
-                    : msg
-                )
-              );
-            }
-
-            return newMap;
-          });
-        },
-      });
-
-      setIsConnected(true);
-    } catch (error) {
-      console.error("Error connecting WebSocketChatClient:", error);
-      setIsConnected(false);
-    }
-  }, [
-    apiUrl,
-    clientTools,
-    tools,
-    config,
-    generateId,
+  // Extract frequently used values from hooks
+  const {
+    messages,
+    setMessages,
+    isStreaming,
+    setIsStreaming,
+    isThinking,
+    setIsThinking,
+    streamingContent,
+    isHandlingTool,
+    currentAssistantMessageIdRef,
+    getReasoningStatus,
+    getReasoningDuration,
+    getReasoningContentOnly,
+    getReasoningTitle,
+    getToolingTitle,
+    getToolingStatus,
     addMessage,
+    handleSetMessage,
+    handleReasoningUpdate,
     handleChatFinished,
     handleChatError,
-    finalizeCurrentStreamingMessage,
-  ]);
+    stopGeneration,
+  } = messageHandling;
 
-  const disconnectAgentClient = useCallback(() => {
-    if (agentClientRef.current) {
-      agentClientRef.current.disconnect();
-      agentClientRef.current = null;
+  const {
+    isModalOpen,
+    isCollapsed,
+    currentMode,
+    chatStatus,
+    setChatStatus,
+    streamingStatus,
+    setStreamingStatus,
+    isLoadingConversation,
+    setIsLoadingConversation,
+    conversationError,
+    setConversationError,
+    setCurrentThreadId,
+    currentConvUuid,
+    setCurrentConvUuid,
+    isDevSettingsOpen,
+    setIsDevSettingsOpen,
+    openModal,
+    closeModal,
+    toggleCollapse,
+    toggleFullscreen,
+  } = uiState;
+
+  // Refs for managing UI
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatInputRef = useRef<ChatInputRef>(null);
+
+  // Handle system events
+  const handleSystemEvent = useCallback((event: SystemEvent) => {
+    switch (event.type) {
+      case SystemEventType.CHAT_COMPLETED:
+        handleChatFinished();
+        // Focus the input after assistant response completes
+        setTimeout(() => {
+          chatInputRef.current?.focus();
+        }, 0);
+        break;
+      case SystemEventType.CHAT_ERROR:
+        if (event.data?.error) {
+          handleChatError(event.data.error);
+        }
+        break;
+      case SystemEventType.CONNECTION_LOST:
+      case SystemEventType.CONNECTION_RESTORED:
+      default:
+        break;
     }
-    setAgentClient(null);
-    setIsConnected(false);
-  }, []);
+  }, [handleChatFinished, handleChatError]);
 
-  const resetToolHandling = useCallback(() => {
-    setIsHandlingTool(false);
-    shouldUpdateMessageRef.current = true; // Reset to allow message updates
-  }, []);
+  // Initialize WebSocket connection
+  const { agentClient, isConnected } = useWebSocketConnection({
+    apiUrl,
+    userId,
+    clientTools,
+    tools,
+    contextHelpers,
+    onSetMessage: handleSetMessage,
+    onSystemEvent: handleSystemEvent,
+    onReasoningUpdate: handleReasoningUpdate,
+  });
+
+  // Initialize conversation loader
+  useConversationLoader({
+    userId,
+    httpApiUrl,
+    messages,
+    setMessages,
+    setIsLoadingConversation,
+    setConversationError,
+    setCurrentThreadId,
+    setCurrentConvUuid,
+  });
 
   // Scroll animation frame ref
   const scrollAnimationFrame = useRef<number | null>(null);
@@ -613,102 +182,14 @@ function ChatWrapper({
     }
   }, [streamingStatus, config]);
 
-  // WebSocketChatClient connection management
+  // Cleanup scroll animation on unmount
   useEffect(() => {
-    // Auto-connect on component mount
-    connectAgentClient();
-
-    // Cleanup on unmount
     return () => {
-      disconnectAgentClient();
-      // Cancel any pending scroll animation
       if (scrollAnimationFrame.current) {
         cancelAnimationFrame(scrollAnimationFrame.current);
       }
     };
-  }, [connectAgentClient, disconnectAgentClient]);
-
-  // Monitor connection status
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (agentClientRef.current) {
-        const status = agentClientRef.current.getConnectionStatus();
-        setIsConnected(status.connected);
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
   }, []);
-
-  // Load conversation history from API if userId is provided
-  useEffect(() => {
-    const loadConversation = async () => {
-      // Skip if no userId provided
-      if (!userId) {
-        return;
-      }
-
-      // Skip if already loaded once
-      if (hasLoadedConversationRef.current) {
-        return;
-      }
-
-      // Skip if already loading
-      if (isLoadingConversation) {
-        return;
-      }
-
-      // Skip if messages already exist (either from props or already loaded)
-      if (messages.length > 0) {
-        return;
-      }
-
-      try {
-        setIsLoadingConversation(true);
-        setConversationError(null);
-
-        // Step 1: Fetch user's threads
-        // const threads = await fetchUserThreads(httpApiUrl, userId, {
-        //   limit: 1, // Get only the first/most recent thread
-        // });
-        const threads: string | any[] = [];
-
-        if (threads.length === 0) {
-          setIsLoadingConversation(false);
-          hasLoadedConversationRef.current = true;
-          return;
-        }
-
-        // Step 2: Use the first thread
-        const firstThread = threads[0];
-        setCurrentThreadId(firstThread.id);
-        setCurrentConvUuid(firstThread.convUuid); // Store convUuid for sending with messages
-
-        // Step 3: Fetch messages for this thread
-        const loadedMessages = await fetchThreadMessages(
-          httpApiUrl,
-          firstThread.id
-        );
-
-        // Step 4: Set messages to state
-        setMessages(loadedMessages);
-
-        // Mark as loaded
-        hasLoadedConversationRef.current = true;
-      } catch (error) {
-        console.error("❌ Error loading conversation:", error);
-        setConversationError(
-          error instanceof Error ? error.message : "Failed to load conversation"
-        );
-        hasLoadedConversationRef.current = true; // Don't retry automatically
-      } finally {
-        setIsLoadingConversation(false);
-      }
-    };
-
-    loadConversation();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, httpApiUrl]);
 
   // Handle message submission via WebSocketChatClient
   const handleSubmit = useCallback(
@@ -717,7 +198,7 @@ function ChatWrapper({
         return;
 
       const userMessage: Message = {
-        id: generateId(),
+        id: Math.random().toString(36).substring(2) + Date.now().toString(36),
         role: "user",
         content: message.trim(),
         timestamp: new Date(),
@@ -726,7 +207,7 @@ function ChatWrapper({
 
       setMessages((prev) => [...prev, userMessage]);
       setIsStreaming(true);
-      setIsThinking(true); // Show thinking bubble while waiting for assistant response
+      setIsThinking(true);
       setChatStatus("submitted");
       setStreamingStatus("Starting...");
 
@@ -741,7 +222,7 @@ function ChatWrapper({
         setChatStatus("streaming");
       } catch (error) {
         console.error("Agent client send error:", error);
-        setIsThinking(false); // Hide thinking bubble on send error
+        setIsThinking(false);
         setChatStatus("error");
 
         addMessage(
@@ -766,27 +247,17 @@ function ChatWrapper({
       isStreaming,
       agentClient,
       isConnected,
-      generateId,
+      setMessages,
+      setIsStreaming,
+      setIsThinking,
+      setChatStatus,
+      setStreamingStatus,
       addMessage,
       config,
+      app,
       currentConvUuid,
     ]
   );
-
-  // Stop generation
-  const stopGeneration = useCallback(() => {
-    setIsStreaming(false);
-    setChatStatus("idle");
-    setStreamingStatus("");
-    setIsThinking(false);
-
-    // Clean up streaming state
-    currentAssistantMessageIdRef.current = null;
-    streamingContentRef.current = "";
-    setStreamingContent("");
-
-    resetToolHandling(); // Clear any ongoing tool handling
-  }, [resetToolHandling]);
 
   // Handle file upload
   const handleFileUpload = useCallback(
@@ -879,43 +350,6 @@ function ChatWrapper({
     [apiUrl]
   );
 
-  // Modal controls
-  const openModal = useCallback(() => {
-    setIsModalOpen(true);
-  }, []);
-
-  const closeModal = useCallback(() => {
-    setIsModalOpen(false);
-  }, []);
-
-  // Collapse controls
-  const toggleCollapse = useCallback(() => {
-    setIsCollapsed((prev) => !prev);
-  }, []);
-
-  // Mode switching controls
-  const toggleFullscreen = useCallback(() => {
-    setCurrentMode((prev) => (prev === "sidebar" ? "fullscreen" : "sidebar"));
-  }, []);
-
-  // Handle escape key for modal
-  useEffect(() => {
-    // Only run in browser environment
-    if (typeof window === "undefined" || typeof document === "undefined") {
-      return;
-    }
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && currentMode === "modal" && isModalOpen) {
-        closeModal();
-      }
-    };
-
-    if (currentMode === "modal" && isModalOpen) {
-      document.addEventListener("keydown", handleEscape);
-      return () => document.removeEventListener("keydown", handleEscape);
-    }
-  }, [currentMode, isModalOpen, closeModal]);
 
   const containerClasses = buildClasses(
     "chat-wrapper",
