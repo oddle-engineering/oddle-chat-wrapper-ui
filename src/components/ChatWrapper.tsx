@@ -114,7 +114,7 @@ const MessageComponent = memo(
               /* Show streaming indicator when no content yet */
               <div className="chat-wrapper__streaming-placeholder">
                 <Loader size={16} variant="dots" />
-                <span>{`Thinking`}</span>
+                <span>{REASONING_CONSTANTS.UI_TEXT.THINKING}</span>
               </div>
             ) : message.role === "system" ? (
               /* System message with collapsible tool result */
@@ -619,7 +619,7 @@ function SystemMessageCollapsible({ message }: { message: Message }) {
                 />
               </svg>
             </div>
-            <span>Thinking...</span>
+            <span>{REASONING_CONSTANTS.UI_TEXT.THINKING_ELLIPSIS}</span>
             <div className="chat-wrapper__thinking-icon">
               <div className="chat-wrapper__thinking-icon">
                 <svg
@@ -906,10 +906,10 @@ function ChatWrapper({
           case REASONING_CONSTANTS.MESSAGE_TYPES.COMPLETED:
             return "Completed";
           case REASONING_CONSTANTS.MESSAGE_TYPES.THOUGHT:
-            return "Thought";
+            return REASONING_CONSTANTS.UI_TEXT.THOUGHT;
           case REASONING_CONSTANTS.MESSAGE_TYPES.THINKING:
           default:
-            return "Thinking...";
+            return REASONING_CONSTANTS.UI_TEXT.THINKING_ELLIPSIS;
         }
       },
     []
@@ -919,13 +919,13 @@ function ChatWrapper({
     () =>
       (content: string, isStreaming?: boolean): string => {
         if (isStreaming === false) {
-          if (content.includes("❌")) return "Tool Error";
+          if (content.includes(REASONING_CONSTANTS.ERROR_MARKER)) return "Tool Error";
           return "Tool Completed";
         }
-        if (content.includes("✅ Completed:") || content.includes("✅"))
+        if (content.includes(REASONING_CONSTANTS.COMPLETED_MARKER) || content.includes("✅"))
           return "Tool Completed";
-        if (content.includes("❌")) return "Tool Error";
-        if (content.includes("🔧 Handling:")) return "Tool Processing...";
+        if (content.includes(REASONING_CONSTANTS.ERROR_MARKER)) return "Tool Error";
+        if (content.includes(REASONING_CONSTANTS.HANDLING_MARKER)) return "Tool Processing...";
         return "Tool Processing...";
       },
     []
@@ -938,12 +938,12 @@ function ChatWrapper({
         isStreaming?: boolean
       ): "processing" | "completed" | "error" => {
         if (isStreaming === false) {
-          if (content.includes("❌")) return "error";
+          if (content.includes(REASONING_CONSTANTS.ERROR_MARKER)) return "error";
           return "completed";
         }
-        if (content.includes("✅ Completed:") || content.includes("✅"))
+        if (content.includes(REASONING_CONSTANTS.COMPLETED_MARKER) || content.includes("✅"))
           return "completed";
-        if (content.includes("❌")) return "error";
+        if (content.includes(REASONING_CONSTANTS.ERROR_MARKER)) return "error";
         return "processing";
       },
     []
@@ -1201,7 +1201,7 @@ function ChatWrapper({
               finalizeCurrentStreamingMessage();
 
               // Extract tool name from content
-              const toolNameMatch = content.match(/🔧 Handling: (.+)/);
+              const toolNameMatch = content.match(REASONING_CONSTANTS.PATTERNS.HANDLING_TOOL);
               const toolName = toolNameMatch
                 ? toolNameMatch[1]
                 : "Unknown Tool";
@@ -1228,7 +1228,7 @@ function ChatWrapper({
             } else if ((isToolCompleted || isToolError) && existingMessageId) {
               // Extract tool name from content
               const toolNameMatch = content.match(
-                /(?:✅ Completed|❌ Error): (.+?)(?:\s-\s|$)/
+                REASONING_CONSTANTS.PATTERNS.COMPLETED_OR_ERROR_TOOL
               );
               const toolName = toolNameMatch
                 ? toolNameMatch[1]
@@ -1277,11 +1277,6 @@ function ChatWrapper({
 
             return newMap;
           });
-        },
-        onBusinessDataUpdate: (data: any) => {
-          if (config.onBusinessDataUpdate) {
-            config.onBusinessDataUpdate(data);
-          }
         },
       });
 
@@ -1479,13 +1474,13 @@ function ChatWrapper({
       setStreamingStatus("Starting...");
 
       try {
-        await agentClient.onTriggerMessage(
-          userMessage.content,
+        await agentClient.onTriggerMessage({
+          message: userMessage.content,
           app,
           media,
-          currentConvUuid || undefined,
-          undefined
-        );
+          convUuid: currentConvUuid || undefined,
+          agentPromptPath: undefined
+        });
         setChatStatus("streaming");
       } catch (error) {
         console.error("Agent client send error:", error);

@@ -9,7 +9,6 @@ export interface WebSocketChatClientProps {
   contextHelpers: ContextHelpers;
   onSetMessage?: (char: string) => void;
   onSystemEvent?: SystemEventHandler;
-  onBusinessDataUpdate?: (data: any) => void;
   onReasoningUpdate?: (
     isThinking: boolean,
     content: string,
@@ -20,7 +19,6 @@ export interface WebSocketChatClientProps {
 export interface ChatEventHandlers {
   onSetMessage?: (char: string) => void;
   onSystemEvent?: SystemEventHandler;
-  onBusinessDataUpdate?: (data: any) => void;
   onReasoningUpdate?: (
     isThinking: boolean,
     content: string,
@@ -33,6 +31,14 @@ export interface ReasoningEvent {
   type: 'start' | 'delta' | 'end';
   text?: string;
   duration?: string;
+}
+
+export interface TriggerMessageParams {
+  message: string;
+  app?: string;
+  media?: string[];
+  convUuid?: string;
+  agentPromptPath?: string;
 }
 
 export interface ChatPayload {

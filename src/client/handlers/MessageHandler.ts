@@ -10,6 +10,7 @@ import { ToolHandler } from './ToolHandler';
 import { SystemEventFactory } from '../utils/eventFactory';
 import { MessageFactory } from '../utils/messageFactory';
 import { ToolCallFactory } from '../utils/toolCallFactory';
+import { REASONING_CONSTANTS } from '../constants/reasoning';
 
 export class MessageHandler {
   private reasoningHandler: ReasoningHandler;
@@ -54,9 +55,6 @@ export class MessageHandler {
           break;
         case InboundMessageType.TOOL_CALL_REQUEST:
           this.handleToolCallRequest(data as ToolCallRequest);
-          break;
-        case InboundMessageType.BUSINESS_DATA_UPDATE:
-          this.handleBusinessDataUpdate(data);
           break;
         case InboundMessageType.HEARTBEAT_PING:
           this.handleHeartbeatPing(data);
@@ -156,7 +154,7 @@ export class MessageHandler {
         
         this.handlers.onReasoningUpdate(
           false,
-          `✅ Completed: ${toolResultData.toolName}`,
+          `${REASONING_CONSTANTS.COMPLETED_MARKER} ${toolResultData.toolName}`,
           syntheticRequest
         );
       }
@@ -175,14 +173,6 @@ export class MessageHandler {
     this.toolHandler.handleToolCallRequest(request);
   }
 
-  private handleBusinessDataUpdate(data: WebSocketMessage): void {
-    
-    if (this.handlers.onBusinessDataUpdate) {
-      this.handlers.onBusinessDataUpdate(data.data);
-    }
-    
-    // Business data update handled by onBusinessDataUpdate callback
-  }
 
   private handleHeartbeatPing(data: WebSocketMessage): void {
     if (!this.sendMessage) {

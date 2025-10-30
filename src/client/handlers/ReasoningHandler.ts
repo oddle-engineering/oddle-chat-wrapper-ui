@@ -72,7 +72,7 @@ export class ReasoningHandler extends BaseHandler {
       this.reasoningStartTimes.delete(reasoningId);
     }
 
-    const contentToShow = accumulatedContent || "Thought";
+    const contentToShow = accumulatedContent || REASONING_CONSTANTS.UI_TEXT.THOUGHT;
     const finalContent = `${REASONING_CONSTANTS.THOUGHT_PREFIX} ${contentToShow}${durationText}`;
     
     this.triggerReasoningUpdate(

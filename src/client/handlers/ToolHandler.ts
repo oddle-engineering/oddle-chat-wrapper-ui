@@ -3,6 +3,7 @@ import { ChatEventHandlers } from '../types';
 import { MessageFactory } from '../utils/messageFactory';
 import { ToolCallFactory } from '../utils/toolCallFactory';
 import { BaseHandler } from './BaseHandler';
+import { REASONING_CONSTANTS } from '../constants/reasoning';
 
 export class ToolHandler extends BaseHandler {
   private readonly processedToolCalls = new Set<string>();
@@ -26,15 +27,15 @@ export class ToolHandler extends BaseHandler {
     }
     
     this.processedToolCalls.add(callId);
-    this.getHandler('onReasoningUpdate')?.(true, `🔧 Handling: ${toolName}`, request);
+    this.getHandler('onReasoningUpdate')?.(true, `${REASONING_CONSTANTS.HANDLING_MARKER} ${toolName}`, request);
 
     try {
       const result = await this.executeToolFunction(toolName, parameters);
       this.sendToolResponse(callId, result);
-      this.getHandler('onReasoningUpdate')?.(false, `✅ Completed: ${toolName}`, request);
+      this.getHandler('onReasoningUpdate')?.(false, `${REASONING_CONSTANTS.COMPLETED_MARKER} ${toolName}`, request);
     } catch (error) {
       this.sendToolError(callId, error);
-      this.getHandler('onReasoningUpdate')?.(false, `❌ Error: ${toolName} - ${error}`, request);
+      this.getHandler('onReasoningUpdate')?.(false, `${REASONING_CONSTANTS.ERROR_MARKER} Error: ${toolName} - ${error}`, request);
     }
   }
 
@@ -83,7 +84,7 @@ export class ToolHandler extends BaseHandler {
         toolData.args || {}
       );
       
-      onReasoningUpdate(true, `🔧 Handling: ${toolData.toolName}`, syntheticRequest);
+      onReasoningUpdate(true, `${REASONING_CONSTANTS.HANDLING_MARKER} ${toolData.toolName}`, syntheticRequest);
     }
   }
 
@@ -102,7 +103,7 @@ export class ToolHandler extends BaseHandler {
       
       onReasoningUpdate(
         false,
-        `✅ Completed: ${toolData.toolName}`,
+        `${REASONING_CONSTANTS.COMPLETED_MARKER} ${toolData.toolName}`,
         syntheticRequest
       );
     }

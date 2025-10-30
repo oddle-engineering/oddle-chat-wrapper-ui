@@ -6,6 +6,7 @@ import {
   DEFAULT_CONNECTION_CONFIG,
   ChatEventHandlers,
   InboundMessageType,
+  TriggerMessageParams,
 } from "./types";
 import { WebSocketManager, ConnectionState } from "./connection";
 import { MessageHandler } from "./handlers";
@@ -108,7 +109,6 @@ export class WebSocketChatClient {
     const handlers: ChatEventHandlers = {
       onSetMessage: props.onSetMessage,
       onSystemEvent: props.onSystemEvent,
-      onBusinessDataUpdate: props.onBusinessDataUpdate,
       onReasoningUpdate: props.onReasoningUpdate,
     };
 
@@ -133,16 +133,18 @@ export class WebSocketChatClient {
     }
   }
 
-  async onTriggerMessage(
-    message: string,
-    app: string = "UD21",
-    media?: string[],
-    convUuid?: string,
-    agentPromptPath?: string
-  ): Promise<void> {
+  async onTriggerMessage(params: TriggerMessageParams): Promise<void> {
     if (!this.connectionState.isConnected) {
       throw new Error("Client not connected");
     }
+
+    const {
+      message,
+      app = "UD21",
+      media,
+      convUuid,
+      agentPromptPath,
+    } = params;
 
     try {
       this.messageHandler.clearProcessedToolCalls();

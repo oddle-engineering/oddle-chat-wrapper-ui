@@ -1,4 +1,5 @@
 import React, { ReactNode, useState } from "react";
+import { REASONING_CONSTANTS } from "../client/constants/reasoning";
 
 interface ReasoningProps {
   isStreaming: boolean;
@@ -106,8 +107,8 @@ export function ReasoningTrigger({
 
   const canToggle =
     status === "completed" ||
-    title.includes("Thinking") ||
-    title.includes("Processing");
+    title.includes(REASONING_CONSTANTS.UI_TEXT.THINKING) ||
+    title.includes(REASONING_CONSTANTS.UI_TEXT.PROCESSING);
 
   return (
     <div

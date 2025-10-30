@@ -18,8 +18,6 @@ export enum InboundMessageType {
   // Tool Execution
   TOOL_CALL_REQUEST = 'tool_call_request',
   
-  // Business Data
-  BUSINESS_DATA_UPDATE = 'business_data_update',
   
   // Connection Management
   HEARTBEAT_PING = 'heartbeat_ping',
@@ -127,11 +125,6 @@ export interface ToolCallRequestMessage extends BaseInboundMessage, ToolCallRequ
   type: InboundMessageType.TOOL_CALL_REQUEST;
 }
 
-// Business data messages
-export interface BusinessDataUpdateMessage extends BaseInboundMessage {
-  type: InboundMessageType.BUSINESS_DATA_UPDATE;
-  data: any; // Business-specific payload
-}
 
 // Connection management messages
 export interface HeartbeatPingMessage extends BaseInboundMessage {
@@ -166,7 +159,6 @@ export type InboundMessage =
   | ChatFinishedMessage
   | ChatErrorMessage
   | ToolCallRequestMessage
-  | BusinessDataUpdateMessage
   | HeartbeatPingMessage
   | HeartbeatAckMessage
   | ErrorMessage;
@@ -184,8 +176,6 @@ export const isChatEvent = (msg: BaseInboundMessage): msg is ChatEventMessage =>
 export const isToolCallRequest = (msg: BaseInboundMessage): msg is ToolCallRequestMessage =>
   msg.type === InboundMessageType.TOOL_CALL_REQUEST;
 
-export const isBusinessDataUpdate = (msg: BaseInboundMessage): msg is BusinessDataUpdateMessage =>
-  msg.type === InboundMessageType.BUSINESS_DATA_UPDATE;
 
 export const isChatError = (msg: BaseInboundMessage): msg is ChatErrorMessage =>
   msg.type === InboundMessageType.CHAT_ERROR;

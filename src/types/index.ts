@@ -79,7 +79,6 @@ export interface ChatConfig {
   onError?: (error: Error) => void;
   onToolResult?: (tool: string, result: any) => void;
   onStreamingStatusChange?: (status: string) => void;
-  onBusinessDataUpdate?: (data: any) => void;
   customStyles?: React.CSSProperties;
   endpoint?: "brief-planner" | "conversation";
 }

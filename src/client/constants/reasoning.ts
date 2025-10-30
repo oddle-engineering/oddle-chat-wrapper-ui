@@ -9,6 +9,15 @@ export const REASONING_CONSTANTS = {
   ERROR_MARKER: '❌',
   HANDLING_MARKER: '🔧 Handling:',
   
+  // UI Text constants
+  UI_TEXT: {
+    AI_IS_THINKING: 'AI is thinking',
+    THINKING: 'Thinking',
+    THINKING_ELLIPSIS: 'Thinking...',
+    PROCESSING: 'Processing',
+    THOUGHT: 'Thought',
+  } as const,
+  
   // Message types
   MESSAGE_TYPES: {
     THINKING: 'thinking',
@@ -22,7 +31,9 @@ export const REASONING_CONSTANTS = {
   // Detection patterns
   PATTERNS: {
     DURATION: /for ([\d.]+) seconds/,
-    THOUGHT_CONTENT: /\*\*(.*?)\*\*/g
+    THOUGHT_CONTENT: /\*\*(.*?)\*\*/g,
+    HANDLING_TOOL: /🔧 Handling: (.+)/,
+    COMPLETED_OR_ERROR_TOOL: /(?:✅ Completed|❌ Error): (.+?)(?:\s-\s|$)/
   }
 } as const;
 
@@ -94,7 +105,7 @@ export const ReasoningDetector = {
     if (ReasoningDetector.isHandlingMessage(content)) {
       return REASONING_CONSTANTS.MESSAGE_TYPES.THINKING;
     }
-    if (ReasoningDetector.isThinkingMessage(content) && !content.includes("AI is thinking")) {
+    if (ReasoningDetector.isThinkingMessage(content) && !content.includes(REASONING_CONSTANTS.UI_TEXT.AI_IS_THINKING)) {
       return REASONING_CONSTANTS.MESSAGE_TYPES.THINKING;
     }
     return REASONING_CONSTANTS.MESSAGE_TYPES.THINKING;
