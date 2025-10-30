@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback, memo, useMemo } from "react";
 import {
   ChatWrapperProps,
   Message,
-  ToolResult,
   ContextHelpers,
   ToolCallRequest,
 } from "../types";
