@@ -54,5 +54,16 @@ export type {
   ThreadsResponse,
   MessagesResponse
 } from './types';
-export type { ChatStatus } from './components/PromptInput';
+export type { ChatStatus, StreamingStatus, ProcessingStatus } from './constants/chatStatus';
+export { 
+  CHAT_STATUS, 
+  STREAMING_STATUS, 
+  PROCESSING_STATUS,
+  isChatActive,
+  isChatIdle,
+  isChatError,
+  isProcessingActive,
+  isProcessingComplete,
+  isProcessingError
+} from './constants/chatStatus';
 export type { IconProps, SVGIconProps } from './components/icons';

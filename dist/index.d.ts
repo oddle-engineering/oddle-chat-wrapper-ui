@@ -13,6 +13,13 @@ declare interface AnimatedPlaceholderProps {
 
 export declare type App = "UD21" | "Host" | "Reserve";
 
+export declare const CHAT_STATUS: {
+    readonly IDLE: "idle";
+    readonly SUBMITTED: "submitted";
+    readonly STREAMING: "streaming";
+    readonly ERROR: "error";
+};
+
 export declare interface ChatConfig {
     mode: ChatMode;
     position?: ChatPosition;
@@ -57,7 +64,7 @@ export declare type ChatMode = "sidebar" | "fullscreen" | "modal" | "embedded";
 
 export declare type ChatPosition = "left" | "right";
 
-export declare type ChatStatus = "idle" | "submitted" | "streaming" | "error";
+export declare type ChatStatus = typeof CHAT_STATUS[keyof typeof CHAT_STATUS];
 
 export declare type ChatTheme = "light" | "dark" | "auto";
 
@@ -160,6 +167,18 @@ declare interface InlineLoaderProps {
     fullHeight?: boolean;
 }
 
+export declare const isChatActive: (status: ChatStatus) => boolean;
+
+export declare const isChatError: (status: ChatStatus) => boolean;
+
+export declare const isChatIdle: (status: ChatStatus) => boolean;
+
+export declare const isProcessingActive: (status: ProcessingStatus) => boolean;
+
+export declare const isProcessingComplete: (status: ProcessingStatus) => boolean;
+
+export declare const isProcessingError: (status: ProcessingStatus) => boolean;
+
 export declare function Loader({ size, variant }: LoaderProps): JSX_2.Element;
 
 declare interface LoaderProps {
@@ -186,6 +205,14 @@ export declare interface Message {
 export declare interface MessagesResponse {
     messages: Message[];
 }
+
+export declare const PROCESSING_STATUS: {
+    readonly PROCESSING: "processing";
+    readonly COMPLETED: "completed";
+    readonly ERROR: "error";
+};
+
+export declare type ProcessingStatus = typeof PROCESSING_STATUS[keyof typeof PROCESSING_STATUS];
 
 export declare const PromptInput: ({ className, ...props }: PromptInputProps) => JSX_2.Element;
 
@@ -291,6 +318,19 @@ export declare interface StreamEvent {
     todos?: any[];
     briefs?: any[];
 }
+
+export declare const STREAMING_STATUS: {
+    readonly STARTING: "Starting...";
+    readonly PROCESSING: "Processing...";
+    readonly THINKING: "Thinking...";
+    readonly STREAMING: "Streaming response...";
+    readonly FINALIZING: "Finalizing...";
+    readonly COMPLETED: "Completed";
+    readonly ERROR: "Error occurred";
+    readonly IDLE: "";
+};
+
+export declare type StreamingStatus = typeof STREAMING_STATUS[keyof typeof STREAMING_STATUS];
 
 declare interface SuggestedPrompt {
     title: string;

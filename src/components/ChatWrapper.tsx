@@ -17,6 +17,10 @@ import {
   useConversationLoader,
 } from "../hooks";
 import {
+  CHAT_STATUS,
+  STREAMING_STATUS,
+} from "../constants/chatStatus";
+import {
   ChatIcon,
   CloseIcon,
   FullscreenIcon,
@@ -208,8 +212,8 @@ function ChatWrapper({
       setMessages((prev) => [...prev, userMessage]);
       setIsStreaming(true);
       setIsThinking(true);
-      setChatStatus("submitted");
-      setStreamingStatus("Starting...");
+      setChatStatus(CHAT_STATUS.SUBMITTED);
+      setStreamingStatus(STREAMING_STATUS.STARTING);
 
       try {
         await agentClient.onTriggerMessage({
@@ -219,11 +223,11 @@ function ChatWrapper({
           convUuid: currentConvUuid || undefined,
           agentPromptPath: undefined,
         });
-        setChatStatus("streaming");
+        setChatStatus(CHAT_STATUS.STREAMING);
       } catch (error) {
         console.error("Agent client send error:", error);
         setIsThinking(false);
-        setChatStatus("error");
+        setChatStatus(CHAT_STATUS.ERROR);
 
         addMessage(
           "system",
@@ -239,8 +243,8 @@ function ChatWrapper({
         }
 
         setIsStreaming(false);
-        setChatStatus("idle");
-        setStreamingStatus("");
+        setChatStatus(CHAT_STATUS.IDLE);
+        setStreamingStatus(STREAMING_STATUS.IDLE);
       }
     },
     [

@@ -147,6 +147,24 @@ export type ClientTools = ClientTool[];
 // Re-export shared types for backward compatibility
 export type { ToolCallRequest, ContextHelpers } from '../client/types/shared';
 
+// Re-export status constants and types
+export type { 
+  ChatStatus, 
+  StreamingStatus, 
+  ProcessingStatus 
+} from '../constants/chatStatus';
+export { 
+  CHAT_STATUS, 
+  STREAMING_STATUS, 
+  PROCESSING_STATUS,
+  isChatActive,
+  isChatIdle,
+  isChatError,
+  isProcessingActive,
+  isProcessingComplete,
+  isProcessingError
+} from '../constants/chatStatus';
+
 // Re-export typed WebSocket message interfaces (recommended over deprecated WebSocketMessage)
 export type {
   InboundMessage,

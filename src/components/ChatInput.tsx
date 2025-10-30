@@ -12,8 +12,8 @@ import {
   PromptInputTools,
   PromptInputButton,
   PromptInputSubmit,
-  ChatStatus,
 } from "./PromptInput";
+import { ChatStatus, CHAT_STATUS } from "../constants/chatStatus";
 import { AnimatedPlaceholder } from "./AnimatedPlaceholder";
 import { sanitizeMessage, sanitizeFileName } from "../utils/security";
 
@@ -509,9 +509,9 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
           </PromptInputTools>
           <PromptInputSubmit
             status={chatStatus}
-            disabled={!input.trim() && chatStatus !== "streaming"}
+            disabled={!input.trim() && chatStatus !== CHAT_STATUS.STREAMING}
             onClick={
-              chatStatus === "streaming" && onStopGeneration
+              chatStatus === CHAT_STATUS.STREAMING && onStopGeneration
                 ? () => {
                     onStopGeneration();
                   }

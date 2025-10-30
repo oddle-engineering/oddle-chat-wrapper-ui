@@ -1,12 +1,10 @@
 import React, { ReactNode, KeyboardEventHandler, forwardRef } from "react";
+import { ChatStatus, CHAT_STATUS } from "../constants/chatStatus";
 
 // Base utility function for class names (simplified version of cn)
 const cn = (...classes: (string | undefined | false | null)[]): string => {
   return classes.filter(Boolean).join(" ");
 };
-
-// Status type for the submit button
-export type ChatStatus = "idle" | "submitted" | "streaming" | "error";
 
 // Icons as SVG components
 const SendIcon = () => (
@@ -239,7 +237,7 @@ export const PromptInputSubmit = ({
   className,
   variant = "default",
   size = "icon",
-  status = "idle",
+  status = CHAT_STATUS.IDLE,
   children,
   disabled,
   ...props
@@ -247,7 +245,7 @@ export const PromptInputSubmit = ({
   let Icon: ReactNode = <SendIcon />;
 
   const isDisabled =
-    disabled || status === "submitted" || status === "streaming";
+    disabled || status === CHAT_STATUS.SUBMITTED || status === CHAT_STATUS.STREAMING;
 
   return (
     <button

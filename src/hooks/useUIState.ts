@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { ChatStatus } from "../components/PromptInput";
+import { ChatStatus, CHAT_STATUS, StreamingStatus, STREAMING_STATUS } from "../constants/chatStatus";
 
 interface UseUIStateProps {
   initialMode?: string;
@@ -12,8 +12,8 @@ export function useUIState({ initialMode = "sidebar" }: UseUIStateProps) {
   const [currentMode, setCurrentMode] = useState(initialMode);
 
   // Chat state
-  const [chatStatus, setChatStatus] = useState<ChatStatus>("idle");
-  const [streamingStatus, setStreamingStatus] = useState("");
+  const [chatStatus, setChatStatus] = useState<ChatStatus>(CHAT_STATUS.IDLE);
+  const [streamingStatus, setStreamingStatus] = useState<StreamingStatus>(STREAMING_STATUS.IDLE);
 
   // Conversation loading state
   const [isLoadingConversation, setIsLoadingConversation] = useState(false);

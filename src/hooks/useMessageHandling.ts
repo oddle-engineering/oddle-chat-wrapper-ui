@@ -5,6 +5,7 @@ import {
   ReasoningDetector,
   REASONING_CONSTANTS,
 } from "../client/constants/reasoning";
+import { ProcessingStatus, PROCESSING_STATUS } from "../constants/chatStatus";
 
 interface UseMessageHandlingProps {
   initialMessages?: Message[];
@@ -39,14 +40,14 @@ export function useMessageHandling({ initialMessages = [] }: UseMessageHandlingP
   // Memoized helper functions for reasoning detection
   const getReasoningStatus = useMemo(
     () =>
-      (content: string, isStreaming?: boolean): "processing" | "completed" | "error" => {
+      (content: string, isStreaming?: boolean): ProcessingStatus => {
         if (isStreaming === false) {
-          if (ReasoningDetector.isErrorMessage(content)) return "error";
-          return "completed";
+          if (ReasoningDetector.isErrorMessage(content)) return PROCESSING_STATUS.ERROR;
+          return PROCESSING_STATUS.COMPLETED;
         }
-        if (ReasoningDetector.isCompletedMessage(content)) return "completed";
-        if (ReasoningDetector.isErrorMessage(content)) return "error";
-        return "processing";
+        if (ReasoningDetector.isCompletedMessage(content)) return PROCESSING_STATUS.COMPLETED;
+        if (ReasoningDetector.isErrorMessage(content)) return PROCESSING_STATUS.ERROR;
+        return PROCESSING_STATUS.PROCESSING;
       },
     []
   );
@@ -105,18 +106,18 @@ export function useMessageHandling({ initialMessages = [] }: UseMessageHandlingP
 
   const getToolingStatus = useMemo(
     () =>
-      (content: string, isStreaming?: boolean): "processing" | "completed" | "error" => {
+      (content: string, isStreaming?: boolean): ProcessingStatus => {
         if (isStreaming === false) {
-          if (content.includes(REASONING_CONSTANTS.ERROR_MARKER)) return "error";
-          return "completed";
+          if (content.includes(REASONING_CONSTANTS.ERROR_MARKER)) return PROCESSING_STATUS.ERROR;
+          return PROCESSING_STATUS.COMPLETED;
         }
         if (
           content.includes(REASONING_CONSTANTS.COMPLETED_MARKER) ||
           content.includes("✅")
         )
-          return "completed";
-        if (content.includes(REASONING_CONSTANTS.ERROR_MARKER)) return "error";
-        return "processing";
+          return PROCESSING_STATUS.COMPLETED;
+        if (content.includes(REASONING_CONSTANTS.ERROR_MARKER)) return PROCESSING_STATUS.ERROR;
+        return PROCESSING_STATUS.PROCESSING;
       },
     []
   );
@@ -304,7 +305,7 @@ export function useMessageHandling({ initialMessages = [] }: UseMessageHandlingP
               ...toolCallRequest,
               toolName,
               callId,
-              status: "processing",
+              status: PROCESSING_STATUS.PROCESSING,
             },
           };
 
@@ -325,7 +326,7 @@ export function useMessageHandling({ initialMessages = [] }: UseMessageHandlingP
                     toolData: {
                       ...msg.toolData,
                       toolName,
-                      status: isToolError ? "error" : "completed",
+                      status: isToolError ? PROCESSING_STATUS.ERROR : PROCESSING_STATUS.COMPLETED,
                       callId: callId ?? "",
                     },
                   }
