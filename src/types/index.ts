@@ -1,4 +1,5 @@
 import React from "react";
+import type { ContextHelpers } from '../client/types/shared';
 
 export type ChatMode = "sidebar" | "fullscreen" | "modal" | "embedded";
 export type ChatPosition = "left" | "right";
@@ -143,19 +144,25 @@ export interface ClientTool {
 
 export type ClientTools = ClientTool[];
 
-export interface ContextHelpers {
-  [key: string]: any;
-}
+// Re-export shared types for backward compatibility
+export type { ToolCallRequest, ContextHelpers } from '../client/types/shared';
 
+// Re-export typed WebSocket message interfaces (recommended over deprecated WebSocketMessage)
+export type {
+  InboundMessage,
+  OutboundMessage,
+  InboundMessageType,
+  OutboundMessageType,
+  ChatEventMessage,
+  ToolCallRequestMessage,
+  SystemEvent,
+  SystemEventType
+} from '../client/types';
 
-export interface ToolCallRequest {
-  toolName: string;
-  parameters: Record<string, any>;
-  callId: string;
-}
-
+// DEPRECATED: Use InboundMessage or OutboundMessage from client/types instead
+// This interface is kept temporarily for backward compatibility
 export interface WebSocketMessage {
-  type: string; // TODO: Migrate to InboundMessageType for type safety
+  type: string;
   content?: string;
   data?: any;
   event?: string;

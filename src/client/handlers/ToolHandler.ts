@@ -1,4 +1,4 @@
-import { ToolCallRequest } from '../../types';
+import { ToolCallRequest } from '../types/shared';
 import { ChatEventHandlers } from '../types';
 import { MessageFactory } from '../utils/messageFactory';
 import { ToolCallFactory } from '../utils/toolCallFactory';

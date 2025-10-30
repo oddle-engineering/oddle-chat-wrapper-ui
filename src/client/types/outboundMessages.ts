@@ -1,4 +1,4 @@
-import { ContextHelpers } from '../../types';
+import { ContextHelpers } from './shared';
 
 export enum OutboundMessageType {
   // Chat Messages

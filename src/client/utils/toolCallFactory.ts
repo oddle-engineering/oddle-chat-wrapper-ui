@@ -1,4 +1,4 @@
-import { ToolCallRequest } from '../../types';
+import { ToolCallRequest } from '../types/shared';
 
 export class ToolCallFactory {
   /**

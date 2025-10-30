@@ -4,7 +4,7 @@ import { Message } from "../types";
 import { Reasoning, ReasoningTrigger, ReasoningContent } from "./Reasoning";
 import { ToolingHandle, ToolingHandleTrigger } from "./ToolingHandle";
 import { Loader } from "./Loader";
-import { CopyIcon } from "./CopyIcon";
+import { CopyIcon } from "./icons";
 import { SystemMessageCollapsible } from "./SystemMessageCollapsible";
 import { REASONING_CONSTANTS } from "../client/constants/reasoning";
 

@@ -51,6 +51,8 @@ export declare interface ChatConfig {
     endpoint?: "brief-planner" | "conversation";
 }
 
+export declare const ChatIcon: default_2.FC<IconProps>;
+
 export declare type ChatMode = "sidebar" | "fullscreen" | "modal" | "embedded";
 
 export declare type ChatPosition = "left" | "right";
@@ -83,6 +85,10 @@ export declare interface ClientTool {
 
 export declare type ClientTools = ClientTool[];
 
+export declare const CloseIcon: default_2.FC<IconProps>;
+
+export declare const CollapseIcon: default_2.FC<IconProps>;
+
 declare interface ContextHelpers {
     [key: string]: any;
 }
@@ -91,6 +97,8 @@ export declare interface ConversationResponse {
     conversationId: string;
     message: string;
 }
+
+export declare const CopyIcon: default_2.FC<IconProps>;
 
 /**
  * Create a new thread
@@ -131,6 +139,19 @@ export declare function fetchUserThreads(apiBaseUrl: string, userId: string, opt
     includeArchived?: boolean;
     limit?: number;
 }): Promise<Thread[]>;
+
+export declare const FullscreenIcon: default_2.FC<FullscreenIconProps>;
+
+declare interface FullscreenIconProps extends IconProps {
+    isFullscreen?: boolean;
+}
+
+export declare interface IconProps {
+    className?: string;
+    onClick?: () => void;
+    size?: number;
+    color?: string;
+}
 
 export declare const InlineLoader: ({ size, fullHeight, }: InlineLoaderProps) => JSX_2.Element;
 
@@ -254,6 +275,8 @@ declare interface ReasoningTriggerProps {
     isExpanded?: boolean;
 }
 
+export declare const SettingsIcon: default_2.FC<IconProps>;
+
 export declare interface StreamEvent {
     type: string;
     event?: string;
@@ -279,6 +302,15 @@ export declare const SuggestedPrompts: default_2.FC<SuggestedPromptsProps>;
 declare interface SuggestedPromptsProps {
     prompts: SuggestedPrompt[];
     onPromptSelect: (prompt: SuggestedPrompt) => void;
+}
+
+export declare interface SVGIconProps extends IconProps {
+    width?: number;
+    height?: number;
+    viewBox?: string;
+    fill?: string;
+    stroke?: string;
+    strokeWidth?: number;
 }
 
 export declare interface Thread {

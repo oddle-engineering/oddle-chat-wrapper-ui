@@ -9,6 +9,14 @@ export { SuggestedPrompts } from './components/SuggestedPrompts';
 export { AnimatedPlaceholder } from './components/AnimatedPlaceholder';
 export { DevSettings } from './components/DevSettings';
 export { 
+  ChatIcon, 
+  CloseIcon, 
+  FullscreenIcon, 
+  CollapseIcon, 
+  SettingsIcon,
+  CopyIcon 
+} from './components/icons';
+export { 
   PromptInput,
   PromptInputTextarea,
   PromptInputToolbar,
@@ -47,3 +55,4 @@ export type {
   MessagesResponse
 } from './types';
 export type { ChatStatus } from './components/PromptInput';
+export type { IconProps, SVGIconProps } from './components/icons';

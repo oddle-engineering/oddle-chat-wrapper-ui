@@ -1,4 +1,4 @@
-import { ContextHelpers } from '../../types';
+import { ContextHelpers } from '../types/shared';
 import {
   OutboundMessageType,
   ChatMessage,

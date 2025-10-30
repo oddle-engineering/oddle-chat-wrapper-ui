@@ -6,14 +6,7 @@ import {
   ChatMode,
   ChatPosition,
   ChatTheme,
-  App as AppType,
 } from "@oddle/chat-wrapper-ui";
-// import { EnhancedBriefPlannerDemo } from "./components/EnhancedBriefPlannerDemo";
-// import { ToolsDocumentation } from "./components/ToolsDocumentation";
-// import { IntegratedChatDemo } from "./components/IntegratedChatDemo";
-// import { UD21Demo } from "./components/UD21Demo";
-// import { ReserveDemo } from "./components/ReserveDemo";
-// import { ShopDemo } from "./components/ShopDemo";
 import { TodoPanel } from "./components/TodoPanel";
 import { ReservationPanel } from "./components/ReservationPanel";
 import "./components/panels.css";

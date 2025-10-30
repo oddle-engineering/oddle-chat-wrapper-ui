@@ -1,4 +1,5 @@
-import { WebSocketMessage, ToolCallRequest } from '../../types';
+import { ToolCallRequest } from '../types/shared';
+import { WebSocketMessage } from '../../types';
 import { 
   ChatEventHandlers,
   InboundMessageType,

@@ -1,4 +1,4 @@
-import { ToolCallRequest, ContextHelpers } from "../../types";
+import { ToolCallRequest, ContextHelpers } from "./shared";
 import { SystemEventHandler } from "./systemEvents";
 
 export interface WebSocketChatClientProps {

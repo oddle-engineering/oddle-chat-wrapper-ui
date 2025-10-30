@@ -1,4 +1,4 @@
-import { ToolCallRequest } from '../../types';
+import { ToolCallRequest } from './shared';
 
 // Main inbound message types from server
 export enum InboundMessageType {

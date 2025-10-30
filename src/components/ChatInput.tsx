@@ -36,6 +36,7 @@ export interface ChatInputRef {
   setText: (text: string) => void;
 }
 
+// TODO: Review onFileUpload security implications
 export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
   (
     {
@@ -58,10 +59,14 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     // Determine which placeholders to use
-    const activePlaceholderTexts = placeholderTexts && placeholderTexts.length > 0 ? placeholderTexts : [placeholder];
-    
+    const activePlaceholderTexts =
+      placeholderTexts && placeholderTexts.length > 0
+        ? placeholderTexts
+        : [placeholder];
+
     // Determine if animation should be active
-    const shouldAnimate = input.length === 0 && !hasMessages && activePlaceholderTexts.length > 1;
+    const shouldAnimate =
+      input.length === 0 && !hasMessages && activePlaceholderTexts.length > 1;
 
     useImperativeHandle(ref, () => ({
       focus: () => {
@@ -178,7 +183,7 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
           placeholder="" // Empty placeholder since we'll use our custom animated one
           disabled={disabled}
         />
-        
+
         {/* Animated placeholder component */}
         {!input.trim() && (
           <AnimatedPlaceholder
@@ -201,7 +206,8 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
             {uploadedMedia.map((media, index) => {
               // Check if it's an image (either base64 or URL)
               const isImageBase64 = media.startsWith("data:image/");
-              const isImageUrl = media.startsWith("http://") || media.startsWith("https://");
+              const isImageUrl =
+                media.startsWith("http://") || media.startsWith("https://");
               const isImage = isImageBase64 || isImageUrl;
 
               return (
@@ -213,203 +219,203 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
                   }}
                 >
                   {isImage ? (
-                  <div
-                    style={{
-                      position: "relative",
-                      width: "56px",
-                      height: "56px",
-                      borderRadius: "8px",
-                      overflow: "hidden",
-                      border: "1px solid #e2e8f0",
-                    }}
-                  >
-                    {/* Main image */}
-                    <img
-                      src={media}
-                      alt={`Attachment ${index + 1}`}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
-                    {/* Dark overlay on top of image */}
                     <div
                       style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundColor: "rgba(0, 0, 0, 0.3)",
-                        zIndex: 1,
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div
-                    style={{
-                      position: "relative",
-                      display: "flex",
-                      alignItems: "center",
-                      backgroundColor: "#1f2937",
-                      borderRadius: "12px",
-                      padding: "8px 12px",
-                      minWidth: "200px",
-                      maxWidth: "300px",
-                    }}
-                  >
-                    {/* File icon */}
-                    <div
-                      style={{
-                        width: "40px",
-                        height: "40px",
-                        backgroundColor: "#8b5cf6",
+                        position: "relative",
+                        width: "56px",
+                        height: "56px",
                         borderRadius: "8px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginRight: "12px",
-                        flexShrink: 0,
+                        overflow: "hidden",
+                        border: "1px solid #e2e8f0",
                       }}
                     >
-                      <svg
-                        width="24"
-                        height="25"
-                        viewBox="0 0 24 25"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
+                      {/* Main image */}
+                      <img
+                        src={media}
+                        alt={`Attachment ${index + 1}`}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                      {/* Dark overlay on top of image */}
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          backgroundColor: "rgba(0, 0, 0, 0.3)",
+                          zIndex: 1,
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        position: "relative",
+                        display: "flex",
+                        alignItems: "center",
+                        backgroundColor: "#1f2937",
+                        borderRadius: "12px",
+                        padding: "8px 12px",
+                        minWidth: "200px",
+                        maxWidth: "300px",
+                      }}
+                    >
+                      {/* File icon */}
+                      <div
+                        style={{
+                          width: "40px",
+                          height: "40px",
+                          backgroundColor: "#8b5cf6",
+                          borderRadius: "8px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          marginRight: "12px",
+                          flexShrink: 0,
+                        }}
                       >
-                        <mask
-                          id="mask0_190_623"
-                          style={{ maskType: "alpha" }}
-                          maskUnits="userSpaceOnUse"
-                          x="0"
-                          y="0"
+                        <svg
                           width="24"
                           height="25"
+                          viewBox="0 0 24 25"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
                         >
-                          <rect
-                            y="0.354126"
+                          <mask
+                            id="mask0_190_623"
+                            style={{ maskType: "alpha" }}
+                            maskUnits="userSpaceOnUse"
+                            x="0"
+                            y="0"
                             width="24"
-                            height="24"
-                            fill="#D9D9D9"
-                          />
-                        </mask>
-                        <g mask="url(#mask0_190_623)">
-                          <path
-                            d="M8.19225 13.0079H15.8077V11.5079H8.19225V13.0079ZM8.19225 15.8926H15.8077V14.3926H8.19225V15.8926ZM8.19225 18.7771H12.8077V17.2771H8.19225V18.7771ZM6.30775 21.8541C5.80258 21.8541 5.375 21.6791 5.025 21.3291C4.675 20.9791 4.5 20.5515 4.5 20.0464V4.66188C4.5 4.15671 4.675 3.72913 5.025 3.37913C5.375 3.02913 5.80258 2.85413 6.30775 2.85413H14.25L19.5 8.10413V20.0464C19.5 20.5515 19.325 20.9791 18.975 21.3291C18.625 21.6791 18.1974 21.8541 17.6923 21.8541H6.30775ZM13.5 8.85413V4.35413H6.30775C6.23075 4.35413 6.16025 4.38621 6.09625 4.45038C6.03208 4.51438 6 4.58488 6 4.66188V20.0464C6 20.1234 6.03208 20.1939 6.09625 20.2579C6.16025 20.322 6.23075 20.3541 6.30775 20.3541H17.6923C17.7692 20.3541 17.8398 20.322 17.9038 20.2579C17.9679 20.1939 18 20.1234 18 20.0464V8.85413H13.5Z"
-                            fill="white"
-                          />
-                        </g>
-                      </svg>
-                    </div>
+                            height="25"
+                          >
+                            <rect
+                              y="0.354126"
+                              width="24"
+                              height="24"
+                              fill="#D9D9D9"
+                            />
+                          </mask>
+                          <g mask="url(#mask0_190_623)">
+                            <path
+                              d="M8.19225 13.0079H15.8077V11.5079H8.19225V13.0079ZM8.19225 15.8926H15.8077V14.3926H8.19225V15.8926ZM8.19225 18.7771H12.8077V17.2771H8.19225V18.7771ZM6.30775 21.8541C5.80258 21.8541 5.375 21.6791 5.025 21.3291C4.675 20.9791 4.5 20.5515 4.5 20.0464V4.66188C4.5 4.15671 4.675 3.72913 5.025 3.37913C5.375 3.02913 5.80258 2.85413 6.30775 2.85413H14.25L19.5 8.10413V20.0464C19.5 20.5515 19.325 20.9791 18.975 21.3291C18.625 21.6791 18.1974 21.8541 17.6923 21.8541H6.30775ZM13.5 8.85413V4.35413H6.30775C6.23075 4.35413 6.16025 4.38621 6.09625 4.45038C6.03208 4.51438 6 4.58488 6 4.66188V20.0464C6 20.1234 6.03208 20.1939 6.09625 20.2579C6.16025 20.322 6.23075 20.3541 6.30775 20.3541H17.6923C17.7692 20.3541 17.8398 20.322 17.9038 20.2579C17.9679 20.1939 18 20.1234 18 20.0464V8.85413H13.5Z"
+                              fill="white"
+                            />
+                          </g>
+                        </svg>
+                      </div>
 
-                    {/* File info */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div
-                        style={{
-                          color: "white",
-                          fontSize: "14px",
-                          fontWeight: "500",
-                          marginBottom: "2px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          maxWidth: "100px",
-                        }}
-                      >
-                        {/* Extract filename from media string */}
-                        {(() => {
-                          const nameMatch = media.match(/name=([^;]+)/);
-                          if (nameMatch) {
-                            return decodeURIComponent(nameMatch[1]);
-                          }
-                          return "document.pdf";
-                        })()}
-                      </div>
-                      <div
-                        style={{
-                          color: "#9ca3af",
-                          fontSize: "12px",
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        {/* Extract file type from media string */}
-                        {(() => {
-                          const typeMatch = media.match(/data:([^;]+)/);
-                          if (typeMatch) {
-                            const mimeType = typeMatch[1];
-                            switch (mimeType) {
-                              case "application/pdf":
-                                return "PDF";
-                              case "application/msword":
-                              case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-                                return "DOC";
-                              case "application/vnd.ms-excel":
-                              case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
-                                return "XLS";
-                              case "application/vnd.ms-powerpoint":
-                              case "application/vnd.openxmlformats-officedocument.presentationml.presentation":
-                                return "PPT";
-                              case "text/plain":
-                                return "TXT";
-                              case "text/csv":
-                                return "CSV";
-                              case "application/json":
-                                return "JSON";
-                              case "application/xml":
-                              case "text/xml":
-                                return "XML";
-                              case "application/zip":
-                                return "ZIP";
-                              case "application/x-rar-compressed":
-                                return "RAR";
-                              default:
-                                // Extract the subtype after the slash
-                                const subtype = mimeType.split("/")[1];
-                                return subtype
-                                  ? subtype.toUpperCase().substring(0, 4)
-                                  : "FILE";
+                      {/* File info */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div
+                          style={{
+                            color: "white",
+                            fontSize: "14px",
+                            fontWeight: "500",
+                            marginBottom: "2px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "100px",
+                          }}
+                        >
+                          {/* Extract filename from media string */}
+                          {(() => {
+                            const nameMatch = media.match(/name=([^;]+)/);
+                            if (nameMatch) {
+                              return decodeURIComponent(nameMatch[1]);
                             }
-                          }
-                          return "FILE";
-                        })()}
+                            return "document.pdf";
+                          })()}
+                        </div>
+                        <div
+                          style={{
+                            color: "#9ca3af",
+                            fontSize: "12px",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          {/* Extract file type from media string */}
+                          {(() => {
+                            const typeMatch = media.match(/data:([^;]+)/);
+                            if (typeMatch) {
+                              const mimeType = typeMatch[1];
+                              switch (mimeType) {
+                                case "application/pdf":
+                                  return "PDF";
+                                case "application/msword":
+                                case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+                                  return "DOC";
+                                case "application/vnd.ms-excel":
+                                case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+                                  return "XLS";
+                                case "application/vnd.ms-powerpoint":
+                                case "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+                                  return "PPT";
+                                case "text/plain":
+                                  return "TXT";
+                                case "text/csv":
+                                  return "CSV";
+                                case "application/json":
+                                  return "JSON";
+                                case "application/xml":
+                                case "text/xml":
+                                  return "XML";
+                                case "application/zip":
+                                  return "ZIP";
+                                case "application/x-rar-compressed":
+                                  return "RAR";
+                                default:
+                                  // Extract the subtype after the slash
+                                  const subtype = mimeType.split("/")[1];
+                                  return subtype
+                                    ? subtype.toUpperCase().substring(0, 4)
+                                    : "FILE";
+                              }
+                            }
+                            return "FILE";
+                          })()}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-                <button
-                  onClick={() => {
-                    setUploadedMedia((prev) =>
-                      prev.filter((_, i) => i !== index)
-                    );
-                  }}
-                  style={{
-                    position: "absolute",
-                    top: isImage ? "6px" : "8px",
-                    right: isImage ? "6px" : "8px",
-                    width: "20px",
-                    height: "20px",
-                    borderRadius: "50%",
-                    backgroundColor: "transparent",
-                    border: "2px solid white",
-                    color: "white",
-                    fontSize: "14px",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    zIndex: 2, // Above the overlay
-                    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.3)",
-                    fontWeight: "bold",
-                    transition: "all 0.2s",
-                  }}
-                  title="Remove attachment"
-                >
-                  ×
-                </button>
-              </div>
+                  )}
+                  <button
+                    onClick={() => {
+                      setUploadedMedia((prev) =>
+                        prev.filter((_, i) => i !== index)
+                      );
+                    }}
+                    style={{
+                      position: "absolute",
+                      top: isImage ? "6px" : "8px",
+                      right: isImage ? "6px" : "8px",
+                      width: "20px",
+                      height: "20px",
+                      borderRadius: "50%",
+                      backgroundColor: "transparent",
+                      border: "2px solid white",
+                      color: "white",
+                      fontSize: "14px",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      zIndex: 2, // Above the overlay
+                      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.3)",
+                      fontWeight: "bold",
+                      transition: "all 0.2s",
+                    }}
+                    title="Remove attachment"
+                  >
+                    ×
+                  </button>
+                </div>
               );
             })}
           </div>

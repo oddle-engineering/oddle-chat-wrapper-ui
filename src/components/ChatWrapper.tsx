@@ -15,10 +15,18 @@ import { MessagesList } from "./MessagesList";
 import { WebSocketChatClient, SystemEvent, SystemEventType } from "../client";
 import { sanitizeMessage } from "../utils/security";
 import { fetchThreadMessages } from "../utils/threadApi";
+import { buildClasses } from "../utils/classNames";
 import {
   ReasoningDetector,
   REASONING_CONSTANTS,
 } from "../client/constants/reasoning";
+import {
+  ChatIcon,
+  CloseIcon,
+  FullscreenIcon,
+  CollapseIcon,
+  SettingsIcon,
+} from "./icons";
 import "../styles/chat-wrapper.css";
 
 function ChatWrapper({
@@ -64,10 +72,8 @@ function ChatWrapper({
   const [currentConvUuid, setCurrentConvUuid] = useState<string | null>(null);
 
   // Advanced state for tool results and streaming
-  const [toolResults] = useState<ToolResult[]>([]);
   const [streamingStatus, setStreamingStatus] = useState("");
   const [isThinking, setIsThinking] = useState(false);
-  const [, setReasoningContent] = useState("");
   const [streamingContent, setStreamingContent] = useState("");
 
   // Tool JSON handling state
@@ -308,7 +314,7 @@ function ChatWrapper({
             // Update streaming content
             streamingContentRef.current += sanitizedChar;
             setStreamingContent(streamingContentRef.current);
-            
+
             // Update the streaming message in the messages array
             setMessages((prev) =>
               prev.map((msg) =>
@@ -328,7 +334,7 @@ function ChatWrapper({
             currentAssistantMessageIdRef.current = newAssistantMessageId;
             streamingContentRef.current = sanitizedChar;
             setStreamingContent(sanitizedChar);
-            
+
             // Create new streaming assistant message
             const streamingMessage: Message = {
               id: newAssistantMessageId,
@@ -337,7 +343,7 @@ function ChatWrapper({
               timestamp: new Date(),
               isStreaming: true,
             };
-            
+
             setMessages((prev) => [...prev, streamingMessage]);
           }
         },
@@ -370,7 +376,6 @@ function ChatWrapper({
         ) => {
           const { callId } = toolCallRequest || {};
           setIsHandlingTool(isThinking);
-          setReasoningContent(content);
 
           // If no callId provided, use legacy behavior
           if (!callId) {
@@ -775,7 +780,6 @@ function ChatWrapper({
     setChatStatus("idle");
     setStreamingStatus("");
     setIsThinking(false);
-    setReasoningContent("");
 
     // Clean up streaming state
     currentAssistantMessageIdRef.current = null;
@@ -914,11 +918,6 @@ function ChatWrapper({
     }
   }, [currentMode, isModalOpen, closeModal]);
 
-  // Build CSS classes without external library
-  const buildClasses = (...classes: (string | undefined | false)[]): string => {
-    return classes.filter(Boolean).join(" ");
-  };
-
   const containerClasses = buildClasses(
     "chat-wrapper",
     `chat-wrapper--${currentMode}`,
@@ -950,22 +949,7 @@ function ChatWrapper({
           onClick={handleClick}
           title={title}
         >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="chat-wrapper__bubble-icon"
-          >
-            <path
-              d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H5.17L4 17.17V4H20V16Z"
-              fill="currentColor"
-            />
-            <circle cx="7" cy="10" r="1" fill="currentColor" />
-            <circle cx="12" cy="10" r="1" fill="currentColor" />
-            <circle cx="17" cy="10" r="1" fill="currentColor" />
-          </svg>
+          <ChatIcon className="chat-wrapper__bubble-icon" size={24} />
           {config.features?.showBubbleText !== false && (
             <span className="chat-wrapper__bubble-text">
               {config.bubbleText || "Chat"}
@@ -986,18 +970,7 @@ function ChatWrapper({
           onClick={closeModal}
           title="Close chat"
         >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z"
-              fill="currentColor"
-            />
-          </svg>
+          <CloseIcon size={20} />
         </button>
       );
     }
@@ -1022,33 +995,7 @@ function ChatWrapper({
           onClick={toggleFullscreen}
           title={isFullscreen ? "Switch to sidebar" : "Switch to fullscreen"}
         >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            {isFullscreen ? (
-              // Minimize icon (arrows pointing inward)
-              <path
-                d="M8 3v3a2 2 0 01-2 2H3M21 8h-3a2 2 0 01-2-2V3M3 16h3a2 2 0 012 2v3M16 21v-3a2 2 0 012-2h3"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            ) : (
-              // Fullscreen icon (arrows pointing outward)
-              <path
-                d="M7 14H5v5h5v-2M5 10V5h5v2M17 14h2v5h-5v-2M19 10V5h-5v2"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            )}
-          </svg>
+          <FullscreenIcon size={20} isFullscreen={isFullscreen} />
         </button>
       );
     }
@@ -1068,21 +1015,7 @@ function ChatWrapper({
           onClick={toggleCollapse}
           title="Collapse chat"
         >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M18 12l-3 3-3-3m-6 3l-3 3-3-3"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <CollapseIcon size={20} />
         </button>
       );
     }
@@ -1101,18 +1034,7 @@ function ChatWrapper({
           onClick={() => setIsDevSettingsOpen(true)}
           title="Developer Settings"
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.488.488 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"
-              fill="currentColor"
-            />
-          </svg>
+          <SettingsIcon size={16} />
         </button>
       );
     }
@@ -1131,48 +1053,8 @@ function ChatWrapper({
         onClick={() => setIsDevSettingsOpen(true)}
         title="Developer Settings"
       >
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.488.488 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"
-            fill="currentColor"
-          />
-        </svg>
+        <SettingsIcon size={16} />
       </button>
-    );
-  };
-
-  // Render tool results panel (if enabled)
-  const renderToolResults = () => {
-    if (!config.features?.showToolResults || toolResults.length === 0)
-      return null;
-
-    return (
-      <div className="chat-wrapper__tool-results">
-        <h4>Tool Results</h4>
-        <div className="chat-wrapper__tool-results-list">
-          {toolResults.map((result) => (
-            <div key={result.id} className="chat-wrapper__tool-result">
-              <div className="chat-wrapper__tool-result-title">
-                {result.title}
-              </div>
-              {result.description && (
-                <div className="chat-wrapper__tool-result-description">
-                  {result.description}
-                </div>
-              )}
-              <div className="chat-wrapper__tool-result-meta">
-                Status: {result.status || "completed"}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
     );
   };
 
@@ -1208,8 +1090,6 @@ function ChatWrapper({
             </div>
           </div>
         )}
-
-        {/* {renderThinkingIndicator()} */}
 
         {!isCollapsed && (
           <>
@@ -1263,8 +1143,6 @@ function ChatWrapper({
                   currentAssistantMessageIdRef={currentAssistantMessageIdRef}
                 />
               )}
-
-              {renderToolResults()}
 
               {/* Chat Input - flexible sizing */}
               <div className="chat-wrapper__input-container">
