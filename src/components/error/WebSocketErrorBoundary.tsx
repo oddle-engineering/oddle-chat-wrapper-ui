@@ -130,7 +130,13 @@ export class WebSocketErrorBoundary extends Component<WebSocketErrorBoundaryProp
                   </>
                 )}
               </div>
-              {import.meta.env?.DEV && (
+              {(() => {
+                try {
+                  return (import.meta as any).env?.DEV;
+                } catch {
+                  return false;
+                }
+              })() && (
                 <details className="chat-wrapper__error-details">
                   <summary>Error Details (Development)</summary>
                   <pre className="chat-wrapper__error-stack">

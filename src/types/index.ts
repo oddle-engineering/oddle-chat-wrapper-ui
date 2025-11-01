@@ -111,9 +111,7 @@ export interface ChatWrapperProps {
   
   // Existing props
   config: Omit<ChatConfig, "apiEndpoint">;
-  tools?: Record<string, (...args: any[]) => any>;
-  clientTools?: ClientTools;
-  initialMessages?: Message[];
+  tools?: Tools; // Unified tools with execution functions
   devMode?: boolean;
   contextHelpers?: ContextHelpers;
 }
@@ -158,6 +156,22 @@ export interface ToolParameter {
   };
 }
 
+// Tool schema interface (sent to server)
+export interface ToolSchema {
+  name: string;
+  description: string;
+  parameters: ToolParameter[];
+}
+
+// Enhanced tool interface with execution function (client-side)
+export interface Tool extends ToolSchema {
+  execute: (params: any) => Promise<any> | any;
+}
+
+// Type for tools array
+export type Tools = Tool[];
+
+// Legacy ClientTool interface (for backward compatibility)
 export interface ClientTool {
   name: string;
   description: string;

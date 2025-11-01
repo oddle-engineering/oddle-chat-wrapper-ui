@@ -7,13 +7,9 @@ import {
 } from "../client/constants/reasoning";
 import { ProcessingStatus, PROCESSING_STATUS } from "../constants/chatStatus";
 
-interface UseMessageHandlingProps {
-  initialMessages?: Message[];
-}
-
-export function useMessageHandling({ initialMessages = [] }: UseMessageHandlingProps) {
+export function useMessageHandling() {
   // Core message state
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");

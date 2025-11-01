@@ -8,6 +8,7 @@ import {
   ChatTheme,
   App as ChatApp,
   EntityType,
+  Tools,
 } from "@oddle/chat-wrapper-ui";
 import { TodoPanel } from "./components/TodoPanel";
 import { ReservationPanel } from "./components/ReservationPanel";
@@ -457,17 +458,17 @@ function App() {
       setReservations((prev) => {
         const stats = {
           total: prev.length,
-          confirmed: prev.filter((r) => r.status === "confirmed").length,
           pending: prev.filter((r) => r.status === "pending").length,
+          confirmed: prev.filter((r) => r.status === "confirmed").length,
           cancelled: prev.filter((r) => r.status === "cancelled").length,
+          no_show: prev.filter((r) => r.status === "no_show").length,
           completed: prev.filter((r) => r.status === "completed").length,
-          no_shows: prev.filter((r) => r.status === "no_show").length,
         };
 
         resolve({
           success: true,
           stats,
-          message: `Reservation stats: ${stats.total} total, ${stats.confirmed} confirmed, ${stats.pending} pending`,
+          message: `Retrieved statistics for ${stats.total} reservations`,
         });
 
         return prev;
@@ -475,20 +476,258 @@ function App() {
     });
   }, []);
 
-  const clientTools = useMemo(
-    () => ({
-      create_to_do: createTodo,
-      read_to_dos: readTodos,
-      create_reservation: createReservation,
-      update_reservation: updateReservation,
-      cancel_reservation: cancelReservation,
-      confirm_reservation: confirmReservation,
-      mark_no_show: markNoShow,
-      complete_reservation: completeReservation,
-      list_reservations: listReservations,
-      get_availability: getAvailability,
-      get_reservation_stats: getReservationStats,
-    }),
+  // New unified tools with execution functions
+  const tools: Tools = useMemo(
+    () => [
+      // To-do management tools
+      {
+        name: "create_to_do",
+        description: "Create a new to-do task",
+        parameters: [
+          {
+            name: "task_description",
+            type: "string",
+            description: "Description of the task to be created",
+            isRequired: true,
+            schema: { type: "string" },
+          },
+        ],
+        execute: createTodo,
+      },
+      {
+        name: "read_to_dos",
+        description: "Read all existing to-do items",
+        parameters: [],
+        execute: readTodos,
+      },
+      
+      // Reservation management tools
+      {
+        name: "create_reservation",
+        description: "Create a new reservation",
+        parameters: [
+          {
+            name: "customerName",
+            type: "string",
+            description: "Customer's full name",
+            isRequired: true,
+            schema: { type: "string" },
+          },
+          {
+            name: "email",
+            type: "string",
+            description: "Customer's email address",
+            isRequired: true,
+            schema: { type: "string" },
+          },
+          {
+            name: "phone",
+            type: "string",
+            description: "Customer's phone number",
+            isRequired: false,
+            schema: { type: "string" },
+          },
+          {
+            name: "date",
+            type: "string",
+            description: "Reservation date (YYYY-MM-DD)",
+            isRequired: true,
+            schema: { type: "string" },
+          },
+          {
+            name: "time",
+            type: "string",
+            description: "Reservation time (HH:MM)",
+            isRequired: true,
+            schema: { type: "string" },
+          },
+          {
+            name: "partySize",
+            type: "number",
+            description: "Number of people",
+            isRequired: true,
+            schema: { type: "number" },
+          },
+          {
+            name: "specialRequests",
+            type: "string",
+            description: "Special requests or notes",
+            isRequired: false,
+            schema: { type: "string" },
+          },
+        ],
+        execute: createReservation,
+      },
+      {
+        name: "update_reservation",
+        description: "Update an existing reservation",
+        parameters: [
+          {
+            name: "reservation_id",
+            type: "string",
+            description: "ID of the reservation to update",
+            isRequired: true,
+            schema: { type: "string" },
+          },
+          {
+            name: "new_time",
+            type: "string",
+            description: "New reservation time (HH:MM)",
+            isRequired: false,
+            schema: { type: "string" },
+          },
+          {
+            name: "new_date",
+            type: "string",
+            description: "New reservation date (YYYY-MM-DD)",
+            isRequired: false,
+            schema: { type: "string" },
+          },
+          {
+            name: "party_size",
+            type: "number",
+            description: "Updated party size",
+            isRequired: false,
+            schema: { type: "number" },
+          },
+          {
+            name: "special_requests",
+            type: "string",
+            description: "Updated special requests",
+            isRequired: false,
+            schema: { type: "string" },
+          },
+        ],
+        execute: updateReservation,
+      },
+      {
+        name: "cancel_reservation",
+        description: "Cancel a reservation",
+        parameters: [
+          {
+            name: "id",
+            type: "string",
+            description: "ID of the reservation to cancel",
+            isRequired: true,
+            schema: { type: "string" },
+          },
+          {
+            name: "reason",
+            type: "string",
+            description: "Reason for cancellation",
+            isRequired: false,
+            schema: { type: "string" },
+          },
+        ],
+        execute: cancelReservation,
+      },
+      {
+        name: "confirm_reservation",
+        description: "Confirm a reservation",
+        parameters: [
+          {
+            name: "id",
+            type: "string",
+            description: "ID of the reservation to confirm",
+            isRequired: true,
+            schema: { type: "string" },
+          },
+          {
+            name: "table",
+            type: "string",
+            description: "Table number to assign",
+            isRequired: false,
+            schema: { type: "string" },
+          },
+        ],
+        execute: confirmReservation,
+      },
+      {
+        name: "mark_no_show",
+        description: "Mark a reservation as no-show",
+        parameters: [
+          {
+            name: "id",
+            type: "string",
+            description: "ID of the reservation to mark as no-show",
+            isRequired: true,
+            schema: { type: "string" },
+          },
+        ],
+        execute: markNoShow,
+      },
+      {
+        name: "complete_reservation",
+        description: "Mark a reservation as completed",
+        parameters: [
+          {
+            name: "id",
+            type: "string",
+            description: "ID of the reservation to complete",
+            isRequired: true,
+            schema: { type: "string" },
+          },
+        ],
+        execute: completeReservation,
+      },
+      {
+        name: "list_reservations",
+        description: "List reservations with optional filters",
+        parameters: [
+          {
+            name: "status",
+            type: "string",
+            description: "Filter by reservation status",
+            isRequired: false,
+            schema: {
+              type: "string",
+              enum: [
+                "pending",
+                "confirmed",
+                "cancelled",
+                "no_show",
+                "completed",
+              ],
+            },
+          },
+          {
+            name: "date",
+            type: "string",
+            description: "Filter by date (YYYY-MM-DD)",
+            isRequired: false,
+            schema: { type: "string" },
+          },
+        ],
+        execute: listReservations,
+      },
+      {
+        name: "get_availability",
+        description: "Check table availability for a date and time",
+        parameters: [
+          {
+            name: "date",
+            type: "string",
+            description: "Date to check (YYYY-MM-DD)",
+            isRequired: true,
+            schema: { type: "string" },
+          },
+          {
+            name: "time",
+            type: "string",
+            description: "Time to check (HH:MM)",
+            isRequired: false,
+            schema: { type: "string" },
+          },
+        ],
+        execute: getAvailability,
+      },
+      {
+        name: "get_reservation_stats",
+        description: "Get reservation statistics and summary",
+        parameters: [],
+        execute: getReservationStats,
+      },
+    ],
     [
       createTodo,
       readTodos,
@@ -535,246 +774,7 @@ function App() {
           exportChat: true,
         },
       },
-      tools: clientTools,
-      clientTools: [
-        // To-do management tools
-        {
-          name: "create_to_do",
-          description: "Create a new to-do task",
-          parameters: [
-            {
-              name: "task_description",
-              type: "string",
-              description: "Description of the task to be created",
-              isRequired: true,
-              schema: { type: "string" },
-            },
-          ],
-        },
-        {
-          name: "read_to_dos",
-          description: "Read all existing to-do items",
-          parameters: [],
-        },
-
-        // Reservation management tools
-        {
-          name: "create_reservation",
-          description: "Create a new restaurant reservation",
-          parameters: [
-            {
-              name: "customerName",
-              type: "string",
-              description: "Name of the customer",
-              isRequired: true,
-              schema: { type: "string" },
-            },
-            {
-              name: "email",
-              type: "string",
-              description: "Customer email address",
-              isRequired: true,
-              schema: { type: "string" },
-            },
-            {
-              name: "date",
-              type: "string",
-              description: "Reservation date (YYYY-MM-DD)",
-              isRequired: true,
-              schema: { type: "string" },
-            },
-            {
-              name: "time",
-              type: "string",
-              description: "Reservation time (HH:MM)",
-              isRequired: true,
-              schema: { type: "string" },
-            },
-            {
-              name: "partySize",
-              type: "number",
-              description: "Number of guests",
-              isRequired: true,
-              schema: { type: "number" },
-            },
-            {
-              name: "phone",
-              type: "string",
-              description: "Customer phone number",
-              isRequired: false,
-              schema: { type: "string" },
-            },
-            {
-              name: "specialRequests",
-              type: "string",
-              description: "Special requests or dietary restrictions",
-              isRequired: false,
-              schema: { type: "string" },
-            },
-          ],
-        },
-        {
-          name: "update_reservation",
-          description: "Update an existing reservation",
-          parameters: [
-            {
-              name: "reservation_id",
-              type: "string",
-              description: "ID of the reservation to update",
-              isRequired: true,
-              schema: { type: "string" },
-            },
-            {
-              name: "new_time",
-              type: "string",
-              description: "New time for the reservation",
-              isRequired: false,
-              schema: { type: "string" },
-            },
-            {
-              name: "new_date",
-              type: "string",
-              description: "New date for the reservation",
-              isRequired: false,
-              schema: { type: "string" },
-            },
-            {
-              name: "party_size",
-              type: "number",
-              description: "New party size",
-              isRequired: false,
-              schema: { type: "number" },
-            },
-            {
-              name: "special_requests",
-              type: "string",
-              description: "Updated special requests",
-              isRequired: false,
-              schema: { type: "string" },
-            },
-          ],
-        },
-        {
-          name: "cancel_reservation",
-          description: "Cancel a reservation",
-          parameters: [
-            {
-              name: "id",
-              type: "string",
-              description: "ID of the reservation to cancel",
-              isRequired: true,
-              schema: { type: "string" },
-            },
-            {
-              name: "reason",
-              type: "string",
-              description: "Reason for cancellation",
-              isRequired: false,
-              schema: { type: "string" },
-            },
-          ],
-        },
-        {
-          name: "confirm_reservation",
-          description: "Confirm a reservation",
-          parameters: [
-            {
-              name: "id",
-              type: "string",
-              description: "ID of the reservation to confirm",
-              isRequired: true,
-              schema: { type: "string" },
-            },
-            {
-              name: "table",
-              type: "string",
-              description: "Table number to assign",
-              isRequired: false,
-              schema: { type: "string" },
-            },
-          ],
-        },
-        {
-          name: "mark_no_show",
-          description: "Mark a reservation as no-show",
-          parameters: [
-            {
-              name: "id",
-              type: "string",
-              description: "ID of the reservation to mark as no-show",
-              isRequired: true,
-              schema: { type: "string" },
-            },
-          ],
-        },
-        {
-          name: "complete_reservation",
-          description: "Mark a reservation as completed",
-          parameters: [
-            {
-              name: "id",
-              type: "string",
-              description: "ID of the reservation to complete",
-              isRequired: true,
-              schema: { type: "string" },
-            },
-          ],
-        },
-        {
-          name: "list_reservations",
-          description: "List reservations with optional filters",
-          parameters: [
-            {
-              name: "status",
-              type: "string",
-              description: "Filter by reservation status",
-              isRequired: false,
-              schema: {
-                type: "string",
-                enum: [
-                  "pending",
-                  "confirmed",
-                  "cancelled",
-                  "no_show",
-                  "completed",
-                ],
-              },
-            },
-            {
-              name: "date",
-              type: "string",
-              description: "Filter by date (YYYY-MM-DD)",
-              isRequired: false,
-              schema: { type: "string" },
-            },
-          ],
-        },
-        {
-          name: "get_availability",
-          description: "Check table availability for a date and time",
-          parameters: [
-            {
-              name: "date",
-              type: "string",
-              description: "Date to check (YYYY-MM-DD)",
-              isRequired: true,
-              schema: { type: "string" },
-            },
-            {
-              name: "time",
-              type: "string",
-              description: "Time to check (HH:MM)",
-              isRequired: false,
-              schema: { type: "string" },
-            },
-          ],
-        },
-        {
-          name: "get_reservation_stats",
-          description: "Get reservation statistics and summary",
-          parameters: [],
-        },
-      ],
+      tools: tools,
       contextHelpers: {
         brandInfo: {
           id: "ud21_123",
@@ -783,7 +783,7 @@ function App() {
         locale: "en-US",
       },
     }),
-    [customConfig, clientTools]
+    [customConfig, tools]
   );
 
   const modalChatProps: ChatWrapperProps = useMemo(
@@ -817,28 +817,7 @@ function App() {
           exportChat: true,
         },
       },
-      tools: clientTools,
-      clientTools: [
-        // To-do management tools
-        {
-          name: "create_to_do",
-          description: "Create a new to-do task",
-          parameters: [
-            {
-              name: "task_description",
-              type: "string",
-              description: "Description of the task to be created",
-              isRequired: true,
-              schema: { type: "string" },
-            },
-          ],
-        },
-        {
-          name: "read_to_dos",
-          description: "Read all existing to-do items",
-          parameters: [],
-        },
-      ],
+      tools: tools,
       contextHelpers: {
         brandInfo: {
           id: "host_456",
@@ -848,9 +827,10 @@ function App() {
           name: "McDonald's Host Interface",
           features: ["reservation", "waitlist", "seating"],
         },
+        locale: "en-US",
       },
     }),
-    [customConfig, clientTools]
+    [customConfig, tools]
   );
 
   return (

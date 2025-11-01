@@ -1,6 +1,6 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { WebSocketChatClient, SystemEvent } from "../client";
-import { ContextHelpers, EntityType } from "../types";
+import { ContextHelpers, EntityType, Tools } from "../types";
 
 interface UseWebSocketConnectionProps {
   // Authentication and server properties
@@ -14,9 +14,10 @@ interface UseWebSocketConnectionProps {
   entityId?: string;
   entityType?: EntityType;
   
-  // Existing properties
-  clientTools?: any[];
-  tools?: Record<string, (...args: any[]) => any>;
+  // Tools configuration
+  tools?: Tools; // Unified tools with execution functions
+  
+  // Other properties
   contextHelpers?: ContextHelpers;
   onSetMessage: (char: string) => void;
   onSystemEvent: (event: SystemEvent) => void;
@@ -39,9 +40,10 @@ export function useWebSocketConnection({
   entityId,
   entityType,
   
-  // Existing properties
-  clientTools,
+  // Tools configuration
   tools,
+  
+  // Other properties
   contextHelpers,
   onSetMessage,
   onSystemEvent,
@@ -50,6 +52,30 @@ export function useWebSocketConnection({
   const [agentClient, setAgentClient] = useState<WebSocketChatClient | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const agentClientRef = useRef<WebSocketChatClient | null>(null);
+
+  // Process tools and extract schemas for server
+  const { toolSchemas, clientToolExecutors } = useMemo(() => {
+    if (tools && tools.length > 0) {
+      // Extract schemas (without execute functions) for server
+      const schemas = tools.map(({ execute, ...schema }) => schema);
+      const executors: Record<string, (...args: any[]) => any> = {};
+      
+      // Extract execution functions for client-side use
+      tools.forEach(tool => {
+        executors[tool.name] = tool.execute;
+      });
+      
+      return {
+        toolSchemas: schemas,
+        clientToolExecutors: executors,
+      };
+    }
+    
+    return {
+      toolSchemas: [],
+      clientToolExecutors: {},
+    };
+  }, [tools]);
 
   const connectAgentClient = useCallback(async () => {
     try {
@@ -85,9 +111,9 @@ export function useWebSocketConnection({
         entityId,
         entityType: entityType?.toString(),
         
-        // Existing properties
-        toolSchemas: clientTools,
-        clientTools: tools,
+        // Tools configuration
+        toolSchemas: toolSchemas,
+        clientTools: clientToolExecutors,
         contextHelpers: contextHelpersToUse,
         onSetMessage,
         onSystemEvent,
@@ -107,8 +133,8 @@ export function useWebSocketConnection({
     userId,
     entityId,
     entityType,
-    clientTools,
-    tools,
+    toolSchemas,
+    clientToolExecutors,
     contextHelpers,
     onSetMessage,
     onSystemEvent,

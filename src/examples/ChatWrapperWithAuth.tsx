@@ -94,7 +94,6 @@ export const ChatWrapperWithAuth: React.FC = () => {
         }}
         
         // Optional props
-        initialMessages={[]}
         devMode={false}
       />
       

@@ -74,7 +74,7 @@ export declare type ChatTheme = "light" | "dark" | "auto";
 
 export declare const ChatWrapper: MemoExoticComponent<typeof ChatWrapper_2>;
 
-declare function ChatWrapper_2({ userMpAuthToken, chatServerUrl, chatServerKey, providerResId, userId, entityId, entityType, app, config, tools, clientTools, initialMessages, devMode, contextHelpers, }: ChatWrapperProps): JSX_2.Element | null;
+declare function ChatWrapper_2({ userMpAuthToken, chatServerUrl, chatServerKey, providerResId, userId, entityId, entityType, app, config, tools, devMode, contextHelpers, }: ChatWrapperProps): JSX_2.Element;
 
 export declare interface ChatWrapperProps {
     userMpAuthToken: string;
@@ -86,9 +86,7 @@ export declare interface ChatWrapperProps {
     entityType?: EntityType;
     app: App;
     config: Omit<ChatConfig, "apiEndpoint">;
-    tools?: Record<string, (...args: any[]) => any>;
-    clientTools?: ClientTools;
-    initialMessages?: Message[];
+    tools?: Tools;
     devMode?: boolean;
     contextHelpers?: ContextHelpers;
 }
@@ -388,6 +386,10 @@ export declare interface ThreadsResponse {
     threads: Thread[];
 }
 
+export declare interface Tool extends ToolSchema {
+    execute: (params: any) => Promise<any> | any;
+}
+
 export declare interface ToolParameter {
     name: string;
     type: string;
@@ -411,6 +413,14 @@ export declare interface ToolResult {
     status?: string;
     created_at: string;
     [key: string]: any;
+}
+
+export declare type Tools = Tool[];
+
+export declare interface ToolSchema {
+    name: string;
+    description: string;
+    parameters: ToolParameter[];
 }
 
 export { }

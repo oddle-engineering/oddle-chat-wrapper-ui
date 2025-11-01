@@ -44,8 +44,6 @@ function ChatWrapper({
   // Existing props
   config,
   tools,
-  clientTools,
-  initialMessages = [],
   devMode = false,
   contextHelpers,
 }: ChatWrapperProps) {
@@ -72,8 +70,17 @@ function ChatWrapper({
     [httpApiUrl, userMpAuthToken, chatServerKey]
   );
 
+  // Extract client tools for UI display
+  const uiClientTools = useMemo(() => {
+    if (tools && tools.length > 0) {
+      // Extract schemas from unified tools for UI display
+      return tools.map(({ execute, ...schema }) => schema);
+    }
+    return [];
+  }, [tools]);
+
   // Initialize custom hooks for state management
-  const messageHandling = useMessageHandling({ initialMessages });
+  const messageHandling = useMessageHandling();
   const uiState = useUIState({ initialMode: config.mode });
 
   // Extract frequently used values from hooks
@@ -163,9 +170,10 @@ function ChatWrapper({
     entityId,
     entityType,
     
-    // Existing properties
-    clientTools,
+    // Tools configuration
     tools,
+    
+    // Other properties
     contextHelpers,
     onSetMessage: handleSetMessage,
     onSystemEvent: handleSystemEvent,
@@ -420,7 +428,7 @@ function ChatWrapper({
                 restaurantLogo={config.restaurantLogo}
                 suggestedPrompts={config.suggestedPrompts}
                 chatStatus={chatStatus}
-                clientTools={clientTools}
+                clientTools={uiClientTools}
                 getReasoningTitle={getReasoningTitle}
                 getReasoningStatus={getReasoningStatus}
                 getReasoningDuration={getReasoningDuration}

@@ -110,7 +110,13 @@ export class ChatErrorBoundary extends Component<ChatErrorBoundaryProps, ChatErr
                 Try Again
               </button>
             </div>
-            {import.meta.env?.DEV && (
+            {(() => {
+              try {
+                return (import.meta as any).env?.DEV;
+              } catch {
+                return false;
+              }
+            })() && (
               <details className="chat-wrapper__error-details">
                 <summary>Error Details (Development)</summary>
                 <pre className="chat-wrapper__error-stack">

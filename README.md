@@ -61,12 +61,58 @@ npm install @oddle/chat-wrapper-ui
 ## Basic Usage
 
 ```tsx
-import { ChatWrapper } from "@oddle/chat-wrapper-ui";
+import { ChatWrapper, Tools } from "@oddle/chat-wrapper-ui";
 
 function App() {
+  // Define tools with unified schema and execution functions
+  const tools: Tools = [
+    {
+      name: "create_email",
+      description: "Create and send an email",
+      parameters: {
+        type: "object",
+        properties: {
+          subject: { type: "string", description: "Email subject" },
+          body: { type: "string", description: "Email body content" }
+        },
+        required: ["subject", "body"]
+      },
+      execute: async (params: { subject: string; body: string }) => {
+        // Handle email creation
+        console.log("Creating email:", params);
+        return { success: true, emailId: Date.now().toString() };
+      }
+    },
+    {
+      name: "get_weather",
+      description: "Get current weather for a location",
+      parameters: {
+        type: "object",
+        properties: {
+          location: { type: "string", description: "City or location name" }
+        },
+        required: ["location"]
+      },
+      execute: async (params: { location: string }) => {
+        // Handle weather request
+        console.log("Getting weather for:", params.location);
+        return { location: params.location, temperature: 22, condition: "sunny" };
+      }
+    }
+  ];
+
   return (
     <ChatWrapper
-      apiUrl="https://your-api-server.com"
+      // Authentication props
+      userMpAuthToken="your-auth-token"
+      chatServerUrl="wss://your-chat-server.com"
+      chatServerKey="your-server-key"
+      userId="user-123"
+      
+      // App identification
+      app="UD21" // or "Host", "Reserve"
+      
+      // Configuration
       config={{
         mode: "sidebar",
         position: "right",
@@ -74,16 +120,9 @@ function App() {
         theme: "light",
         placeholder: "How can we help you today?",
       }}
-      tools={{
-        create_email: (subject: string, body: string) => {
-          // Handle email creation
-          return { success: true, emailId: Date.now().toString() };
-        },
-        get_weather: (location: string) => {
-          // Handle weather request
-          return { location, temperature: 22, condition: "sunny" };
-        },
-      }}
+      
+      // Unified tools with schema and execution
+      tools={tools}
     />
   );
 }
@@ -92,28 +131,72 @@ function App() {
 ## Advanced Usage with Streaming & Tools
 
 ```tsx
-import { ChatWrapper } from "@oddle/chat-wrapper-ui";
+import { ChatWrapper, Tools } from "@oddle/chat-wrapper-ui";
+import { useState } from "react";
 
 function AdvancedChat() {
   const [todos, setTodos] = useState([]);
   const [briefs, setBriefs] = useState([]);
 
+  // Define tools with complete schema and execution functions
+  const tools: Tools = [
+    {
+      name: "create_todo",
+      description: "Create a new todo item",
+      parameters: {
+        type: "object",
+        properties: {
+          title: { type: "string", description: "Todo title" },
+          description: { type: "string", description: "Todo description" }
+        },
+        required: ["title", "description"]
+      },
+      execute: async (params: { title: string; description: string }) => {
+        console.log('Creating todo:', params);
+        const newTodo = { id: Date.now().toString(), ...params, completed: false };
+        setTodos(prev => [...prev, newTodo]);
+        return { success: true, todoId: newTodo.id };
+      }
+    },
+    {
+      name: "create_brief",
+      description: "Create a new brief document",
+      parameters: {
+        type: "object",
+        properties: {
+          title: { type: "string", description: "Brief title" },
+          content: { type: "string", description: "Brief content" }
+        },
+        required: ["title", "content"]
+      },
+      execute: async (params: { title: string; content: string }) => {
+        console.log('Creating brief:', params);
+        const newBrief = { id: Date.now().toString(), ...params, createdAt: new Date() };
+        setBriefs(prev => [...prev, newBrief]);
+        return { success: true, briefId: newBrief.id };
+      }
+    }
+  ];
+
   return (
     <ChatWrapper
-      apiUrl="https://your-api-server.com"
+      // Required authentication props
+      userMpAuthToken="your-auth-token"
+      chatServerUrl="wss://your-chat-server.com"
+      chatServerKey="your-server-key"
+      userId="user-123"
+      
+      // App identification
+      app="UD21"
+      
+      // Configuration
       config={{
         mode: "embedded",
         appName: "AI Assistant",
         theme: "light",
-        endpoint: "brief-planner", // Use brief-planner endpoint for advanced features
         features: {
           showToolResults: true,
           messageHistory: true,
-        },
-        onToolResult: (tool, result) => {
-          console.log(`Tool ${tool} returned:`, result);
-          if (tool === 'todos') setTodos(result);
-          if (tool === 'briefs') setBriefs(result);
         },
         onStreamingStatusChange: (status) => {
           console.log('Streaming status:', status);
@@ -122,22 +205,9 @@ function AdvancedChat() {
           console.error('Chat error:', error);
         },
       }}
-      initialMessages={[{
-        id: '1',
-        role: 'assistant',
-        content: 'Hello! How can I help you today?',
-        timestamp: new Date(),
-      }]}
-      tools={{
-        create_todo: (title: string, description: string) => {
-          console.log('Creating todo:', { title, description });
-          return { success: true, todoId: Date.now().toString() };
-        },
-        create_brief: (title: string, content: string) => {
-          console.log('Creating brief:', { title, content });
-          return { success: true, briefId: Date.now().toString() };
-        },
-      }}
+      
+      // Unified tools with schema and execution
+      tools={tools}
     />
   );
 }
@@ -147,9 +217,26 @@ function AdvancedChat() {
 
 The `ChatWrapper` component accepts the following props:
 
-### `apiUrl` (string, required)
+### Authentication Props (required)
 
-The URL of your chat API server.
+| Property              | Type     | Description                                           |
+| --------------------- | -------- | ----------------------------------------------------- |
+| `userMpAuthToken`     | `string` | Authentication token for API requests and WebSocket  |
+| `chatServerUrl`       | `string` | WebSocket server URL (e.g., "wss://server.com")      |
+| `chatServerKey`       | `string` | Server identification key (UD21, Host, Reserve)      |
+| `userId`              | `string` | User identification                                   |
+
+### Optional Props
+
+| Property              | Type                    | Description                                           |
+| --------------------- | ----------------------- | ----------------------------------------------------- |
+| `providerResId`       | `string`                | Provider resource ID (auto-generated if empty)       |
+| `entityId`            | `string`                | Entity ID (brandId or accountId)                     |
+| `entityType`          | `EntityType`            | Entity type (BRAND, ACCOUNT, USER)                   |
+| `app`                 | `App`                   | App identification (UD21, Host, Reserve)             |
+| `tools`               | `Tools`                 | Array of tool objects with schema and execution      |
+| `devMode`             | `boolean`               | Enable developer mode features                        |
+| `contextHelpers`      | `ContextHelper[]`       | Context helpers for enhanced functionality            |
 
 ### `config` (object, required)
 
@@ -172,20 +259,52 @@ Configuration object with the following properties:
 | `onToolResult`             | `(tool: string, result: any) => void`                | ❌       | Tool result callback                              |
 | `onStreamingStatusChange`  | `(status: string) => void`                           | ❌       | Streaming status change callback                  |
 
-### `tools` (object, optional)
+### `tools` (array, optional)
 
-A record of tool functions that can be called during conversations:
+An array of tool objects that combine schema definition and execution function:
 
 ```tsx
-tools?: Record<string, (...args: any[]) => any>
+tools?: Tools // Array of Tool objects
+
+interface Tool {
+  name: string;
+  description: string;
+  parameters: {
+    type: "object";
+    properties: Record<string, any>;
+    required?: string[];
+  };
+  execute: (params: any) => Promise<any> | any;
+}
 ```
 
-### `initialMessages` (array, optional)
+#### Tool Benefits
+- **Unified Definition**: Schema and execution in single object
+- **Type Safety**: Full TypeScript support for parameters
+- **Automatic Filtering**: Execution functions filtered from server communication
+- **Simplified API**: No separate `clientTools` and `toolExecutors` props
 
-Pre-populate the chat with initial messages:
-
+#### Example Tool Definition
 ```tsx
-initialMessages?: Message[]
+const tools: Tools = [
+  {
+    name: "search_products",
+    description: "Search for products in the database",
+    parameters: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Search query" },
+        category: { type: "string", description: "Product category" },
+        limit: { type: "number", description: "Max results" }
+      },
+      required: ["query"]
+    },
+    execute: async (params: { query: string; category?: string; limit?: number }) => {
+      // Your implementation here
+      return { results: [], total: 0 };
+    }
+  }
+];
 ```
 
 ### Features Object
@@ -256,26 +375,103 @@ The ChatWrapper handles various SSE event types:
 ### Modal Chat
 
 ```tsx
+import { ChatWrapper, Tools } from "@oddle/chat-wrapper-ui";
+
+const tools: Tools = [
+  {
+    name: "get_weather",
+    description: "Get current weather information",
+    parameters: {
+      type: "object",
+      properties: {
+        location: { type: "string", description: "Location name" }
+      },
+      required: ["location"]
+    },
+    execute: async (params: { location: string }) => ({
+      location: params.location,
+      temperature: 22,
+      condition: "sunny"
+    })
+  },
+  {
+    name: "set_reminder",
+    description: "Set a reminder for later",
+    parameters: {
+      type: "object",
+      properties: {
+        message: { type: "string", description: "Reminder message" },
+        time: { type: "string", description: "Reminder time" }
+      },
+      required: ["message", "time"]
+    },
+    execute: async (params: { message: string; time: string }) => ({
+      success: true,
+      reminderId: Date.now()
+    })
+  }
+];
+
 <ChatWrapper
-  apiUrl="https://api.example.com"
+  userMpAuthToken="your-auth-token"
+  chatServerUrl="wss://api.example.com"
+  chatServerKey="your-server-key"
+  userId="user-123"
+  app="UD21"
   config={{
     mode: "modal",
     appName: "AI Assistant",
     theme: "dark",
     placeholder: "Ask me anything...",
   }}
-  tools={{
-    get_weather: (location: string) => ({ location, temp: 22, condition: 'sunny' }),
-    set_reminder: (message: string, time: string) => ({ success: true, reminderId: Date.now() }),
-  }}
+  tools={tools}
 />
 ```
 
 ### Embedded Chat with Tool Results
 
 ```tsx
+import { ChatWrapper, Tools } from "@oddle/chat-wrapper-ui";
+
+const tools: Tools = [
+  {
+    name: "search_docs",
+    description: "Search through documentation",
+    parameters: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Search query" }
+      },
+      required: ["query"]
+    },
+    execute: async (params: { query: string }) => ({
+      results: [`Doc about ${params.query}`, `Guide for ${params.query}`]
+    })
+  },
+  {
+    name: "create_ticket",
+    description: "Create a support ticket",
+    parameters: {
+      type: "object",
+      properties: {
+        title: { type: "string", description: "Ticket title" },
+        description: { type: "string", description: "Ticket description" }
+      },
+      required: ["title", "description"]
+    },
+    execute: async (params: { title: string; description: string }) => ({
+      ticketId: Date.now(),
+      status: "open"
+    })
+  }
+];
+
 <ChatWrapper
-  apiUrl="https://chat-api.example.com"
+  userMpAuthToken="your-auth-token"
+  chatServerUrl="wss://chat-api.example.com"
+  chatServerKey="your-server-key"
+  userId="user-123"
+  app="UD21"
   config={{
     mode: "embedded",
     appName: "Help Center",
@@ -285,28 +481,77 @@ The ChatWrapper handles various SSE event types:
       messageHistory: true,
       showToolResults: true,
     },
-    onToolResult: (tool, result) => {
-      console.log(`${tool} completed:`, result);
-    },
   }}
-  tools={{
-    search_docs: (query: string) => ({ results: [`Doc about ${query}`, `Guide for ${query}`] }),
-    create_ticket: (title: string, description: string) => ({ ticketId: Date.now(), status: 'open' }),
-  }}
+  tools={tools}
 />
 ```
 
 ### Fullscreen Chat with Streaming
 
 ```tsx
+import { ChatWrapper, Tools } from "@oddle/chat-wrapper-ui";
+
+const tools: Tools = [
+  {
+    name: "escalate_ticket",
+    description: "Escalate a support ticket",
+    parameters: {
+      type: "object",
+      properties: {
+        ticketId: { type: "string", description: "Ticket ID to escalate" },
+        reason: { type: "string", description: "Escalation reason" }
+      },
+      required: ["ticketId", "reason"]
+    },
+    execute: async (params: { ticketId: string; reason: string }) => ({
+      success: true,
+      escalated: true
+    })
+  },
+  {
+    name: "get_user_info",
+    description: "Get user information",
+    parameters: {
+      type: "object",
+      properties: {
+        userId: { type: "string", description: "User ID to lookup" }
+      },
+      required: ["userId"]
+    },
+    execute: async (params: { userId: string }) => ({
+      userId: params.userId,
+      name: "John Doe",
+      tier: "premium"
+    })
+  },
+  {
+    name: "schedule_callback",
+    description: "Schedule a callback",
+    parameters: {
+      type: "object",
+      properties: {
+        phoneNumber: { type: "string", description: "Phone number for callback" },
+        preferredTime: { type: "string", description: "Preferred callback time" }
+      },
+      required: ["phoneNumber", "preferredTime"]
+    },
+    execute: async (params: { phoneNumber: string; preferredTime: string }) => ({
+      scheduled: true,
+      callbackId: Date.now()
+    })
+  }
+];
+
 <ChatWrapper
-  apiUrl="https://support.example.com/api"
+  userMpAuthToken="your-auth-token"
+  chatServerUrl="wss://support.example.com"
+  chatServerKey="your-server-key"
+  userId="user-123"
+  app="UD21"
   config={{
     mode: "fullscreen",
     appName: "Premium Support",
     theme: "light",
-    apiKey: "your-api-key-here",
-    endpoint: "brief-planner",
     onStreamingStatusChange: (status) => {
       console.log('Stream status:', status);
     },
@@ -314,11 +559,7 @@ The ChatWrapper handles various SSE event types:
       fontFamily: "Inter, sans-serif",
     },
   }}
-  tools={{
-    escalate_ticket: (ticketId: string, reason: string) => ({ success: true, escalated: true }),
-    get_user_info: (userId: string) => ({ userId, name: 'John Doe', tier: 'premium' }),
-    schedule_callback: (phoneNumber: string, preferredTime: string) => ({ scheduled: true, callbackId: Date.now() }),
-  }}
+  tools={tools}
 />
 ```
 
@@ -368,6 +609,11 @@ import {
   ChatMode,
   ChatPosition,
   ChatTheme,
+  Tools,
+  Tool,
+  ToolSchema,
+  EntityType,
+  App,
 } from "@oddle/chat-wrapper-ui";
 ```
 
@@ -381,6 +627,34 @@ interface Message {
   timestamp: Date;
   isStreaming?: boolean;
   media?: string[];
+}
+
+interface ToolSchema {
+  name: string;
+  description: string;
+  parameters: {
+    type: "object";
+    properties: Record<string, any>;
+    required?: string[];
+  };
+}
+
+interface Tool extends ToolSchema {
+  execute: (params: any) => Promise<any> | any;
+}
+
+type Tools = Tool[];
+
+enum EntityType {
+  BRAND = "BRAND",
+  ACCOUNT = "ACCOUNT",
+  USER = "USER"
+}
+
+enum App {
+  UD21 = "UD21",
+  Host = "Host",
+  Reserve = "Reserve"
 }
 
 interface StreamEvent {
@@ -503,13 +777,15 @@ If you're upgrading from a previous version, the ChatWrapper now includes advanc
 - Thinking indicators
 
 ### Breaking Changes
-- The `tools` prop is now optional but recommended for advanced features
-- New `endpoint` config option for API endpoint selection
-- Enhanced callback system with `onToolResult` and `onStreamingStatusChange`
+- **Authentication Required**: All authentication props are now required for security
+- **Unified Tools**: Tools now use a single array format with schema and execution functions
+- **Removed Legacy Props**: `clientTools`, `toolExecutors`, and `initialMessages` have been removed
+- **Required Props**: `userMpAuthToken`, `chatServerUrl`, `chatServerKey`, and `userId` are now required
+- **Simplified API**: No more `apiUrl` - use `chatServerUrl` for both WebSocket and HTTP
 
 ### Migration Example
 
-**Before (v1.0.1):**
+**Before (legacy version):**
 ```tsx
 <ChatWrapper
   apiUrl="https://api.example.com"
@@ -517,27 +793,51 @@ If you're upgrading from a previous version, the ChatWrapper now includes advanc
     mode: "sidebar",
     appName: "Chat",
   }}
+  clientTools={{
+    my_tool: { name: "my_tool", description: "Tool description" }
+  }}
+  toolExecutors={{
+    my_tool: (arg) => ({ success: true })
+  }}
+  initialMessages={[...messages]}
 />
 ```
 
-**After (v1.0.2+):**
+**After (current version):**
 ```tsx
+import { ChatWrapper, Tools } from "@oddle/chat-wrapper-ui";
+
+const tools: Tools = [
+  {
+    name: "my_tool",
+    description: "Tool description",
+    parameters: {
+      type: "object",
+      properties: {
+        arg: { type: "string", description: "Tool argument" }
+      },
+      required: ["arg"]
+    },
+    execute: async (params: { arg: string }) => ({ success: true })
+  }
+];
+
 <ChatWrapper
-  apiUrl="https://api.example.com"
+  // Required authentication
+  userMpAuthToken="your-auth-token"
+  chatServerUrl="wss://api.example.com"
+  chatServerKey="your-server-key"
+  userId="user-123"
+  app="UD21"
+  
   config={{
     mode: "sidebar",
     appName: "Chat",
-    // Optional: specify endpoint for advanced features
-    endpoint: "conversation", // or "brief-planner"
-    // Optional: enable tool results display
     features: { showToolResults: true },
-    // Optional: handle tool results
-    onToolResult: (tool, result) => console.log(tool, result),
   }}
-  // Optional: provide tools for enhanced functionality
-  tools={{
-    my_tool: (arg) => ({ success: true }),
-  }}
+  
+  // Unified tools with schema and execution
+  tools={tools}
 />
 ```
 
