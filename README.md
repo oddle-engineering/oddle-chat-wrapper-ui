@@ -109,8 +109,6 @@ function App() {
       chatServerKey="your-server-key"
       userId="user-123"
       
-      // App identification
-      app="UD21" // or "Host", "Reserve"
       
       // Configuration
       config={{
@@ -186,8 +184,6 @@ function AdvancedChat() {
       chatServerKey="your-server-key"
       userId="user-123"
       
-      // App identification
-      app="UD21"
       
       // Configuration
       config={{
@@ -233,7 +229,6 @@ The `ChatWrapper` component accepts the following props:
 | `providerResId`       | `string`                | Provider resource ID (auto-generated if empty)       |
 | `entityId`            | `string`                | Entity ID (brandId or accountId)                     |
 | `entityType`          | `EntityType`            | Entity type (BRAND, ACCOUNT, USER)                   |
-| `app`                 | `App`                   | App identification (UD21, Host, Reserve)             |
 | `tools`               | `Tools`                 | Array of tool objects with schema and execution      |
 | `devMode`             | `boolean`               | Enable developer mode features                        |
 | `contextHelpers`      | `ContextHelper[]`       | Context helpers for enhanced functionality            |
@@ -417,7 +412,6 @@ const tools: Tools = [
   chatServerUrl="wss://api.example.com"
   chatServerKey="your-server-key"
   userId="user-123"
-  app="UD21"
   config={{
     mode: "modal",
     appName: "AI Assistant",
@@ -471,7 +465,6 @@ const tools: Tools = [
   chatServerUrl="wss://chat-api.example.com"
   chatServerKey="your-server-key"
   userId="user-123"
-  app="UD21"
   config={{
     mode: "embedded",
     appName: "Help Center",
@@ -547,7 +540,6 @@ const tools: Tools = [
   chatServerUrl="wss://support.example.com"
   chatServerKey="your-server-key"
   userId="user-123"
-  app="UD21"
   config={{
     mode: "fullscreen",
     appName: "Premium Support",
@@ -613,7 +605,6 @@ import {
   Tool,
   ToolSchema,
   EntityType,
-  App,
 } from "@oddle/chat-wrapper-ui";
 ```
 
@@ -651,11 +642,6 @@ enum EntityType {
   USER = "USER"
 }
 
-enum App {
-  UD21 = "UD21",
-  Host = "Host",
-  Reserve = "Reserve"
-}
 
 interface StreamEvent {
   type: string;
@@ -828,7 +814,6 @@ const tools: Tools = [
   chatServerUrl="wss://api.example.com"
   chatServerKey="your-server-key"
   userId="user-123"
-  app="UD21"
   
   config={{
     mode: "sidebar",

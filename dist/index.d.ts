@@ -11,12 +11,6 @@ declare interface AnimatedPlaceholderProps {
     className?: string;
 }
 
-export declare enum App {
-    UD21 = "UD21",
-    Host = "Host",
-    Reserve = "Reserve"
-}
-
 export declare const CHAT_STATUS: {
     readonly IDLE: "idle";
     readonly SUBMITTED: "submitted";
@@ -74,7 +68,7 @@ export declare type ChatTheme = "light" | "dark" | "auto";
 
 export declare const ChatWrapper: MemoExoticComponent<typeof ChatWrapper_2>;
 
-declare function ChatWrapper_2({ userMpAuthToken, chatServerUrl, chatServerKey, providerResId, userId, entityId, entityType, app, config, tools, devMode, contextHelpers, }: ChatWrapperProps): JSX_2.Element;
+declare function ChatWrapper_2({ userMpAuthToken, chatServerUrl, chatServerKey, providerResId, userId, entityId, entityType, config, tools, devMode, contextHelpers, }: ChatWrapperProps): JSX_2.Element;
 
 export declare interface ChatWrapperProps {
     userMpAuthToken: string;
@@ -84,7 +78,6 @@ export declare interface ChatWrapperProps {
     userId: string;
     entityId?: string;
     entityType?: EntityType;
-    app: App;
     config: Omit<ChatConfig, "apiEndpoint">;
     tools?: Tools;
     devMode?: boolean;
@@ -122,12 +115,11 @@ export declare function createThread(apiBaseUrl: string, userId: string, convUui
     agentType?: string;
 }): Promise<Thread>;
 
-export declare const DevSettings: ({ isOpen, onClose, app, apiUrl, userMpAuthToken, chatServerKey, }: DevSettingsProps) => JSX_2.Element | null;
+export declare const DevSettings: ({ isOpen, onClose, apiUrl, userMpAuthToken, chatServerKey, }: DevSettingsProps) => JSX_2.Element | null;
 
 declare interface DevSettingsProps {
     isOpen: boolean;
     onClose: () => void;
-    app: App;
     apiUrl: string;
     userMpAuthToken?: string;
     chatServerKey?: string;

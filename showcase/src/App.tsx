@@ -6,7 +6,6 @@ import {
   ChatMode,
   ChatPosition,
   ChatTheme,
-  App as ChatApp,
   EntityType,
   Tools,
 } from "@oddle/chat-wrapper-ui";
@@ -756,8 +755,6 @@ function App() {
       entityType: EntityType.BRAND,
       providerResId: "", // Empty to auto-generate based on entityType + entityId
       
-      // Required app identification
-      app: ChatApp.UD21,
       
       config: {
         ...customConfig,
@@ -799,8 +796,6 @@ function App() {
       entityType: EntityType.ACCOUNT,
       providerResId: "", // Empty to auto-generate based on entityType + entityId
       
-      // Required app identification  
-      app: ChatApp.Host,
       
       config: {
         ...customConfig,

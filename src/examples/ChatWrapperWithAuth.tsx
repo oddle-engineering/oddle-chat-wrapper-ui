@@ -1,7 +1,6 @@
 import React from 'react';
 import { 
   ChatWrapper, 
-  App, 
   EntityType
 } from '../index';
 
@@ -18,8 +17,6 @@ export const ChatWrapperWithAuth: React.FC = () => {
   const entityId = "brand-456"; // Either brandId or accountId
   const entityType = EntityType.BRAND; // BRAND, ACCOUNT, or USER
   
-  // REQUIRED: App identification
-  const app = App.UD21; // UD21, Host, or Reserve
 
   return (
     <div style={{ padding: '20px' }}>
@@ -31,7 +28,6 @@ export const ChatWrapperWithAuth: React.FC = () => {
         <p><strong>Server URL:</strong> {chatServerUrl}</p>
         <p><strong>User ID:</strong> {userId}</p>
         <p><strong>Entity:</strong> {entityType} - {entityId}</p>
-        <p><strong>App:</strong> {app}</p>
         <p><strong>Provider Resource ID:</strong> {providerResId || "Auto-generate"}</p>
       </div>
 
@@ -60,9 +56,6 @@ export const ChatWrapperWithAuth: React.FC = () => {
         userId={userId}
         entityId={entityId}
         entityType={entityType}
-        
-        // App identification
-        app={app}
         
         // Chat configuration
         config={{

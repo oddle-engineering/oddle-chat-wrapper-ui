@@ -1,11 +1,9 @@
 import { useState, useCallback, useEffect } from "react";
-import { App } from '../types';
 import { getAgentConfiguration, updateAgentConfiguration, AgentConfiguration } from '../utils/agentConfigApi';
 
 interface DevSettingsProps {
   isOpen: boolean;
   onClose: () => void;
-  app: App;
   apiUrl: string;
   userMpAuthToken?: string;
   chatServerKey?: string;
@@ -14,7 +12,6 @@ interface DevSettingsProps {
 export const DevSettings = ({
   isOpen,
   onClose,
-  app,
   apiUrl,
   userMpAuthToken,
   chatServerKey,
@@ -36,7 +33,7 @@ export const DevSettings = ({
     setLoading(true);
     setError(null);
     try {
-      const configuration = await getAgentConfiguration(apiUrl, app, {
+      const configuration = await getAgentConfiguration(apiUrl, {
         userMpAuthToken,
         chatServerKey,
       });
@@ -49,7 +46,7 @@ export const DevSettings = ({
     } finally {
       setLoading(false);
     }
-  }, [apiUrl, app, userMpAuthToken, chatServerKey]);
+  }, [apiUrl, userMpAuthToken, chatServerKey]);
 
   const handleSave = useCallback(async () => {
     if (!config) return;
@@ -57,7 +54,7 @@ export const DevSettings = ({
     setLoading(true);
     setError(null);
     try {
-      const updatedConfig = await updateAgentConfiguration(apiUrl, app, {
+      const updatedConfig = await updateAgentConfiguration(apiUrl, {
         promptPath: tempPromptPath,
         versionUuid: tempVersionUuid,
         isDefault: config.isDefault,
@@ -76,7 +73,7 @@ export const DevSettings = ({
     } finally {
       setLoading(false);
     }
-  }, [apiUrl, app, tempPromptPath, tempVersionUuid, config, onClose, userMpAuthToken, chatServerKey]);
+  }, [apiUrl, tempPromptPath, tempVersionUuid, config, onClose, userMpAuthToken, chatServerKey]);
 
   const handleCancel = useCallback(() => {
     if (config) {
@@ -168,7 +165,6 @@ export const DevSettings = ({
               </div>
               
               <div className="chat-wrapper__dev-settings-info">
-                <p><strong>App:</strong> {app}</p>
               </div>
             </>
           )}

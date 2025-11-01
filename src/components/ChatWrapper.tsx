@@ -38,8 +38,6 @@ function ChatWrapper({
   entityId,
   entityType,
   
-  // App identification
-  app,
   
   // Existing props
   config,
@@ -261,7 +259,6 @@ function ChatWrapper({
       try {
         await agentClient.onTriggerMessage({
           message: userMessage.content,
-          app,
           media,
           convUuid: currentConvUuid || undefined,
           agentPromptPath: undefined,
@@ -301,7 +298,6 @@ function ChatWrapper({
       setStreamingStatus,
       addMessage,
       config,
-      app,
       currentConvUuid,
     ]
   );
@@ -452,7 +448,6 @@ function ChatWrapper({
           <DevSettings
             isOpen={isDevSettingsOpen}
             onClose={() => setIsDevSettingsOpen(false)}
-            app={app}
             apiUrl={httpApiUrl}
             userMpAuthToken={userMpAuthToken}
             chatServerKey={chatServerKey}

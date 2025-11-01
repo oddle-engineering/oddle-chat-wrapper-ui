@@ -1,4 +1,3 @@
-import { App } from '../types';
 
 export interface AgentConfiguration {
   promptPath: string;
@@ -28,7 +27,6 @@ export interface AgentConfigurationUpdateResponse {
  */
 export async function getAgentConfiguration(
   apiUrl: string,
-  app: App,
   authOptions?: {
     userMpAuthToken?: string;
     chatServerKey?: string;
@@ -46,7 +44,7 @@ export async function getAgentConfiguration(
     headers['X-Chat-Server-Key'] = authOptions.chatServerKey;
   }
 
-  const response = await fetch(`${apiUrl}/agent-configurations/${app}`, {
+  const response = await fetch(`${apiUrl}/agent-configurations`, {
     method: 'GET',
     headers,
   });
@@ -67,7 +65,6 @@ export async function getAgentConfiguration(
  */
 export async function updateAgentConfiguration(
   apiUrl: string,
-  app: App,
   update: AgentConfigurationUpdate,
   authOptions?: {
     userMpAuthToken?: string;
@@ -86,7 +83,7 @@ export async function updateAgentConfiguration(
     headers['X-Chat-Server-Key'] = authOptions.chatServerKey;
   }
 
-  const response = await fetch(`${apiUrl}/agent-configurations/${app}`, {
+  const response = await fetch(`${apiUrl}/agent-configurations`, {
     method: 'PUT',
     headers,
     body: JSON.stringify(update),

@@ -56,7 +56,7 @@ export type {
   ThreadsResponse,
   MessagesResponse
 } from './types';
-export { App, EntityType } from './types';
+export { EntityType } from './types';
 export type { ChatStatus, StreamingStatus, ProcessingStatus } from './constants/chatStatus';
 export { 
   CHAT_STATUS, 

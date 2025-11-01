@@ -10,11 +10,6 @@ export enum EntityType {
   USER = "USER",
 }
 
-export enum App {
-  UD21 = "UD21",
-  Host = "Host",
-  Reserve = "Reserve",
-}
 
 export interface Message {
   id: string;
@@ -106,8 +101,6 @@ export interface ChatWrapperProps {
   entityId?: string; // Either brandId or accountId, depending on EntityType
   entityType?: EntityType;
   
-  // App identification
-  app: App;
   
   // Existing props
   config: Omit<ChatConfig, "apiEndpoint">;
