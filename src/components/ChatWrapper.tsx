@@ -30,16 +30,42 @@ import {
 import "../styles/chat-wrapper.css";
 
 function ChatWrapper({
-  apiUrl,
+  // Authentication and server configuration
+  userMpAuthToken,
+  chatServerUrl,
+  chatServerKey,
+  
+  // Entity and conversation configuration
+  providerResId,
+  userId,
+  entityId,
+  entityType,
+  
+  // App identification
+  app,
+  
+  // Existing props
   config,
   tools,
   clientTools,
   initialMessages = [],
-  userId,
   devMode = false,
-  app,
   contextHelpers,
 }: ChatWrapperProps) {
+  // Validate required props early
+  if (!userMpAuthToken) {
+    throw new Error("ChatWrapper: userMpAuthToken is required");
+  }
+  if (!chatServerUrl) {
+    throw new Error("ChatWrapper: chatServerUrl is required");
+  }
+  if (!chatServerKey) {
+    throw new Error("ChatWrapper: chatServerKey is required");
+  }
+  if (!userId) {
+    throw new Error("ChatWrapper: userId is required");
+  }
+
   // Convert WebSocket URL to HTTP URL for REST API calls
   const getHttpUrl = useCallback((wsUrl: string): string => {
     return wsUrl.replace(/^wss?:\/\//, (match) =>
@@ -47,7 +73,10 @@ function ChatWrapper({
     );
   }, []);
 
-  const httpApiUrl = useMemo(() => getHttpUrl(apiUrl), [apiUrl, getHttpUrl]);
+  // Convert chatServerUrl to HTTP URL for REST API calls
+  const httpApiUrl = useMemo(() => {
+    return getHttpUrl(chatServerUrl);
+  }, [chatServerUrl, getHttpUrl]);
 
   // Initialize custom hooks for state management
   const messageHandling = useMessageHandling({ initialMessages });
@@ -129,8 +158,18 @@ function ChatWrapper({
 
   // Initialize WebSocket connection
   const { agentClient, isConnected } = useWebSocketConnection({
-    apiUrl,
+    // Authentication and server properties
+    userMpAuthToken,
+    chatServerUrl,
+    chatServerKey,
+    
+    // Entity configuration
+    providerResId,
     userId,
+    entityId,
+    entityType,
+    
+    // Existing properties
     clientTools,
     tools,
     contextHelpers,
@@ -143,6 +182,8 @@ function ChatWrapper({
   useConversationLoader({
     userId,
     httpApiUrl,
+    userMpAuthToken,
+    chatServerKey,
     messages,
     setMessages,
     setIsLoadingConversation,
@@ -267,7 +308,7 @@ function ChatWrapper({
   const handleFileUpload = useCallback(
     async (files: File[]): Promise<string[]> => {
       const newMedia: string[] = [];
-      const serverUrl = apiUrl;
+      const uploadServerUrl = httpApiUrl;
       const folder = "chat-uploads";
 
       for (const file of files) {
@@ -277,9 +318,18 @@ function ChatWrapper({
           formData.append("file", file);
           formData.append("folder", folder);
 
-          // Upload the file to the server
-          const response = await fetch(`${serverUrl}/upload`, {
+          // Upload the file to the server with authentication headers
+          const headers: HeadersInit = {};
+          if (userMpAuthToken) {
+            headers['Authorization'] = `Bearer ${userMpAuthToken}`;
+          }
+          if (chatServerKey) {
+            headers['X-Chat-Server-Key'] = chatServerKey;
+          }
+
+          const response = await fetch(`${uploadServerUrl}/upload`, {
             method: "POST",
+            headers,
             body: formData,
           });
 
@@ -351,7 +401,7 @@ function ChatWrapper({
 
       return newMedia;
     },
-    [apiUrl]
+    [httpApiUrl, userMpAuthToken, chatServerKey]
   );
 
 
@@ -625,7 +675,9 @@ function ChatWrapper({
           isOpen={isDevSettingsOpen}
           onClose={() => setIsDevSettingsOpen(false)}
           app={app}
-          apiUrl={apiUrl}
+          apiUrl={httpApiUrl}
+          userMpAuthToken={userMpAuthToken}
+          chatServerKey={chatServerKey}
         />
       </div>
     </>

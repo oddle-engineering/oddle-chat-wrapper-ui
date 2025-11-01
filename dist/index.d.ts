@@ -11,7 +11,11 @@ declare interface AnimatedPlaceholderProps {
     className?: string;
 }
 
-export declare type App = "UD21" | "Host" | "Reserve";
+export declare enum App {
+    UD21 = "UD21",
+    Host = "Host",
+    Reserve = "Reserve"
+}
 
 export declare const CHAT_STATUS: {
     readonly IDLE: "idle";
@@ -70,17 +74,22 @@ export declare type ChatTheme = "light" | "dark" | "auto";
 
 export declare const ChatWrapper: MemoExoticComponent<typeof ChatWrapper_2>;
 
-declare function ChatWrapper_2({ apiUrl, config, tools, clientTools, initialMessages, userId, devMode, app, contextHelpers, }: ChatWrapperProps): JSX_2.Element | null;
+declare function ChatWrapper_2({ userMpAuthToken, chatServerUrl, chatServerKey, providerResId, userId, entityId, entityType, app, config, tools, clientTools, initialMessages, devMode, contextHelpers, }: ChatWrapperProps): JSX_2.Element | null;
 
 export declare interface ChatWrapperProps {
-    apiUrl: string;
+    userMpAuthToken: string;
+    chatServerUrl: string;
+    chatServerKey: string;
+    providerResId?: string;
+    userId: string;
+    entityId?: string;
+    entityType?: EntityType;
+    app: App;
     config: Omit<ChatConfig, "apiEndpoint">;
     tools?: Record<string, (...args: any[]) => any>;
     clientTools?: ClientTools;
     initialMessages?: Message[];
-    userId?: string;
     devMode?: boolean;
-    app: App;
     contextHelpers?: ContextHelpers;
 }
 
@@ -115,13 +124,21 @@ export declare function createThread(apiBaseUrl: string, userId: string, convUui
     agentType?: string;
 }): Promise<Thread>;
 
-export declare const DevSettings: ({ isOpen, onClose, app, apiUrl, }: DevSettingsProps) => JSX_2.Element | null;
+export declare const DevSettings: ({ isOpen, onClose, app, apiUrl, userMpAuthToken, chatServerKey, }: DevSettingsProps) => JSX_2.Element | null;
 
 declare interface DevSettingsProps {
     isOpen: boolean;
     onClose: () => void;
     app: App;
     apiUrl: string;
+    userMpAuthToken?: string;
+    chatServerKey?: string;
+}
+
+export declare enum EntityType {
+    BRAND = "BRAND",
+    ACCOUNT = "ACCOUNT",
+    USER = "USER"
 }
 
 /**
@@ -137,7 +154,10 @@ export declare function fetchThreadByConvUuid(apiBaseUrl: string, convUuid: stri
 /**
  * Fetch messages for a thread
  */
-export declare function fetchThreadMessages(apiBaseUrl: string, threadId: string): Promise<Message[]>;
+export declare function fetchThreadMessages(apiBaseUrl: string, threadId: string, authOptions?: {
+    userMpAuthToken?: string;
+    chatServerKey?: string;
+}): Promise<Message[]>;
 
 /**
  * Fetch user threads from the API

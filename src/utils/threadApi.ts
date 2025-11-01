@@ -60,11 +60,24 @@ export async function fetchThreadByConvUuid(
  */
 export async function fetchThreadMessages(
   apiBaseUrl: string,
-  threadId: string
+  threadId: string,
+  authOptions?: {
+    userMpAuthToken?: string;
+    chatServerKey?: string;
+  }
 ): Promise<Message[]> {
   const url = `${apiBaseUrl}/messages/thread/${threadId}?format=client`;
 
-  const response = await fetch(url);
+  // Build headers with authentication
+  const headers: HeadersInit = {};
+  if (authOptions?.userMpAuthToken) {
+    headers['Authorization'] = `Bearer ${authOptions.userMpAuthToken}`;
+  }
+  if (authOptions?.chatServerKey) {
+    headers['X-Chat-Server-Key'] = authOptions.chatServerKey;
+  }
+
+  const response = await fetch(url, { headers });
   if (!response.ok) {
     const error = await response.json().catch(() => ({
       error: "Failed to fetch messages",

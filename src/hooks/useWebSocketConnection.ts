@@ -1,10 +1,20 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { WebSocketChatClient, SystemEvent } from "../client";
-import { ContextHelpers } from "../types";
+import { ContextHelpers, EntityType } from "../types";
 
 interface UseWebSocketConnectionProps {
-  apiUrl: string;
-  userId?: string;
+  // Authentication and server properties
+  userMpAuthToken: string;
+  chatServerUrl: string;
+  chatServerKey: string;
+  
+  // Entity configuration
+  providerResId?: string;
+  userId: string;
+  entityId?: string;
+  entityType?: EntityType;
+  
+  // Existing properties
   clientTools?: any[];
   tools?: Record<string, (...args: any[]) => any>;
   contextHelpers?: ContextHelpers;
@@ -18,8 +28,18 @@ interface UseWebSocketConnectionProps {
 }
 
 export function useWebSocketConnection({
-  apiUrl,
+  // Authentication and server properties
+  userMpAuthToken,
+  chatServerUrl,
+  chatServerKey,
+  
+  // Entity configuration
+  providerResId,
   userId,
+  entityId,
+  entityType,
+  
+  // Existing properties
   clientTools,
   tools,
   contextHelpers,
@@ -33,6 +53,20 @@ export function useWebSocketConnection({
 
   const connectAgentClient = useCallback(async () => {
     try {
+      // Validate required props
+      if (!userMpAuthToken) {
+        throw new Error("userMpAuthToken is required");
+      }
+      if (!chatServerUrl) {
+        throw new Error("chatServerUrl is required");
+      }
+      if (!chatServerKey) {
+        throw new Error("chatServerKey is required");
+      }
+      if (!userId) {
+        throw new Error("userId is required");
+      }
+
       const client = new WebSocketChatClient();
       agentClientRef.current = client;
       setAgentClient(client);
@@ -40,8 +74,18 @@ export function useWebSocketConnection({
       const contextHelpersToUse: ContextHelpers = contextHelpers || {};
 
       await client.onInit({
-        apiUrl,
+        // Authentication and server properties
+        userMpAuthToken,
+        chatServerUrl,
+        chatServerKey,
+        
+        // Entity configuration
+        providerResId,
         userId,
+        entityId,
+        entityType: entityType?.toString(),
+        
+        // Existing properties
         toolSchemas: clientTools,
         clientTools: tools,
         contextHelpers: contextHelpersToUse,
@@ -56,8 +100,13 @@ export function useWebSocketConnection({
       setIsConnected(false);
     }
   }, [
-    apiUrl,
+    userMpAuthToken,
+    chatServerUrl,
+    chatServerKey,
+    providerResId,
     userId,
+    entityId,
+    entityType,
     clientTools,
     tools,
     contextHelpers,

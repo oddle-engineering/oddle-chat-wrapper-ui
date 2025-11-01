@@ -3,8 +3,10 @@ import { Message } from "../types";
 import { fetchThreadMessages } from "../utils/threadApi";
 
 interface UseConversationLoaderProps {
-  userId?: string;
+  userId: string;
   httpApiUrl: string;
+  userMpAuthToken: string;
+  chatServerKey: string;
   messages: Message[];
   setMessages: (messages: Message[]) => void;
   setIsLoadingConversation: (loading: boolean) => void;
@@ -16,6 +18,8 @@ interface UseConversationLoaderProps {
 export function useConversationLoader({
   userId,
   httpApiUrl,
+  userMpAuthToken,
+  chatServerKey,
   messages,
   setMessages,
   setIsLoadingConversation,
@@ -27,8 +31,21 @@ export function useConversationLoader({
 
   useEffect(() => {
     const loadConversation = async () => {
-      // Skip if no userId provided
+      // Validate required props
       if (!userId) {
+        console.error("userId is required for conversation loading");
+        return;
+      }
+      if (!httpApiUrl) {
+        console.error("httpApiUrl is required for conversation loading");
+        return;
+      }
+      if (!userMpAuthToken) {
+        console.error("userMpAuthToken is required for conversation loading");
+        return;
+      }
+      if (!chatServerKey) {
+        console.error("chatServerKey is required for conversation loading");
         return;
       }
 
@@ -62,7 +79,10 @@ export function useConversationLoader({
         setCurrentConvUuid(firstThread.convUuid);
 
         // Fetch messages for this thread
-        const loadedMessages = await fetchThreadMessages(httpApiUrl, firstThread.id);
+        const loadedMessages = await fetchThreadMessages(httpApiUrl, firstThread.id, {
+          userMpAuthToken,
+          chatServerKey,
+        });
         setMessages(loadedMessages);
 
         hasLoadedConversationRef.current = true;
@@ -81,6 +101,8 @@ export function useConversationLoader({
   }, [
     userId,
     httpApiUrl,
+    userMpAuthToken,
+    chatServerKey,
     messages.length,
     setMessages,
     setIsLoadingConversation,

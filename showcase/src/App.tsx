@@ -6,6 +6,8 @@ import {
   ChatMode,
   ChatPosition,
   ChatTheme,
+  App as ChatApp,
+  EntityType,
 } from "@oddle/chat-wrapper-ui";
 import { TodoPanel } from "./components/TodoPanel";
 import { ReservationPanel } from "./components/ReservationPanel";
@@ -27,6 +29,9 @@ interface Reservation {
   updated_at?: string;
 }
 
+// Showcase App demonstrating ChatWrapper with new required authentication props
+// Updated to use: userMpAuthToken, chatServerUrl, chatServerKey, userId (all required)
+// Plus optional: entityId, entityType, providerResId for conversation generation
 function App() {
   const [customConfig] = useState({
     mode: "sidebar" as ChatMode,
@@ -501,9 +506,20 @@ function App() {
 
   const sidebarChatProps: ChatWrapperProps = useMemo(
     () => ({
-      app: "UD21",
+      // Required authentication and server configuration
+      userMpAuthToken: "demo-mp-auth-token-123",
+      chatServerUrl: "ws://localhost:3000",
+      chatServerKey: "demo-chat-server-key",
       userId: "user_123_16",
-      apiUrl: "http://localhost:3000",
+      
+      // Optional entity configuration
+      entityId: "brand_123",
+      entityType: EntityType.BRAND,
+      providerResId: "", // Empty to auto-generate based on entityType + entityId
+      
+      // Required app identification
+      app: ChatApp.UD21,
+      
       config: {
         ...customConfig,
         onMessage: (message) => {
@@ -772,9 +788,20 @@ function App() {
 
   const modalChatProps: ChatWrapperProps = useMemo(
     () => ({
-      app: "UD21",
+      // Required authentication and server configuration
+      userMpAuthToken: "demo-mp-auth-token-456",
+      chatServerUrl: "ws://localhost:3000",
+      chatServerKey: "demo-chat-server-key",
       userId: "user_123_16",
-      apiUrl: "http://localhost:3000",
+      
+      // Optional entity configuration for Host app
+      entityId: "host_456",
+      entityType: EntityType.ACCOUNT,
+      providerResId: "", // Empty to auto-generate based on entityType + entityId
+      
+      // Required app identification  
+      app: ChatApp.Host,
+      
       config: {
         ...customConfig,
         mode: "modal" as ChatMode,

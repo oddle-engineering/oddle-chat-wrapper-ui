@@ -28,13 +28,27 @@ export interface AgentConfigurationUpdateResponse {
  */
 export async function getAgentConfiguration(
   apiUrl: string,
-  app: App
+  app: App,
+  authOptions?: {
+    userMpAuthToken?: string;
+    chatServerKey?: string;
+  }
 ): Promise<AgentConfiguration> {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  // Add authentication headers if provided
+  if (authOptions?.userMpAuthToken) {
+    headers['Authorization'] = `Bearer ${authOptions.userMpAuthToken}`;
+  }
+  if (authOptions?.chatServerKey) {
+    headers['X-Chat-Server-Key'] = authOptions.chatServerKey;
+  }
+
   const response = await fetch(`${apiUrl}/agent-configurations/${app}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
   });
 
   if (!response.ok) {
@@ -54,13 +68,27 @@ export async function getAgentConfiguration(
 export async function updateAgentConfiguration(
   apiUrl: string,
   app: App,
-  update: AgentConfigurationUpdate
+  update: AgentConfigurationUpdate,
+  authOptions?: {
+    userMpAuthToken?: string;
+    chatServerKey?: string;
+  }
 ): Promise<AgentConfiguration> {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  // Add authentication headers if provided
+  if (authOptions?.userMpAuthToken) {
+    headers['Authorization'] = `Bearer ${authOptions.userMpAuthToken}`;
+  }
+  if (authOptions?.chatServerKey) {
+    headers['X-Chat-Server-Key'] = authOptions.chatServerKey;
+  }
+
   const response = await fetch(`${apiUrl}/agent-configurations/${app}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: JSON.stringify(update),
   });
 

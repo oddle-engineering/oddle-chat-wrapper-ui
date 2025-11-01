@@ -2,8 +2,18 @@ import { ToolCallRequest, ContextHelpers } from "./shared";
 import { SystemEventHandler } from "./systemEvents";
 
 export interface WebSocketChatClientProps {
-  apiUrl?: string;
-  userId?: string;
+  // Authentication and server properties
+  userMpAuthToken: string;
+  chatServerUrl: string;
+  chatServerKey: string;
+  
+  // Entity configuration
+  providerResId?: string;
+  userId: string;
+  entityId?: string;
+  entityType?: string;
+  
+  // Existing properties
   toolSchemas?: any[];
   clientTools?: Record<string, Function>;
   contextHelpers: ContextHelpers;

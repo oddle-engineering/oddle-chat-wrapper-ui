@@ -43,7 +43,6 @@ export type {
   ChatMode,
   ChatTheme,
   ChatPosition,
-  App,
   ConversationResponse,
   StreamEvent,
   ToolResult,
@@ -54,6 +53,7 @@ export type {
   ThreadsResponse,
   MessagesResponse
 } from './types';
+export { App, EntityType } from './types';
 export type { ChatStatus, StreamingStatus, ProcessingStatus } from './constants/chatStatus';
 export { 
   CHAT_STATUS, 

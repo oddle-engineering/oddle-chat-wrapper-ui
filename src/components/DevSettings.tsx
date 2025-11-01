@@ -7,6 +7,8 @@ interface DevSettingsProps {
   onClose: () => void;
   app: App;
   apiUrl: string;
+  userMpAuthToken?: string;
+  chatServerKey?: string;
 }
 
 export const DevSettings = ({
@@ -14,6 +16,8 @@ export const DevSettings = ({
   onClose,
   app,
   apiUrl,
+  userMpAuthToken,
+  chatServerKey,
 }: DevSettingsProps) => {
   const [config, setConfig] = useState<AgentConfiguration | null>(null);
   const [tempPromptPath, setTempPromptPath] = useState("");
@@ -32,7 +36,10 @@ export const DevSettings = ({
     setLoading(true);
     setError(null);
     try {
-      const configuration = await getAgentConfiguration(apiUrl, app);
+      const configuration = await getAgentConfiguration(apiUrl, app, {
+        userMpAuthToken,
+        chatServerKey,
+      });
       setConfig(configuration);
       setTempPromptPath(configuration.promptPath);
       setTempVersionUuid(configuration.versionUuid);
@@ -42,7 +49,7 @@ export const DevSettings = ({
     } finally {
       setLoading(false);
     }
-  }, [apiUrl, app]);
+  }, [apiUrl, app, userMpAuthToken, chatServerKey]);
 
   const handleSave = useCallback(async () => {
     if (!config) return;
@@ -54,6 +61,9 @@ export const DevSettings = ({
         promptPath: tempPromptPath,
         versionUuid: tempVersionUuid,
         isDefault: config.isDefault,
+      }, {
+        userMpAuthToken,
+        chatServerKey,
       });
       setConfig(updatedConfig);
       onClose();
@@ -66,7 +76,7 @@ export const DevSettings = ({
     } finally {
       setLoading(false);
     }
-  }, [apiUrl, app, tempPromptPath, tempVersionUuid, config, onClose]);
+  }, [apiUrl, app, tempPromptPath, tempVersionUuid, config, onClose, userMpAuthToken, chatServerKey]);
 
   const handleCancel = useCallback(() => {
     if (config) {

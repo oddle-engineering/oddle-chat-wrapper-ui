@@ -4,7 +4,17 @@ import type { ContextHelpers } from '../client/types/shared';
 export type ChatMode = "sidebar" | "fullscreen" | "modal" | "embedded";
 export type ChatPosition = "left" | "right";
 export type ChatTheme = "light" | "dark" | "auto";
-export type App = "UD21" | "Host" | "Reserve";
+export enum EntityType {
+  BRAND = "BRAND",
+  ACCOUNT = "ACCOUNT", 
+  USER = "USER",
+}
+
+export enum App {
+  UD21 = "UD21",
+  Host = "Host",
+  Reserve = "Reserve",
+}
 
 export interface Message {
   id: string;
@@ -85,14 +95,26 @@ export interface ChatConfig {
 }
 
 export interface ChatWrapperProps {
-  apiUrl: string;
+  // Authentication and server configuration
+  userMpAuthToken: string; // Use for Authorization header in HTTPS requests and WebSocket initialization
+  chatServerUrl: string; // Making connection to WebSocket and HTTP requests
+  chatServerKey: string; // Server can detect which app is using the chat server (UD21, etc.)
+  
+  // Entity and conversation configuration
+  providerResId?: string; // If empty => generate conversation based on EntityType and entityId
+  userId: string;
+  entityId?: string; // Either brandId or accountId, depending on EntityType
+  entityType?: EntityType;
+  
+  // App identification
+  app: App;
+  
+  // Existing props
   config: Omit<ChatConfig, "apiEndpoint">;
   tools?: Record<string, (...args: any[]) => any>;
   clientTools?: ClientTools;
   initialMessages?: Message[];
-  userId?: string;
   devMode?: boolean;
-  app: App;
   contextHelpers?: ContextHelpers;
 }
 

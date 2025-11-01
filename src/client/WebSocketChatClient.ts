@@ -125,8 +125,8 @@ export class WebSocketChatClient {
   }
 
   private updateConfig(props: WebSocketChatClientProps): void {
-    if (props.apiUrl) {
-      this.config.apiUrl = props.apiUrl;
+    if (props.chatServerUrl) {
+      this.config.apiUrl = props.chatServerUrl;
     }
     if (props.userId) {
       this.config.userId = props.userId;
