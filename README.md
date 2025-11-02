@@ -1,101 +1,44 @@
 # Chat Wrapper UI
 
-A reusable, lightweight chat interface component built with pure CSS and React. Features advanced streaming support, tool integration, and no external UI library dependencies.
+A modern, type-safe React chat interface with advanced state management, streaming support, and WebSocket integration. Built with a comprehensive reducer pattern for predictable state updates and enhanced debugging capabilities.
 
-## Features
+## 🚀 Key Features
 
-- 🎨 **Pure CSS** - No external UI library dependencies
-- 🔧 **Configurable API URL** - Pass your API endpoint as a prop
-- 🎭 **Multiple Modes** - Sidebar, fullscreen, modal, or embedded
-- 🌙 **Theme Support** - Light, dark, and auto themes
-- 📱 **Responsive** - Mobile-friendly design
-- ⚡ **Lightweight** - Minimal bundle size
-- 🎯 **TypeScript** - Full TypeScript support
-- 🔄 **Streaming Support** - Real-time SSE streaming with event processing
-- 🛠️ **Tool Integration** - Built-in tool result processing and callbacks
-- 💬 **Conversation Management** - Automatic conversation tracking and state management
+- 🏗️ **Advanced State Management** - Built-in reducer pattern with Redux DevTools support
+- ⚡ **Real-time WebSocket** - Automatic connection management, ticket authentication, and reconnection
+- 🔄 **Streaming Support** - Real-time message streaming with reasoning and tool execution states
+- 🛠️ **Tool Integration** - Unified tool definition with schema validation and execution
+- 🎨 **Pure CSS** - No external UI library dependencies, fully customizable
+- 🎭 **Multiple Modes** - Sidebar, fullscreen, modal, or embedded display
+- 🌙 **Theme Support** - Light, dark, and auto themes with system preference detection
+- 📱 **Responsive Design** - Mobile-friendly with touch optimizations
+- 🎯 **TypeScript** - Full type safety with comprehensive type definitions
+- 🔧 **Developer Tools** - Built-in debugging with performance monitoring
 
-## Installation
-
-### Latest Stable Version
-```bash
-npm install @oddle/chat-wrapper-ui@latest
-```
-
-### Specific Version
-```bash
-npm install @oddle/chat-wrapper-ui@1.0.8
-```
-
-### Beta Releases
-```bash
-npm install @oddle/chat-wrapper-ui@beta
-```
-
-## Version Support
-
-This package follows [Semantic Versioning](https://semver.org/). See [VERSIONING.md](./VERSIONING.md) for detailed versioning strategy.
-
-- **Current Version**: 1.0.8
-- **Stability**: Stable
-- **Support**: Active development
-
-### Update Strategy
-```bash
-# Recommended: Pin to specific minor version for stability
-npm install @oddle/chat-wrapper-ui@^1.0.0
-
-# Latest features (more frequent updates)
-npm install @oddle/chat-wrapper-ui@latest
-
-# For testing new features
-npm install @oddle/chat-wrapper-ui@beta
-```
-
-## Quick Start
+## 📦 Installation
 
 ```bash
 npm install @oddle/chat-wrapper-ui
 ```
 
-## Basic Usage
+## 🔥 Quick Start
 
 ```tsx
-import { ChatWrapper, Tools } from "@oddle/chat-wrapper-ui";
+import { ChatWrapper } from "@oddle/chat-wrapper-ui";
 
 function App() {
-  // Define tools with unified schema and execution functions
-  const tools: Tools = [
-    {
-      name: "create_email",
-      description: "Create and send an email",
-      parameters: {
-        type: "object",
-        properties: {
-          subject: { type: "string", description: "Email subject" },
-          body: { type: "string", description: "Email body content" }
-        },
-        required: ["subject", "body"]
-      },
-      execute: async (params: { subject: string; body: string }) => {
-        // Handle email creation
-        console.log("Creating email:", params);
-        return { success: true, emailId: Date.now().toString() };
-      }
-    },
+  const tools = [
     {
       name: "get_weather",
       description: "Get current weather for a location",
       parameters: {
         type: "object",
         properties: {
-          location: { type: "string", description: "City or location name" }
+          location: { type: "string", description: "City name" }
         },
         required: ["location"]
       },
       execute: async (params: { location: string }) => {
-        // Handle weather request
-        console.log("Getting weather for:", params.location);
         return { location: params.location, temperature: 22, condition: "sunny" };
       }
     }
@@ -103,729 +46,535 @@ function App() {
 
   return (
     <ChatWrapper
-      // Authentication props
       userMpAuthToken="your-auth-token"
       chatServerUrl="wss://your-chat-server.com"
       chatServerKey="your-server-key"
       userId="user-123"
-      
-      
-      // Configuration
       config={{
         mode: "sidebar",
-        position: "right",
-        appName: "Customer Support",
-        theme: "light",
-        placeholder: "How can we help you today?",
+        appName: "AI Assistant",
+        theme: "auto",
+        placeholder: "How can I help you today?"
       }}
-      
-      // Unified tools with schema and execution
       tools={tools}
     />
   );
 }
 ```
 
-## Advanced Usage with Streaming & Tools
+## 🏗️ Architecture & State Management
+
+### Reducer Pattern Integration
+
+The ChatWrapper now includes a comprehensive state management system built on the reducer pattern:
 
 ```tsx
-import { ChatWrapper, Tools } from "@oddle/chat-wrapper-ui";
-import { useState } from "react";
+import { 
+  ChatWrapper,
+  ChatStoreProvider,
+  useConnectionState,
+  useAuthState,
+  useMessageState,
+  useUIState
+} from "@oddle/chat-wrapper-ui";
 
-function AdvancedChat() {
-  const [todos, setTodos] = useState([]);
-  const [briefs, setBriefs] = useState([]);
+// The ChatWrapper automatically includes store integration
+function MyApp() {
+  return (
+    <ChatWrapper
+      // ... your props
+      enableDevTools={true}  // Enable Redux DevTools
+      enableLogging={true}   // Enable action logging
+    />
+  );
+}
 
-  // Define tools with complete schema and execution functions
-  const tools: Tools = [
+// For advanced usage, access the store directly
+function AdvancedComponent() {
+  const connectionState = useConnectionState();
+  const messageState = useMessageState();
+  const uiState = useUIState();
+  
+  return (
+    <div>
+      <p>Connected: {connectionState.isConnected}</p>
+      <p>Messages: {messageState.totalMessages}</p>
+      <p>Theme: {uiState.theme}</p>
+    </div>
+  );
+}
+```
+
+### State Domains
+
+The reducer system manages four main state domains:
+
+1. **Connection State** - WebSocket connections, reconnection, server status
+2. **Authentication State** - User credentials, ticket management, auth status  
+3. **Message State** - Chat messages, streaming, reasoning, tool execution
+4. **UI State** - Interface state, modals, notifications, theme preferences
+
+### Store Features
+
+- **🔍 Predictable Updates** - All state changes through well-defined actions
+- **🐛 Enhanced Debugging** - Action logs, state inspection, time-travel debugging
+- **⚡ Performance Monitoring** - Automatic tracking of slow actions and state updates
+- **🔄 Automatic Reconnection** - Smart WebSocket management with exponential backoff
+- **💾 Optimized Storage** - Map-based message indexing for O(1) lookups
+
+## 🛠️ Advanced Usage
+
+### WebSocket Authentication & Reconnection
+
+```tsx
+import { ChatWrapper, useConnectionState, useAuthState } from "@oddle/chat-wrapper-ui";
+
+function ChatWithStatus() {
+  return (
+    <ChatStoreProvider enableDevTools={true}>
+      <ChatWrapper
+        userMpAuthToken="your-token"
+        chatServerUrl="wss://api.example.com"
+        chatServerKey="your-key"
+        userId="user-123"
+        config={{
+          mode: "fullscreen",
+          appName: "Support Chat"
+        }}
+      />
+      <ConnectionStatus />
+    </ChatStoreProvider>
+  );
+}
+
+function ConnectionStatus() {
+  const connection = useConnectionState();
+  const auth = useAuthState();
+  
+  return (
+    <div>
+      <p>Status: {connection.isConnected ? 'Connected' : 'Disconnected'}</p>
+      <p>Auth: {auth.isAuthenticated ? 'Authenticated' : 'Pending'}</p>
+      {connection.shouldReconnect && <p>Reconnecting...</p>}
+    </div>
+  );
+}
+```
+
+### Tool Integration with State Management
+
+```tsx
+import { ChatWrapper, useMessageActions } from "@oddle/chat-wrapper-ui";
+
+function ChatWithTools() {
+  const messageActions = useMessageActions();
+  
+  const tools = [
     {
-      name: "create_todo",
-      description: "Create a new todo item",
+      name: "create_task",
+      description: "Create a new task",
       parameters: {
         type: "object",
         properties: {
-          title: { type: "string", description: "Todo title" },
-          description: { type: "string", description: "Todo description" }
+          title: { type: "string", description: "Task title" },
+          priority: { type: "string", enum: ["low", "medium", "high"] }
         },
-        required: ["title", "description"]
+        required: ["title"]
       },
-      execute: async (params: { title: string; description: string }) => {
-        console.log('Creating todo:', params);
-        const newTodo = { id: Date.now().toString(), ...params, completed: false };
-        setTodos(prev => [...prev, newTodo]);
-        return { success: true, todoId: newTodo.id };
-      }
-    },
-    {
-      name: "create_brief",
-      description: "Create a new brief document",
-      parameters: {
-        type: "object",
-        properties: {
-          title: { type: "string", description: "Brief title" },
-          content: { type: "string", description: "Brief content" }
-        },
-        required: ["title", "content"]
-      },
-      execute: async (params: { title: string; content: string }) => {
-        console.log('Creating brief:', params);
-        const newBrief = { id: Date.now().toString(), ...params, createdAt: new Date() };
-        setBriefs(prev => [...prev, newBrief]);
-        return { success: true, briefId: newBrief.id };
+      execute: async (params: { title: string; priority?: string }) => {
+        // Tool execution automatically tracked in message state
+        const task = { id: Date.now(), ...params, completed: false };
+        
+        // Optional: dispatch custom message events
+        messageActions.addMessage({
+          id: Math.random().toString(36),
+          role: "system",
+          content: `Task "${params.title}" created successfully`,
+          timestamp: new Date()
+        });
+        
+        return { success: true, task };
       }
     }
   ];
 
   return (
     <ChatWrapper
-      // Required authentication props
-      userMpAuthToken="your-auth-token"
-      chatServerUrl="wss://your-chat-server.com"
-      chatServerKey="your-server-key"
+      userMpAuthToken="your-token"
+      chatServerUrl="wss://api.example.com"
+      chatServerKey="your-key" 
       userId="user-123"
-      
-      
-      // Configuration
       config={{
         mode: "embedded",
-        appName: "AI Assistant",
-        theme: "light",
+        appName: "Task Manager",
         features: {
           showToolResults: true,
-          messageHistory: true,
-        },
-        onStreamingStatusChange: (status) => {
-          console.log('Streaming status:', status);
-        },
-        onError: (error) => {
-          console.error('Chat error:', error);
-        },
+          messageHistory: true
+        }
       }}
-      
-      // Unified tools with schema and execution
       tools={tools}
     />
   );
 }
 ```
 
-## Configuration
+## 📋 Complete Props Reference
 
-The `ChatWrapper` component accepts the following props:
+### Required Props
 
-### Authentication Props (required)
-
-| Property              | Type     | Description                                           |
-| --------------------- | -------- | ----------------------------------------------------- |
-| `userMpAuthToken`     | `string` | Authentication token for API requests and WebSocket  |
-| `chatServerUrl`       | `string` | WebSocket server URL (e.g., "wss://server.com")      |
-| `chatServerKey`       | `string` | Server identification key (UD21, Host, Reserve)      |
-| `userId`              | `string` | User identification                                   |
+| Property | Type | Description |
+|----------|------|-------------|
+| `userMpAuthToken` | `string` | **Authentication token** - Used for Authorization header in HTTPS requests and WebSocket initialization |
+| `chatServerUrl` | `string` | **WebSocket server URL** - Making connection to WebSocket and HTTP requests (e.g., `"wss://api.example.com"`) |
+| `chatServerKey` | `string` | **Server identification key** - Server can detect which app is using the chat server (UD21, Host, Reserve, etc.) |
+| `userId` | `string` | **User identifier** - Unique user ID for conversation tracking |
+| `config` | `ChatConfig` | **Configuration object** - Chat interface settings and behavior |
 
 ### Optional Props
 
-| Property              | Type                    | Description                                           |
-| --------------------- | ----------------------- | ----------------------------------------------------- |
-| `providerResId`       | `string`                | Provider resource ID (auto-generated if empty)       |
-| `entityId`            | `string`                | Entity ID (brandId or accountId)                     |
-| `entityType`          | `EntityType`            | Entity type (BRAND, ACCOUNT, USER)                   |
-| `tools`               | `Tools`                 | Array of tool objects with schema and execution      |
-| `devMode`             | `boolean`               | Enable developer mode features                        |
-| `contextHelpers`      | `ContextHelper[]`       | Context helpers for enhanced functionality            |
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `tools` | `Tools` | `[]` | **Tool definitions** - Array of tools with schema and execution functions |
+| `entityId` | `string` | `undefined` | **Entity identifier** - Either brandId or accountId, depending on EntityType |
+| `entityType` | `EntityType` | `undefined` | **Entity type** - `BRAND`, `ACCOUNT`, or `USER` |
+| `providerResId` | `string` | `undefined` | **Provider resource ID** - If empty, generates conversation based on EntityType and entityId |
+| `devMode` | `boolean` | `false` | **Developer mode** - Enable developer settings and debug features |
+| `contextHelpers` | `ContextHelpers` | `{}` | **Context helpers** - Additional context data for enhanced functionality |
+| `enableDevTools` | `boolean` | `true` (dev) | **Redux DevTools** - Enable Redux DevTools integration |
+| `enableLogging` | `boolean` | `true` (dev) | **Action logging** - Enable action logging in development |
 
-### `config` (object, required)
-
-Configuration object with the following properties:
-
-| Property                   | Type                                                 | Required | Description                                       |
-| -------------------------- | ---------------------------------------------------- | -------- | ------------------------------------------------- |
-| `mode`                     | `'sidebar' \| 'fullscreen' \| 'modal' \| 'embedded'` | ✅       | Display mode                                      |
-| `appName`                  | `string`                                             | ✅       | Application name shown in header                  |
-| `position`                 | `'left' \| 'right'`                                  | ❌       | Sidebar position (only for sidebar mode)         |
-| `theme`                    | `'light' \| 'dark' \| 'auto'`                        | ❌       | Color theme                                       |
-| `apiKey`                   | `string`                                             | ❌       | API authentication key                            |
-| `placeholder`              | `string`                                             | ❌       | Input placeholder text                            |
-| `welcomeMessage`           | `string`                                             | ❌       | Initial welcome message                           |
-| `endpoint`                 | `'conversation' \| 'brief-planner'`                  | ❌       | API endpoint type (default: 'conversation')      |
-| `customStyles`             | `React.CSSProperties`                                | ❌       | Custom CSS styles                                 |
-| `features`                 | `object`                                             | ❌       | Feature toggles (see below)                       |
-| `onMessage`                | `(message: Message) => void`                         | ❌       | Message callback                                  |
-| `onError`                  | `(error: Error) => void`                             | ❌       | Error callback                                    |
-| `onToolResult`             | `(tool: string, result: any) => void`                | ❌       | Tool result callback                              |
-| `onStreamingStatusChange`  | `(status: string) => void`                           | ❌       | Streaming status change callback                  |
-
-### `tools` (array, optional)
-
-An array of tool objects that combine schema definition and execution function:
-
-```tsx
-tools?: Tools // Array of Tool objects
-
-interface Tool {
-  name: string;
-  description: string;
-  parameters: {
-    type: "object";
-    properties: Record<string, any>;
-    required?: string[];
-  };
-  execute: (params: any) => Promise<any> | any;
-}
-```
-
-#### Tool Benefits
-- **Unified Definition**: Schema and execution in single object
-- **Type Safety**: Full TypeScript support for parameters
-- **Automatic Filtering**: Execution functions filtered from server communication
-- **Simplified API**: No separate `clientTools` and `toolExecutors` props
-
-#### Example Tool Definition
-```tsx
-const tools: Tools = [
-  {
-    name: "search_products",
-    description: "Search for products in the database",
-    parameters: {
-      type: "object",
-      properties: {
-        query: { type: "string", description: "Search query" },
-        category: { type: "string", description: "Product category" },
-        limit: { type: "number", description: "Max results" }
-      },
-      required: ["query"]
-    },
-    execute: async (params: { query: string; category?: string; limit?: number }) => {
-      // Your implementation here
-      return { results: [], total: 0 };
-    }
-  }
-];
-```
-
-### Features Object
-
-```tsx
-features?: {
-  fileUpload?: boolean;
-  voiceInput?: boolean;
-  messageHistory?: boolean;
-  exportChat?: boolean;
-  showToolResults?: boolean; // Display tool results in the UI
-}
-```
-
-## API Integration
-
-### Standard Conversation API
-
-Your API server should support the following endpoints:
-
-#### Initialize Conversation
-- **POST** `/api/conversation/init`
-- **Response**: `{ conversationId: string }`
-
-#### Send Message
-- **POST** `/api/conversation/{conversationId}`
-- **Body**: `{ message: string, tools?: string[] }`
-- **Response**: Server-Sent Events (SSE) stream
-
-### Brief Planner API (Advanced)
-
-For advanced features with tool integration:
-
-#### Brief Planner Endpoint
-- **POST** `/api/brief-planner`
-- **Body**: 
-```json
-{
-  "messages": Message[],
-  "promptPath": "briefPlanner",
-  "conversationUuid": string | null,
-  "todos": any[],
-  "briefs": any[],
-  "media": string[],
-  "tools": string[]
-}
-```
-- **Response**: Server-Sent Events (SSE) stream with enhanced event types
-
-### SSE Event Types
-
-The ChatWrapper handles various SSE event types:
+### ChatConfig Object
 
 ```typescript
-// Standard events
-{ type: "text-delta", content: string }
-{ type: "finished", uuid?: string, result?: any }
-{ type: "error", error: string }
-
-// Advanced events (brief-planner endpoint)
-{ type: "event", event: "latitude-event", data: { type: "chain-started" | "step-started" | "provider-completed" | "chain-completed" } }
-{ type: "event", event: "provider-event", data: { type: "text-delta", textDelta: string } }
-{ type: "tool-result", tool: string, data: any, todos?: any[], briefs?: any[] }
+interface ChatConfig {
+  // Display Configuration
+  mode: 'sidebar' | 'fullscreen' | 'modal' | 'embedded';
+  appName: string;
+  position?: 'left' | 'right';                    // Sidebar position (sidebar mode only)
+  theme?: 'light' | 'dark' | 'auto';              // Color theme
+  
+  // Content Configuration  
+  description?: string;                           // App description text
+  placeholder?: string;                           // Input placeholder text
+  placeholderTexts?: string[];                    // Animated placeholder texts
+  welcomeMessage?: string;                        // Initial welcome message
+  promptPath?: string;                            // Agent prompt path
+  bubbleText?: string;                            // Chat bubble text
+  
+  // Layout Configuration
+  constrainedHeight?: boolean;                    // Fill parent container (embedded mode)
+  headerVisible?: boolean;                        // Show header with appName and description
+  
+  // Restaurant/Brand Configuration
+  restaurantName?: string;                        // Restaurant name near attachment button
+  restaurantLogo?: string;                        // Restaurant logo URL
+  
+  // Suggested Prompts
+  suggestedPrompts?: Array<{
+    title: string;
+    description: string;
+    icon?: React.ReactNode;                       // Optional icon component
+  }>;
+  
+  // Feature Toggles
+  features?: {
+    fileUpload?: boolean;                         // Enable file upload functionality
+    voiceInput?: boolean;                         // Enable voice input (future)
+    messageHistory?: boolean;                     // Enable message history
+    exportChat?: boolean;                         // Enable chat export (future)
+    showToolResults?: boolean;                    // Display tool results in UI
+    showBubbleText?: boolean;                     // Show bubble text in chat bubble
+  };
+  
+  // Event Callbacks
+  onMessage?: (message: Message) => void;         // Message received callback
+  onError?: (error: Error) => void;               // Error callback
+  onToolResult?: (tool: string, result: any) => void; // Tool result callback
+  onStreamingStatusChange?: (status: string) => void; // Streaming status callback
+  
+  // Styling
+  customStyles?: React.CSSProperties;            // Custom CSS styles
+  
+  // API Configuration
+  endpoint?: 'brief-planner' | 'conversation';   // API endpoint type
+}
 ```
 
-## Examples
+### EntityType Enum
 
-### Modal Chat
-
-```tsx
-import { ChatWrapper, Tools } from "@oddle/chat-wrapper-ui";
-
-const tools: Tools = [
-  {
-    name: "get_weather",
-    description: "Get current weather information",
-    parameters: {
-      type: "object",
-      properties: {
-        location: { type: "string", description: "Location name" }
-      },
-      required: ["location"]
-    },
-    execute: async (params: { location: string }) => ({
-      location: params.location,
-      temperature: 22,
-      condition: "sunny"
-    })
-  },
-  {
-    name: "set_reminder",
-    description: "Set a reminder for later",
-    parameters: {
-      type: "object",
-      properties: {
-        message: { type: "string", description: "Reminder message" },
-        time: { type: "string", description: "Reminder time" }
-      },
-      required: ["message", "time"]
-    },
-    execute: async (params: { message: string; time: string }) => ({
-      success: true,
-      reminderId: Date.now()
-    })
-  }
-];
-
-<ChatWrapper
-  userMpAuthToken="your-auth-token"
-  chatServerUrl="wss://api.example.com"
-  chatServerKey="your-server-key"
-  userId="user-123"
-  config={{
-    mode: "modal",
-    appName: "AI Assistant",
-    theme: "dark",
-    placeholder: "Ask me anything...",
-  }}
-  tools={tools}
-/>
+```typescript
+enum EntityType {
+  BRAND = "BRAND",     // Brand-level entity
+  ACCOUNT = "ACCOUNT", // Account-level entity  
+  USER = "USER"        // User-level entity
+}
 ```
 
-### Embedded Chat with Tool Results
+### Tools Array
 
-```tsx
-import { ChatWrapper, Tools } from "@oddle/chat-wrapper-ui";
+```typescript
+type Tools = Tool[];
 
-const tools: Tools = [
-  {
-    name: "search_docs",
-    description: "Search through documentation",
-    parameters: {
-      type: "object",
-      properties: {
-        query: { type: "string", description: "Search query" }
-      },
-      required: ["query"]
-    },
-    execute: async (params: { query: string }) => ({
-      results: [`Doc about ${params.query}`, `Guide for ${params.query}`]
-    })
-  },
-  {
-    name: "create_ticket",
-    description: "Create a support ticket",
-    parameters: {
-      type: "object",
-      properties: {
-        title: { type: "string", description: "Ticket title" },
-        description: { type: "string", description: "Ticket description" }
-      },
-      required: ["title", "description"]
-    },
-    execute: async (params: { title: string; description: string }) => ({
-      ticketId: Date.now(),
-      status: "open"
-    })
-  }
-];
+interface Tool {
+  name: string;                                   // Tool identifier
+  description: string;                            // Tool description for AI
+  parameters: ToolParameter[];                    // Parameter definitions
+  execute: (params: any) => Promise<any> | any;  // Execution function
+}
 
-<ChatWrapper
-  userMpAuthToken="your-auth-token"
-  chatServerUrl="wss://chat-api.example.com"
-  chatServerKey="your-server-key"
-  userId="user-123"
-  config={{
-    mode: "embedded",
-    appName: "Help Center",
-    theme: "auto",
-    features: {
-      fileUpload: true,
-      messageHistory: true,
-      showToolResults: true,
-    },
-  }}
-  tools={tools}
-/>
+interface ToolParameter {
+  name: string;                                   // Parameter name
+  type: string;                                   // Parameter type
+  description: string;                            // Parameter description
+  isRequired: boolean;                            // Whether required
+  schema: {                                       // JSON schema
+    type: string;
+    properties?: Record<string, any>;
+    required?: string[];
+    additionalProperties?: boolean;
+    enum?: string[];
+    items?: any;
+  };
+}
 ```
 
-### Fullscreen Chat with Streaming
-
-```tsx
-import { ChatWrapper, Tools } from "@oddle/chat-wrapper-ui";
-
-const tools: Tools = [
-  {
-    name: "escalate_ticket",
-    description: "Escalate a support ticket",
-    parameters: {
-      type: "object",
-      properties: {
-        ticketId: { type: "string", description: "Ticket ID to escalate" },
-        reason: { type: "string", description: "Escalation reason" }
-      },
-      required: ["ticketId", "reason"]
-    },
-    execute: async (params: { ticketId: string; reason: string }) => ({
-      success: true,
-      escalated: true
-    })
-  },
-  {
-    name: "get_user_info",
-    description: "Get user information",
-    parameters: {
-      type: "object",
-      properties: {
-        userId: { type: "string", description: "User ID to lookup" }
-      },
-      required: ["userId"]
-    },
-    execute: async (params: { userId: string }) => ({
-      userId: params.userId,
-      name: "John Doe",
-      tier: "premium"
-    })
-  },
-  {
-    name: "schedule_callback",
-    description: "Schedule a callback",
-    parameters: {
-      type: "object",
-      properties: {
-        phoneNumber: { type: "string", description: "Phone number for callback" },
-        preferredTime: { type: "string", description: "Preferred callback time" }
-      },
-      required: ["phoneNumber", "preferredTime"]
-    },
-    execute: async (params: { phoneNumber: string; preferredTime: string }) => ({
-      scheduled: true,
-      callbackId: Date.now()
-    })
-  }
-];
-
-<ChatWrapper
-  userMpAuthToken="your-auth-token"
-  chatServerUrl="wss://support.example.com"
-  chatServerKey="your-server-key"
-  userId="user-123"
-  config={{
-    mode: "fullscreen",
-    appName: "Premium Support",
-    theme: "light",
-    onStreamingStatusChange: (status) => {
-      console.log('Stream status:', status);
-    },
-    customStyles: {
-      fontFamily: "Inter, sans-serif",
-    },
-  }}
-  tools={tools}
-/>
-```
-
-## Styling
-
-The component includes comprehensive CSS with support for:
-
-- Multiple display modes (sidebar, modal, fullscreen, embedded)
-- Light and dark themes
-- Responsive design
-- Smooth animations
-- Custom scrollbars
-- Thinking indicators
-- Tool result displays
-
-You can override styles using the `customStyles` prop or by targeting CSS classes with the `chat-wrapper` prefix.
-
-### CSS Classes Reference
-
-```css
-.chat-wrapper                    /* Main container */
-.chat-wrapper--sidebar           /* Sidebar mode */
-.chat-wrapper--modal             /* Modal mode */
-.chat-wrapper--fullscreen        /* Fullscreen mode */
-.chat-wrapper--embedded          /* Embedded mode */
-.chat-wrapper--light             /* Light theme */
-.chat-wrapper--dark              /* Dark theme */
-.chat-wrapper__header            /* Header section */
-.chat-wrapper__content           /* Messages area */
-.chat-wrapper__input             /* Input section */
-.chat-wrapper__thinking          /* Thinking indicator */
-.chat-wrapper__tool-results      /* Tool results panel */
-```
-
-## TypeScript
-
-Full TypeScript support with exported types:
-
-```tsx
-import {
-  ChatWrapper,
-  ChatWrapperProps,
-  Message,
-  ChatConfig,
-  StreamEvent,
-  ToolResult,
-  ChatMode,
-  ChatPosition,
-  ChatTheme,
-  Tools,
-  Tool,
-  ToolSchema,
-  EntityType,
-} from "@oddle/chat-wrapper-ui";
-```
-
-### Type Definitions
+### Message Interface
 
 ```typescript
 interface Message {
-  id: string;
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-  timestamp: Date;
-  isStreaming?: boolean;
-  media?: string[];
-}
-
-interface ToolSchema {
-  name: string;
-  description: string;
-  parameters: {
-    type: "object";
-    properties: Record<string, any>;
-    required?: string[];
+  id: string;                                     // Unique message ID
+  role: 'user' | 'assistant' | 'system' | 'reasoning' | 'tooling';
+  content: string;                                // Message content
+  timestamp: Date;                                // Message timestamp
+  isStreaming?: boolean;                          // Currently streaming
+  media?: string[];                               // Attached media URLs
+  toolData?: {                                    // Tool execution data
+    toolName: string;
+    callId: string;
+    parameters?: Record<string, any>;
+    result?: any;
+    status?: 'processing' | 'completed' | 'error';
   };
 }
+```
 
-interface Tool extends ToolSchema {
-  execute: (params: any) => Promise<any> | any;
-}
+### ContextHelpers Interface
 
-type Tools = Tool[];
-
-enum EntityType {
-  BRAND = "BRAND",
-  ACCOUNT = "ACCOUNT",
-  USER = "USER"
-}
-
-
-interface StreamEvent {
-  type: string;
-  event?: string;
-  data?: any;
-  content?: string;
-  error?: string;
-  done?: boolean;
-  uuid?: string;
-  result?: any;
-  tool?: string;
-  todos?: any[];
-  briefs?: any[];
-}
-
-interface ToolResult {
-  id: string;
-  title: string;
-  description?: string;
-  status?: string;
-  created_at: string;
-  [key: string]: any;
+```typescript
+interface ContextHelpers {
+  [key: string]: any;                             // Dynamic context data
 }
 ```
 
-## Development
+## 🔧 Tool Definition Examples
 
-```bash
-npm run dev      # Start development server
-npm run build    # Build package
-npm run typecheck # Type checking
-```
+### Simple Tool Example
 
-## Showcase & Testing
-
-This repository includes a comprehensive showcase application for testing and demonstrating the chat wrapper component.
-
-### Quick Start
-
-```bash
-# Automated setup
-./setup-showcase.sh
-
-# Manual setup
-npm run showcase:install
-npm run showcase
-
-# Or step by step
-cd showcase
-npm install
-npm run dev
-```
-
-### Showcase Features
-
-- 🎨 **Live Configuration** - Adjust settings in real-time
-- 🎭 **All Display Modes** - Test sidebar, modal, fullscreen, and embedded
-- 🌙 **Theme Switching** - Compare light, dark, and auto themes
-- 🤖 **Mock API** - Built-in realistic chat API simulation
-- 📱 **Responsive Testing** - Test on different screen sizes
-- ⚙️ **Custom Configurations** - Build and test your own settings
-- 🔄 **Streaming Demo** - Test real-time streaming and tool integration
-- 🛠️ **Brief Planner** - Advanced demo with tool results and conversation management
-
-The showcase will be available at `http://localhost:3000` and includes:
-
-1. **Interactive demos** for each display mode
-2. **Configuration panel** for real-time customization
-3. **Mock chat API** with realistic streaming responses
-4. **Brief Planner demo** showcasing advanced features
-5. **Usage examples** and code snippets
-6. **Responsive design** testing
-
-### Showcase Commands
-
-```bash
-npm run showcase           # Start showcase dev server
-npm run showcase:install   # Install showcase dependencies
-npm run showcase:build     # Build showcase for production
-```
-
-### Using Real API
-
-The showcase can connect to your real Brief Planner API instead of using mocks:
-
-#### Quick Setup
-
-```bash
-cd showcase
-./setup-real-api.sh
-# Enter your API URL (e.g., http://localhost:3000)
-npm run dev
-```
-
-#### Manual Setup
-
-```bash
-cd showcase
-cp .env.example .env.local
-# Edit .env.local:
-# VITE_USE_MOCK_API=false
-# VITE_API_BASE_URL=http://localhost:3000
-npm run dev
-```
-
-The showcase header will show **🌐 Real API Mode** when connected to your actual API.
-
-For detailed configuration options, see [`REAL_API_SETUP.md`](./REAL_API_SETUP.md).
-
-## Migration from v1.0.1
-
-If you're upgrading from a previous version, the ChatWrapper now includes advanced streaming and tool integration features:
-
-### New Features
-- Built-in SSE streaming processing
-- Tool result management
-- Conversation state tracking
-- Enhanced event handling
-- Thinking indicators
-
-### Breaking Changes
-- **Authentication Required**: All authentication props are now required for security
-- **Unified Tools**: Tools now use a single array format with schema and execution functions
-- **Removed Legacy Props**: `clientTools`, `toolExecutors`, and `initialMessages` have been removed
-- **Required Props**: `userMpAuthToken`, `chatServerUrl`, `chatServerKey`, and `userId` are now required
-- **Simplified API**: No more `apiUrl` - use `chatServerUrl` for both WebSocket and HTTP
-
-### Migration Example
-
-**Before (legacy version):**
-```tsx
-<ChatWrapper
-  apiUrl="https://api.example.com"
-  config={{
-    mode: "sidebar",
-    appName: "Chat",
-  }}
-  clientTools={{
-    my_tool: { name: "my_tool", description: "Tool description" }
-  }}
-  toolExecutors={{
-    my_tool: (arg) => ({ success: true })
-  }}
-  initialMessages={[...messages]}
-/>
-```
-
-**After (current version):**
-```tsx
-import { ChatWrapper, Tools } from "@oddle/chat-wrapper-ui";
-
-const tools: Tools = [
-  {
-    name: "my_tool",
-    description: "Tool description",
-    parameters: {
-      type: "object",
-      properties: {
-        arg: { type: "string", description: "Tool argument" }
-      },
-      required: ["arg"]
-    },
-    execute: async (params: { arg: string }) => ({ success: true })
+```typescript
+const weatherTool: Tool = {
+  name: "get_weather",
+  description: "Get current weather for a location",
+  parameters: [
+    {
+      name: "location",
+      type: "string", 
+      description: "City or location name",
+      isRequired: true,
+      schema: {
+        type: "string"
+      }
+    }
+  ],
+  execute: async (params: { location: string }) => {
+    // Your weather API implementation
+    return { 
+      location: params.location, 
+      temperature: 22, 
+      condition: "sunny" 
+    };
   }
-];
+};
+```
 
+### Advanced Tool with Complex Parameters
+
+```typescript
+const createTaskTool: Tool = {
+  name: "create_task",
+  description: "Create a new task with priority and deadline",
+  parameters: [
+    {
+      name: "title",
+      type: "string",
+      description: "Task title",
+      isRequired: true,
+      schema: { type: "string" }
+    },
+    {
+      name: "priority", 
+      type: "string",
+      description: "Task priority level",
+      isRequired: false,
+      schema: {
+        type: "string",
+        enum: ["low", "medium", "high"]
+      }
+    },
+    {
+      name: "deadline",
+      type: "string", 
+      description: "Task deadline in ISO format",
+      isRequired: false,
+      schema: { type: "string" }
+    },
+    {
+      name: "tags",
+      type: "array",
+      description: "Task tags",
+      isRequired: false,
+      schema: {
+        type: "array",
+        items: { type: "string" }
+      }
+    }
+  ],
+  execute: async (params: { 
+    title: string; 
+    priority?: string; 
+    deadline?: string;
+    tags?: string[];
+  }) => {
+    // Task creation logic with full type safety
+    const task = {
+      id: Date.now().toString(),
+      title: params.title,
+      priority: params.priority || 'medium',
+      deadline: params.deadline,
+      tags: params.tags || [],
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    };
+    
+    // Save task to your system
+    await saveTask(task);
+    
+    return { 
+      success: true, 
+      task,
+      message: `Task "${params.title}" created successfully`
+    };
+  }
+};
+```
+
+## 🎨 Styling & Themes
+
+### CSS Classes
+
+The component provides comprehensive CSS classes for customization:
+
+```css
+.chat-wrapper                  /* Root container */
+.chat-wrapper--sidebar         /* Sidebar mode */
+.chat-wrapper--modal           /* Modal mode */
+.chat-wrapper--fullscreen      /* Fullscreen mode */
+.chat-wrapper--embedded        /* Embedded mode */
+.chat-wrapper--light           /* Light theme */
+.chat-wrapper--dark            /* Dark theme */
+.chat-wrapper__header          /* Header section */
+.chat-wrapper__content         /* Message area */
+.chat-wrapper__input           /* Input section */
+```
+
+### Custom Styling
+
+```tsx
 <ChatWrapper
-  // Required authentication
-  userMpAuthToken="your-auth-token"
-  chatServerUrl="wss://api.example.com"
-  chatServerKey="your-server-key"
-  userId="user-123"
-  
   config={{
     mode: "sidebar",
-    appName: "Chat",
-    features: { showToolResults: true },
+    appName: "Custom Chat",
+    customStyles: {
+      fontFamily: "Inter, sans-serif",
+      borderRadius: "12px",
+      boxShadow: "0 4px 20px rgba(0,0,0,0.1)"
+    }
   }}
-  
-  // Unified tools with schema and execution
-  tools={tools}
+  // ... other props
 />
 ```
 
-## License
+## 📤 Exports
 
-MIT
+### Components
+```typescript
+import { 
+  ChatWrapper,           // Main chat component with store integration
+  ChatWrapperOriginal,   // Original component without store (backwards compatibility)
+  ChatStoreProvider      // Store provider for advanced usage
+} from "@oddle/chat-wrapper-ui";
+```
+
+### Store Hooks
+```typescript
+import {
+  useConnectionState,    // WebSocket connection state
+  useAuthState,         // Authentication state  
+  useMessageState,      // Messages and streaming state
+  useUIState,           // Interface state
+  useAppStatus,         // Overall app status
+  useCanSendMessage,    // Message sending capability
+  useCriticalErrors,    // Critical error monitoring
+  useConnectionActions, // Connection action dispatchers
+  useMessageActions,    // Message action dispatchers
+  useUIActions,         // UI action dispatchers
+  useStoreDebug         // Development debugging tools
+} from "@oddle/chat-wrapper-ui";
+```
+
+### Types
+```typescript
+import {
+  ChatWrapperProps,
+  Message,
+  ChatConfig,
+  Tools,
+  Tool,
+  EntityType,
+  // State types
+  RootState,
+  ConnectionState,
+  AuthenticationState,
+  MessageState,
+  UIState,
+  // Action types  
+  RootAction,
+  ConnectionAction,
+  AuthAction,
+  MessageAction,
+  UIAction
+} from "@oddle/chat-wrapper-ui";
+```
+
+
+## 🛠️ Development
+
+```bash
+npm run dev        # Start development server
+npm run build      # Build package  
+npm run showcase   # Run showcase application
+```
+
+## 🎯 What's New in v1.1.0
+
+- 🏗️ **Comprehensive State Management** - Reducer pattern with Redux DevTools
+- ⚡ **Enhanced Performance** - Optimized message handling and rendering
+- 🔄 **Smart Reconnection** - Automatic WebSocket management with ticket renewal
+- 🐛 **Better Debugging** - Action logging, performance monitoring, state inspection
+- 🔧 **Developer Experience** - Enhanced TypeScript support and debugging tools
+- 🎨 **Improved Architecture** - Cleaner separation of concerns and maintainable code
+
+---
+
+## 📄 License
+
+MIT © Oddle Engineering
