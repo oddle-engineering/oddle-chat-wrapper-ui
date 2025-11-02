@@ -1,5 +1,6 @@
 
 export interface AgentConfiguration {
+  app: string;
   promptPath: string;
   versionUuid: string;
   isDefault: boolean;
@@ -7,10 +8,11 @@ export interface AgentConfiguration {
 
 export interface AgentConfigurationResponse {
   success: boolean;
-  configuration: AgentConfiguration;
+  configurations: AgentConfiguration[];
 }
 
 export interface AgentConfigurationUpdate {
+  app: string;
   promptPath: string;
   versionUuid: string;
   isDefault?: boolean;
@@ -23,15 +25,15 @@ export interface AgentConfigurationUpdateResponse {
 }
 
 /**
- * Get agent configuration for a specific app
+ * Get agent configurations for all apps
  */
-export async function getAgentConfiguration(
+export async function getAgentConfigurations(
   apiUrl: string,
   authOptions?: {
     userMpAuthToken?: string;
     chatServerKey?: string;
   }
-): Promise<AgentConfiguration> {
+): Promise<AgentConfiguration[]> {
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
   };
@@ -44,7 +46,7 @@ export async function getAgentConfiguration(
     headers['X-Chat-Server-Key'] = authOptions.chatServerKey;
   }
 
-  const response = await fetch(`${apiUrl}/agent-configurations`, {
+  const response = await fetch(`${apiUrl}/api/agent-configurations`, {
     method: 'GET',
     headers,
   });
@@ -57,7 +59,22 @@ export async function getAgentConfiguration(
   }
 
   const data: AgentConfigurationResponse = await response.json();
-  return data.configuration;
+  return data.configurations;
+}
+
+/**
+ * Get agent configuration for a specific app
+ */
+export async function getAgentConfiguration(
+  apiUrl: string,
+  app: string,
+  authOptions?: {
+    userMpAuthToken?: string;
+    chatServerKey?: string;
+  }
+): Promise<AgentConfiguration | null> {
+  const configurations = await getAgentConfigurations(apiUrl, authOptions);
+  return configurations.find(config => config.app === app) || null;
 }
 
 /**
@@ -83,7 +100,7 @@ export async function updateAgentConfiguration(
     headers['X-Chat-Server-Key'] = authOptions.chatServerKey;
   }
 
-  const response = await fetch(`${apiUrl}/agent-configurations`, {
+  const response = await fetch(`${apiUrl}/api/agent-configurations`, {
     method: 'PUT',
     headers,
     body: JSON.stringify(update),

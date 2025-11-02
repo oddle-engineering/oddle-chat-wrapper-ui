@@ -1,6 +1,7 @@
 import { ContextHelpers } from '../types/shared';
 import {
   OutboundMessageType,
+  TicketAuthenticateMessage,
   ChatMessage,
   OutboundConfigureToolsMessage,
   UpdateToolsMessage,
@@ -12,6 +13,27 @@ import {
 } from '../types/outboundMessages';
 
 export class MessageFactory {
+  /**
+   * Create a ticket authentication message
+   */
+  static createTicketAuthenticateMessage(params: {
+    ticket: string;
+    clientInfo?: {
+      userAgent?: string;
+      timestamp?: string;
+    };
+  }): TicketAuthenticateMessage {
+    return {
+      type: OutboundMessageType.TICKET_AUTHENTICATE,
+      ticket: params.ticket,
+      clientInfo: {
+        userAgent: navigator.userAgent,
+        timestamp: new Date().toISOString(),
+        ...params.clientInfo,
+      },
+    };
+  }
+
   /**
    * Create a chat message to send to the server
    */
@@ -145,6 +167,16 @@ export class MessageFactory {
   /**
    * Helper methods to create and serialize messages in one call
    */
+  static serializeTicketAuthenticate(params: {
+    ticket: string;
+    clientInfo?: {
+      userAgent?: string;
+      timestamp?: string;
+    };
+  }): string {
+    return this.createAndSerialize(() => this.createTicketAuthenticateMessage(params));
+  }
+
   static serializeChatMessage(params: {
     content: string;
     app: string;

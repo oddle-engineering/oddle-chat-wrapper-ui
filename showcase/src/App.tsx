@@ -746,7 +746,7 @@ function App() {
     () => ({
       // Required authentication and server configuration
       userMpAuthToken: "demo-mp-auth-token-123",
-      chatServerUrl: "ws://localhost:3000",
+      chatServerUrl: "wss://localhost:3000",
       chatServerKey: "demo-chat-server-key",
       userId: "user_123_16",
       

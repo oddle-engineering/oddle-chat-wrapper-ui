@@ -115,7 +115,7 @@ export declare function createThread(apiBaseUrl: string, userId: string, convUui
     agentType?: string;
 }): Promise<Thread>;
 
-export declare const DevSettings: ({ isOpen, onClose, apiUrl, userMpAuthToken, chatServerKey, }: DevSettingsProps) => JSX_2.Element | null;
+export declare const DevSettings: ({ isOpen, onClose, apiUrl, userMpAuthToken, chatServerKey, app, }: DevSettingsProps) => JSX_2.Element | null;
 
 declare interface DevSettingsProps {
     isOpen: boolean;
@@ -123,6 +123,7 @@ declare interface DevSettingsProps {
     apiUrl: string;
     userMpAuthToken?: string;
     chatServerKey?: string;
+    app?: string;
 }
 
 export declare enum EntityType {

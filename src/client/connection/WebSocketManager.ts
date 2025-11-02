@@ -47,7 +47,10 @@ export class WebSocketManager {
   }
 
   private buildWebSocketUrl(): string {
-    return this.config.apiUrl.replace(/^https?:\/\//, "ws://") + "/ws";
+    // The apiUrl is already a WebSocket URL (e.g., wss://example.com)
+    // Just add the /ws path if it's not already there
+    const url = this.config.apiUrl;
+    return url.endsWith('/ws') ? url : url + '/ws';
   }
 
   private setupEventHandlers(

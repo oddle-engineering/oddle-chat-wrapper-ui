@@ -7,6 +7,7 @@ interface DevSettingsProps {
   apiUrl: string;
   userMpAuthToken?: string;
   chatServerKey?: string;
+  app?: string; // Add app parameter to specify which configuration to load
 }
 
 export const DevSettings = ({
@@ -15,6 +16,7 @@ export const DevSettings = ({
   apiUrl,
   userMpAuthToken,
   chatServerKey,
+  app = "UD21", // Default to UD21 if not specified
 }: DevSettingsProps) => {
   const [config, setConfig] = useState<AgentConfiguration | null>(null);
   const [tempPromptPath, setTempPromptPath] = useState("");
@@ -33,10 +35,15 @@ export const DevSettings = ({
     setLoading(true);
     setError(null);
     try {
-      const configuration = await getAgentConfiguration(apiUrl, {
+      const configuration = await getAgentConfiguration(apiUrl, app, {
         userMpAuthToken,
         chatServerKey,
       });
+      
+      if (!configuration) {
+        throw new Error(`No configuration found for app: ${app}`);
+      }
+      
       setConfig(configuration);
       setTempPromptPath(configuration.promptPath);
       setTempVersionUuid(configuration.versionUuid);
@@ -46,7 +53,7 @@ export const DevSettings = ({
     } finally {
       setLoading(false);
     }
-  }, [apiUrl, userMpAuthToken, chatServerKey]);
+  }, [apiUrl, app, userMpAuthToken, chatServerKey]);
 
   const handleSave = useCallback(async () => {
     if (!config) return;
@@ -55,6 +62,7 @@ export const DevSettings = ({
     setError(null);
     try {
       const updatedConfig = await updateAgentConfiguration(apiUrl, {
+        app: config.app,
         promptPath: tempPromptPath,
         versionUuid: tempVersionUuid,
         isDefault: config.isDefault,
@@ -164,8 +172,21 @@ export const DevSettings = ({
                 </p>
               </div>
               
-              <div className="chat-wrapper__dev-settings-info">
+              <div className="chat-wrapper__dev-settings-field">
+                <label htmlFor="app-name">App:</label>
+                <input
+                  id="app-name"
+                  type="text"
+                  value={config.app}
+                  className="chat-wrapper__dev-settings-input"
+                  disabled={true}
+                  readOnly
+                />
+                <p className="chat-wrapper__dev-settings-help">
+                  Application name for this agent configuration.
+                </p>
               </div>
+              
             </>
           )}
         </div>

@@ -18,6 +18,10 @@ export interface ConnectionStatus {
   reconnectAttempts: number;
   isReconnecting: boolean;
   websocketState: string;
+  // Ticket status information
+  hasValidTicket: boolean;
+  ticketExpiresIn?: number; // seconds until expiration
+  isRefreshingTicket: boolean;
 }
 
 export const DEFAULT_CONNECTION_CONFIG: Partial<ConnectionConfig> = {

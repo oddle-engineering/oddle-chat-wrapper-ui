@@ -19,7 +19,7 @@ export async function fetchUserThreads(
     params.append("limit", options.limit.toString());
   }
 
-  const url = `${apiBaseUrl}/threads/user/${userId}${
+  const url = `${apiBaseUrl}/api/threads/user/${userId}${
     params.toString() ? `?${params.toString()}` : ""
   }`;
 
@@ -42,7 +42,7 @@ export async function fetchThreadByConvUuid(
   apiBaseUrl: string,
   convUuid: string
 ): Promise<Thread> {
-  const url = `${apiBaseUrl}/threads/conv/${convUuid}`;
+  const url = `${apiBaseUrl}/api/threads/conv/${convUuid}`;
 
   const response = await fetch(url);
   if (!response.ok) {
@@ -66,7 +66,7 @@ export async function fetchThreadMessages(
     chatServerKey?: string;
   }
 ): Promise<Message[]> {
-  const url = `${apiBaseUrl}/messages/thread/${threadId}?format=client`;
+  const url = `${apiBaseUrl}/api/messages/thread/${threadId}?format=client`;
 
   // Build headers with authentication
   const headers: HeadersInit = {};
@@ -101,7 +101,7 @@ export async function fetchMessagesByConvUuid(
   apiBaseUrl: string,
   convUuid: string
 ): Promise<Message[]> {
-  const url = `${apiBaseUrl}/messages/conv/${convUuid}?format=client`;
+  const url = `${apiBaseUrl}/api/messages/conv/${convUuid}?format=client`;
 
   const response = await fetch(url);
   if (!response.ok) {
@@ -132,7 +132,7 @@ export async function createThread(
     agentType?: string;
   }
 ): Promise<Thread> {
-  const url = `${apiBaseUrl}/threads`;
+  const url = `${apiBaseUrl}/api/threads`;
 
   const response = await fetch(url, {
     method: "POST",
