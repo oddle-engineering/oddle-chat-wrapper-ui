@@ -46,7 +46,7 @@ export async function getAgentConfigurations(
     headers['X-Chat-Server-Key'] = authOptions.chatServerKey;
   }
 
-  const response = await fetch(`${apiUrl}/api/agent-configurations`, {
+  const response = await fetch(`${apiUrl}/api/v1/agent-configurations`, {
     method: 'GET',
     headers,
   });
@@ -100,7 +100,7 @@ export async function updateAgentConfiguration(
     headers['X-Chat-Server-Key'] = authOptions.chatServerKey;
   }
 
-  const response = await fetch(`${apiUrl}/api/agent-configurations`, {
+  const response = await fetch(`${apiUrl}/api/v1/agent-configurations`, {
     method: 'PUT',
     headers,
     body: JSON.stringify(update),

@@ -39,7 +39,7 @@ export class AuthApiService extends BaseApiService {
     };
 
     return this.post<WebSocketTicketResponse>(
-      '/api/websocket/ticket',
+      '/api/tickets',
       requestBody,
       authOptions
     );

@@ -60,7 +60,7 @@ export async function requestWebSocketTicket(
   }
 
   try {
-    const response = await fetch(`${apiUrl}/api/websocket/ticket`, {
+    const response = await fetch(`${apiUrl}/api/v1/tickets`, {
       method: 'POST',
       headers,
       body: JSON.stringify({

@@ -1,7 +1,6 @@
 // API Configuration for the showcase application
 
 export interface ApiConfig {
-  useMockApi: boolean;
   briefPlannerEndpoint: string; // Legacy endpoint for backward compatibility
   conversationEndpoint: string; // Default endpoint now used for all demos
   baseUrl: string;
@@ -9,29 +8,12 @@ export interface ApiConfig {
 
 // Default configuration
 const defaultConfig: ApiConfig = {
-  useMockApi: false, // Set to false to use real API
-  briefPlannerEndpoint: '/api/brief-planner',
-  conversationEndpoint: '/api/conversation',
+  briefPlannerEndpoint: '/api/v1/brief-planner',
+  conversationEndpoint: '/api/v1/conversation',
   baseUrl: 'http://localhost:3000', // Change this to your real API base URL
 };
 
-// Environment-based configuration
-const getApiConfig = (): ApiConfig => {
-  // Check for environment variables (Vite uses VITE_ prefix)
-  const useMockApi = import.meta.env.VITE_USE_MOCK_API !== 'false';
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || defaultConfig.baseUrl;
-  const briefPlannerEndpoint = import.meta.env.VITE_BRIEF_PLANNER_ENDPOINT || defaultConfig.briefPlannerEndpoint;
-  const conversationEndpoint = import.meta.env.VITE_CONVERSATION_ENDPOINT || defaultConfig.conversationEndpoint;
-
-  return {
-    useMockApi,
-    baseUrl,
-    briefPlannerEndpoint,
-    conversationEndpoint,
-  };
-};
-
-export const apiConfig = getApiConfig();
+export const apiConfig: ApiConfig = defaultConfig;
 
 // Helper functions
 export const getFullUrl = (endpoint: string): string => {
@@ -59,7 +41,6 @@ export const getConversationUrl = (conversationId: string): string => {
 // Configuration display for debugging
 export const getConfigSummary = () => {
   return {
-    mode: apiConfig.useMockApi ? 'Mock API' : 'Real API',
     baseUrl: apiConfig.baseUrl,
     briefPlannerUrl: getBriefPlannerUrl(),
     conversationInitUrl: getConversationInitUrl(),

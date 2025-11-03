@@ -57,7 +57,8 @@ export class BaseApiService {
    */
   protected buildUrl(endpoint: string): string {
     const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-    return `${this.baseUrl}${cleanEndpoint}`;
+    const versionedEndpoint = cleanEndpoint.startsWith('/api/v1') ? cleanEndpoint : `/api/v1${cleanEndpoint}`;
+    return `${this.baseUrl}${versionedEndpoint}`;
   }
 
   /**

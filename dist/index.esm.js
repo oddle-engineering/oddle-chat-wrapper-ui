@@ -8,7 +8,7 @@ async function Ga(e, t) {
     "Content-Type": "application/json"
   };
   t != null && t.userMpAuthToken && (n.Authorization = `Bearer ${t.userMpAuthToken}`), t != null && t.chatServerKey && (n["X-Chat-Server-Key"] = t.chatServerKey);
-  const r = await fetch(`${e}/api/agent-configurations`, {
+  const r = await fetch(`${e}/v1/api/agent-configurations`, {
     method: "GET",
     headers: n
   });
@@ -28,7 +28,7 @@ async function Wa(e, t, n) {
     "Content-Type": "application/json"
   };
   n != null && n.userMpAuthToken && (r.Authorization = `Bearer ${n.userMpAuthToken}`), n != null && n.chatServerKey && (r["X-Chat-Server-Key"] = n.chatServerKey);
-  const i = await fetch(`${e}/api/agent-configurations`, {
+  const i = await fetch(`${e}/v1/api/agent-configurations`, {
     method: "PUT",
     headers: r,
     body: JSON.stringify(t)
@@ -999,7 +999,7 @@ async function Ja(e, t) {
   };
   t.userMpAuthToken && (n.Authorization = `Bearer ${t.userMpAuthToken}`), t.chatServerKey && (n["X-Chat-Server-Key"] = t.chatServerKey);
   try {
-    const r = await fetch(`${e}/api/websocket/ticket`, {
+    const r = await fetch(`${e}/v1/api/websocket/ticket`, {
       method: "POST",
       headers: n,
       body: JSON.stringify({
@@ -2328,7 +2328,7 @@ function Is({ initialMode: e = "sidebar" }) {
 async function ih(e, t, n) {
   const r = new URLSearchParams();
   n != null && n.includeArchived && r.append("includeArchived", "true"), n != null && n.limit && r.append("limit", n.limit.toString());
-  const i = `${e}/api/threads/user/${t}${r.toString() ? `?${r.toString()}` : ""}`, a = await fetch(i);
+  const i = `${e}/v1/api/threads/user/${t}${r.toString() ? `?${r.toString()}` : ""}`, a = await fetch(i);
   if (!a.ok) {
     const o = await a.json().catch(() => ({
       error: "Failed to fetch threads"
@@ -2338,7 +2338,7 @@ async function ih(e, t, n) {
   return (await a.json()).threads;
 }
 async function ah(e, t) {
-  const n = `${e}/api/threads/conv/${t}`, r = await fetch(n);
+  const n = `${e}/v1/api/threads/conv/${t}`, r = await fetch(n);
   if (!r.ok) {
     const i = await r.json().catch(() => ({
       error: "Thread not found"
@@ -2348,7 +2348,7 @@ async function ah(e, t) {
   return r.json();
 }
 async function Rs(e, t, n) {
-  const r = `${e}/api/messages/thread/${t}?format=client`, i = {};
+  const r = `${e}/v1/api/messages/thread/${t}?format=client`, i = {};
   n != null && n.userMpAuthToken && (i.Authorization = `Bearer ${n.userMpAuthToken}`), n != null && n.chatServerKey && (i["X-Chat-Server-Key"] = n.chatServerKey);
   const a = await fetch(r, { headers: i });
   if (!a.ok) {
@@ -2363,7 +2363,7 @@ async function Rs(e, t, n) {
   }));
 }
 async function sh(e, t) {
-  const n = `${e}/api/messages/conv/${t}?format=client`, r = await fetch(n);
+  const n = `${e}/v1/api/messages/conv/${t}?format=client`, r = await fetch(n);
   if (!r.ok) {
     const a = await r.json().catch(() => ({
       error: "Failed to fetch messages"
@@ -2376,7 +2376,7 @@ async function sh(e, t) {
   }));
 }
 async function oh(e, t, n, r) {
-  const i = `${e}/api/threads`, a = await fetch(i, {
+  const i = `${e}/v1/api/threads`, a = await fetch(i, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -4493,17 +4493,17 @@ var yo = fn && fn.__importDefault || function(e) {
 };
 Object.defineProperty(or, "__esModule", { value: !0 });
 or.default = Eo;
-const wo = yo(Co);
+var wo = yo(Co);
 function Eo(e, t) {
-  let n = null;
+  var n = null;
   if (!e || typeof e != "string")
     return n;
-  const r = (0, wo.default)(e), i = typeof t == "function";
-  return r.forEach((a) => {
-    if (a.type !== "declaration")
-      return;
-    const { property: s, value: o } = a;
-    i ? t(s, o, a) : o && (n = n || {}, n[s] = o);
+  var r = (0, wo.default)(e), i = typeof t == "function";
+  return r.forEach(function(a) {
+    if (a.type === "declaration") {
+      var s = a.property, o = a.value;
+      i ? t(s, o, a) : o && (n = n || {}, n[s] = o);
+    }
   }), n;
 }
 var Cn = {};
@@ -8426,14 +8426,7 @@ const Ta = (
     if (typeof e == "function")
       return En(e);
     if (typeof e == "object")
-      return Array.isArray(e) ? zu(e) : (
-        // Cast because `ReadonlyArray` goes into the above but `isArray`
-        // narrows to `Array`.
-        Bu(
-          /** @type {Props} */
-          e
-        )
-      );
+      return Array.isArray(e) ? zu(e) : Bu(e);
     if (typeof e == "string")
       return Gu(e);
     throw new Error("Expected function, string, or object as test");
