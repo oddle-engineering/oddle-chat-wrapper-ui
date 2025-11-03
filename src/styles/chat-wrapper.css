@@ -1505,6 +1505,13 @@
   counter-reset: ordered-list-counter;
 }
 
+/* Bold/Strong text styling in markdown content */
+.chat-wrapper__markdown-content strong,
+.chat-wrapper__markdown-content b {
+  font-weight: 600;
+  color: inherit;
+}
+
 .chat-wrapper__paragraph {
   margin: 0 0 8px 0;
 }
@@ -2300,6 +2307,13 @@
 
 .chat-wrapper--dark .chat-wrapper__tooling-handle-description strong {
   color: #f59e0b;
+}
+
+/* Dark theme bold/strong text styling in markdown content */
+.chat-wrapper--dark .chat-wrapper__markdown-content strong,
+.chat-wrapper--dark .chat-wrapper__markdown-content b {
+  font-weight: 600;
+  color: inherit;
 }
 
 .chat-wrapper--dark .chat-wrapper__tooling-handle-title {

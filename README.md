@@ -5,7 +5,7 @@ A modern, type-safe React chat interface with advanced state management, streami
 ## 🚀 Key Features
 
 - 🏗️ **Advanced State Management** - Built-in reducer pattern with Redux DevTools support
-- ⚡ **Real-time WebSocket** - Automatic connection management, ticket authentication, and reconnection
+- ⚡ **Real-time WebSocket** - Automatic connection management, URL-based ticket authentication, and reconnection
 - 🔄 **Streaming Support** - Real-time message streaming with reasoning and tool execution states
 - 🛠️ **Tool Integration** - Unified tool definition with schema validation and execution
 - 🎨 **Pure CSS** - No external UI library dependencies, fully customizable
@@ -125,6 +125,8 @@ The reducer system manages four main state domains:
 ## 🛠️ Advanced Usage
 
 ### WebSocket Authentication & Reconnection
+
+The ChatWrapper uses advanced ticket-based authentication with automatic reconnection. See [WebSocket Ticket Implementation Guide](./docs/websocket-ticket-implementation.md) for detailed technical documentation.
 
 ```tsx
 import { ChatWrapper, useConnectionState, useAuthState } from "@oddle/chat-wrapper-ui";

@@ -9,13 +9,12 @@ sequenceDiagram
     participant WebSocket Server
     participant Database
 
-    Client->>HTTP Server: POST /api/websocket/ticket (with auth headers)
+    Client->>HTTP Server: POST /api/v1/tickets (with auth headers)
     HTTP Server->>Database: Store ticket with metadata
     HTTP Server->>Client: Return ticket + expiration
-    Client->>WebSocket Server: Connect to ws://server/ws
-    Client->>WebSocket Server: Send ticket_authenticate message
-    WebSocket Server->>Database: Validate ticket
-    WebSocket Server->>Client: Authentication success/error
+    Client->>WebSocket Server: Connect to ws://server/ws?ticket=abc123
+    WebSocket Server->>Database: Validate ticket from URL
+    WebSocket Server->>Client: Connection accepted/rejected
     Note over Client,WebSocket Server: Authenticated WebSocket session
 ```
 
@@ -23,7 +22,7 @@ sequenceDiagram
 
 ### 1. Request WebSocket Ticket
 
-**Endpoint:** `POST /api/websocket/ticket`
+**Endpoint:** `POST /api/v1/tickets`
 
 **Headers:**
 ```http
@@ -64,39 +63,33 @@ X-Chat-Server-Key: {chatServerKey}
 }
 ```
 
-### 2. WebSocket Authentication Message
+### 2. WebSocket Connection with Ticket
 
-**WebSocket URL:** `ws://your-server.com/ws` or `wss://your-server.com/ws`
-
-**Authentication Message (sent immediately after connection):**
-```json
-{
-  "type": "ticket_authenticate",
-  "ticket": "ws_ticket_abc123def456...",
-  "clientInfo": {
-    "userAgent": "Mozilla/5.0...",
-    "timestamp": "2024-01-15T10:30:00.000Z"
-  }
-}
+**WebSocket URL with Ticket:** 
+```
+ws://your-server.com/ws?ticket=ws_ticket_abc123def456...
+wss://your-server.com/ws?ticket=ws_ticket_abc123def456...
 ```
 
-**Server Response (Success):**
-```json
-{
-  "type": "authentication_success",
-  "sessionId": "session_xyz789",
-  "user": {
-    "userId": "user-123",
-    "entityId": "brand-456",
-    "entityType": "BRAND"
-  }
-}
-```
+**Connection Process:**
+1. Client appends ticket as query parameter to WebSocket URL
+2. Server validates ticket during connection establishment
+3. Connection is accepted or rejected immediately
 
-**Server Response (Error):**
+**Connection Accepted:**
+- WebSocket connection established successfully
+- Client can immediately start sending messages
+- No additional authentication handshake required
+
+**Connection Rejected:**
+- WebSocket connection fails to establish
+- Client receives connection error with details
+- Common errors: invalid ticket, expired ticket, malformed ticket
+
+**Error Response (via connection failure):**
 ```json
 {
-  "type": "authentication_error",
+  "type": "authentication_error", 
   "error": "Invalid or expired ticket",
   "code": "TICKET_INVALID"
 }

@@ -1,12 +1,12 @@
 # Ticket-Based Authentication Flow Diagram
 
-## Flow Diagram
+## Updated Flow Diagram (URL-Based Authentication)
 
 ```
 ┌─────────────┐    HTTP POST     ┌─────────────┐
 │   Client    │ ────────────────> │   Server    │
-│             │ /api/websocket/   │             │
-│             │     ticket        │             │
+│             │ /api/v1/tickets   │             │
+│             │                   │             │
 └─────────────┘                   └─────────────┘
        │                                 │
        │         ┌─────────────┐         │
@@ -17,20 +17,45 @@
        ▼
 ┌─────────────┐    WebSocket      ┌─────────────┐
 │   Client    │ ────────────────> │   Server    │
-│             │   Connection      │             │
+│             │ ws://server/ws    │             │
+│             │ ?ticket=abc123    │             │
 └─────────────┘                   └─────────────┘
        │                                 │
-       ▼                                 ▼
-┌─────────────┐    Send Ticket    ┌─────────────┐
-│   Client    │ ────────────────> │   Server    │
-│             │ ticket_authenticate│             │
-└─────────────┘                   └─────────────┘
+       │                                 ▼
+       │                         ┌─────────────┐
+       │                         │   Validate  │
+       │                         │   Ticket    │
+       │                         │  from URL   │
+       │                         └─────────────┘
        │                                 │
        │         ┌─────────────┐         │
-       │◄────────┤ Auth Success│◄────────┘
-       │         │  /Error     │
+       │◄────────┤ Connection  │◄────────┘
+       │         │ Accepted/   │
+       │         │ Rejected    │
        │         └─────────────┘
        │
        ▼
    Authenticated WebSocket Session
+   (No additional handshake required)
 ```
+
+## Key Changes
+
+**Before (Message-Based Auth):**
+1. Connect to WebSocket
+2. Send authentication message
+3. Wait for authentication response
+4. Start using connection
+
+**After (URL-Based Auth):**
+1. Connect to WebSocket with ticket in URL
+2. Server validates during connection establishment
+3. Connection succeeds/fails immediately
+4. Start using connection if successful
+
+## Benefits
+
+- **Better Security**: Authentication happens at connection time
+- **Simpler Flow**: No post-connection handshake required
+- **Immediate Feedback**: Connection success/failure is instant
+- **Standard Pattern**: Follows common WebSocket authentication practices

@@ -77,18 +77,9 @@ export class WebSocketChatClient {
   private handleWebSocketMessage(event: MessageEvent): void {
     const data = this.messageHandler.handleMessage(event);
 
-    // Handle authentication response
-    if (data?.type === 'authentication_success') {
-      console.log('WebSocket authentication successful');
-      // Start periodic ticket validation after successful authentication
-      this.startTicketValidation();
-      // Now send tool configuration after successful authentication
-      if (this.toolSchemas && this.toolSchemas.length > 0) {
-        this.sendToolConfiguration();
-      }
-    } else if (data?.type === 'authentication_error') {
+    // Handle authentication errors (if ticket was invalid)
+    if (data?.type === 'authentication_error') {
       console.error('WebSocket authentication failed:', data?.error, (data as any)?.code);
-      // Could trigger reconnection with new ticket here
       this.handleAuthenticationFailure(data);
     }
 
@@ -106,25 +97,17 @@ export class WebSocketChatClient {
   }
 
   private handleConnectionOpen(): void {
-    console.log('WebSocket connection opened, sending ticket authentication...');
-    // Send ticket authentication first
-    this.sendTicketAuthentication();
+    console.log('WebSocket connection opened with ticket authentication');
+    // Connection is already authenticated via URL ticket
+    // Start periodic ticket validation
+    this.startTicketValidation();
     
-    // Note: Tool configuration will be sent after authentication success
-  }
-
-  private sendTicketAuthentication(): void {
-    if (!this.wsTicket || !this.wsTicket.ticket) {
-      console.error('No valid WebSocket ticket available for authentication');
-      return;
+    // Send tool configuration immediately since we're authenticated
+    if (this.toolSchemas && this.toolSchemas.length > 0) {
+      this.sendToolConfiguration();
     }
-
-    console.log('Sending ticket authentication with ticket:', this.wsTicket.ticket.substring(0, 20) + '...');
-    const message = MessageFactory.serializeTicketAuthenticate({
-      ticket: this.wsTicket.ticket,
-    });
-    this.wsManager.send(message);
   }
+
 
   private handleAuthenticationFailure(data: any): void {
     const errorData = data as any;
@@ -163,10 +146,13 @@ export class WebSocketChatClient {
     return new Promise((resolve) => {
       this.initResolve = resolve;
 
+      // Pass ticket to WebSocket connection
+      const ticket = this.wsTicket?.ticket;
+      
       this.wsManager
-        .connect()
+        .connect(ticket)
         .then(() => {
-          // Connection successful, but we might need to wait for authentication
+          // Connection successful with ticket authentication
           if (!this.toolSchemas || this.toolSchemas.length === 0) {
             resolve();
           }
@@ -369,7 +355,8 @@ export class WebSocketChatClient {
       // Request new ticket
       await this.requestTicket();
       
-      // Reconnect with new ticket
+      // Update ticket in WebSocket manager and reconnect
+      this.wsManager.updateTicket(this.wsTicket!.ticket);
       await this.wsManager.connect();
       
       console.log('WebSocket ticket refreshed and reconnected successfully');

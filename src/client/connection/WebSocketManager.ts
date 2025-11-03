@@ -14,6 +14,7 @@ export class WebSocketManager {
   private reconnectTimer: number | null = null;
   private heartbeatInterval: number | null = null;
   private visibilityChangeHandler: () => void;
+  private currentTicket: string | null = null;
 
   private onOpen?: () => void;
   private onMessage?: (event: MessageEvent) => void;
@@ -28,9 +29,13 @@ export class WebSocketManager {
     this.registerVisibilityHandler();
   }
 
-  connect(): Promise<void> {
+  connect(ticket?: string): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
+        if (ticket) {
+          this.currentTicket = ticket;
+        }
+
         const wsUrl = this.buildWebSocketUrl();
         this.ws = new WebSocket(wsUrl);
 
@@ -49,8 +54,16 @@ export class WebSocketManager {
   private buildWebSocketUrl(): string {
     // The apiUrl is already a WebSocket URL (e.g., wss://example.com)
     // Just add the /ws path if it's not already there
-    const url = this.config.apiUrl;
-    return url.endsWith('/ws') ? url : url + '/ws';
+    let url = this.config.apiUrl;
+    url = url.endsWith('/ws') ? url : url + '/ws';
+    
+    // Add ticket to URL if available
+    if (this.currentTicket) {
+      const separator = url.includes('?') ? '&' : '?';
+      url = `${url}${separator}ticket=${this.currentTicket}`;
+    }
+    
+    return url;
   }
 
   private setupEventHandlers(
@@ -175,6 +188,13 @@ export class WebSocketManager {
     } catch (error) {
       this.scheduleReconnectAfterError();
     }
+  }
+
+  /**
+   * Update the ticket for future connections
+   */
+  updateTicket(ticket: string): void {
+    this.currentTicket = ticket;
   }
 
   private setupReconnectHandlers(): void {

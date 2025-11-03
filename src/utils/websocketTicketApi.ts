@@ -5,8 +5,8 @@
  * The flow is:
  * 1. Client requests a WebSocket ticket from the HTTP server
  * 2. Server generates and stores the ticket, returns it to client
- * 3. Client uses ticket to authenticate WebSocket connection
- * 4. Server validates ticket and establishes authenticated connection
+ * 3. Client uses ticket in WebSocket connection URL (as query parameter)
+ * 4. Server validates ticket during connection establishment and authenticates the connection
  */
 
 export interface WebSocketTicketRequest {

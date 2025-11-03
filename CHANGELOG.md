@@ -11,8 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced versioning system with semantic versioning
 - Comprehensive changelog automation
 - Version management scripts for different release types
+- URL-based WebSocket ticket authentication system
+- Comprehensive documentation for ticket authentication implementation
 
 ### Changed
+- **BREAKING**: WebSocket authentication now uses ticket-in-URL instead of post-connection messages
+- Improved security with connection-time authentication validation
+- Simplified WebSocket connection flow - no authentication handshake required
+- Updated API endpoints to use `/api/v1/` prefix instead of `/v1/api/`
+- Enhanced markdown rendering with proper bold text styling
 - Improved package.json with better scripts for version management
 
 ### Deprecated

@@ -1,9 +1,6 @@
 import { ContextHelpers } from './shared';
 
 export enum OutboundMessageType {
-  // Authentication
-  TICKET_AUTHENTICATE = 'ticket_authenticate',
-  
   // Chat Messages
   CHAT_MESSAGE = 'chat_message',
   
@@ -23,16 +20,6 @@ export enum OutboundMessageType {
 // Base interface for all outbound messages
 export interface BaseOutboundMessage {
   type: OutboundMessageType;
-}
-
-// Ticket-based authentication message
-export interface TicketAuthenticateMessage extends BaseOutboundMessage {
-  type: OutboundMessageType.TICKET_AUTHENTICATE;
-  ticket: string;
-  clientInfo?: {
-    userAgent?: string;
-    timestamp?: string;
-  };
 }
 
 // Chat message to server
@@ -91,7 +78,6 @@ export interface HeartbeatPongMessage extends BaseOutboundMessage {
 
 // Union type for all outbound messages
 export type OutboundMessage = 
-  | TicketAuthenticateMessage
   | ChatMessage
   | OutboundConfigureToolsMessage
   | UpdateToolsMessage

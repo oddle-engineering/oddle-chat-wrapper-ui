@@ -41,7 +41,8 @@ The WebSocketManager is abstracted as a dedicated component to provide:
 - **Maintainability**: Changes to connection behavior don't affect message handling or client API
 
 **Core Responsibilities:**
-- **Connection Establishment**: Creates and maintains WebSocket connections with proper URL building
+- **Connection Establishment**: Creates and maintains WebSocket connections with ticket-based URL authentication
+- **Ticket Management**: Handles ticket injection into WebSocket URLs for secure connection establishment
 - **Reconnection Logic**: Exponential backoff strategy with configurable max attempts and intelligent retry logic
 - **Lifecycle Management**: Handles connection states (connecting, open, closing, closed) with proper cleanup
 - **Browser Integration**: Responds to visibility changes to reconnect when tab becomes active
@@ -84,12 +85,36 @@ Executes client-side tools:
 - **Response Management**: Sends results back to server
 - **Deduplication**: Prevents duplicate tool executions
 
+## Authentication System
+
+### Ticket-Based Authentication
+The WebSocket connection uses a ticket-based authentication system for enhanced security:
+
+1. **Ticket Request**: Client requests a WebSocket ticket via HTTP API using existing authentication
+2. **URL Authentication**: Ticket is appended to WebSocket URL as query parameter
+3. **Connection Validation**: Server validates ticket during connection establishment
+4. **Immediate Authentication**: Connection succeeds/fails immediately - no post-connection handshake
+
+### Ticket Management Features
+- **Automatic Refresh**: Proactive ticket renewal before expiration
+- **Validation Checks**: Continuous ticket validity monitoring
+- **Error Recovery**: Automatic ticket refresh on authentication failures
+- **Browser Integration**: Ticket refresh when user returns to tab
+
 ## Message Flow
 
 ### 1. **Initialization Flow**
 ```
-Client.onInit() → Connect WebSocket → Send Tool Configuration → Session Established
+Client.onInit() → Request Ticket → Connect WebSocket (with ticket) → Send Tool Configuration → Session Established
 ```
+
+**Detailed Steps:**
+1. `WebSocketChatClient.onInit()` called with authentication parameters
+2. `requestTicket()` calls HTTP API to get WebSocket ticket
+3. `WebSocketManager.connect(ticket)` builds URL with ticket parameter
+4. WebSocket connection established with server-side ticket validation
+5. Tool configuration sent immediately (no authentication handshake needed)
+6. Session established and ready for messages
 
 ### 2. **Chat Message Flow**
 ```
@@ -210,13 +235,33 @@ interface TriggerMessageParams {
 ```typescript
 const client = new WebSocketChatClient();
 await client.onInit({
-  apiUrl: 'ws://localhost:8080',
+  // Authentication (required for ticket request)
+  userMpAuthToken: 'your-auth-token',
+  chatServerKey: 'your-server-key', 
   userId: 'user123',
+  
+  // WebSocket server
+  chatServerUrl: 'wss://localhost:8080',
+  
+  // Optional entity configuration
+  entityId: 'brand-123',
+  entityType: 'BRAND',
+  
+  // Tool configuration
   toolSchemas: [/* tool schemas */],
+  clientTools: { /* tool implementations */ },
+  
+  // Event handlers
   onSetMessage: (content) => updateUI(content),
-  onSystemEvent: (event) => handleSystemEvent(event)
+  onSystemEvent: (event) => handleSystemEvent(event),
+  onReasoningUpdate: (isThinking, content) => updateReasoning(isThinking, content)
 });
 ```
+
+**Note:** The client automatically:
+1. Requests a WebSocket ticket using the provided authentication
+2. Connects to WebSocket with ticket in URL for immediate authentication
+3. Handles ticket refresh and reconnection automatically
 
 ### Sending Messages
 ```typescript
