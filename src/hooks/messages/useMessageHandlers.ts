@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef } from "react";
 import { Message, ToolCallRequest } from "../../types";
 import { sanitizeMessage } from "../../utils/security";
 import {
@@ -49,9 +49,9 @@ export function useMessageHandlers({
   clearStreamingBuffers,
   resetToolHandling,
 }: MessageHandlersProps) {
-  // Tracking maps for message IDs (removed unused state setters)
-  const [reasoningMessagesByCallId] = useState<Map<string, string>>(new Map());
-  const [toolingMessagesByCallId] = useState<Map<string, string>>(new Map());
+  // Tracking maps for message IDs (using refs for mutable tracking structures)
+  const reasoningMessagesByCallId = useRef<Map<string, string>>(new Map());
+  const toolingMessagesByCallId = useRef<Map<string, string>>(new Map());
 
   // Finalize the current streaming message
   const finalizeCurrentStreamingMessage = useCallback(() => {
@@ -150,13 +150,13 @@ export function useMessageHandlers({
 
       // Handle reasoning events
       if (isReasoningThinking || isReasoningCompleted) {
-        const existingMessageId = reasoningMessagesByCallId.get(callId);
+        const existingMessageId = reasoningMessagesByCallId.current.get(callId);
 
         if (isReasoningThinking && !existingMessageId) {
           finalizeCurrentStreamingMessage();
 
           const reasoningMessageId = generateId();
-          reasoningMessagesByCallId.set(callId, reasoningMessageId);
+          reasoningMessagesByCallId.current.set(callId, reasoningMessageId);
 
           const reasoningMessage: Message = {
             id: reasoningMessageId,
@@ -169,14 +169,14 @@ export function useMessageHandlers({
           setMessages((prev) => [...prev, reasoningMessage]);
         } else if (isReasoningCompleted && existingMessageId) {
           updateMessageContent(existingMessageId, content, false);
-          reasoningMessagesByCallId.delete(callId);
+          reasoningMessagesByCallId.current.delete(callId);
         } else if (existingMessageId && isReasoningThinking) {
           updateMessageContent(existingMessageId, content, true);
         }
       }
 
       // Handle tooling events
-      const existingToolMessageId = toolingMessagesByCallId.get(callId);
+      const existingToolMessageId = toolingMessagesByCallId.current.get(callId);
 
       if (isToolStarted && !existingToolMessageId) {
         finalizeCurrentStreamingMessage();
@@ -187,7 +187,7 @@ export function useMessageHandlers({
         const toolName = toolNameMatch ? toolNameMatch[1] : "Unknown Tool";
 
         const toolingMessageId = generateId();
-        toolingMessagesByCallId.set(callId, toolingMessageId);
+        toolingMessagesByCallId.current.set(callId, toolingMessageId);
 
         const toolingMessage: Message = {
           id: toolingMessageId,
@@ -230,7 +230,7 @@ export function useMessageHandlers({
           )
         );
 
-        toolingMessagesByCallId.delete(callId);
+        toolingMessagesByCallId.current.delete(callId);
       } else if (
         existingToolMessageId &&
         isThinking &&
@@ -242,8 +242,6 @@ export function useMessageHandlers({
     },
     [
       setIsHandlingTool,
-      reasoningMessagesByCallId,
-      toolingMessagesByCallId,
       finalizeCurrentStreamingMessage,
       generateId,
       setMessages,
