@@ -27,6 +27,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.3] - 2025-11-04
 
+### Changed
+- docs: update CHANGELOG for v1.0.3 release - fix modal WebSocket issues
+- chore: Refactor WebSocket connection management and update App configuration
+
+## [1.0.3] - 2025-11-04
+
 ### Fixed
 - **Critical**: Fixed modal WebSocket connection leak where reopening modals created continuous connections
   - Store event handler callbacks in refs to prevent unnecessary reconnections
