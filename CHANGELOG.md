@@ -25,11 +25,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
-## [1.0.3] - 2025-11-04
+## [1.0.4] - 2025-11-04
+
+### Added
+- Automatic HTTP/HTTPS to WebSocket URL conversion in `WebSocketManager`
+  - `http://` → `ws://`
+  - `https://` → `wss://`
+  - Allows passing either HTTP or WebSocket URLs as `chatServerUrl`
 
 ### Changed
-- docs: update CHANGELOG for v1.0.3 release - fix modal WebSocket issues
-- chore: Refactor WebSocket connection management and update App configuration
+- Refactor URL handling to support flexible protocol input (HTTP, HTTPS, WS, WSS)
+- Update `buildWebSocketUrl()` to automatically convert HTTP protocols to WebSocket protocols
+- Enhance `TicketManager` documentation for URL conversion
+
+### Removed
+- Remove deprecated `ChatWrapperWithAuth` example component
 
 ## [1.0.3] - 2025-11-04
 
