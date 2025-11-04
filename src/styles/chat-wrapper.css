@@ -1685,6 +1685,13 @@
 }
 
 /* Media Grid for Attachments */
+.chat-wrapper__media {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
 .chat-wrapper__media-grid {
   display: flex;
   justify-content: flex-end;
@@ -1704,6 +1711,7 @@
   object-fit: cover;
   display: block;
   background-color: white;
+  border-radius: 4px;
 }
 
 /* PromptInput Components */

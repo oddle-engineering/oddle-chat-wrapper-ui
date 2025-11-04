@@ -68,7 +68,7 @@ export class ReasoningHandler extends BaseHandler {
     let durationText = "";
     if (startTime) {
       const duration = (Date.now() - startTime) / 1000;
-      durationText = ` for ${duration.toFixed(1)} seconds`;
+      durationText = ` for ${duration.toFixed(0)} seconds`;
       this.reasoningStartTimes.delete(reasoningId);
     }
 
