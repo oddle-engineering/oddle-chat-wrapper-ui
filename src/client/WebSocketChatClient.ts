@@ -11,11 +11,11 @@ import {
 import { WebSocketManager, ConnectionState } from "./connection";
 import { MessageHandler } from "./handlers";
 import { MessageFactory } from "./utils/messageFactory";
-import { 
-  requestWebSocketTicket, 
-  isTicketValid, 
+import {
+  requestWebSocketTicket,
+  isTicketValid,
   getTicketInfo,
-  WebSocketTicketResponse 
+  WebSocketTicketResponse,
 } from "../utils/websocketTicketApi";
 
 export class WebSocketChatClient {
@@ -29,7 +29,7 @@ export class WebSocketChatClient {
   // Client tools and context
   private toolSchemas: any[] = [];
   private contextHelpers: ContextHelpers = {};
-  
+
   // Authentication data and ticket
   private authData: {
     userMpAuthToken?: string;
@@ -40,7 +40,7 @@ export class WebSocketChatClient {
     providerResId?: string;
   } = {};
   private wsTicket: WebSocketTicketResponse | null = null;
-  
+
   // Ticket management
   private ticketCheckInterval: number | null = null;
   private isRefreshingTicket: boolean = false;
@@ -78,8 +78,12 @@ export class WebSocketChatClient {
     const data = this.messageHandler.handleMessage(event);
 
     // Handle authentication errors (if ticket was invalid)
-    if (data?.type === 'authentication_error') {
-      console.error('WebSocket authentication failed:', data?.error, (data as any)?.code);
+    if (data?.type === "authentication_error") {
+      console.error(
+        "WebSocket authentication failed:",
+        data?.error,
+        (data as any)?.code
+      );
       this.handleAuthenticationFailure(data);
     }
 
@@ -88,41 +92,44 @@ export class WebSocketChatClient {
       this.initResolve?.();
     }
 
-    if (
-      data?.type === InboundMessageType.SESSION_ESTABLISHED &&
-      (!this.toolSchemas || this.toolSchemas.length === 0)
-    ) {
-      this.initResolve?.();
+    if (data?.type === InboundMessageType.SESSION_ESTABLISHED) {
+      // Send client tools configuration after session is established
+      if (this.toolSchemas && this.toolSchemas.length > 0) {
+        this.sendToolConfiguration();
+      } else {
+        // No tools to configure, resolve initialization
+        this.initResolve?.();
+      }
     }
   }
 
   private handleConnectionOpen(): void {
-    console.log('WebSocket connection opened with ticket authentication');
+    console.log("WebSocket connection opened with ticket authentication");
     // Connection is already authenticated via URL ticket
     // Start periodic ticket validation
     this.startTicketValidation();
-    
-    // Send tool configuration immediately since we're authenticated
-    if (this.toolSchemas && this.toolSchemas.length > 0) {
-      this.sendToolConfiguration();
-    }
-  }
 
+    // Wait for session_established message before sending tool configuration
+    // Tool configuration will be sent in handleWebSocketMessage when session_established is received
+  }
 
   private handleAuthenticationFailure(data: any): void {
     const errorData = data as any;
-    console.error('Authentication failure details:', {
+    console.error("Authentication failure details:", {
       error: errorData?.error,
       code: errorData?.code,
       hasTicket: !!this.wsTicket?.ticket,
-      ticketValid: this.wsTicket ? isTicketValid(this.wsTicket) : false
+      ticketValid: this.wsTicket ? isTicketValid(this.wsTicket) : false,
     });
-    
+
     // Auto-retry with new ticket if authentication fails
-    if (errorData?.code === 'TICKET_INVALID' || errorData?.code === 'TICKET_EXPIRED') {
-      console.log('Attempting to refresh ticket and reconnect...');
-      this.refreshTicketAndReconnect().catch(err => {
-        console.error('Failed to refresh ticket:', err);
+    if (
+      errorData?.code === "TICKET_INVALID" ||
+      errorData?.code === "TICKET_EXPIRED"
+    ) {
+      console.log("Attempting to refresh ticket and reconnect...");
+      this.refreshTicketAndReconnect().catch((err) => {
+        console.error("Failed to refresh ticket:", err);
       });
     }
   }
@@ -148,7 +155,7 @@ export class WebSocketChatClient {
 
       // Pass ticket to WebSocket connection
       const ticket = this.wsTicket?.ticket;
-      
+
       this.wsManager
         .connect(ticket)
         .then(() => {
@@ -166,29 +173,35 @@ export class WebSocketChatClient {
   private async requestTicket(): Promise<void> {
     try {
       // Validate that we have required authentication data
-      if (!this.authData.userMpAuthToken || !this.authData.chatServerKey || !this.authData.userId) {
-        throw new Error('Missing required authentication data for ticket request');
+      if (
+        !this.authData.userMpAuthToken ||
+        !this.authData.chatServerKey ||
+        !this.authData.userId
+      ) {
+        throw new Error(
+          "Missing required authentication data for ticket request"
+        );
       }
 
       // Check if we have a valid existing ticket
       if (this.wsTicket && isTicketValid(this.wsTicket)) {
-        console.log('Using existing valid WebSocket ticket');
+        console.log("Using existing valid WebSocket ticket");
         return;
       }
 
-      console.log('Requesting new WebSocket ticket...', {
+      console.log("Requesting new WebSocket ticket...", {
         userId: this.authData.userId,
         chatServerKey: this.authData.chatServerKey,
-        hasToken: !!this.authData.userMpAuthToken
+        hasToken: !!this.authData.userMpAuthToken,
       });
-      
+
       // Convert WebSocket URL to HTTP URL for ticket request
       // wss:// -> https://, ws:// -> http://
       const httpApiUrl = this.config.apiUrl
-        .replace(/^wss:\/\//, 'https://')
-        .replace(/^ws:\/\//, 'http://');
-      console.log('Using HTTP API URL for ticket request:', httpApiUrl);
-      
+        .replace(/^wss:\/\//, "https://")
+        .replace(/^ws:\/\//, "http://");
+      console.log("Using HTTP API URL for ticket request:", httpApiUrl);
+
       this.wsTicket = await requestWebSocketTicket(httpApiUrl, {
         userMpAuthToken: this.authData.userMpAuthToken,
         chatServerKey: this.authData.chatServerKey,
@@ -198,13 +211,17 @@ export class WebSocketChatClient {
         providerResId: this.authData.providerResId,
       });
 
-      console.log('WebSocket ticket received successfully:', {
+      console.log("WebSocket ticket received successfully:", {
         hasTicket: !!this.wsTicket.ticket,
-        expiresAt: this.wsTicket.expiresAt
+        expiresAt: this.wsTicket.expiresAt,
       });
     } catch (error) {
-      console.error('Failed to request WebSocket ticket:', error);
-      throw new Error(`WebSocket ticket request failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error("Failed to request WebSocket ticket:", error);
+      throw new Error(
+        `WebSocket ticket request failed: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   }
 
@@ -221,7 +238,10 @@ export class WebSocketChatClient {
   private setupToolsAndContext(props: WebSocketChatClientProps): void {
     this.toolSchemas = props.toolSchemas || [];
     this.contextHelpers = props.contextHelpers;
-
+    console.log("clog - Tool schemas and context helpers set up:", {
+      toolCount: this.toolSchemas,
+      contextKeys: Object.keys(this.contextHelpers || {}),
+    });
     if (props.clientTools) {
       this.messageHandler.updateClientTools(props.clientTools);
     }
@@ -234,7 +254,7 @@ export class WebSocketChatClient {
     if (props.userId) {
       this.config.userId = props.userId;
     }
-    
+
     // Store authentication data for ticket requests
     this.authData = {
       userMpAuthToken: props.userMpAuthToken,
@@ -251,13 +271,7 @@ export class WebSocketChatClient {
       throw new Error("Client not connected");
     }
 
-    const {
-      message,
-      app = "UD21",
-      media,
-      convUuid,
-      agentPromptPath,
-    } = params;
+    const { message, app = "UD21", media, convUuid, agentPromptPath } = params;
 
     try {
       this.messageHandler.clearProcessedToolCalls();
@@ -277,7 +291,6 @@ export class WebSocketChatClient {
     }
   }
 
-
   disconnect(): void {
     // Stop ticket validation when disconnecting
     this.stopTicketValidation();
@@ -291,7 +304,9 @@ export class WebSocketChatClient {
   updateContextHelpers(newContext: ContextHelpers): void {
     this.contextHelpers = { ...this.contextHelpers, ...newContext };
 
-    const message = MessageFactory.serializeUpdateContextHelpers(this.contextHelpers);
+    const message = MessageFactory.serializeUpdateContextHelpers(
+      this.contextHelpers
+    );
     this.wsManager.send(message);
   }
 
@@ -308,13 +323,13 @@ export class WebSocketChatClient {
 
   getConnectionStatus(): ConnectionStatus {
     let ticketExpiresIn: number | undefined;
-    
+
     if (this.wsTicket) {
       try {
         const ticketInfo = getTicketInfo(this.wsTicket);
         ticketExpiresIn = ticketInfo.expiresIn;
       } catch (error) {
-        console.warn('Error getting ticket info:', error);
+        console.warn("Error getting ticket info:", error);
       }
     }
 
@@ -335,33 +350,33 @@ export class WebSocketChatClient {
    */
   async refreshTicketAndReconnect(): Promise<void> {
     if (this.isRefreshingTicket) {
-      console.log('Ticket refresh already in progress');
+      console.log("Ticket refresh already in progress");
       return;
     }
 
     try {
       this.isRefreshingTicket = true;
-      console.log('Refreshing WebSocket ticket and reconnecting...');
-      
+      console.log("Refreshing WebSocket ticket and reconnecting...");
+
       // Stop any ongoing ticket validation
       this.stopTicketValidation();
-      
+
       // Clear existing ticket
       this.wsTicket = null;
-      
+
       // Disconnect current connection
       this.wsManager.disconnect();
-      
+
       // Request new ticket
       await this.requestTicket();
-      
+
       // Update ticket in WebSocket manager and reconnect
       this.wsManager.updateTicket(this.wsTicket!.ticket);
       await this.wsManager.connect();
-      
-      console.log('WebSocket ticket refreshed and reconnected successfully');
+
+      console.log("WebSocket ticket refreshed and reconnected successfully");
     } catch (error) {
-      console.error('Failed to refresh ticket and reconnect:', error);
+      console.error("Failed to refresh ticket and reconnect:", error);
       throw error;
     } finally {
       this.isRefreshingTicket = false;
@@ -380,7 +395,7 @@ export class WebSocketChatClient {
    * Useful for "Reconnect" buttons or retry logic
    */
   async reconnect(): Promise<void> {
-    console.log('Manual reconnection requested');
+    console.log("Manual reconnection requested");
     await this.refreshTicketAndReconnect();
   }
 
@@ -390,16 +405,16 @@ export class WebSocketChatClient {
   private startTicketValidation(): void {
     // Clear any existing interval
     this.stopTicketValidation();
-    
+
     // Check ticket validity every 30 seconds
     this.ticketCheckInterval = window.setInterval(() => {
       this.checkAndRenewTicket();
     }, 30000);
-    
+
     // Listen for page visibility changes to handle user return
     this.setupVisibilityListener();
-    
-    console.log('Started periodic ticket validation');
+
+    console.log("Started periodic ticket validation");
   }
 
   /**
@@ -410,7 +425,7 @@ export class WebSocketChatClient {
       clearInterval(this.ticketCheckInterval);
       this.ticketCheckInterval = null;
     }
-    
+
     // Remove visibility change listener
     this.removeVisibilityListener();
   }
@@ -425,14 +440,16 @@ export class WebSocketChatClient {
 
     try {
       const ticketInfo = getTicketInfo(this.wsTicket);
-      
+
       // Renew ticket if it expires in less than 5 minutes (300 seconds)
       if (ticketInfo.expiresIn < 300) {
-        console.log(`Ticket expires in ${ticketInfo.expiresIn}s, proactively renewing...`);
+        console.log(
+          `Ticket expires in ${ticketInfo.expiresIn}s, proactively renewing...`
+        );
         await this.renewTicketProactively();
       }
     } catch (error) {
-      console.error('Error checking ticket validity:', error);
+      console.error("Error checking ticket validity:", error);
     }
   }
 
@@ -441,7 +458,7 @@ export class WebSocketChatClient {
    */
   private async renewTicketProactively(): Promise<void> {
     if (this.isRefreshingTicket) {
-      console.log('Ticket refresh already in progress');
+      console.log("Ticket refresh already in progress");
       return;
     }
 
@@ -449,17 +466,17 @@ export class WebSocketChatClient {
 
     try {
       this.isRefreshingTicket = true;
-      console.log('Proactively renewing WebSocket ticket...');
-      
+      console.log("Proactively renewing WebSocket ticket...");
+
       // Request new ticket while keeping connection alive
       oldTicket = this.wsTicket;
       this.wsTicket = null; // Clear to force new request
-      
+
       await this.requestTicket();
-      
-      console.log('Ticket renewed successfully without disconnection');
+
+      console.log("Ticket renewed successfully without disconnection");
     } catch (error) {
-      console.error('Failed to proactively renew ticket:', error);
+      console.error("Failed to proactively renew ticket:", error);
       // Restore old ticket if renewal failed
       if (!this.wsTicket && oldTicket) {
         this.wsTicket = oldTicket;
@@ -473,29 +490,32 @@ export class WebSocketChatClient {
    * Setup page visibility listener to detect when user returns
    */
   private setupVisibilityListener(): void {
-    if (typeof document === 'undefined') {
+    if (typeof document === "undefined") {
       return; // Not in browser environment
     }
 
     this.removeVisibilityListener(); // Remove any existing listener
-    
+
     this.visibilityChangeHandler = () => {
       if (!document.hidden) {
         // User returned to the page, check connection and ticket
-        console.log('User returned to page, checking connection...');
+        console.log("User returned to page, checking connection...");
         this.handleUserReturn();
       }
     };
 
-    document.addEventListener('visibilitychange', this.visibilityChangeHandler);
+    document.addEventListener("visibilitychange", this.visibilityChangeHandler);
   }
 
   /**
    * Remove page visibility listener
    */
   private removeVisibilityListener(): void {
-    if (this.visibilityChangeHandler && typeof document !== 'undefined') {
-      document.removeEventListener('visibilitychange', this.visibilityChangeHandler);
+    if (this.visibilityChangeHandler && typeof document !== "undefined") {
+      document.removeEventListener(
+        "visibilitychange",
+        this.visibilityChangeHandler
+      );
       this.visibilityChangeHandler = null;
     }
   }
@@ -507,14 +527,14 @@ export class WebSocketChatClient {
     try {
       // Check if connection is still alive
       if (!this.connectionState.isConnected) {
-        console.log('Connection lost while away, attempting to reconnect...');
+        console.log("Connection lost while away, attempting to reconnect...");
         await this.refreshTicketAndReconnect();
         return;
       }
 
       // Check if ticket is still valid
       if (!this.isTicketValid()) {
-        console.log('Ticket expired while away, refreshing...');
+        console.log("Ticket expired while away, refreshing...");
         await this.refreshTicketAndReconnect();
         return;
       }
@@ -522,13 +542,16 @@ export class WebSocketChatClient {
       // If ticket expires soon, renew it proactively
       if (this.wsTicket) {
         const ticketInfo = getTicketInfo(this.wsTicket);
-        if (ticketInfo.expiresIn < 900) { // Less than 15 minutes
-          console.log('Ticket expires soon, renewing proactively on user return...');
+        if (ticketInfo.expiresIn < 900) {
+          // Less than 15 minutes
+          console.log(
+            "Ticket expires soon, renewing proactively on user return..."
+          );
           await this.renewTicketProactively();
         }
       }
     } catch (error) {
-      console.error('Error handling user return:', error);
+      console.error("Error handling user return:", error);
     }
   }
 }
