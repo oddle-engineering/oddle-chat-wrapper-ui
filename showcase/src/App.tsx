@@ -499,7 +499,7 @@ function App() {
         parameters: [],
         execute: readTodos,
       },
-      
+
       // Reservation management tools
       {
         name: "create_reservation",
@@ -749,13 +749,12 @@ function App() {
       chatServerUrl: "wss://localhost:3000",
       chatServerKey: "demo-chat-server-key",
       userId: "user_123_16",
-      
+
       // Optional entity configuration
       entityId: "brand_123",
       entityType: EntityType.BRAND,
       providerResId: "", // Empty to auto-generate based on entityType + entityId
-      
-      
+
       config: {
         ...customConfig,
         onMessage: (message) => {
@@ -786,26 +785,26 @@ function App() {
   const modalChatProps: ChatWrapperProps = useMemo(
     () => ({
       // Required authentication and server configuration
-      userMpAuthToken: "demo-mp-auth-token-456",
-      chatServerUrl: "ws://localhost:3000",
+      userMpAuthToken: "demo-mp-auth-token-123",
+      chatServerUrl: "wss://localhost:3000",
       chatServerKey: "demo-chat-server-key",
       userId: "user_123_16",
-      
-      // Optional entity configuration for Host app
-      entityId: "host_456",
-      entityType: EntityType.ACCOUNT,
+
+      // Optional entity configuration
+      entityId: "brand_123",
+      entityType: EntityType.BRAND,
       providerResId: "", // Empty to auto-generate based on entityType + entityId
-      
-      
+
       config: {
         ...customConfig,
         mode: "modal" as ChatMode,
         onMessage: (message) => {
-          console.log("Modal demo message:", message);
+          console.log("Custom demo message:", message);
         },
         onError: (error) => {
-          console.error("Modal demo error:", error);
+          console.error("Custom demo error:", error);
         },
+
         features: {
           fileUpload: true,
           messageHistory: true,
@@ -815,12 +814,8 @@ function App() {
       tools: tools,
       contextHelpers: {
         brandInfo: {
-          id: "host_456",
-          brandName: "Host Management System",
-        },
-        hostInfo: {
-          name: "McDonald's Host Interface",
-          features: ["reservation", "waitlist", "seating"],
+          id: "ud21_123",
+          brandName: "UD21 Restaurant",
         },
         locale: "en-US",
       },

@@ -53,6 +53,18 @@ export function useWebSocketConnection({
   const [isConnected, setIsConnected] = useState(false);
   const chatClientRef = useRef<WebSocketChatClient | null>(null);
 
+  // Use refs to store callbacks to prevent reconnections when they change
+  const onSetMessageRef = useRef(onSetMessage);
+  const onSystemEventRef = useRef(onSystemEvent);
+  const onReasoningUpdateRef = useRef(onReasoningUpdate);
+
+  // Keep refs up to date
+  useEffect(() => {
+    onSetMessageRef.current = onSetMessage;
+    onSystemEventRef.current = onSystemEvent;
+    onReasoningUpdateRef.current = onReasoningUpdate;
+  }, [onSetMessage, onSystemEvent, onReasoningUpdate]);
+
   // Process tools and extract schemas for server
   const { toolSchemas, clientToolExecutors } = useMemo(() => {
     if (tools && tools.length > 0) {
@@ -115,9 +127,9 @@ export function useWebSocketConnection({
         toolSchemas: toolSchemas,
         clientTools: clientToolExecutors,
         contextHelpers: contextHelpersToUse,
-        onSetMessage,
-        onSystemEvent,
-        onReasoningUpdate,
+        onSetMessage: onSetMessageRef.current,
+        onSystemEvent: onSystemEventRef.current,
+        onReasoningUpdate: onReasoningUpdateRef.current,
       });
 
       setIsConnected(true);
@@ -136,9 +148,7 @@ export function useWebSocketConnection({
     toolSchemas,
     clientToolExecutors,
     contextHelpers,
-    onSetMessage,
-    onSystemEvent,
-    onReasoningUpdate,
+    // Removed onSetMessage, onSystemEvent, onReasoningUpdate to prevent reconnections
   ]);
 
   const disconnectChatClient = useCallback(() => {

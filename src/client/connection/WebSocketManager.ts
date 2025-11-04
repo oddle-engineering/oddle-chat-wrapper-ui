@@ -15,6 +15,7 @@ export class WebSocketManager {
   private heartbeatInterval: number | null = null;
   private visibilityChangeHandler: () => void;
   private currentTicket: string | null = null;
+  private intentionalDisconnect: boolean = false; // Track intentional disconnects
 
   private onOpen?: () => void;
   private onMessage?: (event: MessageEvent) => void;
@@ -32,6 +33,8 @@ export class WebSocketManager {
   connect(ticket?: string): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
+        this.intentionalDisconnect = false; // Reset flag when connecting
+        
         if (ticket) {
           this.currentTicket = ticket;
         }
@@ -122,6 +125,11 @@ export class WebSocketManager {
   }
 
   private shouldReconnectAfterClose(closeCode: number): boolean {
+    // Don't reconnect if it was an intentional disconnect
+    if (this.intentionalDisconnect) {
+      return false;
+    }
+    
     const { NORMAL, GOING_AWAY } = WEBSOCKET_CLOSE_CODES;
     return closeCode !== NORMAL && closeCode !== GOING_AWAY;
   }
@@ -271,11 +279,13 @@ export class WebSocketManager {
 
   private closeConnection(): void {
     if (this.ws) {
-      this.ws.close();
+      // Close with NORMAL code (1000) to prevent reconnection
+      this.ws.close(WEBSOCKET_CLOSE_CODES.NORMAL);
     }
   }
 
   disconnect(): void {
+    this.intentionalDisconnect = true; // Mark as intentional disconnect
     this.clearTimers();
     this.removeEventListeners();
     this.closeConnection();
