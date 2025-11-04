@@ -311,14 +311,17 @@ function ChatWrapper({
     [fileUploadService]
   );
 
-
-  // Calculate container classes using utility
-  const containerClasses = chatUtils.css.getContainerClasses(
-    currentMode as ChatMode,
-    config.position,
-    config.theme,
-    isCollapsed,
-    config.constrainedHeight
+  // Memoize container classes to prevent recalculation on every render
+  // Only recompute when dependencies change
+  const containerClasses = useMemo(
+    () => chatUtils.css.getContainerClasses(
+      currentMode as ChatMode,
+      config.position,
+      config.theme,
+      isCollapsed,
+      config.constrainedHeight
+    ),
+    [currentMode, config.position, config.theme, isCollapsed, config.constrainedHeight]
   );
 
   // Handle bubble button click
@@ -420,11 +423,15 @@ function ChatWrapper({
     handlePromptSelect,
   ]);
 
-  // Check if bubble should be shown using utility
-  const shouldShowBubble = chatUtils.state.shouldShowBubble(
-    currentMode as ChatMode,
-    isModalOpen,
-    isCollapsed
+  // Memoize bubble visibility check to prevent recalculation on every render
+  // Only recompute when dependencies change
+  const shouldShowBubble = useMemo(
+    () => chatUtils.state.shouldShowBubble(
+      currentMode as ChatMode,
+      isModalOpen,
+      isCollapsed
+    ),
+    [currentMode, isModalOpen, isCollapsed]
   );
 
   // Render bubble button if needed
