@@ -157,10 +157,14 @@ export class WebSocketChatClient {
         // Connect WebSocket with ticket
         await this.wsManager.connect(ticket);
 
-        // Start proactive ticket renewal to prevent expiration
-        this.ticketManager!.startProactiveRenewal(() => {
-          this.handleTicketRenewed();
-        });
+        // Note: We do NOT start proactive renewal here because:
+        // 1. WebSocket ticket is only used for initial authentication
+        // 2. Once connected, the persistent connection doesn't require ticket validation
+        // 3. Ticket will be refreshed automatically when reconnecting (if expired)
+        // 4. Proactive renewal while connected causes issues because:
+        //    - New ticket cannot be sent to server on existing connection
+        //    - Creates ticket mismatch between client and server
+        //    - May cause message sending to fail
 
         // Note: resolve() will be called when:
         // - tools_configured is received (if tools exist)
@@ -170,32 +174,6 @@ export class WebSocketChatClient {
         reject(error);
       }
     });
-  }
-
-  /**
-   * Handle proactive ticket renewal
-   * Updates the WebSocket manager with new ticket without disconnecting
-   */
-  private async handleTicketRenewed(): Promise<void> {
-    console.log(
-      "WebSocketChatClient: Ticket proactively renewed, updating connection..."
-    );
-
-    try {
-      if (!this.ticketManager) {
-        console.warn("TicketManager not initialized");
-        return;
-      }
-
-      const newTicket = await this.ticketManager.getValidTicket();
-      this.wsManager.updateTicket(newTicket);
-      console.log("WebSocketChatClient: Connection updated with new ticket");
-    } catch (error) {
-      console.error(
-        "WebSocketChatClient: Failed to update connection with renewed ticket:",
-        error
-      );
-    }
   }
 
   private setupEventHandlers(props: WebSocketChatClientProps): void {
