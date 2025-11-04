@@ -27,6 +27,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.4] - 2025-11-04
 
+### Changed
+- docs: update CHANGELOG for v1.0.4 release - HTTP/WebSocket URL conversion
+- chore: Refactor WebSocket and HTTP URL handling; remove ChatWrapperWithAuth example
+
+## [1.0.4] - 2025-11-04
+
 ### Added
 - Automatic HTTP/HTTPS to WebSocket URL conversion in `WebSocketManager`
   - `http://` → `ws://`
