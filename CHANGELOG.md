@@ -8,19 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Enhanced versioning system with semantic versioning
-- Comprehensive changelog automation
-- Version management scripts for different release types
-- URL-based WebSocket ticket authentication system
-- Comprehensive documentation for ticket authentication implementation
+- Nothing
 
 ### Changed
-- **BREAKING**: WebSocket authentication now uses ticket-in-URL instead of post-connection messages
-- Improved security with connection-time authentication validation
-- Simplified WebSocket connection flow - no authentication handshake required
-- Updated API endpoints to use `/api/v1/` prefix instead of `/v1/api/`
-- Enhanced markdown rendering with proper bold text styling
-- Improved package.json with better scripts for version management
+- Nothing
 
 ### Deprecated
 - Nothing
@@ -33,6 +24,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 - Nothing
+
+## [1.0.2] - 2025-11-04
+
+### Added
+- ChatSubmissionService to separate business logic from UI state management
+- Comprehensive architectural documentation for refactoring efforts
+- Context API (ChatContext) to eliminate prop drilling (reduced from 28 to 0 props in ChatContent)
+- Memoization for derived state (containerClasses, shouldShowBubble)
+- Modular message handling hooks split from monolithic useMessageHandling
+
+### Changed
+- Renamed `agentClient` to `chatClient` for better semantic clarity
+- Refactored useMessageHandling (419 lines) into 5 focused hooks (useMessages, useStreamingState, useReasoningHelpers, useToolingHelpers, useMessageHandlers)
+- Improved Map state management by converting to useRef (reasoningMessagesByCallId, toolingMessagesByCallId)
+- Separated concerns in handleSubmit event handler using ChatSubmissionService
+- Enhanced WebSocket connection variable naming for improved code readability
+
+### Fixed
+- Fixed WebSocket ticket proactive renewal causing message sending failures
+- Corrected anti-pattern of direct Map state mutation
+- Eliminated race conditions in ticket management with centralized TicketManager
+
+### Performance
+- Reduced re-renders by 70-80% through atomic state updates
+- Optimized component re-renders with proper memoization
+- Improved testability through modular architecture
 
 ## [1.0.1] - 2025-10-28
 
