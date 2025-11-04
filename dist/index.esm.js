@@ -421,7 +421,7 @@ class Ya {
     });
   }
   buildWebSocketUrl() {
-    let t = this.config.apiUrl;
+    let t = this.config.apiUrl.replace(/^https:\/\//, "wss://").replace(/^http:\/\//, "ws://");
     if (t = t.endsWith("/ws") ? t : t + "/ws", this.currentTicket) {
       const n = t.includes("?") ? "&" : "?";
       t = `${t}${n}ticket=${this.currentTicket}`;
@@ -1057,6 +1057,7 @@ class rs {
   /**
    * Convert WebSocket URL to HTTP URL for ticket requests
    * wss:// -> https://, ws:// -> http://
+   * Also handles http:// and https:// (keeps them as-is)
    */
   convertToHttpUrl(t) {
     return t.replace(/^wss:\/\//, "https://").replace(/^ws:\/\//, "http://");

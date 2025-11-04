@@ -67,9 +67,10 @@ export class TicketManager {
   /**
    * Convert WebSocket URL to HTTP URL for ticket requests
    * wss:// -> https://, ws:// -> http://
+   * Also handles http:// and https:// (keeps them as-is)
    */
-  private convertToHttpUrl(wsUrl: string): string {
-    return wsUrl
+  private convertToHttpUrl(url: string): string {
+    return url
       .replace(/^wss:\/\//, 'https://')
       .replace(/^ws:\/\//, 'http://');
   }

@@ -55,9 +55,13 @@ export class WebSocketManager {
   }
 
   private buildWebSocketUrl(): string {
-    // The apiUrl is already a WebSocket URL (e.g., wss://example.com)
-    // Just add the /ws path if it's not already there
-    let url = this.config.apiUrl;
+    // Convert HTTP URL to WebSocket URL if needed
+    // https:// -> wss://, http:// -> ws://
+    let url = this.config.apiUrl
+      .replace(/^https:\/\//, 'wss://')
+      .replace(/^http:\/\//, 'ws://');
+    
+    // Add the /ws path if it's not already there
     url = url.endsWith('/ws') ? url : url + '/ws';
     
     // Add ticket to URL if available
