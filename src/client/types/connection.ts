@@ -20,8 +20,7 @@ export interface ConnectionStatus {
   websocketState: string;
   // Ticket status information
   hasValidTicket: boolean;
-  ticketExpiresIn?: number; // seconds until expiration
-  isRefreshingTicket: boolean;
+  ticketExpiresIn?: number; // milliseconds until expiration
 }
 
 export const DEFAULT_CONNECTION_CONFIG: Partial<ConnectionConfig> = {

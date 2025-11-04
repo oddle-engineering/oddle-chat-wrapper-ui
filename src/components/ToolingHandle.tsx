@@ -29,7 +29,6 @@ export function ToolingHandleTrigger({
   toolName,
   clientTools,
 }: ToolingHandleTriggerProps) {
-  console.log("clog toolData", toolData);
 
   // Find the tool description from clientTools
   const getToolDescription = () => {
