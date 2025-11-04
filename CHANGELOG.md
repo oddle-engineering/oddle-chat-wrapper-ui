@@ -28,6 +28,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.2] - 2025-11-04
 
 ### Added
+- Implement ChatContext to eliminate prop drilling in ChatWrapper and ChatContent
+- Implement URL-based ticket authentication for WebSocket connections and update related documentation
+- Implement service layer for API interactions with centralized configuration and error handling
+- Implement ticket-based authentication for WebSocket connections
+- Refactor tools management and enhance error handling
+- Refactor ChatWrapper to require authentication props and streamline API usage
+- add custom hooks for conversation loading, message handling, UI state, and WebSocket connection
+- Refactor ChatWrapper component and replace SVG icons with reusable components
+- Enhance message handling by updating streaming messages and finalizing content
+- Add modal-specific input sizing adjustments for improved user experience
+- Add Client WebSocket Workflow Documentation
+- Introduce reasoning constants and detection logic
+- Refactor WebSocket client implementation and introduce system events
+
+### Changed
+- docs: add comprehensive refactoring documentation
+- docs: update CHANGELOG for v1.0.2 release
+- chore: Refactor chat message handling: Introduce ChatSubmissionService for message submission logic
+- refactor: Replace state with refs for message ID tracking in useMessageHandlers
+- chore: Optimize performance by memoizing container classes and bubble visibility checks in ChatWrapper component
+- chore: Refactor message handling and reasoning logic into modular hooks
+- refactor: Remove proactive ticket renewal logic and related method from WebSocketChatClient
+- chore: Refactor WebSocketChatClient to use TicketManager for ticket management
+- refactor: Clean up code formatting and improve readability in WebSocketChatClient
+- chore: Refactor API structure and remove mock implementations
+- refactor: Update README to enhance feature descriptions and improve structure
+- Refactor: Remove old migration guide and integrate ticket-based authentication flow documentation
+- chore: Remove App identification from ChatWrapper and related components
+- feat(chat): add ChatBubbleButton, ChatContent, ChatHeader, and ChatMainHeader components
+- chore: Refactor chat status management by introducing constants and utility functions
+- chore: Remove unused ToolResult import from ChatWrapper component
+- chore: Refactor code structure for improved readability and maintainability
+- chore: Refactor chat components for improved message handling and UI
+- chore: Clean up code formatting and remove unnecessary console logs
+- chore: Refactor WebSocketManager and introduce BaseHandler for event handling
+- chore: Remove unused components and assets
+
+## [1.0.2] - 2025-11-04
+
+### Added
 - ChatSubmissionService to separate business logic from UI state management
 - Comprehensive architectural documentation for refactoring efforts
 - Context API (ChatContext) to eliminate prop drilling (reduced from 28 to 0 props in ChatContent)
