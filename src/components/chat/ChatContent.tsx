@@ -1,95 +1,53 @@
-import React, { RefObject } from 'react';
+import React from 'react';
 import { MessagesList } from '../MessagesList';
-import { ChatInput, ChatInputRef } from '../ChatInput';
+import { ChatInput } from '../ChatInput';
 import { SuggestedPrompts } from '../SuggestedPrompts';
 import { InlineLoader } from '../InlineLoader';
 import { ChatMainHeader } from './ChatMainHeader';
-import { Message, ClientTools } from '../../types';
 import { chatUtils } from '../../utils/chatUtils';
-import { ChatStatus } from '../../constants/chatStatus';
+import { useChatContext } from '../../contexts';
 
-interface ChatContentProps {
-  // Message data
-  messages: Message[];
-  isLoadingConversation: boolean;
-  isStreaming: boolean;
-  isThinking: boolean;
-  isHandlingTool: boolean;
-  
-  // App configuration
-  appName: string;
-  description?: string;
-  placeholder?: string;
-  placeholderTexts?: string[];
-  restaurantName?: string;
-  restaurantLogo?: string;
-  suggestedPrompts?: Array<{
-    title: string;
-    description: string;
-    icon?: React.ReactNode;
-  }>;
-  
-  // Chat state
-  chatStatus: ChatStatus;
-  
-  // Tools and reasoning
-  clientTools?: ClientTools;
-  getReasoningTitle: (content: string, isStreaming?: boolean) => string;
-  getReasoningStatus: (content: string, isStreaming?: boolean) => "processing" | "completed" | "error";
-  getReasoningDuration: (content: string) => string | undefined;
-  getReasoningContentOnly: (content: string) => string;
-  getToolingTitle: (content: string, isStreaming?: boolean) => string;
-  getToolingStatus: (content: string, isStreaming?: boolean) => "processing" | "completed" | "error";
-  currentAssistantMessageIdRef: RefObject<string | null>;
-  
-  // Features
-  fileUploadEnabled?: boolean;
-  
-  // Event handlers
-  onSubmit: (message: string, media?: string[]) => void;
-  onFileUpload: (files: File[]) => Promise<string[]>;
-  onStopGeneration: () => void;
-  onPromptSelect?: (prompt: { description: string }) => void;
-  
-  // Refs
-  messagesEndRef: RefObject<HTMLDivElement>;
-  chatInputRef: RefObject<ChatInputRef>;
-  
-  // Error handling
-  conversationError?: string | null;
-}
-
-export const ChatContent: React.FC<ChatContentProps> = ({
-  messages,
-  isLoadingConversation,
-  isStreaming,
-  isThinking,
-  isHandlingTool,
-  appName,
-  description,
-  placeholder,
-  placeholderTexts,
-  restaurantName,
-  restaurantLogo,
-  suggestedPrompts,
-  chatStatus,
-  clientTools,
-  getReasoningTitle,
-  getReasoningStatus,
-  getReasoningDuration,
-  getReasoningContentOnly,
-  getToolingTitle,
-  getToolingStatus,
-  currentAssistantMessageIdRef,
-  fileUploadEnabled,
-  onSubmit,
-  onFileUpload,
-  onStopGeneration,
-  onPromptSelect,
-  messagesEndRef,
-  chatInputRef,
-  conversationError,
-}) => {
+/**
+ * ChatContent - Main content area of the chat interface
+ * 
+ * Now uses ChatContext instead of props to access all chat state and actions.
+ * This eliminates the need to pass 28+ props through the component hierarchy.
+ * 
+ * All data is accessed via useChatContext() hook.
+ */
+export const ChatContent: React.FC = () => {
+  // Get all required data from context instead of props
+  const {
+    messages,
+    isLoadingConversation,
+    isStreaming,
+    isThinking,
+    isHandlingTool,
+    appName,
+    description,
+    placeholder,
+    placeholderTexts,
+    restaurantName,
+    restaurantLogo,
+    suggestedPrompts,
+    chatStatus,
+    clientTools,
+    getReasoningTitle,
+    getReasoningStatus,
+    getReasoningDuration,
+    getReasoningContentOnly,
+    getToolingTitle,
+    getToolingStatus,
+    currentAssistantMessageIdRef,
+    fileUploadEnabled,
+    onSubmit,
+    onFileUpload,
+    onStopGeneration,
+    onPromptSelect,
+    messagesEndRef,
+    chatInputRef,
+    conversationError,
+  } = useChatContext();
   const shouldShowMainHeader = chatUtils.state.shouldShowMainHeader(
     messages.length,
     isStreaming,

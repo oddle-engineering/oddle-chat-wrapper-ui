@@ -24,6 +24,7 @@ import { ChatBubbleButton } from "./chat/ChatBubbleButton";
 import { ChatHeader } from "./chat/ChatHeader";
 import { ChatContent } from "./chat/ChatContent";
 import { SettingsIcon } from "./icons";
+import { ChatProvider } from "../contexts";
 import "../styles/chat-wrapper.css";
 
 function ChatWrapper({
@@ -341,6 +342,84 @@ function ChatWrapper({
     }
   }, []);
 
+  // Prepare chat context value to eliminate prop drilling
+  const chatContextValue = useMemo(() => ({
+    // Message state
+    messages,
+    isStreaming,
+    isThinking,
+    isHandlingTool,
+    
+    // UI state
+    isLoadingConversation,
+    chatStatus,
+    conversationError,
+    
+    // Configuration
+    appName: config.appName,
+    description: config.description,
+    placeholder: config.placeholder,
+    placeholderTexts: config.placeholderTexts,
+    restaurantName: config.restaurantName,
+    restaurantLogo: config.restaurantLogo,
+    suggestedPrompts: config.suggestedPrompts,
+    
+    // Tools & features
+    clientTools: uiClientTools,
+    fileUploadEnabled: config.features?.fileUpload,
+    
+    // Reasoning helpers
+    getReasoningTitle,
+    getReasoningStatus,
+    getReasoningDuration,
+    getReasoningContentOnly,
+    
+    // Tooling helpers
+    getToolingTitle,
+    getToolingStatus,
+    
+    // Refs
+    currentAssistantMessageIdRef,
+    messagesEndRef,
+    chatInputRef,
+    
+    // Event handlers
+    onSubmit: handleSubmit,
+    onFileUpload: handleFileUpload,
+    onStopGeneration: stopGeneration,
+    onPromptSelect: handlePromptSelect,
+  }), [
+    messages,
+    isStreaming,
+    isThinking,
+    isHandlingTool,
+    isLoadingConversation,
+    chatStatus,
+    conversationError,
+    config.appName,
+    config.description,
+    config.placeholder,
+    config.placeholderTexts,
+    config.restaurantName,
+    config.restaurantLogo,
+    config.suggestedPrompts,
+    config.features?.fileUpload,
+    uiClientTools,
+    getReasoningTitle,
+    getReasoningStatus,
+    getReasoningDuration,
+    getReasoningContentOnly,
+    getToolingTitle,
+    getToolingStatus,
+    currentAssistantMessageIdRef,
+    messagesEndRef,
+    chatInputRef,
+    handleSubmit,
+    handleFileUpload,
+    stopGeneration,
+    handlePromptSelect,
+  ]);
+
   // Check if bubble should be shown using utility
   const shouldShowBubble = chatUtils.state.shouldShowBubble(
     currentMode as ChatMode,
@@ -410,37 +489,9 @@ function ChatWrapper({
                 }
               }}
             >
-              <ChatContent
-                messages={messages}
-                isLoadingConversation={isLoadingConversation}
-                isStreaming={isStreaming}
-                isThinking={isThinking}
-                isHandlingTool={isHandlingTool}
-                appName={config.appName}
-                description={config.description}
-                placeholder={config.placeholder}
-                placeholderTexts={config.placeholderTexts}
-                restaurantName={config.restaurantName}
-                restaurantLogo={config.restaurantLogo}
-                suggestedPrompts={config.suggestedPrompts}
-                chatStatus={chatStatus}
-                clientTools={uiClientTools}
-                getReasoningTitle={getReasoningTitle}
-                getReasoningStatus={getReasoningStatus}
-                getReasoningDuration={getReasoningDuration}
-                getReasoningContentOnly={getReasoningContentOnly}
-                getToolingTitle={getToolingTitle}
-                getToolingStatus={getToolingStatus}
-                currentAssistantMessageIdRef={currentAssistantMessageIdRef}
-                fileUploadEnabled={config.features?.fileUpload}
-                onSubmit={handleSubmit}
-                onFileUpload={handleFileUpload}
-                onStopGeneration={stopGeneration}
-                onPromptSelect={handlePromptSelect}
-                messagesEndRef={messagesEndRef}
-                chatInputRef={chatInputRef}
-                conversationError={conversationError}
-              />
+              <ChatProvider value={chatContextValue}>
+                <ChatContent />
+              </ChatProvider>
             </FileUploadErrorBoundary>
           )}
 
