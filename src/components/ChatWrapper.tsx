@@ -1,7 +1,6 @@
 import { useEffect, useRef, useCallback, memo, useMemo } from "react";
 import {
   ChatWrapperProps,
-  Message,
   ChatMode,
 } from "../types";
 import { ChatInputRef } from "./ChatInput";
@@ -17,7 +16,7 @@ import {
   CHAT_STATUS,
   STREAMING_STATUS,
 } from "../constants/chatStatus";
-import { FileUploadService } from "../services/fileUploadService";
+import { FileUploadService, ChatSubmissionService } from "../services";
 import { chatUtils } from "../utils/chatUtils";
 import { ChatErrorBoundary, WebSocketErrorBoundary, FileUploadErrorBoundary } from "./error";
 import { ChatBubbleButton } from "./chat/ChatBubbleButton";
@@ -157,7 +156,7 @@ function ChatWrapper({
   }, [handleChatFinished, handleChatError]);
 
   // Initialize WebSocket connection
-  const { agentClient, isConnected } = useWebSocketConnection({
+  const { chatClient, isConnected } = useWebSocketConnection({
     // Authentication and server properties
     userMpAuthToken,
     chatServerUrl,
@@ -178,6 +177,14 @@ function ChatWrapper({
     onSystemEvent: handleSystemEvent,
     onReasoningUpdate: handleReasoningUpdate,
   });
+
+  // Initialize chat submission service (depends on chatClient)
+  const chatSubmissionService = useMemo(
+    () => chatClient ? new ChatSubmissionService(chatClient, {
+      onError: config.onError,
+    }) : null,
+    [chatClient, config.onError]
+  );
 
   // Initialize conversation loader
   useConversationLoader({
@@ -240,57 +247,47 @@ function ChatWrapper({
   // Handle message submission via WebSocketChatClient
   const handleSubmit = useCallback(
     async (message: string, media?: string[]) => {
-      if (!message.trim() || isStreaming || !agentClient || !isConnected)
+      // Early validation using service
+      if (!chatSubmissionService?.canSubmit(message, isStreaming, isConnected)) {
         return;
+      }
 
-      const userMessage: Message = {
-        id: Math.random().toString(36).substring(2) + Date.now().toString(36),
-        role: "user",
-        content: message.trim(),
-        timestamp: new Date(),
-        media,
-      };
-
-      setMessages((prev) => [...prev, userMessage]);
+      // State updates: Start submission
       setIsStreaming(true);
       setIsThinking(true);
       setChatStatus(CHAT_STATUS.SUBMITTED);
       setStreamingStatus(STREAMING_STATUS.STARTING);
 
       try {
-        await agentClient.onTriggerMessage({
-          message: userMessage.content,
+        // Business logic: Submit message via service
+        const userMessage = await chatSubmissionService.submitMessage({
+          message,
           media,
           convUuid: currentConvUuid || undefined,
           agentPromptPath: undefined,
         });
+
+        // State updates: Add user message and transition to streaming
+        setMessages((prev) => [...prev, userMessage]);
         setChatStatus(CHAT_STATUS.STREAMING);
       } catch (error) {
-        console.error("Agent client send error:", error);
+        // State updates: Handle error state
         setIsThinking(false);
         setChatStatus(CHAT_STATUS.ERROR);
 
-        addMessage(
-          "system",
-          `Sorry, there was an error: ${
-            error instanceof Error ? error.message : "Unknown error"
-          }`
-        );
+        // Business logic: Create and add error message
+        const errorMessage = chatSubmissionService.createErrorMessage(error);
+        addMessage("system", errorMessage);
 
-        if (config.onError) {
-          config.onError(
-            error instanceof Error ? error : new Error("Unknown error")
-          );
-        }
-
+        // State updates: Reset to idle
         setIsStreaming(false);
         setChatStatus(CHAT_STATUS.IDLE);
         setStreamingStatus(STREAMING_STATUS.IDLE);
       }
     },
     [
+      chatSubmissionService,
       isStreaming,
-      agentClient,
       isConnected,
       setMessages,
       setIsStreaming,
@@ -298,7 +295,6 @@ function ChatWrapper({
       setChatStatus,
       setStreamingStatus,
       addMessage,
-      config,
       currentConvUuid,
     ]
   );

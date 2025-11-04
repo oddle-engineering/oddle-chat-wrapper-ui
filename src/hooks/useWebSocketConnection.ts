@@ -49,9 +49,9 @@ export function useWebSocketConnection({
   onSystemEvent,
   onReasoningUpdate,
 }: UseWebSocketConnectionProps) {
-  const [agentClient, setAgentClient] = useState<WebSocketChatClient | null>(null);
+  const [chatClient, setChatClient] = useState<WebSocketChatClient | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const agentClientRef = useRef<WebSocketChatClient | null>(null);
+  const chatClientRef = useRef<WebSocketChatClient | null>(null);
 
   // Process tools and extract schemas for server
   const { toolSchemas, clientToolExecutors } = useMemo(() => {
@@ -77,7 +77,7 @@ export function useWebSocketConnection({
     };
   }, [tools]);
 
-  const connectAgentClient = useCallback(async () => {
+  const connectChatClient = useCallback(async () => {
     try {
       // Validate required props
       if (!userMpAuthToken) {
@@ -94,8 +94,8 @@ export function useWebSocketConnection({
       }
 
       const client = new WebSocketChatClient();
-      agentClientRef.current = client;
-      setAgentClient(client);
+      chatClientRef.current = client;
+      setChatClient(client);
 
       const contextHelpersToUse: ContextHelpers = contextHelpers || {};
 
@@ -141,29 +141,29 @@ export function useWebSocketConnection({
     onReasoningUpdate,
   ]);
 
-  const disconnectAgentClient = useCallback(() => {
-    if (agentClientRef.current) {
-      agentClientRef.current.disconnect();
-      agentClientRef.current = null;
+  const disconnectChatClient = useCallback(() => {
+    if (chatClientRef.current) {
+      chatClientRef.current.disconnect();
+      chatClientRef.current = null;
     }
-    setAgentClient(null);
+    setChatClient(null);
     setIsConnected(false);
   }, []);
 
   // Auto-connect on mount and setup connection monitoring
   useEffect(() => {
-    connectAgentClient();
+    connectChatClient();
 
     return () => {
-      disconnectAgentClient();
+      disconnectChatClient();
     };
-  }, [connectAgentClient, disconnectAgentClient]);
+  }, [connectChatClient, disconnectChatClient]);
 
   // Monitor connection status
   useEffect(() => {
     const interval = setInterval(() => {
-      if (agentClientRef.current) {
-        const status = agentClientRef.current.getConnectionStatus();
+      if (chatClientRef.current) {
+        const status = chatClientRef.current.getConnectionStatus();
         setIsConnected(status.connected);
       }
     }, 1000);
@@ -172,9 +172,9 @@ export function useWebSocketConnection({
   }, []);
 
   return {
-    agentClient,
+    chatClient,
     isConnected,
-    connectAgentClient,
-    disconnectAgentClient,
+    connectChatClient,
+    disconnectChatClient,
   };
 }
