@@ -25,6 +25,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.3] - 2025-11-04
+
+### Fixed
+- **Critical**: Fixed modal WebSocket connection leak where reopening modals created continuous connections
+  - Store event handler callbacks in refs to prevent unnecessary reconnections
+  - Remove callbacks from `connectChatClient` dependencies in `useWebSocketConnection`
+  - Handlers remain stable across renders while always using latest callback references
+- **Critical**: Fixed invalid ticket errors on intentional disconnect/reconnect cycles
+  - Track intentional disconnects with flag to prevent unwanted auto-reconnection
+  - Close WebSocket with proper NORMAL code (1000) during intentional disconnect
+  - Prevent reconnection attempts using expired tickets after modal close
+  - Eliminates server warnings: "Invalid ticket provided for connection"
+
+### Changed
+- Refactor callback handling in `useWebSocketConnection` to use ref pattern for stability
+- Improve WebSocket cleanup logic in `WebSocketManager` to distinguish intentional vs. accidental disconnects
+
 ## [1.0.2] - 2025-11-04
 
 ### Added
