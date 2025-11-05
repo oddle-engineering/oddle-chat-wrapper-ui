@@ -1,4 +1,3 @@
-
 export interface AgentConfiguration {
   app: string;
   promptPath: string;
@@ -35,26 +34,26 @@ export async function getAgentConfigurations(
   }
 ): Promise<AgentConfiguration[]> {
   const headers: HeadersInit = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
 
   // Add authentication headers if provided
   if (authOptions?.userMpAuthToken) {
-    headers['Authorization'] = `Bearer ${authOptions.userMpAuthToken}`;
+    headers["x-oddle-mp-auth-token"] = authOptions.userMpAuthToken;
   }
   if (authOptions?.chatServerKey) {
-    headers['X-Chat-Server-Key'] = authOptions.chatServerKey;
+    headers["x-oddle-chat-server-key"] = authOptions.chatServerKey;
   }
-
   const response = await fetch(`${apiUrl}/api/v1/agent-configurations`, {
-    method: 'GET',
+    method: "GET",
     headers,
   });
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(
-      errorData.message || `Failed to get agent configuration: ${response.statusText}`
+      errorData.message ||
+        `Failed to get agent configuration: ${response.statusText}`
     );
   }
 
@@ -74,7 +73,7 @@ export async function getAgentConfiguration(
   }
 ): Promise<AgentConfiguration | null> {
   const configurations = await getAgentConfigurations(apiUrl, authOptions);
-  return configurations.find(config => config.app === app) || null;
+  return configurations.find((config) => config.app === app) || null;
 }
 
 /**
@@ -89,19 +88,19 @@ export async function updateAgentConfiguration(
   }
 ): Promise<AgentConfiguration> {
   const headers: HeadersInit = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
 
   // Add authentication headers if provided
   if (authOptions?.userMpAuthToken) {
-    headers['Authorization'] = `Bearer ${authOptions.userMpAuthToken}`;
+    headers["x-oddle-mp-auth-token"] = authOptions.userMpAuthToken;
   }
   if (authOptions?.chatServerKey) {
-    headers['X-Chat-Server-Key'] = authOptions.chatServerKey;
+    headers["x-oddle-chat-server-key"] = authOptions.chatServerKey;
   }
 
   const response = await fetch(`${apiUrl}/api/v1/agent-configurations`, {
-    method: 'PUT',
+    method: "PUT",
     headers,
     body: JSON.stringify(update),
   });
@@ -109,7 +108,8 @@ export async function updateAgentConfiguration(
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(
-      errorData.message || `Failed to update agent configuration: ${response.statusText}`
+      errorData.message ||
+        `Failed to update agent configuration: ${response.statusText}`
     );
   }
 

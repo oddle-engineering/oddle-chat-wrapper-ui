@@ -1,6 +1,6 @@
 /**
  * WebSocket Ticket Authentication API
- * 
+ *
  * This service handles the "ticket-based" authentication system for WebSocket connections.
  * The flow is:
  * 1. Client requests a WebSocket ticket from the HTTP server
@@ -14,12 +14,12 @@ export interface WebSocketTicketRequest {
   userMpAuthToken: string;
   chatServerKey: string;
   userId: string;
-  
+
   // Optional entity context
   entityId?: string;
   entityType?: string;
   providerResId?: string;
-  
+
   // Client information for security
   clientInfo?: {
     userAgent?: string;
@@ -48,20 +48,18 @@ export async function requestWebSocketTicket(
   ticketRequest: WebSocketTicketRequest
 ): Promise<WebSocketTicketResponse> {
   const headers: HeadersInit = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
 
-  // Add authentication headers
-  if (ticketRequest.userMpAuthToken) {
-    headers['Authorization'] = `Bearer ${ticketRequest.userMpAuthToken}`;
+  if (ticketRequest?.userMpAuthToken) {
+    headers["x-oddle-mp-auth-token"] = ticketRequest.userMpAuthToken;
   }
-  if (ticketRequest.chatServerKey) {
-    headers['X-Chat-Server-Key'] = ticketRequest.chatServerKey;
+  if (ticketRequest?.chatServerKey) {
+    headers["x-oddle-chat-server-key"] = ticketRequest.chatServerKey;
   }
-
   try {
     const response = await fetch(`${apiUrl}/api/v1/tickets`, {
-      method: 'POST',
+      method: "POST",
       headers,
       body: JSON.stringify({
         userId: ticketRequest.userId,
@@ -79,19 +77,20 @@ export async function requestWebSocketTicket(
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(
-        errorData.error || `Failed to get WebSocket ticket: ${response.statusText}`
+        errorData.error ||
+          `Failed to get WebSocket ticket: ${response.statusText}`
       );
     }
 
     const data: WebSocketTicketResponse = await response.json();
-    
+
     if (!data.success || !data.ticket) {
-      throw new Error(data.error || 'Invalid ticket response from server');
+      throw new Error(data.error || "Invalid ticket response from server");
     }
 
     return data;
   } catch (error) {
-    console.error('Error requesting WebSocket ticket:', error);
+    console.error("Error requesting WebSocket ticket:", error);
     throw error;
   }
 }
@@ -106,9 +105,9 @@ export function isTicketValid(ticket: WebSocketTicketResponse): boolean {
 
   const expirationTime = new Date(ticket.expiresAt).getTime();
   const currentTime = Date.now();
-  
+
   // Add 30 second buffer to avoid race conditions
-  return currentTime < (expirationTime - 30000);
+  return currentTime < expirationTime - 30000;
 }
 
 /**
@@ -122,8 +121,11 @@ export function getTicketInfo(ticket: WebSocketTicketResponse): {
   const isValid = isTicketValid(ticket);
   const expirationTime = new Date(ticket.expiresAt).getTime();
   const currentTime = Date.now();
-  const expiresIn = Math.max(0, Math.floor((expirationTime - currentTime) / 1000));
-  
+  const expiresIn = Math.max(
+    0,
+    Math.floor((expirationTime - currentTime) / 1000)
+  );
+
   return {
     isValid,
     expiresIn,

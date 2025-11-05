@@ -4,7 +4,7 @@
  */
 
 export interface ApiRequestConfig {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
   headers?: Record<string, string>;
   body?: any;
   timeout?: number;
@@ -29,24 +29,27 @@ export class BaseApiService {
   protected readonly defaultRetries: number = 3;
 
   constructor(baseUrl: string) {
-    this.baseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash
+    this.baseUrl = baseUrl.replace(/\/$/, ""); // Remove trailing slash
   }
 
   /**
    * Build standardized headers with authentication
    */
-  protected buildHeaders(authOptions?: AuthOptions, customHeaders?: Record<string, string>): HeadersInit {
+  protected buildHeaders(
+    authOptions?: AuthOptions,
+    customHeaders?: Record<string, string>
+  ): HeadersInit {
     const headers: HeadersInit = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...customHeaders,
     };
 
     // Add authentication headers
     if (authOptions?.userMpAuthToken) {
-      headers['Authorization'] = `Bearer ${authOptions.userMpAuthToken}`;
+      headers["x-oddle-mp-auth-token"] = authOptions.userMpAuthToken;
     }
     if (authOptions?.chatServerKey) {
-      headers['X-Chat-Server-Key'] = authOptions.chatServerKey;
+      headers["x-oddle-chat-server-key"] = authOptions.chatServerKey;
     }
 
     return headers;
@@ -56,8 +59,10 @@ export class BaseApiService {
    * Build full URL with base URL and endpoint
    */
   protected buildUrl(endpoint: string): string {
-    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-    const versionedEndpoint = cleanEndpoint.startsWith('/api/v1') ? cleanEndpoint : `/api/v1${cleanEndpoint}`;
+    const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+    const versionedEndpoint = cleanEndpoint.startsWith("/api/v1")
+      ? cleanEndpoint
+      : `/api/v1${cleanEndpoint}`;
     return `${this.baseUrl}${versionedEndpoint}`;
   }
 
@@ -70,7 +75,7 @@ export class BaseApiService {
     authOptions?: AuthOptions
   ): Promise<T> {
     const {
-      method = 'GET',
+      method = "GET",
       headers: customHeaders,
       body,
       timeout = this.defaultTimeout,
@@ -88,23 +93,29 @@ export class BaseApiService {
     };
 
     // Add body for non-GET requests
-    if (body && method !== 'GET') {
-      fetchOptions.body = typeof body === 'string' ? body : JSON.stringify(body);
+    if (body && method !== "GET") {
+      fetchOptions.body =
+        typeof body === "string" ? body : JSON.stringify(body);
     }
 
     // Retry logic
-    let lastError: Error = new Error('Request failed');
+    let lastError: Error = new Error("Request failed");
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
-        console.log(`API Request [${method}] ${url}${attempt > 0 ? ` (attempt ${attempt + 1})` : ''}`);
-        
+        console.log(
+          `API Request [${method}] ${url}${
+            attempt > 0 ? ` (attempt ${attempt + 1})` : ""
+          }`
+        );
+
         const response = await fetch(url, fetchOptions);
-        
+
         // Handle HTTP errors
         if (!response.ok) {
           const errorData = await this.parseErrorResponse(response);
           throw new ApiError(
-            errorData.error || `HTTP ${response.status}: ${response.statusText}`,
+            errorData.error ||
+              `HTTP ${response.status}: ${response.statusText}`,
             response.status,
             errorData.code,
             url
@@ -115,12 +126,15 @@ export class BaseApiService {
         const data = await response.json();
         console.log(`API Response [${method}] ${url}: Success`);
         return data;
-
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
-        
+
         // Don't retry on authentication errors or client errors (4xx)
-        if (error instanceof ApiError && (error.status >= 400 && error.status < 500)) {
+        if (
+          error instanceof ApiError &&
+          error.status >= 400 &&
+          error.status < 500
+        ) {
           break;
         }
 
@@ -136,17 +150,22 @@ export class BaseApiService {
       }
     }
 
-    console.error(`API Request [${method}] ${url}: Failed after ${retries + 1} attempts`, lastError);
+    console.error(
+      `API Request [${method}] ${url}: Failed after ${retries + 1} attempts`,
+      lastError
+    );
     throw lastError;
   }
 
   /**
    * Parse error response from server
    */
-  private async parseErrorResponse(response: Response): Promise<{ error?: string; code?: string }> {
+  private async parseErrorResponse(
+    response: Response
+  ): Promise<{ error?: string; code?: string }> {
     try {
-      const contentType = response.headers.get('content-type');
-      if (contentType?.includes('application/json')) {
+      const contentType = response.headers.get("content-type");
+      if (contentType?.includes("application/json")) {
         return await response.json();
       }
       return { error: await response.text() };
@@ -159,35 +178,49 @@ export class BaseApiService {
    * Utility delay function
    */
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
    * GET request helper
    */
-  protected async get<T>(endpoint: string, authOptions?: AuthOptions): Promise<T> {
-    return this.request<T>(endpoint, { method: 'GET' }, authOptions);
+  protected async get<T>(
+    endpoint: string,
+    authOptions?: AuthOptions
+  ): Promise<T> {
+    return this.request<T>(endpoint, { method: "GET" }, authOptions);
   }
 
   /**
    * POST request helper
    */
-  protected async post<T>(endpoint: string, body?: any, authOptions?: AuthOptions): Promise<T> {
-    return this.request<T>(endpoint, { method: 'POST', body }, authOptions);
+  protected async post<T>(
+    endpoint: string,
+    body?: any,
+    authOptions?: AuthOptions
+  ): Promise<T> {
+    return this.request<T>(endpoint, { method: "POST", body }, authOptions);
   }
 
   /**
    * PUT request helper
    */
-  protected async put<T>(endpoint: string, body?: any, authOptions?: AuthOptions): Promise<T> {
-    return this.request<T>(endpoint, { method: 'PUT', body }, authOptions);
+  protected async put<T>(
+    endpoint: string,
+    body?: any,
+    authOptions?: AuthOptions
+  ): Promise<T> {
+    return this.request<T>(endpoint, { method: "PUT", body }, authOptions);
   }
 
   /**
    * DELETE request helper
    */
-  protected async delete<T>(endpoint: string, authOptions?: AuthOptions): Promise<T> {
-    return this.request<T>(endpoint, { method: 'DELETE' }, authOptions);
+  protected async delete<T>(
+    endpoint: string,
+    authOptions?: AuthOptions
+  ): Promise<T> {
+    return this.request<T>(endpoint, { method: "DELETE" }, authOptions);
   }
 }
 
@@ -202,14 +235,18 @@ export class ApiError extends Error {
     public readonly url?: string
   ) {
     super(message);
-    this.name = 'ApiError';
+    this.name = "ApiError";
   }
 
   /**
    * Check if error is authentication related
    */
   isAuthError(): boolean {
-    return this.status === 401 || this.code === 'AUTH_INVALID' || this.code === 'AUTH_MISSING';
+    return (
+      this.status === 401 ||
+      this.code === "AUTH_INVALID" ||
+      this.code === "AUTH_MISSING"
+    );
   }
 
   /**

@@ -71,10 +71,10 @@ export async function fetchThreadMessages(
   // Build headers with authentication
   const headers: HeadersInit = {};
   if (authOptions?.userMpAuthToken) {
-    headers['Authorization'] = `Bearer ${authOptions.userMpAuthToken}`;
+    headers["x-oddle-mp-auth-token"] = authOptions.userMpAuthToken;
   }
   if (authOptions?.chatServerKey) {
-    headers['X-Chat-Server-Key'] = authOptions.chatServerKey;
+    headers["x-oddle-chat-server-key"] = authOptions.chatServerKey;
   }
 
   const response = await fetch(url, { headers });
