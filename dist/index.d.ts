@@ -96,6 +96,40 @@ export declare const CloseIcon: default_2.FC<IconProps>;
 
 export declare const CollapseIcon: default_2.FC<IconProps>;
 
+/**
+ * ConnectionNotification - Full overlay notification for connection status
+ *
+ * Displays a full-screen overlay when connection is lost, blocking interaction
+ * until connection is restored or user manually retries.
+ *
+ * @example
+ * ```tsx
+ * <ConnectionNotification
+ *   isConnected={isConnected}
+ *   isReconnecting={isReconnecting}
+ *   reconnectAttempt={2}
+ *   maxReconnectAttempts={5}
+ *   onRetry={() => connectChatClient()}
+ * />
+ * ```
+ */
+export declare function ConnectionNotification({ isConnected, isReconnecting, reconnectAttempt, maxReconnectAttempts, onRetry, autoHideDuration, }: ConnectionNotificationProps): JSX_2.Element | null;
+
+export declare interface ConnectionNotificationProps {
+    /** Whether the client is connected */
+    isConnected: boolean;
+    /** Whether reconnection is in progress */
+    isReconnecting?: boolean;
+    /** Current reconnection attempt number */
+    reconnectAttempt?: number;
+    /** Maximum reconnection attempts */
+    maxReconnectAttempts?: number;
+    /** Callback when user clicks retry */
+    onRetry?: () => void;
+    /** Auto-hide success messages after this duration (ms) */
+    autoHideDuration?: number;
+}
+
 declare interface ContextHelpers {
     [key: string]: any;
 }
