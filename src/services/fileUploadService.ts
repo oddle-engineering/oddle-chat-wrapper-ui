@@ -143,7 +143,7 @@ export class FileUploadService {
         reject(new Error("Network error during upload"));
       });
 
-      xhr.open("POST", `${this.config.apiUrl}/upload`);
+      xhr.open("POST", `${this.config.apiUrl}/api/v1/upload`);
 
       // Set headers
       Object.entries(headers).forEach(([key, value]) => {

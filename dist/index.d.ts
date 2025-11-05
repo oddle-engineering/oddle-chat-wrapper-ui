@@ -113,11 +113,13 @@ export declare const CollapseIcon: default_2.FC<IconProps>;
  * />
  * ```
  */
-export declare function ConnectionNotification({ isConnected, isReconnecting, reconnectAttempt, maxReconnectAttempts, onRetry, autoHideDuration, }: ConnectionNotificationProps): JSX_2.Element | null;
+export declare function ConnectionNotification({ isConnected, isConnecting, isReconnecting, reconnectAttempt, maxReconnectAttempts, onRetry, autoHideDuration, }: ConnectionNotificationProps): JSX_2.Element | null;
 
 export declare interface ConnectionNotificationProps {
     /** Whether the client is connected */
     isConnected: boolean;
+    /** Whether initial connection is in progress (fetching ticket) */
+    isConnecting?: boolean;
     /** Whether reconnection is in progress */
     isReconnecting?: boolean;
     /** Current reconnection attempt number */

@@ -157,7 +157,7 @@ function ChatWrapper({
   }, [handleChatFinished, handleChatError]);
 
   // Initialize WebSocket connection
-  const { chatClient, isConnected, connectChatClient } = useWebSocketConnection({
+  const { chatClient, isConnected, isConnecting, connectChatClient } = useWebSocketConnection({
     // Authentication and server properties
     userMpAuthToken,
     chatServerUrl,
@@ -460,6 +460,7 @@ function ChatWrapper({
           {/* Connection Status Notification */}
           <ConnectionNotification
             isConnected={isConnected}
+            isConnecting={isConnecting}
             onRetry={connectChatClient}
           />
 

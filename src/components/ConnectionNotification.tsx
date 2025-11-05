@@ -4,6 +4,8 @@ import './ConnectionNotification.css';
 export interface ConnectionNotificationProps {
   /** Whether the client is connected */
   isConnected: boolean;
+  /** Whether initial connection is in progress (fetching ticket) */
+  isConnecting?: boolean;
   /** Whether reconnection is in progress */
   isReconnecting?: boolean;
   /** Current reconnection attempt number */
@@ -16,7 +18,7 @@ export interface ConnectionNotificationProps {
   autoHideDuration?: number;
 }
 
-type NotificationState = 'connected' | 'disconnected' | 'reconnecting' | 'error' | 'hidden';
+type NotificationState = 'connected' | 'disconnected' | 'reconnecting' | 'error' | 'hidden' | 'connecting';
 
 /**
  * ConnectionNotification - Full overlay notification for connection status
@@ -37,6 +39,7 @@ type NotificationState = 'connected' | 'disconnected' | 'reconnecting' | 'error'
  */
 export function ConnectionNotification({
   isConnected,
+  isConnecting = false,
   isReconnecting = false,
   reconnectAttempt = 0,
   maxReconnectAttempts = 5,
@@ -48,7 +51,10 @@ export function ConnectionNotification({
 
   useEffect(() => {
     // Track connection state changes
-    if (!isConnected && !isReconnecting) {
+    if (isConnecting) {
+      // Initial connection - show loading
+      setNotificationState('connecting');
+    } else if (!isConnected && !isReconnecting) {
       // Disconnected
       setWasDisconnected(true);
       
@@ -64,8 +70,11 @@ export function ConnectionNotification({
       // Reconnected - hide immediately for overlay
       setNotificationState('hidden');
       setWasDisconnected(false);
+    } else if (isConnected && !wasDisconnected) {
+      // Initial connection successful - hide
+      setNotificationState('hidden');
     }
-  }, [isConnected, isReconnecting, reconnectAttempt, maxReconnectAttempts, wasDisconnected, autoHideDuration]);
+  }, [isConnected, isConnecting, isReconnecting, reconnectAttempt, maxReconnectAttempts, wasDisconnected, autoHideDuration]);
 
   if (notificationState === 'hidden') {
     return null;
@@ -79,6 +88,13 @@ export function ConnectionNotification({
 
   const getContent = () => {
     switch (notificationState) {
+      case 'connecting':
+        return {
+          icon: '🔄',
+          title: 'Connecting...',
+          message: 'Establishing connection to the server',
+        };
+      
       case 'disconnected':
         return {
           icon: '⚠️',
@@ -108,6 +124,15 @@ export function ConnectionNotification({
   const content = getContent();
   if (!content) return null;
 
+  // For connecting state, show only spinner
+  if (notificationState === 'connecting') {
+    return (
+      <div className={`connection-notification connection-notification--${notificationState}`}>
+        <div className="connection-notification__spinner-only"></div>
+      </div>
+    );
+  }
+
   return (
     <div className={`connection-notification connection-notification--${notificationState}`}>
       <div className="connection-notification__content">
@@ -119,7 +144,7 @@ export function ConnectionNotification({
           <div className="connection-notification__actions">
             <button className="connection-notification__retry-btn primary" disabled>
               <span className="connection-notification__spinner"></span>
-              Connecting...
+              Reconnecting...
             </button>
           </div>
         )}
