@@ -721,7 +721,7 @@ function App() {
         execute: getAvailability,
       },
       {
-        name: "get_reservation_stats",
+        name: "get_reservation_status",
         description: "Get reservation statistics and summary",
         parameters: [],
         execute: getReservationStats,
@@ -745,7 +745,7 @@ function App() {
   const sidebarChatProps: ChatWrapperProps = useMemo(
     () => ({
       // Required authentication and server configuration
-      userMpAuthToken: "demo-mp-auth-token-123",
+      userMpAuthToken: "05cb39b1b8798fef08b28828c947f9431ce0595bfbdada3e008f1c1b7ddba7d95625b1a635c7d66ee40cd809d51a2c699202cd24226c457ad905a587c6a4aab6",
       // chatServerUrl: "http://34.56.173.183",
       chatServerUrl: "https://localhost:3000",
       chatServerKey: "demo-chat-server-key",
