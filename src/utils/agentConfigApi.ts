@@ -7,7 +7,7 @@ export interface AgentConfiguration {
 
 export interface AgentConfigurationResponse {
   success: boolean;
-  configurations: AgentConfiguration[];
+  configuration: AgentConfiguration;
 }
 
 export interface AgentConfigurationUpdate {
@@ -24,15 +24,15 @@ export interface AgentConfigurationUpdateResponse {
 }
 
 /**
- * Get agent configurations for all apps
+ * Get agent configuration for a specific app
  */
-export async function getAgentConfigurations(
+export async function getAgentConfiguration(
   apiUrl: string,
   authOptions?: {
     userMpAuthToken?: string;
     chatServerKey?: string;
   }
-): Promise<AgentConfiguration[]> {
+): Promise<AgentConfiguration | null> {
   const headers: HeadersInit = {
     "Content-Type": "application/json",
   };
@@ -58,22 +58,7 @@ export async function getAgentConfigurations(
   }
 
   const data: AgentConfigurationResponse = await response.json();
-  return data.configurations;
-}
-
-/**
- * Get agent configuration for a specific app
- */
-export async function getAgentConfiguration(
-  apiUrl: string,
-  app: string,
-  authOptions?: {
-    userMpAuthToken?: string;
-    chatServerKey?: string;
-  }
-): Promise<AgentConfiguration | null> {
-  const configurations = await getAgentConfigurations(apiUrl, authOptions);
-  return configurations.find((config) => config.app === app) || null;
+  return data.configuration;
 }
 
 /**

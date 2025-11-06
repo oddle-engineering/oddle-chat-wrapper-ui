@@ -35,7 +35,7 @@ export const DevSettings = ({
     setLoading(true);
     setError(null);
     try {
-      const configuration = await getAgentConfiguration(apiUrl, app, {
+      const configuration = await getAgentConfiguration(apiUrl, {
         userMpAuthToken,
         chatServerKey,
       });
