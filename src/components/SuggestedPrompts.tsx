@@ -1,28 +1,38 @@
-import React from "react";
+import { useChatContext } from "../contexts";
 
 interface SuggestedPrompt {
   title: string;
   description: string;
 }
 
-interface SuggestedPromptsProps {
-  prompts: SuggestedPrompt[];
-  onPromptSelect: (prompt: SuggestedPrompt) => void;
-}
+/**
+ * SuggestedPrompts - Displays suggested prompt buttons
+ * 
+ * Uses ChatContext to access prompts and selection handler.
+ */
+export const SuggestedPrompts: React.FC = () => {
+  const { suggestedPrompts, chatInputRef } = useChatContext();
+  
+  if (!suggestedPrompts || suggestedPrompts.length === 0) {
+    return null;
+  }
 
-export const SuggestedPrompts: React.FC<SuggestedPromptsProps> = ({
-  prompts,
-  onPromptSelect,
-}) => {
+  const handlePromptSelect = (prompt: SuggestedPrompt) => {
+    // Default behavior: copy prompt description to input field
+    if (chatInputRef.current) {
+      chatInputRef.current.setText(prompt.description);
+    }
+  };
+
   return (
     <div className="chat-wrapper__suggested-prompts">
       <h3 className="chat-wrapper__suggested-prompts-title">Suggested Prompts</h3>
       <div className="chat-wrapper__suggested-prompts-grid">
-        {prompts.map((prompt, index) => (
+        {suggestedPrompts.map((prompt, index) => (
           <button
             key={index}
             className="chat-wrapper__suggested-prompt-card"
-            onClick={() => onPromptSelect(prompt)}
+            onClick={() => handlePromptSelect(prompt)}
           >
             <div className="chat-wrapper__suggested-prompt-content">
               <h4 className="chat-wrapper__suggested-prompt-title">

@@ -379,17 +379,12 @@ export declare const STREAMING_STATUS: {
 
 export declare type StreamingStatus = typeof STREAMING_STATUS[keyof typeof STREAMING_STATUS];
 
-declare interface SuggestedPrompt {
-    title: string;
-    description: string;
-}
-
-export declare const SuggestedPrompts: default_2.FC<SuggestedPromptsProps>;
-
-declare interface SuggestedPromptsProps {
-    prompts: SuggestedPrompt[];
-    onPromptSelect: (prompt: SuggestedPrompt) => void;
-}
+/**
+ * SuggestedPrompts - Displays suggested prompt buttons
+ *
+ * Uses ChatContext to access prompts and selection handler.
+ */
+export declare const SuggestedPrompts: React.FC;
 
 export declare interface SVGIconProps extends IconProps {
     width?: number;
