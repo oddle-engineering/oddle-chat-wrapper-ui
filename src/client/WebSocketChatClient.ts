@@ -208,19 +208,16 @@ export class WebSocketChatClient {
       throw new Error("Client not connected");
     }
 
-    const { message, app = "UD21", media, convUuid, agentPromptPath } = params;
+    const { message, media, convUuid } = params;
 
     try {
       this.messageHandler.clearProcessedToolCalls();
 
       const chatMessage = MessageFactory.serializeChatMessage({
         content: message,
-        app,
         media,
         userId: this.config.userId,
         convUuid,
-        agentPromptPath,
-        saveToDatabase: false,
       });
       this.wsManager.send(chatMessage);
     } catch (error) {

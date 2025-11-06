@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo } from "react";
+import { useState, useCallback, memo } from "react";
 import ReactMarkdown from "react-markdown";
 import { Message } from "../types";
 import { Reasoning, ReasoningTrigger, ReasoningContent } from "./Reasoning";
@@ -7,23 +7,10 @@ import { Loader } from "./Loader";
 import { CopyIcon } from "./icons";
 import { SystemMessageCollapsible } from "./SystemMessageCollapsible";
 import { REASONING_CONSTANTS } from "../client/constants/reasoning";
+import { useChatContext } from "../contexts";
 
 interface MessageItemProps {
   message: Message;
-  getReasoningTitle: (content: string, isStreaming?: boolean) => string;
-  getReasoningStatus: (
-    content: string,
-    isStreaming?: boolean
-  ) => "processing" | "completed" | "error";
-  getReasoningDuration: (content: string) => string | undefined;
-  getReasoningContentOnly: (content: string) => string;
-  getToolingTitle: (content: string, isStreaming?: boolean) => string;
-  getToolingStatus: (
-    content: string,
-    isStreaming?: boolean
-  ) => "processing" | "completed" | "error";
-  clientTools: any[];
-  currentAssistantMessageIdRef: React.MutableRefObject<string | null>;
 }
 
 const MarkdownComponents = {
@@ -78,17 +65,18 @@ const UserMarkdownComponents = {
 };
 
 export const MessageItem = memo<MessageItemProps>(
-  ({
-    message,
-    getReasoningTitle,
-    getReasoningStatus,
-    getReasoningDuration,
-    getReasoningContentOnly,
-    getToolingTitle,
-    getToolingStatus,
-    clientTools,
-    currentAssistantMessageIdRef,
-  }) => {
+  ({ message }) => {
+    const {
+      getReasoningTitle,
+      getReasoningStatus,
+      getReasoningDuration,
+      getReasoningContentOnly,
+      getToolingTitle,
+      getToolingStatus,
+      clientTools,
+      currentAssistantMessageIdRef,
+    } = useChatContext();
+    
     const [copied, setCopied] = useState(false);
     const [showCopyButton, setShowCopyButton] = useState(false);
 

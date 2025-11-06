@@ -21,29 +21,9 @@ export const ChatContent: React.FC = () => {
     messages,
     isLoadingConversation,
     isStreaming,
-    isThinking,
-    isHandlingTool,
     appName,
     description,
-    placeholder,
-    placeholderTexts,
-    restaurantName,
-    restaurantLogo,
     suggestedPrompts,
-    chatStatus,
-    clientTools,
-    getReasoningTitle,
-    getReasoningStatus,
-    getReasoningDuration,
-    getReasoningContentOnly,
-    getToolingTitle,
-    getToolingStatus,
-    currentAssistantMessageIdRef,
-    fileUploadEnabled,
-    onSubmit,
-    onFileUpload,
-    onStopGeneration,
-    onPromptSelect,
     messagesEndRef,
     chatInputRef,
     conversationError,
@@ -67,17 +47,6 @@ export const ChatContent: React.FC = () => {
     isLoadingConversation
   );
 
-  const handlePromptSelection = (prompt: { description: string }) => {
-    if (onPromptSelect) {
-      onPromptSelect(prompt);
-    } else {
-      // Default behavior: copy prompt description to input field
-      if (chatInputRef.current) {
-        chatInputRef.current.setText(prompt.description);
-      }
-    }
-  };
-
   return (
     <>
       {/* Conversation error message */}
@@ -100,47 +69,16 @@ export const ChatContent: React.FC = () => {
             <InlineLoader fullHeight={true} />
           </div>
         ) : (
-          <MessagesList
-            ref={messagesEndRef}
-            messages={messages}
-            isThinking={isThinking}
-            isHandlingTool={isHandlingTool}
-            getReasoningTitle={getReasoningTitle}
-            getReasoningStatus={getReasoningStatus}
-            getReasoningDuration={getReasoningDuration}
-            getReasoningContentOnly={getReasoningContentOnly}
-            getToolingTitle={getToolingTitle}
-            getToolingStatus={getToolingStatus}
-            clientTools={clientTools || []}
-            currentAssistantMessageIdRef={currentAssistantMessageIdRef}
-          />
+          <MessagesList ref={messagesEndRef} />
         )}
 
         {/* Chat Input - flexible sizing */}
         <div className="chat-wrapper__input-container">
-          <ChatInput
-            ref={chatInputRef}
-            placeholder={placeholder}
-            placeholderTexts={placeholderTexts}
-            disabled={isStreaming}
-            chatStatus={chatStatus}
-            fileUploadEnabled={fileUploadEnabled}
-            restaurantName={restaurantName}
-            restaurantLogo={restaurantLogo}
-            hasMessages={messages.length > 0}
-            onSubmit={(message, media) => onSubmit(message, media)}
-            onFileUpload={onFileUpload}
-            onStopGeneration={onStopGeneration}
-          />
+          <ChatInput ref={chatInputRef} />
         </div>
 
         {/* Suggested Prompts - only show when no messages and not loading */}
-        {shouldShowSuggestedPrompts && (
-          <SuggestedPrompts
-            prompts={suggestedPrompts!}
-            onPromptSelect={handlePromptSelection}
-          />
-        )}
+        {shouldShowSuggestedPrompts && <SuggestedPrompts />}
       </div>
     </>
   );

@@ -51,6 +51,7 @@ export function useWebSocketConnection({
 }: UseWebSocketConnectionProps) {
   const [chatClient, setChatClient] = useState<WebSocketChatClient | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
   const chatClientRef = useRef<WebSocketChatClient | null>(null);
 
   // Use refs to store callbacks to prevent reconnections when they change
@@ -91,6 +92,7 @@ export function useWebSocketConnection({
 
   const connectChatClient = useCallback(async () => {
     try {
+      setIsConnecting(true);
       // Validate required props
       if (!userMpAuthToken) {
         throw new Error("userMpAuthToken is required");
@@ -136,6 +138,8 @@ export function useWebSocketConnection({
     } catch (error) {
       console.error("Error connecting WebSocketChatClient:", error);
       setIsConnected(false);
+    } finally {
+      setIsConnecting(false);
     }
   }, [
     userMpAuthToken,
@@ -184,6 +188,7 @@ export function useWebSocketConnection({
   return {
     chatClient,
     isConnected,
+    isConnecting,
     connectChatClient,
     disconnectChatClient,
   };

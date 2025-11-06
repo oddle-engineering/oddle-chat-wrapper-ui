@@ -94,7 +94,6 @@ const SendIcon = () => (
   </svg>
 );
 
-
 // Main PromptInput container
 export interface PromptInputProps
   extends React.HTMLAttributes<HTMLFormElement> {}
@@ -244,9 +243,6 @@ export const PromptInputSubmit = ({
 }: PromptInputSubmitProps) => {
   let Icon: ReactNode = <SendIcon />;
 
-  const isDisabled =
-    disabled || status === CHAT_STATUS.SUBMITTED || status === CHAT_STATUS.STREAMING;
-
   return (
     <button
       className={cn(
@@ -257,7 +253,7 @@ export const PromptInputSubmit = ({
         className
       )}
       type="submit"
-      disabled={isDisabled}
+      disabled={disabled}
       {...props}
     >
       {children ?? Icon}

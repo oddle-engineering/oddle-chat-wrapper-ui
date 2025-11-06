@@ -22,7 +22,6 @@ export interface SubmitMessageParams {
   message: string;
   media?: string[];
   convUuid?: string;
-  agentPromptPath?: string;
 }
 
 export class ChatSubmissionService {
@@ -67,7 +66,7 @@ export class ChatSubmissionService {
    * @throws Error if submission fails
    */
   async submitMessage(params: SubmitMessageParams): Promise<Message> {
-    const { message, media, convUuid, agentPromptPath } = params;
+    const { message, media, convUuid } = params;
     
     const userMessage = this.createUserMessage(message, media);
 
@@ -76,7 +75,6 @@ export class ChatSubmissionService {
         message: userMessage.content,
         media,
         convUuid,
-        agentPromptPath,
       });
 
       return userMessage;

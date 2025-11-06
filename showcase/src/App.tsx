@@ -120,7 +120,7 @@ function App() {
       created_at: new Date().toISOString(),
     },
   ]);
-  const [count, setCount] = useState(0);
+
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -746,7 +746,8 @@ function App() {
     () => ({
       // Required authentication and server configuration
       userMpAuthToken: "demo-mp-auth-token-123",
-      chatServerUrl: "http://34.56.173.183",
+      // chatServerUrl: "http://34.56.173.183",
+      chatServerUrl: "https://localhost:3000",
       chatServerKey: "demo-chat-server-key",
       userId: "user_123_16",
 
@@ -877,23 +878,6 @@ function App() {
         >
           <ChatWrapper {...sidebarChatProps} devMode={true} />
         </div>
-
-        <div
-          className="controls"
-          style={{
-            marginLeft: isSidebarVisible ? "420px" : "20px",
-            transition: "margin-left 0.3s ease",
-          }}
-        >
-          <button
-            onClick={() => {
-              setCount((prev) => prev + 1);
-            }}
-          >
-            changes {count}
-          </button>
-        </div>
-
         <div
           className="panels-container"
           style={{

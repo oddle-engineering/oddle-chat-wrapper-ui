@@ -96,6 +96,42 @@ export declare const CloseIcon: default_2.FC<IconProps>;
 
 export declare const CollapseIcon: default_2.FC<IconProps>;
 
+/**
+ * ConnectionNotification - Full overlay notification for connection status
+ *
+ * Displays a full-screen overlay when connection is lost, blocking interaction
+ * until connection is restored or user manually retries.
+ *
+ * @example
+ * ```tsx
+ * <ConnectionNotification
+ *   isConnected={isConnected}
+ *   isReconnecting={isReconnecting}
+ *   reconnectAttempt={2}
+ *   maxReconnectAttempts={5}
+ *   onRetry={() => connectChatClient()}
+ * />
+ * ```
+ */
+export declare function ConnectionNotification({ isConnected, isConnecting, isReconnecting, reconnectAttempt, maxReconnectAttempts, onRetry, autoHideDuration, }: ConnectionNotificationProps): JSX_2.Element | null;
+
+export declare interface ConnectionNotificationProps {
+    /** Whether the client is connected */
+    isConnected: boolean;
+    /** Whether initial connection is in progress (fetching ticket) */
+    isConnecting?: boolean;
+    /** Whether reconnection is in progress */
+    isReconnecting?: boolean;
+    /** Current reconnection attempt number */
+    reconnectAttempt?: number;
+    /** Maximum reconnection attempts */
+    maxReconnectAttempts?: number;
+    /** Callback when user clicks retry */
+    onRetry?: () => void;
+    /** Auto-hide success messages after this duration (ms) */
+    autoHideDuration?: number;
+}
+
 declare interface ContextHelpers {
     [key: string]: any;
 }
@@ -343,17 +379,12 @@ export declare const STREAMING_STATUS: {
 
 export declare type StreamingStatus = typeof STREAMING_STATUS[keyof typeof STREAMING_STATUS];
 
-declare interface SuggestedPrompt {
-    title: string;
-    description: string;
-}
-
-export declare const SuggestedPrompts: default_2.FC<SuggestedPromptsProps>;
-
-declare interface SuggestedPromptsProps {
-    prompts: SuggestedPrompt[];
-    onPromptSelect: (prompt: SuggestedPrompt) => void;
-}
+/**
+ * SuggestedPrompts - Displays suggested prompt buttons
+ *
+ * Uses ChatContext to access prompts and selection handler.
+ */
+export declare const SuggestedPrompts: React.FC;
 
 export declare interface SVGIconProps extends IconProps {
     width?: number;

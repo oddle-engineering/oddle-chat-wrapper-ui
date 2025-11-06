@@ -17,22 +17,16 @@ export class MessageFactory {
    */
   static createChatMessage(params: {
     content: string;
-    app: string;
     media?: string[];
     userId?: string;
     convUuid?: string;
-    agentPromptPath?: string;
-    saveToDatabase?: boolean;
   }): ChatMessage {
     return {
       type: OutboundMessageType.CHAT_MESSAGE,
       content: params.content,
-      app: params.app,
       media: params.media || [],
-      saveToDatabase: params.saveToDatabase ?? false,
       userId: params.userId,
       convUuid: params.convUuid,
-      agentPromptPath: params.agentPromptPath,
     };
   }
 
@@ -147,12 +141,9 @@ export class MessageFactory {
    */
   static serializeChatMessage(params: {
     content: string;
-    app: string;
     media?: string[];
     userId?: string;
     convUuid?: string;
-    agentPromptPath?: string;
-    saveToDatabase?: boolean;
   }): string {
     return this.createAndSerialize(() => this.createChatMessage(params));
   }

@@ -19,6 +19,7 @@ import {
 import { FileUploadService, ChatSubmissionService } from "../services";
 import { chatUtils } from "../utils/chatUtils";
 import { ChatErrorBoundary, WebSocketErrorBoundary, FileUploadErrorBoundary } from "./error";
+import { ConnectionNotification } from "./ConnectionNotification";
 import { ChatBubbleButton } from "./chat/ChatBubbleButton";
 import { ChatHeader } from "./chat/ChatHeader";
 import { ChatContent } from "./chat/ChatContent";
@@ -156,7 +157,7 @@ function ChatWrapper({
   }, [handleChatFinished, handleChatError]);
 
   // Initialize WebSocket connection
-  const { chatClient, isConnected } = useWebSocketConnection({
+  const { chatClient, isConnected, isConnecting, connectChatClient } = useWebSocketConnection({
     // Authentication and server properties
     userMpAuthToken,
     chatServerUrl,
@@ -264,7 +265,6 @@ function ChatWrapper({
           message,
           media,
           convUuid: currentConvUuid || undefined,
-          agentPromptPath: undefined,
         });
 
         // State updates: Add user message and transition to streaming
@@ -456,6 +456,13 @@ function ChatWrapper({
         }}
       >
         <div className={containerClasses} style={config.customStyles}>
+          {/* Connection Status Notification */}
+          <ConnectionNotification
+            isConnected={isConnected}
+            isConnecting={isConnecting}
+            onRetry={connectChatClient}
+          />
+
           {/* Floating settings button for when header is not visible */}
           {devMode && config.headerVisible === false && (
             <button

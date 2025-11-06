@@ -26,12 +26,9 @@ export interface BaseOutboundMessage {
 export interface ChatMessage extends BaseOutboundMessage {
   type: OutboundMessageType.CHAT_MESSAGE;
   content: string;
-  app: string;
   media: string[];
-  saveToDatabase: boolean;
   userId?: string;
   convUuid?: string;
-  agentPromptPath?: string;
 }
 
 // Tool configuration message

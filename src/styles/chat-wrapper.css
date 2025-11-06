@@ -41,6 +41,7 @@
 
 /* Chat Wrapper Base Styles */
 .chat-wrapper {
+  position: relative; /* For ConnectionNotification overlay */
   display: flex;
   flex-direction: column;
   font-family: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
