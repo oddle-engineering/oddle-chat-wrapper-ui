@@ -265,7 +265,6 @@ function ChatWrapper({
           message,
           media,
           convUuid: currentConvUuid || undefined,
-          agentPromptPath: undefined,
         });
 
         // State updates: Add user message and transition to streaming

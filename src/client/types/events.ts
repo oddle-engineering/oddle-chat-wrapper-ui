@@ -45,19 +45,14 @@ export interface ReasoningEvent {
 
 export interface TriggerMessageParams {
   message: string;
-  app?: string;
   media?: string[];
   convUuid?: string;
-  agentPromptPath?: string;
 }
 
 export interface ChatPayload {
   type: string;
   content: string;
-  app: string;
   media: string[];
-  saveToDatabase: boolean;
   userId?: string;
   convUuid?: string;
-  agentPromptPath?: string;
 }
