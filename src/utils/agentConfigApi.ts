@@ -44,7 +44,7 @@ export async function getAgentConfigurations(
   if (authOptions?.chatServerKey) {
     headers["x-oddle-chat-server-key"] = authOptions.chatServerKey;
   }
-  const response = await fetch(`${apiUrl}/api/v1/agent-configurations`, {
+  const response = await fetch(`${apiUrl}/api/v1/agent-configuration`, {
     method: "GET",
     headers,
   });
@@ -99,7 +99,7 @@ export async function updateAgentConfiguration(
     headers["x-oddle-chat-server-key"] = authOptions.chatServerKey;
   }
 
-  const response = await fetch(`${apiUrl}/api/v1/agent-configurations`, {
+  const response = await fetch(`${apiUrl}/api/v1/agent-configuration`, {
     method: "PUT",
     headers,
     body: JSON.stringify(update),
