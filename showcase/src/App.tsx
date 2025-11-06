@@ -120,7 +120,7 @@ function App() {
       created_at: new Date().toISOString(),
     },
   ]);
-  const [count, setCount] = useState(0);
+
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -878,23 +878,6 @@ function App() {
         >
           <ChatWrapper {...sidebarChatProps} devMode={true} />
         </div>
-
-        <div
-          className="controls"
-          style={{
-            marginLeft: isSidebarVisible ? "420px" : "20px",
-            transition: "margin-left 0.3s ease",
-          }}
-        >
-          <button
-            onClick={() => {
-              setCount((prev) => prev + 1);
-            }}
-          >
-            changes {count}
-          </button>
-        </div>
-
         <div
           className="panels-container"
           style={{

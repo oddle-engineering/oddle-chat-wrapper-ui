@@ -59,17 +59,6 @@ export const ReservationPanel: React.FC<ReservationPanelProps> = ({
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'confirmed': return '#28a745';
-      case 'pending': return '#ffc107';
-      case 'cancelled': return '#dc3545';
-      case 'completed': return '#6c757d';
-      case 'no_show': return '#fd7e14';
-      default: return '#6c757d';
-    }
-  };
-
   const statusCounts = reservations.reduce((acc, res) => {
     acc[res.status] = (acc[res.status] || 0) + 1;
     return acc;
@@ -89,7 +78,7 @@ export const ReservationPanel: React.FC<ReservationPanelProps> = ({
 
       <div className="status-summary">
         {Object.entries(statusCounts).map(([status, count]) => (
-          <span key={status} className="status-chip" style={{ backgroundColor: getStatusColor(status) }}>
+          <span key={status} className="status-chip">
             {status}: {count}
           </span>
         ))}
@@ -163,10 +152,7 @@ export const ReservationPanel: React.FC<ReservationPanelProps> = ({
             <div key={reservation.id} className="reservation-item">
               <div className="reservation-header">
                 <h4>{reservation.customerName}</h4>
-                <span 
-                  className="status-badge" 
-                  style={{ backgroundColor: getStatusColor(reservation.status) }}
-                >
+                <span className="status-badge">
                   {reservation.status}
                 </span>
               </div>
