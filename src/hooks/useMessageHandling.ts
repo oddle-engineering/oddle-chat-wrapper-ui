@@ -13,11 +13,10 @@ import {
  * while internally using a modular architecture:
  * 
  * - useMessages: Core message CRUD operations
- * - useStreamingState: Streaming state management
+ * - useStreamingState: Streaming state management (now in Zustand store)
  * - useReasoningHelpers: Reasoning detection utilities
  * - useToolingHelpers: Tooling detection utilities
  * - useMessageHandlers: Event coordination
- * 
  */
 export function useMessageHandling() {
   // Initialize sub-hooks

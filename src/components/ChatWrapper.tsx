@@ -381,83 +381,105 @@ function ChatWrapper({
     }
   }, []);
 
-  // Prepare chat context value to eliminate prop drilling
-  const chatContextValue = useMemo(() => ({
-    // Message state
-    messages,
-    isStreaming,
-    isThinking,
-    isHandlingTool,
-    
-    // UI state
-    isLoadingConversation,
-    chatStatus,
-    conversationError,
-    
-    // Configuration
-    appName: config.appName,
-    description: config.description,
-    placeholder: config.placeholder,
-    placeholderTexts: config.placeholderTexts,
-    restaurantName: config.restaurantName,
-    restaurantLogo: config.restaurantLogo,
-    suggestedPrompts: config.suggestedPrompts,
-    
-    // Tools & features
-    clientTools: uiClientTools,
-    fileUploadEnabled: config.features?.fileUpload,
-    
-    // Reasoning helpers
-    getReasoningTitle,
-    getReasoningStatus,
-    getReasoningDuration,
-    getReasoningContentOnly,
-    
-    // Tooling helpers
-    getToolingTitle,
-    getToolingStatus,
-    
-    // Refs
-    currentAssistantMessageIdRef,
-    messagesEndRef,
-    chatInputRef,
-    
-    // Event handlers
-    onSubmit: handleSubmit,
-    onFileUpload: handleFileUpload,
-    onStopGeneration: stopGeneration,
-    onPromptSelect: handlePromptSelect,
-  }), [
-    messages,
-    isStreaming,
-    isThinking,
-    isHandlingTool,
-    isLoadingConversation,
-    chatStatus,
-    conversationError,
-    config.appName,
-    config.description,
-    config.placeholder,
-    config.placeholderTexts,
-    config.restaurantName,
-    config.restaurantLogo,
-    config.suggestedPrompts,
-    config.features?.fileUpload,
-    uiClientTools,
-    getReasoningTitle,
-    getReasoningStatus,
-    getReasoningDuration,
-    getReasoningContentOnly,
-    getToolingTitle,
-    getToolingStatus,
-    currentAssistantMessageIdRef,
-    messagesEndRef,
-    chatInputRef,
-    handleSubmit,
-    handleFileUpload,
-    stopGeneration,
-    handlePromptSelect,
-  ]);
+  // Split context value into smaller memos for better performance
+  // Only recompute when their specific dependencies change
+  
+  const messageState = useMemo(
+    () => ({
+      messages,
+      isStreaming,
+      isThinking,
+      isHandlingTool,
+    }),
+    [messages, isStreaming, isThinking, isHandlingTool]
+  );
+
+  const uiState = useMemo(
+    () => ({
+      isLoadingConversation,
+      chatStatus,
+      conversationError,
+    }),
+    [isLoadingConversation, chatStatus, conversationError]
+  );
+
+  const configState = useMemo(
+    () => ({
+      appName: config.appName,
+      description: config.description,
+      placeholder: config.placeholder,
+      placeholderTexts: config.placeholderTexts,
+      restaurantName: config.restaurantName,
+      restaurantLogo: config.restaurantLogo,
+      suggestedPrompts: config.suggestedPrompts,
+      clientTools: uiClientTools,
+      fileUploadEnabled: config.features?.fileUpload,
+    }),
+    [
+      config.appName,
+      config.description,
+      config.placeholder,
+      config.placeholderTexts,
+      config.restaurantName,
+      config.restaurantLogo,
+      config.suggestedPrompts,
+      config.features?.fileUpload,
+      uiClientTools,
+    ]
+  );
+
+  const helpers = useMemo(
+    () => ({
+      getReasoningTitle,
+      getReasoningStatus,
+      getReasoningDuration,
+      getReasoningContentOnly,
+      getToolingTitle,
+      getToolingStatus,
+    }),
+    [
+      getReasoningTitle,
+      getReasoningStatus,
+      getReasoningDuration,
+      getReasoningContentOnly,
+      getToolingTitle,
+      getToolingStatus,
+    ]
+  );
+
+  const handlers = useMemo(
+    () => ({
+      onSubmit: handleSubmit,
+      onFileUpload: handleFileUpload,
+      onStopGeneration: stopGeneration,
+      onPromptSelect: handlePromptSelect,
+    }),
+    [handleSubmit, handleFileUpload, stopGeneration, handlePromptSelect]
+  );
+
+  // Combine all memos into final context value
+  const chatContextValue = useMemo(
+    () => ({
+      ...messageState,
+      ...uiState,
+      ...configState,
+      ...helpers,
+      ...handlers,
+      currentAssistantMessageIdRef,
+      messagesEndRef,
+      chatInputRef,
+    }),
+    [
+      messageState,
+      uiState,
+      configState,
+      helpers,
+      handlers,
+      currentAssistantMessageIdRef,
+      messagesEndRef,
+      chatInputRef,
+    ]
+  );
 
   // Memoize bubble visibility check to prevent recalculation on every render
   // Only recompute when dependencies change
