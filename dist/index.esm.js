@@ -12182,8 +12182,8 @@ const Ch = ({
       (v) => v.setIsDevSettingsOpen
     ), Q = $((v) => v.isStreaming), _e = $((v) => v.setIsStreaming), g = $((v) => v.isThinking), ye = $((v) => v.setIsThinking), te = $((v) => v.streamingContent), ae = $((v) => v.isHandlingTool);
     be(() => {
-      o.mode && _ !== o.mode && z(o.mode);
-    }, [o.mode, _, z]), be(() => {
+      o.mode && z(o.mode);
+    }, [o.mode, z]), be(() => {
       if (typeof window > "u" || typeof document > "u")
         return;
       const v = (Oe) => {

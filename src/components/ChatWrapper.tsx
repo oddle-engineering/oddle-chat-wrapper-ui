@@ -133,10 +133,10 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
 
   // Set initial mode from config
   useEffect(() => {
-    if (config.mode && currentMode !== config.mode) {
+    if (config.mode) {
       setCurrentMode(config.mode);
     }
-  }, [config.mode, currentMode, setCurrentMode]);
+  }, [config.mode, setCurrentMode]);
 
   // Handle escape key for modal
   useEffect(() => {

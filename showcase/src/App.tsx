@@ -122,7 +122,6 @@ function App() {
   ]);
 
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Helper functions for panels
   const handleAddTodo = useCallback(async (task: string) => {
@@ -745,7 +744,8 @@ function App() {
   const sidebarChatProps: ChatWrapperProps = useMemo(
     () => ({
       // Required authentication and server configuration
-      userMpAuthToken: "db9ebf05e0ddccee864ecde27437b771f4f848c48d5496d73e0fa5a00a9c5f152329919ce7cd64792e230a04196a812f26af1f6af3f03571e3f87983b578c2fa",
+      userMpAuthToken:
+        "c601a2a51e26184b923d323c7af8a7dd9a0825b6375cc5c5e3a63cb036b24c48823ba475672bc9e6dffe416aa429cbf81a1a504bed533c9790a6c492470fea7f",
       // chatServerUrl: "http://34.56.173.183",
       chatServerUrl: "https://localhost:3000",
       chatServerKey: "demo-chat-server-key",
@@ -759,46 +759,6 @@ function App() {
 
       config: {
         ...customConfig,
-        onMessage: (message) => {
-          console.log("Custom demo message:", message);
-        },
-        onError: (error) => {
-          console.error("Custom demo error:", error);
-        },
-
-        features: {
-          fileUpload: true,
-          messageHistory: true,
-          exportChat: true,
-        },
-      },
-      tools: tools,
-      contextHelpers: {
-        brandInfo: {
-          id: "ud21_123",
-          brandName: "UD21 Restaurant",
-        },
-        locale: "en-US",
-      },
-    }),
-    [customConfig, tools]
-  );
-
-  const modalChatProps: ChatWrapperProps = useMemo(
-    () => ({
-      // Required authentication and server configuration
-      userMpAuthToken: "demo-mp-auth-token-123",
-      chatServerUrl: "wss://localhost:3000",
-      chatServerKey: "demo-chat-server-key",
-      userId: "user_123_16",
-
-      // Optional entity configuration
-      entityId: "brand_123",
-      entityType: EntityType.BRAND,
-
-      config: {
-        ...customConfig,
-        mode: "modal" as ChatMode,
         onMessage: (message) => {
           console.log("Custom demo message:", message);
         },
@@ -847,28 +807,6 @@ function App() {
         {isSidebarVisible ? "Hide Chat" : "Show Chat"}
       </button>
 
-      {/* Toggle button for modal */}
-      <button
-        onClick={() => setIsModalOpen(!isModalOpen)}
-        style={{
-          position: "fixed",
-          top: "20px",
-          right: "20px",
-          zIndex: 1000,
-          padding: "12px",
-          background: "#e3c7f8",
-          color: "#3d0099",
-          border: "2px solid #3d0099",
-          borderRadius: "8px",
-          cursor: "pointer",
-          transition: "all 0.3s ease",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-          fontWeight: "600",
-        }}
-      >
-        {isModalOpen ? "Close Modal" : "Open Modal"}
-      </button>
-
       <div className="main-content">
         <div
           className="chat-sidebar-container"
@@ -898,9 +836,6 @@ function App() {
           />
         </div>
       </div>
-
-      {/* Modal Chat */}
-      {isModalOpen && <ChatWrapper {...modalChatProps} devMode={true} />}
     </div>
   );
 }
