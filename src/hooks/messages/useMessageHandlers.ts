@@ -14,11 +14,11 @@ interface MessageHandlersProps {
   updateMessageContent: (id: string, content: string, isStreaming?: boolean) => void;
   generateId: () => string;
 
-  // From useStreamingState
-  setIsThinking: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsStreaming: React.Dispatch<React.SetStateAction<boolean>>;
-  setStreamingContent: React.Dispatch<React.SetStateAction<string>>;
-  setIsHandlingTool: React.Dispatch<React.SetStateAction<boolean>>;
+  // From useStreamingState (now Zustand - simple setters, not React setState)
+  setIsThinking: (value: boolean) => void;
+  setIsStreaming: (value: boolean) => void;
+  setStreamingContent: (value: string) => void;
+  setIsHandlingTool: (value: boolean) => void;
   currentAssistantMessageIdRef: React.MutableRefObject<string | null>;
   streamingContentRef: React.MutableRefObject<string>;
   clearStreamingBuffers: () => void;

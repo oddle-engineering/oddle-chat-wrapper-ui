@@ -113,6 +113,14 @@ function ChatWrapper({
   const isDevSettingsOpen = useUIStore((state) => state.isDevSettingsOpen);
   const setIsDevSettingsOpen = useUIStore((state) => state.setIsDevSettingsOpen);
   
+  // Streaming state (now using Zustand instead of messageHandling hook)
+  const isStreaming = useUIStore((state) => state.isStreaming);
+  const setIsStreaming = useUIStore((state) => state.setIsStreaming);
+  const isThinking = useUIStore((state) => state.isThinking);
+  const setIsThinking = useUIStore((state) => state.setIsThinking);
+  const streamingContent = useUIStore((state) => state.streamingContent);
+  const isHandlingTool = useUIStore((state) => state.isHandlingTool);
+  
   // Set initial mode from config
   useEffect(() => {
     if (config.mode && currentMode !== config.mode) {
@@ -142,12 +150,9 @@ function ChatWrapper({
   const {
     messages,
     setMessages,
-    isStreaming,
-    setIsStreaming,
-    isThinking,
-    setIsThinking,
-    streamingContent,
-    isHandlingTool,
+    // Streaming state now comes from Zustand (see above)
+    // isStreaming, setIsStreaming, isThinking, setIsThinking,
+    // streamingContent, isHandlingTool, currentAssistantMessageIdRef,
     currentAssistantMessageIdRef,
     getReasoningStatus,
     getReasoningDuration,

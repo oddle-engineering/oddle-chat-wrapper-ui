@@ -5,9 +5,10 @@ import { createChatSlice, ChatSlice } from "./slices/chatSlice";
 import { createConversationSlice, ConversationSlice } from "./slices/conversationSlice";
 import { createThreadSlice, ThreadSlice } from "./slices/threadSlice";
 import { createDevSlice, DevSlice } from "./slices/devSlice";
+import { createMessagesSlice, MessagesSlice } from "./slices/messagesSlice";
 
 // Combined store type
-export type UIStore = LayoutSlice & ChatSlice & ConversationSlice & ThreadSlice & DevSlice;
+export type UIStore = LayoutSlice & ChatSlice & ConversationSlice & ThreadSlice & DevSlice & MessagesSlice;
 
 // Create the store with all slices combined
 export const useUIStore = create<UIStore>()(
@@ -18,6 +19,7 @@ export const useUIStore = create<UIStore>()(
       ...createConversationSlice(...a),
       ...createThreadSlice(...a),
       ...createDevSlice(...a),
+      ...createMessagesSlice(...a),
     }),
     {
       name: "ChatUI-Store",
@@ -69,4 +71,22 @@ export const useDevState = () =>
     isDevSettingsOpen: state.isDevSettingsOpen,
     setIsDevSettingsOpen: state.setIsDevSettingsOpen,
     toggleDevSettings: state.toggleDevSettings,
+  }));
+
+export const useMessagesState = () =>
+  useUIStore((state) => ({
+    isStreaming: state.isStreaming,
+    isThinking: state.isThinking,
+    streamingContent: state.streamingContent,
+    isHandlingTool: state.isHandlingTool,
+    currentAssistantMessageId: state.currentAssistantMessageId,
+    setIsStreaming: state.setIsStreaming,
+    setIsThinking: state.setIsThinking,
+    setStreamingContent: state.setStreamingContent,
+    setIsHandlingTool: state.setIsHandlingTool,
+    setCurrentAssistantMessageId: state.setCurrentAssistantMessageId,
+    startStreaming: state.startStreaming,
+    stopStreaming: state.stopStreaming,
+    clearStreamingBuffers: state.clearStreamingBuffers,
+    resetToolHandling: state.resetToolHandling,
   }));

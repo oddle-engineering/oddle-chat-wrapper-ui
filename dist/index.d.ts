@@ -294,6 +294,27 @@ export declare interface MessagesResponse {
     providerResId?: string;
 }
 
+/**
+ * Messages Slice State
+ * Manages streaming state and current assistant message tracking
+ */
+declare interface MessagesSlice {
+    isStreaming: boolean;
+    isThinking: boolean;
+    streamingContent: string;
+    isHandlingTool: boolean;
+    currentAssistantMessageId: string | null;
+    setIsStreaming: (isStreaming: boolean) => void;
+    setIsThinking: (isThinking: boolean) => void;
+    setStreamingContent: (content: string) => void;
+    setIsHandlingTool: (isHandling: boolean) => void;
+    setCurrentAssistantMessageId: (id: string | null) => void;
+    startStreaming: (assistantMessageId: string) => void;
+    stopStreaming: () => void;
+    clearStreamingBuffers: () => void;
+    resetToolHandling: () => void;
+}
+
 export declare const PROCESSING_STATUS: {
     readonly PROCESSING: "processing";
     readonly COMPLETED: "completed";
@@ -497,7 +518,7 @@ export declare interface ToolSchema {
     parameters: ToolParameter[];
 }
 
-export declare type UIStore = LayoutSlice & ChatSlice & ConversationSlice & ThreadSlice & DevSlice;
+export declare type UIStore = LayoutSlice & ChatSlice & ConversationSlice & ThreadSlice & DevSlice & MessagesSlice;
 
 export declare const useChatState: () => {
     chatStatus: ChatStatus;

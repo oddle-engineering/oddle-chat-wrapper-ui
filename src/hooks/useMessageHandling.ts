@@ -18,7 +18,6 @@ import {
  * - useToolingHelpers: Tooling detection utilities
  * - useMessageHandlers: Event coordination
  * 
- * Reduced from 419 lines to ~50 lines by splitting into focused modules
  */
 export function useMessageHandling() {
   // Initialize sub-hooks

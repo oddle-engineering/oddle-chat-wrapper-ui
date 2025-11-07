@@ -1,4 +1,5 @@
-import { useState, useRef, useCallback } from "react";
+import { useRef, useCallback, useMemo } from "react";
+import { useUIStore } from "../../store";
 
 /**
  * Hook for managing streaming state
@@ -8,45 +9,75 @@ import { useState, useRef, useCallback } from "react";
  * - Streaming content buffer
  * - Current assistant message tracking
  * - Streaming lifecycle methods
+ * 
+ * Now uses Zustand store for state management instead of local useState.
+ * This allows:
+ * - Selective subscriptions (components only re-render for values they use)
+ * - Shared state across components
+ * - DevTools debugging
  */
 export function useStreamingState() {
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [isThinking, setIsThinking] = useState(false);
-  const [streamingContent, setStreamingContent] = useState("");
-  const [isHandlingTool, setIsHandlingTool] = useState(false);
+  // Get state and actions from Zustand store
+  const isStreaming = useUIStore((state) => state.isStreaming);
+  const setIsStreaming = useUIStore((state) => state.setIsStreaming);
+  const isThinking = useUIStore((state) => state.isThinking);
+  const setIsThinking = useUIStore((state) => state.setIsThinking);
+  const streamingContent = useUIStore((state) => state.streamingContent);
+  const setStreamingContent = useUIStore((state) => state.setStreamingContent);
+  const isHandlingTool = useUIStore((state) => state.isHandlingTool);
+  const setIsHandlingTool = useUIStore((state) => state.setIsHandlingTool);
+  
+  // Get lifecycle actions from store
+  const startStreamingAction = useUIStore((state) => state.startStreaming);
+  const stopStreamingAction = useUIStore((state) => state.stopStreaming);
+  const clearStreamingBuffersAction = useUIStore((state) => state.clearStreamingBuffers);
+  const resetToolHandlingAction = useUIStore((state) => state.resetToolHandling);
 
-  // Refs for managing streaming without causing re-renders
-  const currentAssistantMessageIdRef = useRef<string | null>(null);
+  // Ref for streaming content buffer (used to avoid re-renders during rapid updates)
   const streamingContentRef = useRef<string>("");
+  
+  // Create stable ref-like object for currentAssistantMessageId for backward compatibility
+  // Components expect a ref, so we provide one that reads from/writes to Zustand
+  // Using useMemo to keep the same object reference across renders
+  const currentAssistantMessageIdRef = useMemo(() => ({
+    get current() {
+      return useUIStore.getState().currentAssistantMessageId;
+    },
+    set current(value: string | null) {
+      useUIStore.getState().setCurrentAssistantMessageId(value);
+    }
+  }), []); // Empty deps - create once and reuse
 
   // Start streaming with initial setup
-  const startStreaming = useCallback(() => {
-    setIsStreaming(true);
-    setIsThinking(true);
+  const startStreaming = useCallback((assistantMessageId?: string) => {
+    if (assistantMessageId) {
+      // Use store's combined action
+      startStreamingAction(assistantMessageId);
+    } else {
+      // Manual setup if no ID provided
+      setIsStreaming(true);
+      setIsThinking(true);
+      setStreamingContent("");
+    }
     streamingContentRef.current = "";
-    setStreamingContent("");
-  }, []);
+  }, [startStreamingAction, setIsStreaming, setIsThinking, setStreamingContent]);
 
   // Stop streaming and clear state
   const stopStreaming = useCallback(() => {
-    setIsStreaming(false);
-    setIsThinking(false);
-    setStreamingContent("");
-    currentAssistantMessageIdRef.current = null;
+    stopStreamingAction();
     streamingContentRef.current = "";
-  }, []);
+  }, [stopStreamingAction]);
 
   // Reset tool handling state
   const resetToolHandling = useCallback(() => {
-    setIsHandlingTool(false);
-  }, []);
+    resetToolHandlingAction();
+  }, [resetToolHandlingAction]);
 
   // Clear streaming buffers
   const clearStreamingBuffers = useCallback(() => {
-    currentAssistantMessageIdRef.current = null;
+    clearStreamingBuffersAction();
     streamingContentRef.current = "";
-    setStreamingContent("");
-  }, []);
+  }, [clearStreamingBuffersAction]);
 
   return {
     // State
@@ -59,7 +90,7 @@ export function useStreamingState() {
     isHandlingTool,
     setIsHandlingTool,
 
-    // Refs
+    // Refs (backward compatible interface)
     currentAssistantMessageIdRef,
     streamingContentRef,
 
