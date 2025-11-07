@@ -1,7 +1,9 @@
 import { default as default_2 } from 'react';
+import { ForwardRefExoticComponent } from 'react';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { MemoExoticComponent } from 'react';
 import { ReactNode } from 'react';
+import { RefAttributes } from 'react';
 import { StoreApi } from 'zustand';
 import { UseBoundStore } from 'zustand';
 
@@ -76,9 +78,7 @@ export declare type ChatStatus = typeof CHAT_STATUS[keyof typeof CHAT_STATUS];
 
 export declare type ChatTheme = "light" | "dark" | "auto";
 
-export declare const ChatWrapper: MemoExoticComponent<typeof ChatWrapper_2>;
-
-declare function ChatWrapper_2({ userMpAuthToken, chatServerUrl, chatServerKey, threadId, userId, entityId, entityType, config, tools, devMode, contextHelpers, }: ChatWrapperProps): JSX_2.Element;
+export declare const ChatWrapper: MemoExoticComponent<ForwardRefExoticComponent<ChatWrapperProps & RefAttributes<ChatWrapperRef>>>;
 
 export declare interface ChatWrapperProps {
     userMpAuthToken: string;
@@ -92,6 +92,25 @@ export declare interface ChatWrapperProps {
     tools?: Tools;
     devMode?: boolean;
     contextHelpers?: ContextHelpers;
+}
+
+export declare interface ChatWrapperRef {
+    /**
+     * Update the entity ID and/or entity type associated with this chat
+     * Useful when a conversation starts without an entity, then later gets associated with one
+     *
+     * @param entityId - The new entity ID to associate
+     * @param entityType - Optional: The new entity type (only if it changed)
+     *
+     * @example
+     * ```tsx
+     * const chatRef = useRef<ChatWrapperRef>(null);
+     *
+     * // Later, after user creates/selects an entity
+     * chatRef.current?.updateEntityId('brand-123', EntityType.BRAND);
+     * ```
+     */
+    updateEntityId: (entityId: string, entityType?: EntityType) => void;
 }
 
 export declare interface ClientTool {

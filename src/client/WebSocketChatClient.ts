@@ -11,7 +11,7 @@ import {
 import { WebSocketManager, ConnectionState } from "./connection";
 import { MessageHandler } from "./handlers";
 import { MessageFactory } from "./utils/messageFactory";
-import { TicketManager } from "./ticket";
+import { TicketManager, AuthData } from "./ticket";
 
 export class WebSocketChatClient {
   private readonly config: ConnectionConfig;
@@ -314,5 +314,35 @@ export class WebSocketChatClient {
   async reconnect(): Promise<void> {
     console.log("WebSocketChatClient: Manual reconnection requested");
     await this.refreshTicketAndReconnect();
+  }
+
+  /**
+   * Update entity information (entityId and/or entityType)
+   * This is useful when a conversation starts without an entity,
+   * then later gets associated with one (e.g., user creates/selects an entity)
+   * 
+   * @param entityId - New entity ID to associate with this conversation
+   * @param entityType - New entity type (optional, only if changed)
+   * 
+   * Note: This updates the auth data in TicketManager, so future ticket
+   * renewals will include the new entity information
+   */
+  updateEntityId(entityId: string, entityType?: string): void {
+    if (!this.ticketManager) {
+      console.warn("WebSocketChatClient: Cannot update entityId - TicketManager not initialized");
+      return;
+    }
+
+    console.log(`WebSocketChatClient: Updating entity - ID: ${entityId}, Type: ${entityType || 'unchanged'}`);
+    
+    // Update the auth data in TicketManager
+    const updateData: Partial<AuthData> = { entityId };
+    if (entityType !== undefined) {
+      updateData.entityType = entityType;
+    }
+    
+    this.ticketManager.updateAuthData(updateData);
+    
+    console.log("WebSocketChatClient: Entity information updated successfully");
   }
 }

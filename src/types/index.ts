@@ -89,6 +89,25 @@ export interface ChatConfig {
   endpoint?: "brief-planner" | "conversation";
 }
 
+export interface ChatWrapperRef {
+  /**
+   * Update the entity ID and/or entity type associated with this chat
+   * Useful when a conversation starts without an entity, then later gets associated with one
+   * 
+   * @param entityId - The new entity ID to associate
+   * @param entityType - Optional: The new entity type (only if it changed)
+   * 
+   * @example
+   * ```tsx
+   * const chatRef = useRef<ChatWrapperRef>(null);
+   * 
+   * // Later, after user creates/selects an entity
+   * chatRef.current?.updateEntityId('brand-123', EntityType.BRAND);
+   * ```
+   */
+  updateEntityId: (entityId: string, entityType?: EntityType) => void;
+}
+
 export interface ChatWrapperProps {
   // Authentication and server configuration
   userMpAuthToken: string; // Use for Authorization header in HTTPS requests and WebSocket initialization

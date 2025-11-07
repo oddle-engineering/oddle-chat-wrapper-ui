@@ -41,6 +41,7 @@ export {
 export type {
   ChatConfig,
   ChatWrapperProps,
+  ChatWrapperRef,
   Message,
   ChatMode,
   ChatTheme,

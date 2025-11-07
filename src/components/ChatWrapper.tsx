@@ -1,5 +1,5 @@
-import { useEffect, useRef, useCallback, memo, useMemo } from "react";
-import { ChatWrapperProps, ChatMode } from "../types";
+import { useEffect, useRef, useCallback, memo, useMemo, useImperativeHandle, forwardRef } from "react";
+import { ChatWrapperProps, ChatMode, ChatWrapperRef, EntityType } from "../types";
 import { ChatInputRef } from "./ChatInput";
 import { DevSettings } from "./DevSettings";
 import { SystemEvent, SystemEventType } from "../client";
@@ -25,29 +25,33 @@ import { SettingsIcon } from "./icons";
 import { ChatProvider } from "../contexts";
 import "../styles/chat-wrapper.css";
 
-function ChatWrapperContainer({
-  // Authentication and server configuration
-  userMpAuthToken,
-  chatServerUrl,
-  chatServerKey,
+const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
+  (
+    {
+      // Authentication and server configuration
+      userMpAuthToken,
+      chatServerUrl,
+      chatServerKey,
 
-  // Entity and conversation configuration
-  threadId,
-  userId,
-  entityId,
-  entityType,
+      // Entity and conversation configuration
+      threadId,
+      userId,
+      entityId,
+      entityType,
 
-  // Existing props
-  config,
-  tools,
-  devMode = false,
-  contextHelpers,
-}: ChatWrapperProps) {
-  // Validate required props early using utility
-  chatUtils.validation.validateAuthProps({
-    userMpAuthToken,
-    chatServerUrl,
-    chatServerKey,
+      // Existing props
+      config,
+      tools,
+      devMode = false,
+      contextHelpers,
+    },
+    ref
+  ) => {
+    // Validate required props early using utility
+    chatUtils.validation.validateAuthProps({
+      userMpAuthToken,
+      chatServerUrl,
+      chatServerKey,
     userId,
   });
 
@@ -226,6 +230,20 @@ function ChatWrapperContainer({
       onSystemEvent: handleSystemEvent,
       onReasoningUpdate: handleReasoningUpdate,
     });
+
+  // Expose imperative handle for parent components
+  useImperativeHandle(ref, () => ({
+    updateEntityId: (newEntityId: string, newEntityType?: EntityType) => {
+      if (chatClient) {
+        chatClient.updateEntityId(
+          newEntityId,
+          newEntityType?.toString()
+        );
+      } else {
+        console.warn("ChatWrapper: Cannot update entityId - chat client not initialized");
+      }
+    },
+  }), [chatClient]);
 
   // Initialize chat submission service (depends on chatClient)
   const chatSubmissionService = useMemo(
@@ -602,7 +620,9 @@ function ChatWrapperContainer({
       </WebSocketErrorBoundary>
     </ChatErrorBoundary>
   );
-}
+});
+
+ChatWrapperContainer.displayName = 'ChatWrapperContainer';
 
 const ChatWrapper = memo(ChatWrapperContainer);
 
