@@ -3,6 +3,7 @@ import { Message } from "../types";
 import { fetchThreadMessages } from "../utils/threadApi";
 
 interface UseConversationLoaderProps {
+  threadId?: string;
   userId: string;
   httpApiUrl: string;
   userMpAuthToken: string;
@@ -12,10 +13,11 @@ interface UseConversationLoaderProps {
   setIsLoadingConversation: (loading: boolean) => void;
   setConversationError: (error: string | null) => void;
   setCurrentThreadId: (threadId: string | null) => void;
-  setCurrentConvUuid: (convUuid: string | null) => void;
+  setProviderResId: (providerResId: string | null) => void;
 }
 
 export function useConversationLoader({
+  threadId,
   userId,
   httpApiUrl,
   userMpAuthToken,
@@ -25,12 +27,18 @@ export function useConversationLoader({
   setIsLoadingConversation,
   setConversationError,
   setCurrentThreadId,
-  setCurrentConvUuid,
+  setProviderResId,
 }: UseConversationLoaderProps) {
   const hasLoadedConversationRef = useRef<boolean>(false);
 
   useEffect(() => {
     const loadConversation = async () => {
+      // Skip if threadId is not provided - no history to load
+      if (!threadId) {
+        console.log("useConversationLoader: No threadId provided, skipping history fetch");
+        return;
+      }
+
       // Validate required props
       if (!userId) {
         console.error("userId is required for conversation loading");
@@ -63,27 +71,25 @@ export function useConversationLoader({
         setIsLoadingConversation(true);
         setConversationError(null);
 
-        // For now, we're not fetching threads as the API is commented out
-        // This can be uncommented when the thread API is ready
-        const threads: string | any[] = [];
-
-        if (threads.length === 0) {
-          setIsLoadingConversation(false);
-          hasLoadedConversationRef.current = true;
-          return;
-        }
-
-        // Use the first thread
-        const firstThread = threads[0];
-        setCurrentThreadId(firstThread.id);
-        setCurrentConvUuid(firstThread.convUuid);
+        console.log("useConversationLoader: Fetching messages for threadId:", threadId);
+        
+        // Set the current thread ID
+        setCurrentThreadId(threadId);
 
         // Fetch messages for this thread
-        const loadedMessages = await fetchThreadMessages(httpApiUrl, firstThread.id, {
+        const response = await fetchThreadMessages(httpApiUrl, threadId, {
           userMpAuthToken,
           chatServerKey,
         });
-        setMessages(loadedMessages);
+        
+        console.log(`useConversationLoader: Loaded ${response.messages.length} messages`);
+        setMessages(response.messages);
+
+        // Set providerResId from the API response
+        if (response.providerResId) {
+          console.log("useConversationLoader: Setting providerResId:", response.providerResId);
+          setProviderResId(response.providerResId);
+        }
 
         hasLoadedConversationRef.current = true;
       } catch (error) {
@@ -99,6 +105,7 @@ export function useConversationLoader({
 
     loadConversation();
   }, [
+    threadId,
     userId,
     httpApiUrl,
     userMpAuthToken,
@@ -108,7 +115,7 @@ export function useConversationLoader({
     setIsLoadingConversation,
     setConversationError,
     setCurrentThreadId,
-    setCurrentConvUuid,
+    setProviderResId,
   ]);
 
   return {

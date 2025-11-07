@@ -141,7 +141,6 @@ export class WebSocketChatClient {
         userId: props.userId!,
         entityId: props.entityId,
         entityType: props.entityType,
-        providerResId: props.providerResId,
       },
       this.config.apiUrl
     );
@@ -208,7 +207,7 @@ export class WebSocketChatClient {
       throw new Error("Client not connected");
     }
 
-    const { message, media, convUuid } = params;
+    const { message, media, providerResId } = params;
 
     try {
       this.messageHandler.clearProcessedToolCalls();
@@ -217,7 +216,7 @@ export class WebSocketChatClient {
         content: message,
         media,
         userId: this.config.userId,
-        convUuid,
+        providerResId,
       });
       this.wsManager.send(chatMessage);
     } catch (error) {

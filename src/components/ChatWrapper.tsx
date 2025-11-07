@@ -34,7 +34,7 @@ function ChatWrapper({
   chatServerKey,
   
   // Entity and conversation configuration
-  providerResId,
+  threadId,
   userId,
   entityId,
   entityType,
@@ -120,8 +120,8 @@ function ChatWrapper({
     conversationError,
     setConversationError,
     setCurrentThreadId,
-    currentConvUuid,
-    setCurrentConvUuid,
+    providerResId: currentProviderResId,
+    setProviderResId,
     isDevSettingsOpen,
     setIsDevSettingsOpen,
     openModal,
@@ -164,7 +164,7 @@ function ChatWrapper({
     chatServerKey,
     
     // Entity configuration
-    providerResId,
+
     userId,
     entityId,
     entityType,
@@ -189,6 +189,7 @@ function ChatWrapper({
 
   // Initialize conversation loader
   useConversationLoader({
+    threadId,
     userId,
     httpApiUrl,
     userMpAuthToken,
@@ -198,7 +199,7 @@ function ChatWrapper({
     setIsLoadingConversation,
     setConversationError,
     setCurrentThreadId,
-    setCurrentConvUuid,
+    setProviderResId,
   });
 
   // Scroll animation frame ref
@@ -261,10 +262,11 @@ function ChatWrapper({
 
       try {
         // Business logic: Submit message via service
+        // Use currentProviderResId (from loaded thread) for conversation continuity
         const userMessage = await chatSubmissionService.submitMessage({
           message,
           media,
-          convUuid: currentConvUuid || undefined,
+          providerResId: currentProviderResId || undefined,
         });
 
         // State updates: Add user message and transition to streaming
@@ -295,7 +297,7 @@ function ChatWrapper({
       setChatStatus,
       setStreamingStatus,
       addMessage,
-      currentConvUuid,
+      currentProviderResId,
     ]
   );
 

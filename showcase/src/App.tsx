@@ -754,7 +754,8 @@ function App() {
       // Optional entity configuration
       entityId: "brand_123",
       entityType: EntityType.BRAND,
-      providerResId: "", // Empty to auto-generate based on entityType + entityId
+
+      threadId: "", // Empty to start a new conversation
 
       config: {
         ...customConfig,

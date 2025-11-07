@@ -9,7 +9,6 @@ interface UseWebSocketConnectionProps {
   chatServerKey: string;
   
   // Entity configuration
-  providerResId?: string;
   userId: string;
   entityId?: string;
   entityType?: EntityType;
@@ -35,7 +34,6 @@ export function useWebSocketConnection({
   chatServerKey,
   
   // Entity configuration
-  providerResId,
   userId,
   entityId,
   entityType,
@@ -119,8 +117,6 @@ export function useWebSocketConnection({
         chatServerUrl,
         chatServerKey,
         
-        // Entity configuration
-        providerResId,
         userId,
         entityId,
         entityType: entityType?.toString(),
@@ -145,7 +141,6 @@ export function useWebSocketConnection({
     userMpAuthToken,
     chatServerUrl,
     chatServerKey,
-    providerResId,
     userId,
     entityId,
     entityType,

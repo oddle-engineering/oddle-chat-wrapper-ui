@@ -28,7 +28,7 @@ export interface ChatMessage extends BaseOutboundMessage {
   content: string;
   media: string[];
   userId?: string;
-  convUuid?: string;
+  providerResId?: string;
 }
 
 // Tool configuration message

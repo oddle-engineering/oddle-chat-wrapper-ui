@@ -21,7 +21,7 @@ export interface ChatSubmissionConfig {
 export interface SubmitMessageParams {
   message: string;
   media?: string[];
-  convUuid?: string;
+  providerResId?: string;
 }
 
 export class ChatSubmissionService {
@@ -66,7 +66,7 @@ export class ChatSubmissionService {
    * @throws Error if submission fails
    */
   async submitMessage(params: SubmitMessageParams): Promise<Message> {
-    const { message, media, convUuid } = params;
+    const { message, media, providerResId } = params;
     
     const userMessage = this.createUserMessage(message, media);
 
@@ -74,7 +74,7 @@ export class ChatSubmissionService {
       await this.chatClient.onTriggerMessage({
         message: userMessage.content,
         media,
-        convUuid,
+        providerResId,
       });
 
       return userMessage;

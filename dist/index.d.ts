@@ -68,13 +68,13 @@ export declare type ChatTheme = "light" | "dark" | "auto";
 
 export declare const ChatWrapper: MemoExoticComponent<typeof ChatWrapper_2>;
 
-declare function ChatWrapper_2({ userMpAuthToken, chatServerUrl, chatServerKey, providerResId, userId, entityId, entityType, config, tools, devMode, contextHelpers, }: ChatWrapperProps): JSX_2.Element;
+declare function ChatWrapper_2({ userMpAuthToken, chatServerUrl, chatServerKey, threadId, userId, entityId, entityType, config, tools, devMode, contextHelpers, }: ChatWrapperProps): JSX_2.Element;
 
 export declare interface ChatWrapperProps {
     userMpAuthToken: string;
     chatServerUrl: string;
     chatServerKey: string;
-    providerResId?: string;
+    threadId?: string;
     userId: string;
     entityId?: string;
     entityType?: EntityType;
@@ -184,7 +184,10 @@ export declare function fetchThreadByConvUuid(apiBaseUrl: string, convUuid: stri
 export declare function fetchThreadMessages(apiBaseUrl: string, threadId: string, authOptions?: {
     userMpAuthToken?: string;
     chatServerKey?: string;
-}): Promise<Message[]>;
+}): Promise<{
+    messages: Message[];
+    providerResId?: string;
+}>;
 
 /**
  * Fetch user threads from the API
@@ -251,6 +254,7 @@ export declare interface Message {
 
 export declare interface MessagesResponse {
     messages: Message[];
+    providerResId?: string;
 }
 
 export declare const PROCESSING_STATUS: {
@@ -399,6 +403,7 @@ export declare interface Thread {
     id: string;
     userId: string;
     convUuid: string;
+    providerResId?: string;
     title: string;
     agentType: string;
     isArchived: boolean;

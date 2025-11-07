@@ -29,6 +29,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
     placeholder = "What would you like to know?",
     placeholderTexts,
     isStreaming,
+    isLoadingConversation,
     chatStatus,
     fileUploadEnabled,
     restaurantName,
@@ -165,7 +166,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
         value={input}
         onChange={handleInputChange}
         placeholder="" // Empty placeholder since we'll use our custom animated one
-        disabled={isStreaming}
+        disabled={isStreaming || isLoadingConversation}
       />
 
       {/* Animated placeholder component */}
@@ -423,7 +424,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                     ? `${uploadedMedia.length} image(s) attached`
                     : "Attach image"
                 }
-                disabled={isStreaming}
+                disabled={isStreaming || isLoadingConversation}
                 style={{
                   position: "relative",
                 }}
@@ -493,7 +494,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
         </PromptInputTools>
         <PromptInputSubmit
           status={chatStatus}
-          disabled={!input.trim()}
+          disabled={!input.trim() || isLoadingConversation}
           onClick={
             chatStatus === CHAT_STATUS.STREAMING && onStopGeneration
               ? () => {

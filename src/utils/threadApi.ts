@@ -65,7 +65,7 @@ export async function fetchThreadMessages(
     userMpAuthToken?: string;
     chatServerKey?: string;
   }
-): Promise<Message[]> {
+): Promise<{ messages: Message[]; providerResId?: string }> {
   const url = `${apiBaseUrl}/api/v1/messages/thread/${threadId}?format=client`;
 
   // Build headers with authentication
@@ -88,10 +88,15 @@ export async function fetchThreadMessages(
   const data: MessagesResponse = await response.json();
 
   // Convert timestamp strings to Date objects
-  return data.messages.map((msg) => ({
+  const messages = data.messages.map((msg) => ({
     ...msg,
     timestamp: new Date(msg.timestamp),
   }));
+
+  return {
+    messages,
+    providerResId: data.providerResId,
+  };
 }
 
 /**

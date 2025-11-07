@@ -124,11 +124,15 @@ export function ConnectionNotification({
   const content = getContent();
   if (!content) return null;
 
-  // For connecting state, show only spinner
+  // For connecting state, show only bubbles
   if (notificationState === 'connecting') {
     return (
       <div className={`connection-notification connection-notification--${notificationState}`}>
-        <div className="connection-notification__spinner-only"></div>
+        <div className="connection-notification__bubbles">
+          <div className="connection-notification__bubble"></div>
+          <div className="connection-notification__bubble"></div>
+          <div className="connection-notification__bubble"></div>
+        </div>
       </div>
     );
   }

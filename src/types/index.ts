@@ -96,7 +96,7 @@ export interface ChatWrapperProps {
   chatServerKey: string; // Server can detect which app is using the chat server (UD21, etc.)
   
   // Entity and conversation configuration
-  providerResId?: string; // If empty => generate conversation based on EntityType and entityId
+  threadId?: string; // Optional: Load specific thread history by ID
   userId: string;
   entityId?: string; // Either brandId or accountId, depending on EntityType
   entityType?: EntityType;
@@ -118,6 +118,7 @@ export interface Thread {
   id: string;
   userId: string;
   convUuid: string;
+  providerResId?: string;
   title: string;
   agentType: string;
   isArchived: boolean;
@@ -131,6 +132,7 @@ export interface ThreadsResponse {
 
 export interface MessagesResponse {
   messages: Message[];
+  providerResId?: string;
 }
 
 export interface ToolParameter {

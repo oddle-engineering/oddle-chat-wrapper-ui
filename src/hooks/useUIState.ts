@@ -21,7 +21,7 @@ export function useUIState({ initialMode = "sidebar" }: UseUIStateProps) {
 
   // Thread state
   const [currentThreadId, setCurrentThreadId] = useState<string | null>(null);
-  const [currentConvUuid, setCurrentConvUuid] = useState<string | null>(null);
+  const [providerResId, setProviderResId] = useState<string | null>(null);
 
   // Dev mode state
   const [isDevSettingsOpen, setIsDevSettingsOpen] = useState(false);
@@ -87,8 +87,8 @@ export function useUIState({ initialMode = "sidebar" }: UseUIStateProps) {
     // Thread state
     currentThreadId,
     setCurrentThreadId,
-    currentConvUuid,
-    setCurrentConvUuid,
+    providerResId,
+    setProviderResId,
 
     // Dev mode state
     isDevSettingsOpen,

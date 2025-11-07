@@ -8,7 +8,6 @@ export interface WebSocketChatClientProps {
   chatServerKey: string;
   
   // Entity configuration
-  providerResId?: string;
   userId: string;
   entityId?: string;
   entityType?: string;
@@ -46,7 +45,7 @@ export interface ReasoningEvent {
 export interface TriggerMessageParams {
   message: string;
   media?: string[];
-  convUuid?: string;
+  providerResId?: string;
 }
 
 export interface ChatPayload {
@@ -54,5 +53,5 @@ export interface ChatPayload {
   content: string;
   media: string[];
   userId?: string;
-  convUuid?: string;
+  providerResId?: string;
 }
