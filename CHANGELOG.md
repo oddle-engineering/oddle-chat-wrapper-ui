@@ -25,6 +25,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.5] - 2025-11-07
+
+### Added
+- **Dynamic Entity Association**: New `ChatWrapperRef` with `updateEntityId()` method to update entity information after initialization
+  - Enables workflows where chat starts without an entity and associates later
+  - Exposed via `forwardRef` pattern for imperative API access
+  - Comprehensive documentation in `docs/dynamic-entity-association.md`
+- **TypeScript Types**: Added `ChatWrapperRef` interface and exported `EntityType` enum
+- **Example Component**: Added `DynamicEntityExample.tsx` demonstrating the new feature
+
+### Changed
+- **ChatWrapper Component**: Converted to use `forwardRef` to expose imperative handle
+- **WebSocketChatClient**: Added `updateEntityId()` method that updates TicketManager's auth data
+- **Public Exports**: Export `ChatWrapperRef` type and `EntityType` enum for consumer usage
+
+### Fixed
+- **Infinite Loop Bug**: Fixed infinite re-render loop in ChatWrapper caused by `currentMode` in useEffect dependencies
+  - Removed `currentMode` from dependency array to prevent circular updates
+  - Effect now only runs when `config.mode` prop changes
+
+### Removed
+- Modal chat functionality from showcase App.tsx (simplified demo)
+
 ## [1.0.4] - 2025-11-04
 
 ### Changed
