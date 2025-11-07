@@ -1,8 +1,5 @@
 import { useEffect, useRef, useCallback, memo, useMemo } from "react";
-import {
-  ChatWrapperProps,
-  ChatMode,
-} from "../types";
+import { ChatWrapperProps, ChatMode } from "../types";
 import { ChatInputRef } from "./ChatInput";
 import { DevSettings } from "./DevSettings";
 import { SystemEvent, SystemEventType } from "../client";
@@ -12,13 +9,14 @@ import {
   useConversationLoader,
 } from "../hooks";
 import { useUIStore } from "../store";
-import {
-  CHAT_STATUS,
-  STREAMING_STATUS,
-} from "../constants/chatStatus";
+import { CHAT_STATUS, STREAMING_STATUS } from "../constants/chatStatus";
 import { FileUploadService, ChatSubmissionService } from "../services";
 import { chatUtils } from "../utils/chatUtils";
-import { ChatErrorBoundary, WebSocketErrorBoundary, FileUploadErrorBoundary } from "./error";
+import {
+  ChatErrorBoundary,
+  WebSocketErrorBoundary,
+  FileUploadErrorBoundary,
+} from "./error";
 import { ConnectionNotification } from "./ConnectionNotification";
 import { ChatBubbleButton } from "./chat/ChatBubbleButton";
 import { ChatHeader } from "./chat/ChatHeader";
@@ -27,19 +25,18 @@ import { SettingsIcon } from "./icons";
 import { ChatProvider } from "../contexts";
 import "../styles/chat-wrapper.css";
 
-function ChatWrapper({
+function ChatWrapperContainer({
   // Authentication and server configuration
   userMpAuthToken,
   chatServerUrl,
   chatServerKey,
-  
+
   // Entity and conversation configuration
   threadId,
   userId,
   entityId,
   entityType,
-  
-  
+
   // Existing props
   config,
   tools,
@@ -61,11 +58,12 @@ function ChatWrapper({
 
   // Initialize file upload service
   const fileUploadService = useMemo(
-    () => new FileUploadService({
-      apiUrl: httpApiUrl,
-      userMpAuthToken: userMpAuthToken,
-      chatServerKey: chatServerKey,
-    }),
+    () =>
+      new FileUploadService({
+        apiUrl: httpApiUrl,
+        userMpAuthToken: userMpAuthToken,
+        chatServerKey: chatServerKey,
+      }),
     [httpApiUrl, userMpAuthToken, chatServerKey]
   );
 
@@ -80,7 +78,7 @@ function ChatWrapper({
 
   // Initialize custom hooks for state management
   const messageHandling = useMessageHandling();
-  
+
   // Zustand state - use individual selectors to avoid infinite re-renders
   // Layout state
   const isModalOpen = useUIStore((state) => state.isModalOpen);
@@ -91,28 +89,36 @@ function ChatWrapper({
   const toggleCollapse = useUIStore((state) => state.toggleCollapse);
   const toggleFullscreen = useUIStore((state) => state.toggleFullscreen);
   const setCurrentMode = useUIStore((state) => state.setCurrentMode);
-  
+
   // Chat state
   const chatStatus = useUIStore((state) => state.chatStatus);
   const setChatStatus = useUIStore((state) => state.setChatStatus);
   const streamingStatus = useUIStore((state) => state.streamingStatus);
   const setStreamingStatus = useUIStore((state) => state.setStreamingStatus);
-  
+
   // Conversation state
-  const isLoadingConversation = useUIStore((state) => state.isLoadingConversation);
-  const setIsLoadingConversation = useUIStore((state) => state.setIsLoadingConversation);
+  const isLoadingConversation = useUIStore(
+    (state) => state.isLoadingConversation
+  );
+  const setIsLoadingConversation = useUIStore(
+    (state) => state.setIsLoadingConversation
+  );
   const conversationError = useUIStore((state) => state.conversationError);
-  const setConversationError = useUIStore((state) => state.setConversationError);
-  
+  const setConversationError = useUIStore(
+    (state) => state.setConversationError
+  );
+
   // Thread state
   const setCurrentThreadId = useUIStore((state) => state.setCurrentThreadId);
   const currentProviderResId = useUIStore((state) => state.providerResId);
   const setProviderResId = useUIStore((state) => state.setProviderResId);
-  
+
   // Dev state
   const isDevSettingsOpen = useUIStore((state) => state.isDevSettingsOpen);
-  const setIsDevSettingsOpen = useUIStore((state) => state.setIsDevSettingsOpen);
-  
+  const setIsDevSettingsOpen = useUIStore(
+    (state) => state.setIsDevSettingsOpen
+  );
+
   // Streaming state (now using Zustand instead of messageHandling hook)
   const isStreaming = useUIStore((state) => state.isStreaming);
   const setIsStreaming = useUIStore((state) => state.setIsStreaming);
@@ -120,14 +126,14 @@ function ChatWrapper({
   const setIsThinking = useUIStore((state) => state.setIsThinking);
   const streamingContent = useUIStore((state) => state.streamingContent);
   const isHandlingTool = useUIStore((state) => state.isHandlingTool);
-  
+
   // Set initial mode from config
   useEffect(() => {
     if (config.mode && currentMode !== config.mode) {
       setCurrentMode(config.mode);
     }
   }, [config.mode, currentMode, setCurrentMode]);
-  
+
   // Handle escape key for modal
   useEffect(() => {
     if (typeof window === "undefined" || typeof document === "undefined") {
@@ -173,55 +179,62 @@ function ChatWrapper({
   const chatInputRef = useRef<ChatInputRef>(null);
 
   // Handle system events
-  const handleSystemEvent = useCallback((event: SystemEvent) => {
-    switch (event.type) {
-      case SystemEventType.CHAT_COMPLETED:
-        handleChatFinished();
-        // Focus the input after assistant response completes
-        setTimeout(() => {
-          chatInputRef.current?.focus();
-        }, 0);
-        break;
-      case SystemEventType.CHAT_ERROR:
-        if (event.data?.error) {
-          handleChatError(event.data.error);
-        }
-        break;
-      case SystemEventType.CONNECTION_LOST:
-      case SystemEventType.CONNECTION_RESTORED:
-      default:
-        break;
-    }
-  }, [handleChatFinished, handleChatError]);
+  const handleSystemEvent = useCallback(
+    (event: SystemEvent) => {
+      switch (event.type) {
+        case SystemEventType.CHAT_COMPLETED:
+          handleChatFinished();
+          // Focus the input after assistant response completes
+          setTimeout(() => {
+            chatInputRef.current?.focus();
+          }, 0);
+          break;
+        case SystemEventType.CHAT_ERROR:
+          if (event.data?.error) {
+            handleChatError(event.data.error);
+          }
+          break;
+        case SystemEventType.CONNECTION_LOST:
+        case SystemEventType.CONNECTION_RESTORED:
+        default:
+          break;
+      }
+    },
+    [handleChatFinished, handleChatError]
+  );
 
   // Initialize WebSocket connection
-  const { chatClient, isConnected, isConnecting, connectChatClient } = useWebSocketConnection({
-    // Authentication and server properties
-    userMpAuthToken,
-    chatServerUrl,
-    chatServerKey,
-    
-    // Entity configuration
+  const { chatClient, isConnected, isConnecting, connectChatClient } =
+    useWebSocketConnection({
+      // Authentication and server properties
+      userMpAuthToken,
+      chatServerUrl,
+      chatServerKey,
 
-    userId,
-    entityId,
-    entityType,
-    
-    // Tools configuration
-    tools,
-    
-    // Other properties
-    contextHelpers,
-    onSetMessage: handleSetMessage,
-    onSystemEvent: handleSystemEvent,
-    onReasoningUpdate: handleReasoningUpdate,
-  });
+      // Entity configuration
+
+      userId,
+      entityId,
+      entityType,
+
+      // Tools configuration
+      tools,
+
+      // Other properties
+      contextHelpers,
+      onSetMessage: handleSetMessage,
+      onSystemEvent: handleSystemEvent,
+      onReasoningUpdate: handleReasoningUpdate,
+    });
 
   // Initialize chat submission service (depends on chatClient)
   const chatSubmissionService = useMemo(
-    () => chatClient ? new ChatSubmissionService(chatClient, {
-      onError: config.onError,
-    }) : null,
+    () =>
+      chatClient
+        ? new ChatSubmissionService(chatClient, {
+            onError: config.onError,
+          })
+        : null,
     [chatClient, config.onError]
   );
 
@@ -288,7 +301,9 @@ function ChatWrapper({
   const handleSubmit = useCallback(
     async (message: string, media?: string[]) => {
       // Early validation using service
-      if (!chatSubmissionService?.canSubmit(message, isStreaming, isConnected)) {
+      if (
+        !chatSubmissionService?.canSubmit(message, isStreaming, isConnected)
+      ) {
         return;
       }
 
@@ -350,14 +365,21 @@ function ChatWrapper({
   // Memoize container classes to prevent recalculation on every render
   // Only recompute when dependencies change
   const containerClasses = useMemo(
-    () => chatUtils.css.getContainerClasses(
-      currentMode as ChatMode,
+    () =>
+      chatUtils.css.getContainerClasses(
+        currentMode as ChatMode,
+        config.position,
+        config.theme,
+        isCollapsed,
+        config.constrainedHeight
+      ),
+    [
+      currentMode,
       config.position,
       config.theme,
       isCollapsed,
-      config.constrainedHeight
-    ),
-    [currentMode, config.position, config.theme, isCollapsed, config.constrainedHeight]
+      config.constrainedHeight,
+    ]
   );
 
   // Handle bubble button click
@@ -383,7 +405,7 @@ function ChatWrapper({
 
   // Split context value into smaller memos for better performance
   // Only recompute when their specific dependencies change
-  
+
   const messageState = useMemo(
     () => ({
       messages,
@@ -484,11 +506,12 @@ function ChatWrapper({
   // Memoize bubble visibility check to prevent recalculation on every render
   // Only recompute when dependencies change
   const shouldShowBubble = useMemo(
-    () => chatUtils.state.shouldShowBubble(
-      currentMode as ChatMode,
-      isModalOpen,
-      isCollapsed
-    ),
+    () =>
+      chatUtils.state.shouldShowBubble(
+        currentMode as ChatMode,
+        isModalOpen,
+        isCollapsed
+      ),
     [currentMode, isModalOpen, isCollapsed]
   );
 
@@ -511,7 +534,7 @@ function ChatWrapper({
     <ChatErrorBoundary>
       <WebSocketErrorBoundary
         onError={(error) => {
-          console.error('WebSocket error in ChatWrapper:', error);
+          console.error("WebSocket error in ChatWrapper:", error);
           if (config.onError) {
             config.onError(error);
           }
@@ -555,7 +578,7 @@ function ChatWrapper({
           {!isCollapsed && (
             <FileUploadErrorBoundary
               onError={(error) => {
-                console.error('File upload error:', error);
+                console.error("File upload error:", error);
                 if (config.onError) {
                   config.onError(error);
                 }
@@ -581,6 +604,6 @@ function ChatWrapper({
   );
 }
 
-const ChatWrapperMemo = memo(ChatWrapper);
+const ChatWrapper = memo(ChatWrapperContainer);
 
-export { ChatWrapperMemo as ChatWrapper };
+export { ChatWrapper };
