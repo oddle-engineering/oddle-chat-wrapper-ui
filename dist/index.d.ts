@@ -2,6 +2,8 @@ import { default as default_2 } from 'react';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { MemoExoticComponent } from 'react';
 import { ReactNode } from 'react';
+import { StoreApi } from 'zustand';
+import { UseBoundStore } from 'zustand';
 
 export declare const AnimatedPlaceholder: ({ placeholderTexts, shouldAnimate, className, }: AnimatedPlaceholderProps) => JSX_2.Element;
 
@@ -61,6 +63,14 @@ export declare const ChatIcon: default_2.FC<IconProps>;
 export declare type ChatMode = "sidebar" | "fullscreen" | "modal" | "embedded";
 
 export declare type ChatPosition = "left" | "right";
+
+export declare interface ChatSlice {
+    chatStatus: ChatStatus;
+    streamingStatus: StreamingStatus;
+    setChatStatus: (status: ChatStatus) => void;
+    setStreamingStatus: (status: StreamingStatus) => void;
+    resetChatStatus: () => void;
+}
 
 export declare type ChatStatus = typeof CHAT_STATUS[keyof typeof CHAT_STATUS];
 
@@ -141,6 +151,14 @@ export declare interface ConversationResponse {
     message: string;
 }
 
+export declare interface ConversationSlice {
+    isLoadingConversation: boolean;
+    conversationError: string | null;
+    setIsLoadingConversation: (isLoading: boolean) => void;
+    setConversationError: (error: string | null) => void;
+    clearConversationError: () => void;
+}
+
 export declare const CopyIcon: default_2.FC<IconProps>;
 
 /**
@@ -160,6 +178,12 @@ declare interface DevSettingsProps {
     userMpAuthToken?: string;
     chatServerKey?: string;
     app?: string;
+}
+
+export declare interface DevSlice {
+    isDevSettingsOpen: boolean;
+    setIsDevSettingsOpen: (isOpen: boolean) => void;
+    toggleDevSettings: () => void;
 }
 
 export declare enum EntityType {
@@ -228,6 +252,19 @@ export declare const isProcessingActive: (status: ProcessingStatus) => boolean;
 export declare const isProcessingComplete: (status: ProcessingStatus) => boolean;
 
 export declare const isProcessingError: (status: ProcessingStatus) => boolean;
+
+export declare interface LayoutSlice {
+    isModalOpen: boolean;
+    isCollapsed: boolean;
+    currentMode: string;
+    setIsModalOpen: (isOpen: boolean) => void;
+    setIsCollapsed: (isCollapsed: boolean) => void;
+    setCurrentMode: (mode: string) => void;
+    openModal: () => void;
+    closeModal: () => void;
+    toggleCollapse: () => void;
+    toggleFullscreen: () => void;
+}
 
 export declare function Loader({ size, variant }: LoaderProps): JSX_2.Element;
 
@@ -411,6 +448,14 @@ export declare interface Thread {
     updatedAt: string;
 }
 
+export declare interface ThreadSlice {
+    currentThreadId: string | null;
+    providerResId: string | null;
+    setCurrentThreadId: (threadId: string | null) => void;
+    setProviderResId: (providerResId: string | null) => void;
+    clearThreadData: () => void;
+}
+
 export declare interface ThreadsResponse {
     threads: Thread[];
 }
@@ -451,5 +496,100 @@ export declare interface ToolSchema {
     description: string;
     parameters: ToolParameter[];
 }
+
+export declare type UIStore = LayoutSlice & ChatSlice & ConversationSlice & ThreadSlice & DevSlice;
+
+export declare const useChatState: () => {
+    chatStatus: ChatStatus;
+    streamingStatus: StreamingStatus;
+    setChatStatus: (status: ChatStatus) => void;
+    setStreamingStatus: (status: StreamingStatus) => void;
+    resetChatStatus: () => void;
+};
+
+export declare const useConversationState: () => {
+    isLoadingConversation: boolean;
+    conversationError: string | null;
+    setIsLoadingConversation: (isLoading: boolean) => void;
+    setConversationError: (error: string | null) => void;
+    clearConversationError: () => void;
+};
+
+export declare const useDevState: () => {
+    isDevSettingsOpen: boolean;
+    setIsDevSettingsOpen: (isOpen: boolean) => void;
+    toggleDevSettings: () => void;
+};
+
+export declare const useLayoutState: () => {
+    isModalOpen: boolean;
+    isCollapsed: boolean;
+    currentMode: string;
+    openModal: () => void;
+    closeModal: () => void;
+    toggleCollapse: () => void;
+    toggleFullscreen: () => void;
+};
+
+export declare const useThreadState: () => {
+    currentThreadId: string | null;
+    providerResId: string | null;
+    setCurrentThreadId: (threadId: string | null) => void;
+    setProviderResId: (providerResId: string | null) => void;
+    clearThreadData: () => void;
+};
+
+/**
+ * Legacy hook for backward compatibility - now uses Zustand store
+ * @deprecated Use direct Zustand store hooks instead (useLayoutState, useChatState, etc.)
+ */
+export declare function useUIState({ initialMode }: UseUIStateProps): {
+    isModalOpen: boolean;
+    setIsModalOpen: (isOpen: boolean) => void;
+    isCollapsed: boolean;
+    setIsCollapsed: (isCollapsed: boolean) => void;
+    currentMode: string;
+    setCurrentMode: (mode: string) => void;
+    chatStatus: ChatStatus;
+    setChatStatus: (status: ChatStatus) => void;
+    streamingStatus: StreamingStatus;
+    setStreamingStatus: (status: StreamingStatus) => void;
+    isLoadingConversation: boolean;
+    setIsLoadingConversation: (isLoading: boolean) => void;
+    conversationError: string | null;
+    setConversationError: (error: string | null) => void;
+    currentThreadId: string | null;
+    setCurrentThreadId: (threadId: string | null) => void;
+    providerResId: string | null;
+    setProviderResId: (providerResId: string | null) => void;
+    isDevSettingsOpen: boolean;
+    setIsDevSettingsOpen: (isOpen: boolean) => void;
+    openModal: () => void;
+    closeModal: () => void;
+    toggleCollapse: () => void;
+    toggleFullscreen: () => void;
+};
+
+declare interface UseUIStateProps {
+    initialMode?: string;
+}
+
+export declare const useUIStore: UseBoundStore<Omit<StoreApi<UIStore>, "setState" | "devtools"> & {
+setState(partial: UIStore | Partial<UIStore> | ((state: UIStore) => UIStore | Partial<UIStore>), replace?: false | undefined, action?: (string | {
+[x: string]: unknown;
+[x: number]: unknown;
+[x: symbol]: unknown;
+type: string;
+}) | undefined): void;
+setState(state: UIStore | ((state: UIStore) => UIStore), replace: true, action?: (string | {
+[x: string]: unknown;
+[x: number]: unknown;
+[x: symbol]: unknown;
+type: string;
+}) | undefined): void;
+devtools: {
+cleanup: () => void;
+};
+}>;
 
 export { }

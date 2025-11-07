@@ -1,49 +1,24 @@
-import { useState, useCallback, useEffect } from "react";
-import { ChatStatus, CHAT_STATUS, StreamingStatus, STREAMING_STATUS } from "../constants/chatStatus";
+import { useEffect } from "react";
+import { useUIStore } from "../store";
 
 interface UseUIStateProps {
   initialMode?: string;
 }
 
+/**
+ * Legacy hook for backward compatibility - now uses Zustand store
+ * @deprecated Use direct Zustand store hooks instead (useLayoutState, useChatState, etc.)
+ */
 export function useUIState({ initialMode = "sidebar" }: UseUIStateProps) {
-  // Modal and layout state
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [currentMode, setCurrentMode] = useState(initialMode);
+  // Get all state and actions from Zustand store
+  const store = useUIStore();
 
-  // Chat state
-  const [chatStatus, setChatStatus] = useState<ChatStatus>(CHAT_STATUS.IDLE);
-  const [streamingStatus, setStreamingStatus] = useState<StreamingStatus>(STREAMING_STATUS.IDLE);
-
-  // Conversation loading state
-  const [isLoadingConversation, setIsLoadingConversation] = useState(false);
-  const [conversationError, setConversationError] = useState<string | null>(null);
-
-  // Thread state
-  const [currentThreadId, setCurrentThreadId] = useState<string | null>(null);
-  const [providerResId, setProviderResId] = useState<string | null>(null);
-
-  // Dev mode state
-  const [isDevSettingsOpen, setIsDevSettingsOpen] = useState(false);
-
-  // Modal controls
-  const openModal = useCallback(() => {
-    setIsModalOpen(true);
-  }, []);
-
-  const closeModal = useCallback(() => {
-    setIsModalOpen(false);
-  }, []);
-
-  // Collapse controls
-  const toggleCollapse = useCallback(() => {
-    setIsCollapsed((prev) => !prev);
-  }, []);
-
-  // Mode switching controls
-  const toggleFullscreen = useCallback(() => {
-    setCurrentMode((prev) => (prev === "sidebar" ? "fullscreen" : "sidebar"));
-  }, []);
+  // Set initial mode if provided
+  useEffect(() => {
+    if (initialMode && store.currentMode !== initialMode) {
+      store.setCurrentMode(initialMode);
+    }
+  }, [initialMode]); // Only run on mount
 
   // Handle escape key for modal
   useEffect(() => {
@@ -52,52 +27,53 @@ export function useUIState({ initialMode = "sidebar" }: UseUIStateProps) {
     }
 
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && currentMode === "modal" && isModalOpen) {
-        closeModal();
+      if (event.key === "Escape" && store.currentMode === "modal" && store.isModalOpen) {
+        store.closeModal();
       }
     };
 
-    if (currentMode === "modal" && isModalOpen) {
+    if (store.currentMode === "modal" && store.isModalOpen) {
       document.addEventListener("keydown", handleEscape);
       return () => document.removeEventListener("keydown", handleEscape);
     }
-  }, [currentMode, isModalOpen, closeModal]);
+  }, [store.currentMode, store.isModalOpen, store.closeModal]);
 
+  // Return the entire store for backward compatibility
   return {
     // Modal and layout state
-    isModalOpen,
-    setIsModalOpen,
-    isCollapsed,
-    setIsCollapsed,
-    currentMode,
-    setCurrentMode,
+    isModalOpen: store.isModalOpen,
+    setIsModalOpen: store.setIsModalOpen,
+    isCollapsed: store.isCollapsed,
+    setIsCollapsed: store.setIsCollapsed,
+    currentMode: store.currentMode,
+    setCurrentMode: store.setCurrentMode,
 
     // Chat state
-    chatStatus,
-    setChatStatus,
-    streamingStatus,
-    setStreamingStatus,
+    chatStatus: store.chatStatus,
+    setChatStatus: store.setChatStatus,
+    streamingStatus: store.streamingStatus,
+    setStreamingStatus: store.setStreamingStatus,
 
     // Conversation state
-    isLoadingConversation,
-    setIsLoadingConversation,
-    conversationError,
-    setConversationError,
+    isLoadingConversation: store.isLoadingConversation,
+    setIsLoadingConversation: store.setIsLoadingConversation,
+    conversationError: store.conversationError,
+    setConversationError: store.setConversationError,
 
     // Thread state
-    currentThreadId,
-    setCurrentThreadId,
-    providerResId,
-    setProviderResId,
+    currentThreadId: store.currentThreadId,
+    setCurrentThreadId: store.setCurrentThreadId,
+    providerResId: store.providerResId,
+    setProviderResId: store.setProviderResId,
 
     // Dev mode state
-    isDevSettingsOpen,
-    setIsDevSettingsOpen,
+    isDevSettingsOpen: store.isDevSettingsOpen,
+    setIsDevSettingsOpen: store.setIsDevSettingsOpen,
 
     // Actions
-    openModal,
-    closeModal,
-    toggleCollapse,
-    toggleFullscreen,
+    openModal: store.openModal,
+    closeModal: store.closeModal,
+    toggleCollapse: store.toggleCollapse,
+    toggleFullscreen: store.toggleFullscreen,
   };
 }

@@ -745,7 +745,7 @@ function App() {
   const sidebarChatProps: ChatWrapperProps = useMemo(
     () => ({
       // Required authentication and server configuration
-      userMpAuthToken: "05cb39b1b8798fef08b28828c947f9431ce0595bfbdada3e008f1c1b7ddba7d95625b1a635c7d66ee40cd809d51a2c699202cd24226c457ad905a587c6a4aab6",
+      userMpAuthToken: "db9ebf05e0ddccee864ecde27437b771f4f848c48d5496d73e0fa5a00a9c5f152329919ce7cd64792e230a04196a812f26af1f6af3f03571e3f87983b578c2fa",
       // chatServerUrl: "http://34.56.173.183",
       chatServerUrl: "https://localhost:3000",
       chatServerKey: "demo-chat-server-key",
@@ -755,7 +755,7 @@ function App() {
       entityId: "brand_123",
       entityType: EntityType.BRAND,
 
-      threadId: "", // Empty to start a new conversation
+      threadId: "cmhnhvzot00003opkjfikxvzv", // Empty to start a new conversation
 
       config: {
         ...customConfig,
@@ -795,7 +795,6 @@ function App() {
       // Optional entity configuration
       entityId: "brand_123",
       entityType: EntityType.BRAND,
-      providerResId: "", // Empty to auto-generate based on entityType + entityId
 
       config: {
         ...customConfig,

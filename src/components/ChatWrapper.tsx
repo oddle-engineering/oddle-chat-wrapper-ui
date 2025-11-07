@@ -9,9 +9,9 @@ import { SystemEvent, SystemEventType } from "../client";
 import {
   useWebSocketConnection,
   useMessageHandling,
-  useUIState,
   useConversationLoader,
 } from "../hooks";
+import { useUIStore } from "../store";
 import {
   CHAT_STATUS,
   STREAMING_STATUS,
@@ -80,7 +80,63 @@ function ChatWrapper({
 
   // Initialize custom hooks for state management
   const messageHandling = useMessageHandling();
-  const uiState = useUIState({ initialMode: config.mode });
+  
+  // Zustand state - use individual selectors to avoid infinite re-renders
+  // Layout state
+  const isModalOpen = useUIStore((state) => state.isModalOpen);
+  const isCollapsed = useUIStore((state) => state.isCollapsed);
+  const currentMode = useUIStore((state) => state.currentMode);
+  const openModal = useUIStore((state) => state.openModal);
+  const closeModal = useUIStore((state) => state.closeModal);
+  const toggleCollapse = useUIStore((state) => state.toggleCollapse);
+  const toggleFullscreen = useUIStore((state) => state.toggleFullscreen);
+  const setCurrentMode = useUIStore((state) => state.setCurrentMode);
+  
+  // Chat state
+  const chatStatus = useUIStore((state) => state.chatStatus);
+  const setChatStatus = useUIStore((state) => state.setChatStatus);
+  const streamingStatus = useUIStore((state) => state.streamingStatus);
+  const setStreamingStatus = useUIStore((state) => state.setStreamingStatus);
+  
+  // Conversation state
+  const isLoadingConversation = useUIStore((state) => state.isLoadingConversation);
+  const setIsLoadingConversation = useUIStore((state) => state.setIsLoadingConversation);
+  const conversationError = useUIStore((state) => state.conversationError);
+  const setConversationError = useUIStore((state) => state.setConversationError);
+  
+  // Thread state
+  const setCurrentThreadId = useUIStore((state) => state.setCurrentThreadId);
+  const currentProviderResId = useUIStore((state) => state.providerResId);
+  const setProviderResId = useUIStore((state) => state.setProviderResId);
+  
+  // Dev state
+  const isDevSettingsOpen = useUIStore((state) => state.isDevSettingsOpen);
+  const setIsDevSettingsOpen = useUIStore((state) => state.setIsDevSettingsOpen);
+  
+  // Set initial mode from config
+  useEffect(() => {
+    if (config.mode && currentMode !== config.mode) {
+      setCurrentMode(config.mode);
+    }
+  }, [config.mode, currentMode, setCurrentMode]);
+  
+  // Handle escape key for modal
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof document === "undefined") {
+      return;
+    }
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && currentMode === "modal" && isModalOpen) {
+        closeModal();
+      }
+    };
+
+    if (currentMode === "modal" && isModalOpen) {
+      document.addEventListener("keydown", handleEscape);
+      return () => document.removeEventListener("keydown", handleEscape);
+    }
+  }, [currentMode, isModalOpen, closeModal]);
 
   // Extract frequently used values from hooks
   const {
@@ -106,29 +162,6 @@ function ChatWrapper({
     handleChatError,
     stopGeneration,
   } = messageHandling;
-
-  const {
-    isModalOpen,
-    isCollapsed,
-    currentMode,
-    chatStatus,
-    setChatStatus,
-    streamingStatus,
-    setStreamingStatus,
-    isLoadingConversation,
-    setIsLoadingConversation,
-    conversationError,
-    setConversationError,
-    setCurrentThreadId,
-    providerResId: currentProviderResId,
-    setProviderResId,
-    isDevSettingsOpen,
-    setIsDevSettingsOpen,
-    openModal,
-    closeModal,
-    toggleCollapse,
-    toggleFullscreen,
-  } = uiState;
 
   // Refs for managing UI
   const messagesEndRef = useRef<HTMLDivElement>(null);

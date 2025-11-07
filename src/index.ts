@@ -72,3 +72,25 @@ export {
   isProcessingError
 } from './constants/chatStatus';
 export type { IconProps, SVGIconProps } from './components/icons';
+
+// Zustand Store exports (Recommended)
+export { 
+  useUIStore,
+  useLayoutState,
+  useChatState,
+  useConversationState,
+  useThreadState,
+  useDevState
+} from './store';
+export type {
+  UIStore,
+  LayoutSlice,
+  ChatSlice,
+  ConversationSlice,
+  ThreadSlice,
+  DevSlice
+} from './store';
+
+// Legacy hook export (for backward compatibility)
+// @deprecated Use Zustand store hooks instead (useLayoutState, useChatState, etc.)
+export { useUIState } from './hooks/useUIState';
