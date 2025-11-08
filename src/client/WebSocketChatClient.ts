@@ -12,6 +12,7 @@ import { WebSocketManager, ConnectionState } from "./connection";
 import { MessageHandler } from "./handlers";
 import { MessageFactory } from "./utils/messageFactory";
 import { TicketManager, AuthData } from "./ticket";
+import { updateThread } from "../utils/threadApi";
 
 export class WebSocketChatClient {
   private readonly config: ConnectionConfig;
@@ -28,6 +29,12 @@ export class WebSocketChatClient {
 
   // Ticket management - now centralized in TicketManager
   private ticketManager: TicketManager | null = null;
+  
+  // Authentication credentials for HTTP API calls
+  private authCredentials: {
+    userMpAuthToken?: string;
+    chatServerKey?: string;
+  } = {};
 
   constructor() {
     this.config = {
@@ -132,6 +139,12 @@ export class WebSocketChatClient {
     this.setupEventHandlers(props);
     this.setupToolsAndContext(props);
     this.updateConfig(props);
+    
+    // Store authentication credentials for HTTP API calls
+    this.authCredentials = {
+      userMpAuthToken: props.userMpAuthToken,
+      chatServerKey: props.chatServerKey,
+    };
 
     // Initialize TicketManager with authentication data
     this.ticketManager = new TicketManager(
@@ -317,32 +330,65 @@ export class WebSocketChatClient {
   }
 
   /**
-   * Update entity information (entityId and/or entityType)
+   * Update entity information (entityId and/or entityType) for a conversation
    * This is useful when a conversation starts without an entity,
    * then later gets associated with one (e.g., user creates/selects an entity)
    * 
-   * @param entityId - New entity ID to associate with this conversation
-   * @param entityType - New entity type (optional, only if changed)
+   * This method:
+   * 1. Makes an HTTP PATCH request to persist the entity attachment on the server
+   * 2. Updates the local TicketManager auth data for future ticket renewals
    * 
-   * Note: This updates the auth data in TicketManager, so future ticket
-   * renewals will include the new entity information
+   * @param providerResId - Provider resource ID (conversationId) of the thread to update
+   * @param entityId - New entity ID to associate with this conversation
+   * @param entityType - Entity type (BRAND or ACCOUNT)
+   * @param options - Optional tag and metadata
+   * @returns Promise that resolves when the update is complete
+   * 
+   * @example
+   * await client.updateEntityId('conv_abc123', 'brand_456', 'BRAND', {
+   *   tag: 'customer-support',
+   *   metadata: { priority: 'high' }
+   * });
    */
-  updateEntityId(entityId: string, entityType?: string): void {
+  async updateEntityId(
+    providerResId: string,
+    entityId: string,
+    entityType: string,
+    options?: {
+      tag?: string;
+      metadata?: any;
+    }
+  ): Promise<void> {
     if (!this.ticketManager) {
-      console.warn("WebSocketChatClient: Cannot update entityId - TicketManager not initialized");
-      return;
+      throw new Error("WebSocketChatClient: Cannot update entityId - TicketManager not initialized");
     }
 
-    console.log(`WebSocketChatClient: Updating entity - ID: ${entityId}, Type: ${entityType || 'unchanged'}`);
+    console.log(`WebSocketChatClient: Updating entity attachment - providerResId: ${providerResId}, entityId: ${entityId}, entityType: ${entityType}`);
     
-    // Update the auth data in TicketManager
-    const updateData: Partial<AuthData> = { entityId };
-    if (entityType !== undefined) {
-      updateData.entityType = entityType;
+    try {
+      // Use the updateThread utility function to make the HTTP PATCH request
+      await updateThread(
+        this.config.apiUrl,
+        providerResId,
+        {
+          entityId,
+          entityType,
+          tag: options?.tag,
+          metadata: options?.metadata,
+        },
+        this.authCredentials
+      );
+
+      console.log("WebSocketChatClient: Thread entity attachment updated on server successfully");
+
+      // Update the auth data in TicketManager for future ticket renewals
+      const updateData: Partial<AuthData> = { entityId, entityType };
+      this.ticketManager.updateAuthData(updateData);
+      
+      console.log("WebSocketChatClient: Local auth data updated successfully");
+    } catch (error) {
+      console.error("WebSocketChatClient: Failed to update entity attachment:", error);
+      throw error;
     }
-    
-    this.ticketManager.updateAuthData(updateData);
-    
-    console.log("WebSocketChatClient: Entity information updated successfully");
   }
 }

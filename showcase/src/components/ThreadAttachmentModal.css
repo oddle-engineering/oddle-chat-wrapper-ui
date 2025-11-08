@@ -1,0 +1,223 @@
+.thread-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(4px);
+}
+
+.thread-modal-content {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow: auto;
+  animation: modalSlideIn 0.2s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.thread-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.thread-modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.thread-modal-close {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.thread-modal-close:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+.thread-modal-body {
+  padding: 24px;
+}
+
+.thread-modal-info {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+}
+
+.thread-modal-info p {
+  margin: 0;
+  font-size: 14px;
+  color: #374151;
+}
+
+.thread-modal-info strong {
+  color: #111827;
+  font-weight: 600;
+}
+
+.thread-modal-error {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.thread-modal-success {
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  animation: successFadeIn 0.3s ease-out;
+}
+
+@keyframes successFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.thread-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.thread-modal-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.thread-modal-form-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.thread-modal-form-group input,
+.thread-modal-form-group select,
+.thread-modal-form-group textarea {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.thread-modal-form-group input:focus,
+.thread-modal-form-group select:focus,
+.thread-modal-form-group textarea:focus {
+  outline: none;
+  border-color: #3d0099;
+  box-shadow: 0 0 0 3px rgba(61, 0, 153, 0.1);
+}
+
+.thread-modal-form-group input:disabled,
+.thread-modal-form-group select:disabled,
+.thread-modal-form-group textarea:disabled {
+  background-color: #f9fafb;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.thread-modal-form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+  font-family: 'Courier New', monospace;
+}
+
+.thread-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+.thread-modal-button {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.thread-modal-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.thread-modal-button-secondary {
+  background-color: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.thread-modal-button-secondary:hover:not(:disabled) {
+  background-color: #f9fafb;
+}
+
+.thread-modal-button-primary {
+  background-color: #3d0099;
+  color: white;
+}
+
+.thread-modal-button-primary:hover:not(:disabled) {
+  background-color: #2d0070;
+  box-shadow: 0 2px 8px rgba(61, 0, 153, 0.3);
+}

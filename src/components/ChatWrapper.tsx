@@ -253,16 +253,37 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       ref,
       () => ({
         updateEntityId: (newEntityId: string, newEntityType?: EntityType) => {
-          if (chatClient) {
-            chatClient.updateEntityId(newEntityId, newEntityType?.toString());
-          } else {
+          if (!chatClient) {
             console.warn(
               "ChatWrapper: Cannot update entityId - chat client not initialized"
             );
+            return;
           }
+          
+          if (!currentProviderResId) {
+            console.warn(
+              "ChatWrapper: Cannot update entityId - no active conversation (providerResId not set)"
+            );
+            return;
+          }
+          
+          if (!newEntityType) {
+            console.warn(
+              "ChatWrapper: Cannot update entityId - entityType is required"
+            );
+            return;
+          }
+          
+          chatClient.updateEntityId(
+            currentProviderResId,
+            newEntityId,
+            newEntityType.toString()
+          ).catch((error) => {
+            console.error("ChatWrapper: Failed to update entity attachment:", error);
+          });
         },
       }),
-      [chatClient]
+      [chatClient, currentProviderResId]
     );
 
     // Initialize chat submission service (depends on chatClient)

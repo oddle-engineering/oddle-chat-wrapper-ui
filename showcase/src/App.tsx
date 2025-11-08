@@ -8,9 +8,11 @@ import {
   ChatTheme,
   EntityType,
   Tools,
+  useUIStore,
 } from "@oddle/chat-wrapper-ui";
 import { TodoPanel } from "./components/TodoPanel";
 import { ReservationPanel } from "./components/ReservationPanel";
+import { ThreadAttachmentModal } from "./components/ThreadAttachmentModal";
 import "./components/panels.css";
 import "./App.css";
 
@@ -123,6 +125,10 @@ function App() {
   ]);
 
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const [isThreadModalOpen, setIsThreadModalOpen] = useState(false);
+  
+  // Get providerResId from the store
+  const providerResId = useUIStore((state) => state.providerResId);
 
   // Helper functions for panels
   const handleAddTodo = useCallback(async (task: string) => {
@@ -805,6 +811,37 @@ function App() {
       >
         {isSidebarVisible ? "Hide Chat" : "Show Chat"}
       </button>
+
+      {/* Thread attachment button */}
+      <button
+        onClick={() => setIsThreadModalOpen(true)}
+        style={{
+          position: "fixed",
+          top: "70px",
+          left: isSidebarVisible ? "420px" : "20px",
+          zIndex: 1000,
+          padding: "12px",
+          background: "#059669",
+          color: "white",
+          border: "none",
+          borderRadius: "8px",
+          cursor: "pointer",
+          transition: "left 0.3s ease",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+        }}
+      >
+        📎 Attach Thread
+      </button>
+
+      {/* Thread attachment modal */}
+      <ThreadAttachmentModal
+        isOpen={isThreadModalOpen}
+        onClose={() => setIsThreadModalOpen(false)}
+        providerResId={providerResId}
+        apiUrl={sidebarChatProps.chatServerUrl}
+        userMpAuthToken={sidebarChatProps.userMpAuthToken}
+        chatServerKey={sidebarChatProps.chatServerKey}
+      />
 
       <div className="main-content">
         <div
