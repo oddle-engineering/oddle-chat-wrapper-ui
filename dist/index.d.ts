@@ -564,6 +564,53 @@ export declare interface ToolSchema {
 
 export declare type UIStore = LayoutSlice & ChatSlice & ConversationSlice & ThreadSlice & DevSlice & MessagesSlice;
 
+/**
+ * Update thread properties (attach to entity, update metadata, tag, etc.)
+ *
+ * This function allows you to:
+ * - Attach a draft thread to an entity (brand/account)
+ * - Update thread title, tag, or metadata
+ * - Detach thread from entity (set entityId/entityType to null)
+ *
+ * @param apiBaseUrl - Base URL of the API
+ * @param providerResId - Provider resource ID (conversationId) of the thread to update
+ * @param updates - Fields to update
+ * @param authOptions - Authentication options
+ * @returns Updated thread data
+ *
+ * @example
+ * // Attach draft thread to brand
+ * const thread = await updateThread(apiUrl, 'conv_abc123', {
+ *   entityId: 'brand_456',
+ *   entityType: 'BRAND',
+ *   tag: 'customer-inquiry',
+ *   metadata: { source: 'widget', priority: 'high' }
+ * }, authOptions);
+ *
+ * @example
+ * // Update only metadata
+ * const thread = await updateThread(apiUrl, 'conv_abc123', {
+ *   metadata: { status: 'resolved', assignedTo: 'agent-789' }
+ * }, authOptions);
+ *
+ * @example
+ * // Detach from entity
+ * const thread = await updateThread(apiUrl, 'conv_abc123', {
+ *   entityId: null,
+ *   entityType: null
+ * }, authOptions);
+ */
+export declare function updateThread(apiBaseUrl: string, providerResId: string, updates: {
+    title?: string;
+    tag?: string | null;
+    metadata?: any;
+    entityId?: string | null;
+    entityType?: string | null;
+}, authOptions?: {
+    userMpAuthToken?: string;
+    chatServerKey?: string;
+}): Promise<Thread>;
+
 export declare const useChatState: () => {
     chatStatus: ChatStatus;
     streamingStatus: StreamingStatus;

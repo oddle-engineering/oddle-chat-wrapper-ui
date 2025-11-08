@@ -753,7 +753,7 @@ function App() {
       userId: "user_123_16",
 
       // Optional entity configuration
-      entityId: "",
+      entityId: "mar_01",
       entityType: EntityType.BRAND,
 
       config: {

@@ -204,14 +204,14 @@ export async function fetchThreadMessagesV2(
  * - Detach thread from entity (set entityId/entityType to null)
  *
  * @param apiBaseUrl - Base URL of the API
- * @param threadId - ID of the thread to update
+ * @param providerResId - Provider resource ID (conversationId) of the thread to update
  * @param updates - Fields to update
  * @param authOptions - Authentication options
  * @returns Updated thread data
  *
  * @example
  * // Attach draft thread to brand
- * const thread = await updateThread(apiUrl, 'thread-123', {
+ * const thread = await updateThread(apiUrl, 'conv_abc123', {
  *   entityId: 'brand_456',
  *   entityType: 'BRAND',
  *   tag: 'customer-inquiry',
@@ -220,20 +220,20 @@ export async function fetchThreadMessagesV2(
  *
  * @example
  * // Update only metadata
- * const thread = await updateThread(apiUrl, 'thread-123', {
+ * const thread = await updateThread(apiUrl, 'conv_abc123', {
  *   metadata: { status: 'resolved', assignedTo: 'agent-789' }
  * }, authOptions);
  *
  * @example
  * // Detach from entity
- * const thread = await updateThread(apiUrl, 'thread-123', {
+ * const thread = await updateThread(apiUrl, 'conv_abc123', {
  *   entityId: null,
  *   entityType: null
  * }, authOptions);
  */
 export async function updateThread(
   apiBaseUrl: string,
-  threadId: string,
+  providerResId: string,
   updates: {
     title?: string;
     tag?: string | null;
@@ -246,7 +246,7 @@ export async function updateThread(
     chatServerKey?: string;
   }
 ): Promise<Thread> {
-  const url = `${apiBaseUrl}/v1/threads/${threadId}`;
+  const url = `${apiBaseUrl}/api/v1/threads/provider/${providerResId}`;
 
   // Build headers with authentication
   const headers: HeadersInit = {

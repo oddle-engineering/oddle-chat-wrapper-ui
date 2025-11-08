@@ -1,5 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { getAgentConfiguration, updateAgentConfiguration, AgentConfiguration } from '../utils/agentConfigApi';
+import { updateThread } from '../utils/threadApi';
+import { useUIStore } from '../store';
 
 interface DevSettingsProps {
   isOpen: boolean;
@@ -18,11 +20,23 @@ export const DevSettings = ({
   chatServerKey,
   app = "UD21", // Default to UD21 if not specified
 }: DevSettingsProps) => {
+  // Agent configuration state
   const [config, setConfig] = useState<AgentConfiguration | null>(null);
   const [tempPromptPath, setTempPromptPath] = useState("");
   const [tempVersionUuid, setTempVersionUuid] = useState("");
+  
+  // Thread attachment state
+  const providerResId = useUIStore((state) => state.providerResId);
+  const [tempEntityId, setTempEntityId] = useState("");
+  const [tempEntityType, setTempEntityType] = useState<"BRAND" | "ACCOUNT" | "">("BRAND");
+  const [tempTag, setTempTag] = useState("");
+  const [tempMetadata, setTempMetadata] = useState("");
+  
+  // UI state
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"agent" | "thread">("agent");
 
   // Fetch configuration when modal opens
   useEffect(() => {
@@ -83,6 +97,76 @@ export const DevSettings = ({
     }
   }, [apiUrl, tempPromptPath, tempVersionUuid, config, onClose, userMpAuthToken, chatServerKey]);
 
+  const handleThreadAttachment = useCallback(async () => {
+    if (!providerResId) {
+      setError("No active conversation to attach");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      // Parse metadata JSON if provided
+      let parsedMetadata = undefined;
+      if (tempMetadata.trim()) {
+        try {
+          parsedMetadata = JSON.parse(tempMetadata);
+        } catch (e) {
+          throw new Error("Invalid JSON in metadata field");
+        }
+      }
+
+      // Build updates object
+      const updates: {
+        entityId?: string | null;
+        entityType?: string | null;
+        tag?: string | null;
+        metadata?: any;
+      } = {};
+
+      if (tempEntityId) {
+        updates.entityId = tempEntityId;
+        updates.entityType = tempEntityType || null;
+      }
+      if (tempTag) {
+        updates.tag = tempTag;
+      }
+      if (parsedMetadata) {
+        updates.metadata = parsedMetadata;
+      }
+
+      // Call update API
+      await updateThread(
+        apiUrl,
+        providerResId,
+        updates,
+        {
+          userMpAuthToken,
+          chatServerKey,
+        }
+      );
+
+      setSuccessMessage("Thread updated successfully!");
+      
+      // Clear form after successful update
+      setTimeout(() => {
+        setTempEntityId("");
+        setTempEntityType("BRAND");
+        setTempTag("");
+        setTempMetadata("");
+        setSuccessMessage(null);
+      }, 2000);
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update thread');
+      console.error('Error updating thread:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [providerResId, apiUrl, tempEntityId, tempEntityType, tempTag, tempMetadata, userMpAuthToken, chatServerKey]);
+
   const handleCancel = useCallback(() => {
     if (config) {
       setTempPromptPath(config.promptPath);
@@ -119,7 +203,29 @@ export const DevSettings = ({
           </button>
         </div>
         
+        {/* Tabs */}
+        <div className="chat-wrapper__dev-settings-tabs">
+          <button
+            className={`chat-wrapper__dev-settings-tab ${activeTab === "agent" ? "active" : ""}`}
+            onClick={() => setActiveTab("agent")}
+          >
+            Agent Config
+          </button>
+          <button
+            className={`chat-wrapper__dev-settings-tab ${activeTab === "thread" ? "active" : ""}`}
+            onClick={() => setActiveTab("thread")}
+          >
+            Thread Attachment
+          </button>
+        </div>
+        
         <div className="chat-wrapper__dev-settings-content">
+          {successMessage && (
+            <div className="chat-wrapper__dev-settings-success">
+              {successMessage}
+            </div>
+          )}
+
           {loading && (
             <div className="chat-wrapper__dev-settings-loading">
               Loading configuration...
@@ -130,7 +236,7 @@ export const DevSettings = ({
             <div className="chat-wrapper__dev-settings-error">
               <p>Error: {error}</p>
               <button 
-                onClick={fetchConfiguration}
+                onClick={activeTab === "agent" ? fetchConfiguration : undefined}
                 className="chat-wrapper__dev-settings-retry"
               >
                 Retry
@@ -138,7 +244,8 @@ export const DevSettings = ({
             </div>
           )}
           
-          {config && !loading && (
+          {/* Agent Config Tab */}
+          {activeTab === "agent" && config && !loading && (
             <>
               <div className="chat-wrapper__dev-settings-field">
                 <label htmlFor="agent-prompt-path">Prompt Path:</label>
@@ -189,6 +296,81 @@ export const DevSettings = ({
               
             </>
           )}
+
+          {/* Thread Attachment Tab */}
+          {activeTab === "thread" && !loading && (
+            <>
+              <div className="chat-wrapper__dev-settings-info">
+                <p><strong>Provider Resource ID:</strong> {providerResId || "No active conversation"}</p>
+              </div>
+
+              <div className="chat-wrapper__dev-settings-field">
+                <label htmlFor="entity-id">Entity ID:</label>
+                <input
+                  id="entity-id"
+                  type="text"
+                  value={tempEntityId}
+                  onChange={(e) => setTempEntityId(e.target.value)}
+                  placeholder="e.g., brand_123 or account_456"
+                  className="chat-wrapper__dev-settings-input"
+                  disabled={loading || !providerResId}
+                />
+                <p className="chat-wrapper__dev-settings-help">
+                  The brand or account ID to attach this thread to.
+                </p>
+              </div>
+
+              <div className="chat-wrapper__dev-settings-field">
+                <label htmlFor="entity-type">Entity Type:</label>
+                <select
+                  id="entity-type"
+                  value={tempEntityType}
+                  onChange={(e) => setTempEntityType(e.target.value as "BRAND" | "ACCOUNT" | "")}
+                  className="chat-wrapper__dev-settings-input"
+                  disabled={loading || !providerResId}
+                >
+                  <option value="">-- Select Type --</option>
+                  <option value="BRAND">BRAND</option>
+                  <option value="ACCOUNT">ACCOUNT</option>
+                </select>
+                <p className="chat-wrapper__dev-settings-help">
+                  Type of entity (BRAND or ACCOUNT).
+                </p>
+              </div>
+
+              <div className="chat-wrapper__dev-settings-field">
+                <label htmlFor="tag">Tag:</label>
+                <input
+                  id="tag"
+                  type="text"
+                  value={tempTag}
+                  onChange={(e) => setTempTag(e.target.value)}
+                  placeholder="e.g., customer-inquiry, support"
+                  className="chat-wrapper__dev-settings-input"
+                  disabled={loading || !providerResId}
+                />
+                <p className="chat-wrapper__dev-settings-help">
+                  Optional tag for categorizing the thread.
+                </p>
+              </div>
+
+              <div className="chat-wrapper__dev-settings-field">
+                <label htmlFor="metadata">Metadata (JSON):</label>
+                <textarea
+                  id="metadata"
+                  value={tempMetadata}
+                  onChange={(e) => setTempMetadata(e.target.value)}
+                  placeholder='{"priority": "high", "category": "billing"}'
+                  className="chat-wrapper__dev-settings-input"
+                  rows={4}
+                  disabled={loading || !providerResId}
+                />
+                <p className="chat-wrapper__dev-settings-help">
+                  Custom metadata as JSON object. Leave empty for no metadata.
+                </p>
+              </div>
+            </>
+          )}
         </div>
         
         <div className="chat-wrapper__dev-settings-footer">
@@ -199,13 +381,24 @@ export const DevSettings = ({
           >
             Cancel
           </button>
-          <button
-            className="chat-wrapper__dev-settings-btn chat-wrapper__dev-settings-btn--save"
-            onClick={handleSave}
-            disabled={loading || !config}
-          >
-            {loading ? 'Saving...' : 'Save'}
-          </button>
+          {activeTab === "agent" && (
+            <button
+              className="chat-wrapper__dev-settings-btn chat-wrapper__dev-settings-btn--save"
+              onClick={handleSave}
+              disabled={loading || !config}
+            >
+              {loading ? 'Saving...' : 'Save & Reload'}
+            </button>
+          )}
+          {activeTab === "thread" && (
+            <button
+              className="chat-wrapper__dev-settings-btn chat-wrapper__dev-settings-btn--save"
+              onClick={handleThreadAttachment}
+              disabled={loading || !providerResId}
+            >
+              {loading ? 'Updating...' : 'Update Thread'}
+            </button>
+          )}
         </div>
       </div>
     </div>
