@@ -25,20 +25,17 @@ export declare const CHAT_STATUS: {
 export declare interface ChatConfig {
     mode: ChatMode;
     position?: ChatPosition;
-    appName: string;
+    headerName: string;
     apiEndpoint: string;
     apiKey?: string;
     theme?: ChatTheme;
-    description?: string;
-    placeholder?: string;
+    headerDescription?: string;
     placeholderTexts?: string[];
-    welcomeMessage?: string;
-    promptPath?: string;
     bubbleText?: string;
     constrainedHeight?: boolean;
     headerVisible?: boolean;
-    restaurantName?: string;
-    restaurantLogo?: string;
+    chipName?: string;
+    chipLogo?: string;
     suggestedPrompts?: Array<{
         title: string;
         description: string;
@@ -57,7 +54,6 @@ export declare interface ChatConfig {
     onToolResult?: (tool: string, result: any) => void;
     onStreamingStatusChange?: (status: string) => void;
     customStyles?: default_2.CSSProperties;
-    endpoint?: "brief-planner" | "conversation";
 }
 
 export declare const ChatIcon: default_2.FC<IconProps>;
@@ -84,7 +80,6 @@ export declare interface ChatWrapperProps {
     userMpAuthToken: string;
     chatServerUrl: string;
     chatServerKey: string;
-    threadId?: string;
     userId: string;
     entityId?: string;
     entityType?: EntityType;
@@ -180,14 +175,6 @@ export declare interface ConversationSlice {
 
 export declare const CopyIcon: default_2.FC<IconProps>;
 
-/**
- * Create a new thread
- */
-export declare function createThread(apiBaseUrl: string, userId: string, convUuid: string, options?: {
-    title?: string;
-    agentType?: string;
-}): Promise<Thread>;
-
 export declare const DevSettings: ({ isOpen, onClose, apiUrl, userMpAuthToken, chatServerKey, app, }: DevSettingsProps) => JSX_2.Element | null;
 
 declare interface DevSettingsProps {
@@ -212,11 +199,6 @@ export declare enum EntityType {
 }
 
 /**
- * Fetch messages by conversation UUID
- */
-export declare function fetchMessagesByConvUuid(apiBaseUrl: string, convUuid: string): Promise<Message[]>;
-
-/**
  * Fetch thread by conversation UUID
  */
 export declare function fetchThreadByConvUuid(apiBaseUrl: string, convUuid: string): Promise<Thread>;
@@ -230,6 +212,49 @@ export declare function fetchThreadMessages(apiBaseUrl: string, threadId: string
 }): Promise<{
     messages: Message[];
     providerResId?: string;
+}>;
+
+/**
+ * Fetch messages for a thread with flexible query parameters (V2)
+ *
+ * This version allows querying by entityId, userId, or custom metadata
+ * instead of requiring a specific threadId. The server will match threads
+ * based on the provided query parameters.
+ *
+ * @param apiBaseUrl - Base URL of the API
+ * @param queryParams - Flexible query parameters
+ * @param authOptions - Authentication options
+ * @returns Messages and optional providerResId
+ *
+ * @example
+ * // Query by entityId and userId
+ * const result = await fetchThreadMessagesV2(apiUrl, {
+ *   entityId: 'brand_123',
+ *   userId: 'user_456'
+ * }, authOptions);
+ *
+ * @example
+ * // Query with custom metadata
+ * const result = await fetchThreadMessagesV2(apiUrl, {
+ *   userId: 'user_456',
+ *   metadata: {
+ *     orderId: 'order_789',
+ *     sessionId: 'session_abc'
+ *   }
+ * }, authOptions);
+ */
+export declare function fetchThreadMessagesV2(apiBaseUrl: string, queryParams: {
+    userId: string;
+    entityId?: string;
+    entityType?: string;
+    metadata?: Record<string, any>;
+}, authOptions?: {
+    userMpAuthToken?: string;
+    chatServerKey?: string;
+}): Promise<{
+    messages: Message[];
+    providerResId?: string;
+    threadId?: string;
 }>;
 
 /**

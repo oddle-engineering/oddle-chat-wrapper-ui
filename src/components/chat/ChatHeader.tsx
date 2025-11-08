@@ -3,7 +3,7 @@ import { CloseIcon, FullscreenIcon, CollapseIcon, SettingsIcon } from '../icons'
 import { ChatMode } from '../../types';
 
 interface ChatHeaderProps {
-  appName: string;
+  headerName: string;
   mode: ChatMode;
   isCollapsed: boolean;
   isModalOpen?: boolean;
@@ -15,7 +15,7 @@ interface ChatHeaderProps {
 }
 
 export const ChatHeader: React.FC<ChatHeaderProps> = ({
-  appName,
+  headerName,
   mode,
   isCollapsed,
   isModalOpen,
@@ -102,7 +102,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
   return (
     <div className="chat-wrapper__header">
       <div className="chat-wrapper__title-area">
-        <h2 className="chat-wrapper__title">{appName}</h2>
+        <h2 className="chat-wrapper__title">{headerName}</h2>
       </div>
       <div className="chat-wrapper__header-controls">
         {renderSettingsButton()}

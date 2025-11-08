@@ -4,7 +4,7 @@ import { ChatMode } from '../../types';
 
 interface ChatBubbleButtonProps {
   mode: ChatMode;
-  appName: string;
+  headerName: string;
   bubbleText?: string;
   showBubbleText?: boolean;
   onClick: () => void;
@@ -12,12 +12,12 @@ interface ChatBubbleButtonProps {
 
 export const ChatBubbleButton: React.FC<ChatBubbleButtonProps> = ({
   mode,
-  appName,
+  headerName,
   bubbleText,
   showBubbleText = true,
   onClick,
 }) => {
-  const title = mode === "modal" ? `Open ${appName}` : `Expand ${appName}`;
+  const title = mode === "modal" ? `Open ${headerName}` : `Expand ${headerName}`;
 
   return (
     <button

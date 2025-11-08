@@ -26,14 +26,13 @@ export interface ChatInputRef {
 // TODO: Review onFileUpload security implications
 export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
   const {
-    placeholder = "What would you like to know?",
     placeholderTexts,
     isStreaming,
     isLoadingConversation,
     chatStatus,
     fileUploadEnabled,
-    restaurantName,
-    restaurantLogo,
+    chipName,
+    chipLogo,
     messages,
     onSubmit,
     onFileUpload,
@@ -49,7 +48,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
   const activePlaceholderTexts =
     placeholderTexts && placeholderTexts.length > 0
       ? placeholderTexts
-      : [placeholder];
+      : ["What would you like to know?"];
 
   // Determine if animation should be active
   const shouldAnimate =
@@ -474,20 +473,20 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
               </span>
             </div>
           )}
-          {fileUploadEnabled && restaurantName && (
+          {fileUploadEnabled && chipName && (
             <div className="chat-wrapper__divider"></div>
           )}
-          {restaurantName && (
+          {chipName && (
             <div className="chat-wrapper__restaurant-chip">
-              {restaurantLogo && (
+              {chipLogo && (
                 <img
-                  src={restaurantLogo}
-                  alt="Restaurant logo"
+                  src={chipLogo}
+                  alt="Chip logo"
                   className="chat-wrapper__restaurant-logo"
                 />
               )}
               <span className="chat-wrapper__restaurant-name">
-                {restaurantName}
+                {chipName}
               </span>
             </div>
           )}

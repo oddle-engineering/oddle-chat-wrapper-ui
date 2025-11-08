@@ -54,20 +54,17 @@ export interface ToolResult {
 export interface ChatConfig {
   mode: ChatMode;
   position?: ChatPosition;
-  appName: string;
+  headerName: string;
   apiEndpoint: string;
   apiKey?: string;
   theme?: ChatTheme;
-  description?: string;
-  placeholder?: string;
+  headerDescription?: string;
   placeholderTexts?: string[];
-  welcomeMessage?: string;
-  promptPath?: string;
   bubbleText?: string;
   constrainedHeight?: boolean; // When true, embedded mode will fill parent container completely
-  headerVisible?: boolean; // When true, shows the header with appName and description
-  restaurantName?: string; // Restaurant name to display as chip near attachment button
-  restaurantLogo?: string; // Restaurant logo URL to display inside the chip
+  headerVisible?: boolean; // When true, shows the header with headerName and headerDescription
+  chipName?: string; // Name to display as chip near attachment button (e.g., restaurant name)
+  chipLogo?: string; // Logo URL to display inside the chip
   suggestedPrompts?: Array<{
     title: string;
     description: string;
@@ -86,7 +83,6 @@ export interface ChatConfig {
   onToolResult?: (tool: string, result: any) => void;
   onStreamingStatusChange?: (status: string) => void;
   customStyles?: React.CSSProperties;
-  endpoint?: "brief-planner" | "conversation";
 }
 
 export interface ChatWrapperRef {
@@ -115,7 +111,6 @@ export interface ChatWrapperProps {
   chatServerKey: string; // Server can detect which app is using the chat server (UD21, etc.)
   
   // Entity and conversation configuration
-  threadId?: string; // Optional: Load specific thread history by ID
   userId: string;
   entityId?: string; // Either brandId or accountId, depending on EntityType
   entityType?: EntityType;

@@ -1,20 +1,20 @@
 import React from 'react';
 
 interface ChatMainHeaderProps {
-  appName: string;
-  description?: string;
+  headerName: string;
+  headerDescription?: string;
 }
 
 export const ChatMainHeader: React.FC<ChatMainHeaderProps> = ({
-  appName,
-  description,
+  headerName,
+  headerDescription,
 }) => {
   return (
     <div className="chat-wrapper__main-header">
-      <h1 className="chat-wrapper__main-title">{appName}</h1>
-      {description && (
+      <h1 className="chat-wrapper__main-title">{headerName}</h1>
+      {headerDescription && (
         <p className="chat-wrapper__description">
-          {description}
+          {headerDescription}
         </p>
       )}
     </div>

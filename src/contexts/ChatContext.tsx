@@ -29,12 +29,11 @@ export interface ChatContextValue {
   conversationError?: string | null;
   
   // ===== Configuration =====
-  appName: string;
-  description?: string;
-  placeholder?: string;
+  headerName: string;
+  headerDescription?: string;
   placeholderTexts?: string[];
-  restaurantName?: string;
-  restaurantLogo?: string;
+  chipName?: string;
+  chipLogo?: string;
   suggestedPrompts?: Array<{
     title: string;
     description: string;

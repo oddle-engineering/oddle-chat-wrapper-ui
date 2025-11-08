@@ -184,7 +184,7 @@ function ConversationalOnboarding() {
 
 4. **Error Handling**: If the chat client hasn't been initialized yet, the update will be silently ignored with a console warning.
 
-5. **Thread Loading**: If you're loading an existing thread (via `threadId` prop), make sure the `entityId` matches the thread's entity to ensure proper access control.
+5. **Thread Loading**: When `entityId` is provided, the chat will automatically load the conversation history for that entity using the flexible query-based loading system.
 
 ## API Reference
 

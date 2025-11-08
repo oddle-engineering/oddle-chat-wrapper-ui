@@ -35,8 +35,7 @@ export {
   fetchUserThreads,
   fetchThreadByConvUuid,
   fetchThreadMessages,
-  fetchMessagesByConvUuid,
-  createThread
+  fetchThreadMessagesV2,
 } from './utils/threadApi';
 export type {
   ChatConfig,

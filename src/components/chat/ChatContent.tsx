@@ -21,8 +21,8 @@ export const ChatContent: React.FC = () => {
     messages,
     isLoadingConversation,
     isStreaming,
-    appName,
-    description,
+    headerName,
+    headerDescription,
     suggestedPrompts,
     messagesEndRef,
     chatInputRef,
@@ -58,7 +58,7 @@ export const ChatContent: React.FC = () => {
 
       {/* Main Header Section - only show when no messages and not loading */}
       {shouldShowMainHeader && (
-        <ChatMainHeader appName={appName} description={description} />
+        <ChatMainHeader headerName={headerName} headerDescription={headerDescription} />
       )}
 
       {/* Chat Content Area - flexible layout based on message state */}

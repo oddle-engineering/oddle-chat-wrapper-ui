@@ -10,7 +10,8 @@ import {
 } from "../hooks";
 import { useUIStore } from "../store";
 import { CHAT_STATUS, STREAMING_STATUS } from "../constants/chatStatus";
-import { FileUploadService, ChatSubmissionService } from "../services";
+import { FileUploadService } from "../services/fileUploadService";
+import { ChatSubmissionService } from "../services/chatSubmissionService";
 import { chatUtils } from "../utils/chatUtils";
 import {
   ChatErrorBoundary,
@@ -34,7 +35,6 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       chatServerKey,
 
       // Entity and conversation configuration
-      threadId,
       userId,
       entityId,
       entityType,
@@ -258,7 +258,8 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
 
   // Initialize conversation loader
   useConversationLoader({
-    threadId,
+    entityId,
+    entityType,
     userId,
     httpApiUrl,
     userMpAuthToken,
@@ -445,23 +446,21 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
 
   const configState = useMemo(
     () => ({
-      appName: config.appName,
-      description: config.description,
-      placeholder: config.placeholder,
+      headerName: config.headerName,
+      headerDescription: config.headerDescription,
       placeholderTexts: config.placeholderTexts,
-      restaurantName: config.restaurantName,
-      restaurantLogo: config.restaurantLogo,
+      chipName: config.chipName,
+      chipLogo: config.chipLogo,
       suggestedPrompts: config.suggestedPrompts,
       clientTools: uiClientTools,
       fileUploadEnabled: config.features?.fileUpload,
     }),
     [
-      config.appName,
-      config.description,
-      config.placeholder,
+      config.headerName,
+      config.headerDescription,
       config.placeholderTexts,
-      config.restaurantName,
-      config.restaurantLogo,
+      config.chipName,
+      config.chipLogo,
       config.suggestedPrompts,
       config.features?.fileUpload,
       uiClientTools,
@@ -539,7 +538,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       <ChatErrorBoundary>
         <ChatBubbleButton
           mode={currentMode as ChatMode}
-          appName={config.appName}
+          headerName={config.headerName}
           bubbleText={config.bubbleText}
           showBubbleText={config.features?.showBubbleText !== false}
           onClick={handleBubbleClick}
@@ -580,7 +579,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
           {/* Header */}
           {chatUtils.state.shouldShowHeader(config.headerVisible) && (
             <ChatHeader
-              appName={config.appName}
+              headerName={config.headerName}
               mode={currentMode as ChatMode}
               isCollapsed={isCollapsed}
               isModalOpen={isModalOpen}
