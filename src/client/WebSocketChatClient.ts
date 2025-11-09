@@ -12,7 +12,7 @@ import { WebSocketManager, ConnectionState } from "./connection";
 import { MessageHandler } from "./handlers";
 import { MessageFactory } from "./utils/messageFactory";
 import { TicketManager, AuthData } from "./ticket";
-import { updateThread } from "../utils/threadApi";
+import { updateThread, updateThreadMetadata } from "../utils/threadApi";
 
 export class WebSocketChatClient {
   private readonly config: ConnectionConfig;
@@ -330,7 +330,7 @@ export class WebSocketChatClient {
   }
 
   /**
-   * Update entity information (entityId and/or entityType) for a conversation
+   * Update entity information (entityId and entityType) for a conversation
    * This is useful when a conversation starts without an entity,
    * then later gets associated with one (e.g., user creates/selects an entity)
    * 
@@ -338,26 +338,21 @@ export class WebSocketChatClient {
    * 1. Makes an HTTP PATCH request to persist the entity attachment on the server
    * 2. Updates the local TicketManager auth data for future ticket renewals
    * 
+   * Note: This should be used for changing entity ownership (rare).
+   * For updating business context (orderId, tableId, etc.), use updateMetadata() instead.
+   * 
    * @param providerResId - Provider resource ID (conversationId) of the thread to update
    * @param entityId - New entity ID to associate with this conversation
    * @param entityType - Entity type (BRAND or ACCOUNT)
-   * @param options - Optional tag and metadata
    * @returns Promise that resolves when the update is complete
    * 
    * @example
-   * await client.updateEntityId('conv_abc123', 'brand_456', 'BRAND', {
-   *   tag: 'customer-support',
-   *   metadata: { priority: 'high' }
-   * });
+   * await client.updateEntityId('conv_abc123', 'brand_456', 'BRAND');
    */
   async updateEntityId(
     providerResId: string,
     entityId: string,
-    entityType: string,
-    options?: {
-      tag?: string;
-      metadata?: any;
-    }
+    entityType: string
   ): Promise<void> {
     if (!this.ticketManager) {
       throw new Error("WebSocketChatClient: Cannot update entityId - TicketManager not initialized");
@@ -373,8 +368,6 @@ export class WebSocketChatClient {
         {
           entityId,
           entityType,
-          tag: options?.tag,
-          metadata: options?.metadata,
         },
         this.authCredentials
       );
@@ -388,6 +381,57 @@ export class WebSocketChatClient {
       console.log("WebSocketChatClient: Local auth data updated successfully");
     } catch (error) {
       console.error("WebSocketChatClient: Failed to update entity attachment:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update thread metadata and/or tag for a conversation
+   * This is useful for updating dynamic business context without changing entity ownership
+   * 
+   * Use this for frequently changing data like:
+   * - Order IDs, table IDs, campaign IDs
+   * - Status updates, priority changes
+   * - Custom app-specific metadata
+   * 
+   * This method makes an HTTP PATCH request to update only the metadata/tag fields,
+   * leaving entityId and entityType unchanged.
+   * 
+   * @param providerResId - Provider resource ID (conversationId) of the thread to update
+   * @param updates - Metadata and/or tag to update
+   * @returns Promise that resolves when the update is complete
+   * 
+   * @example
+   * await client.updateMetadata('conv_abc123', {
+   *   metadata: { orderId: 'order_789', tableId: 'table_5', status: 'pending' }
+   * });
+   * 
+   * @example
+   * await client.updateMetadata('conv_abc123', {
+   *   tag: 'high-priority',
+   *   metadata: { priority: 'urgent', assignedTo: 'agent-123' }
+   * });
+   */
+  async updateMetadata(
+    providerResId: string,
+    updates: {
+      tag?: string | null;
+      metadata?: any;
+    }
+  ): Promise<void> {
+    console.log(`WebSocketChatClient: Updating thread metadata - providerResId: ${providerResId}`);
+    
+    try {
+      await updateThreadMetadata(
+        this.config.apiUrl,
+        providerResId,
+        updates,
+        this.authCredentials
+      );
+
+      console.log("WebSocketChatClient: Thread metadata updated successfully");
+    } catch (error) {
+      console.error("WebSocketChatClient: Failed to update thread metadata:", error);
       throw error;
     }
   }

@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { getAgentConfiguration, updateAgentConfiguration, AgentConfiguration } from '../utils/agentConfigApi';
-import { updateThread } from '../utils/threadApi';
+import { updateThread, updateThreadMetadata } from '../utils/threadApi';
 import { useUIStore } from '../store';
 
 interface DevSettingsProps {
@@ -118,35 +118,46 @@ export const DevSettings = ({
         }
       }
 
-      // Build updates object
-      const updates: {
-        entityId?: string | null;
-        entityType?: string | null;
-        tag?: string | null;
-        metadata?: any;
-      } = {};
+      // Separate entity updates from metadata updates
+      const hasEntityUpdate = tempEntityId && tempEntityType;
+      const hasMetadataUpdate = tempTag || parsedMetadata;
 
-      if (tempEntityId) {
-        updates.entityId = tempEntityId;
-        updates.entityType = tempEntityType || null;
-      }
-      if (tempTag) {
-        updates.tag = tempTag;
-      }
-      if (parsedMetadata) {
-        updates.metadata = parsedMetadata;
+      // First, update entity if provided (rare - changing ownership)
+      if (hasEntityUpdate) {
+        await updateThread(
+          apiUrl,
+          providerResId,
+          {
+            entityId: tempEntityId,
+            entityType: tempEntityType,
+          },
+          {
+            userMpAuthToken,
+            chatServerKey,
+          }
+        );
       }
 
-      // Call update API
-      await updateThread(
-        apiUrl,
-        providerResId,
-        updates,
-        {
-          userMpAuthToken,
-          chatServerKey,
-        }
-      );
+      // Then, update metadata/tag if provided (common - business context)
+      if (hasMetadataUpdate) {
+        await updateThreadMetadata(
+          apiUrl,
+          providerResId,
+          {
+            tag: tempTag || undefined,
+            metadata: parsedMetadata,
+          },
+          {
+            userMpAuthToken,
+            chatServerKey,
+          }
+        );
+      }
+
+      if (!hasEntityUpdate && !hasMetadataUpdate) {
+        setError("Please provide at least one field to update");
+        return;
+      }
 
       setSuccessMessage("Thread updated successfully!");
       
@@ -302,73 +313,99 @@ export const DevSettings = ({
             <>
               <div className="chat-wrapper__dev-settings-info">
                 <p><strong>Provider Resource ID:</strong> {providerResId || "No active conversation"}</p>
-              </div>
-
-              <div className="chat-wrapper__dev-settings-field">
-                <label htmlFor="entity-id">Entity ID:</label>
-                <input
-                  id="entity-id"
-                  type="text"
-                  value={tempEntityId}
-                  onChange={(e) => setTempEntityId(e.target.value)}
-                  placeholder="e.g., brand_123 or account_456"
-                  className="chat-wrapper__dev-settings-input"
-                  disabled={loading || !providerResId}
-                />
-                <p className="chat-wrapper__dev-settings-help">
-                  The brand or account ID to attach this thread to.
+                <p style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
+                  Note: Entity ownership is typically set at initialization. Use this to update business context.
                 </p>
               </div>
 
-              <div className="chat-wrapper__dev-settings-field">
-                <label htmlFor="entity-type">Entity Type:</label>
-                <select
-                  id="entity-type"
-                  value={tempEntityType}
-                  onChange={(e) => setTempEntityType(e.target.value as "BRAND" | "ACCOUNT" | "")}
-                  className="chat-wrapper__dev-settings-input"
-                  disabled={loading || !providerResId}
-                >
-                  <option value="">-- Select Type --</option>
-                  <option value="BRAND">BRAND</option>
-                  <option value="ACCOUNT">ACCOUNT</option>
-                </select>
-                <p className="chat-wrapper__dev-settings-help">
-                  Type of entity (BRAND or ACCOUNT).
+              {/* Business Context Section - Primary Use */}
+              <div className="chat-wrapper__dev-settings-section">
+                <h4 style={{ marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>Update Business Context</h4>
+                <p style={{ marginBottom: '12px', fontSize: '12px', color: '#666' }}>
+                  Update dynamic metadata like order IDs, table IDs, status, etc.
                 </p>
+
+                <div className="chat-wrapper__dev-settings-field">
+                  <label htmlFor="tag">Tag:</label>
+                  <input
+                    id="tag"
+                    type="text"
+                    value={tempTag}
+                    onChange={(e) => setTempTag(e.target.value)}
+                    placeholder="e.g., customer-inquiry, support"
+                    className="chat-wrapper__dev-settings-input"
+                    disabled={loading || !providerResId}
+                  />
+                  <p className="chat-wrapper__dev-settings-help">
+                    Optional tag for categorizing the thread.
+                  </p>
+                </div>
+
+                <div className="chat-wrapper__dev-settings-field">
+                  <label htmlFor="metadata">Metadata (JSON):</label>
+                  <textarea
+                    id="metadata"
+                    value={tempMetadata}
+                    onChange={(e) => setTempMetadata(e.target.value)}
+                    placeholder='{"orderId": "order_789", "tableId": "table_5", "status": "pending"}'
+                    className="chat-wrapper__dev-settings-input"
+                    rows={4}
+                    disabled={loading || !providerResId}
+                  />
+                  <p className="chat-wrapper__dev-settings-help">
+                    App-specific business data (orderId, tableId, campaignId, etc.).
+                  </p>
+                </div>
               </div>
 
-              <div className="chat-wrapper__dev-settings-field">
-                <label htmlFor="tag">Tag:</label>
-                <input
-                  id="tag"
-                  type="text"
-                  value={tempTag}
-                  onChange={(e) => setTempTag(e.target.value)}
-                  placeholder="e.g., customer-inquiry, support"
-                  className="chat-wrapper__dev-settings-input"
-                  disabled={loading || !providerResId}
-                />
-                <p className="chat-wrapper__dev-settings-help">
-                  Optional tag for categorizing the thread.
-                </p>
-              </div>
+              {/* Separator */}
+              <div style={{ borderTop: '1px solid #e0e0e0', margin: '20px 0' }}></div>
 
-              <div className="chat-wrapper__dev-settings-field">
-                <label htmlFor="metadata">Metadata (JSON):</label>
-                <textarea
-                  id="metadata"
-                  value={tempMetadata}
-                  onChange={(e) => setTempMetadata(e.target.value)}
-                  placeholder='{"priority": "high", "category": "billing"}'
-                  className="chat-wrapper__dev-settings-input"
-                  rows={4}
-                  disabled={loading || !providerResId}
-                />
-                <p className="chat-wrapper__dev-settings-help">
-                  Custom metadata as JSON object. Leave empty for no metadata.
-                </p>
-              </div>
+              {/* Entity Ownership Section - Advanced/Rare */}
+              <details style={{ marginTop: '16px' }}>
+                <summary style={{ cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: '#666' }}>
+                  Advanced: Change Entity Ownership (Rare)
+                </summary>
+                <div style={{ marginTop: '12px', padding: '12px', backgroundColor: '#f9f9f9', borderRadius: '4px' }}>
+                  <p style={{ fontSize: '12px', color: '#666', marginBottom: '12px' }}>
+                    ⚠️ Entity is typically set at initialization. Only change this if transferring conversation ownership.
+                  </p>
+
+                  <div className="chat-wrapper__dev-settings-field">
+                    <label htmlFor="entity-id">Entity ID:</label>
+                    <input
+                      id="entity-id"
+                      type="text"
+                      value={tempEntityId}
+                      onChange={(e) => setTempEntityId(e.target.value)}
+                      placeholder="e.g., brand_123 or account_456"
+                      className="chat-wrapper__dev-settings-input"
+                      disabled={loading || !providerResId}
+                    />
+                    <p className="chat-wrapper__dev-settings-help">
+                      The brand or account ID to attach this thread to.
+                    </p>
+                  </div>
+
+                  <div className="chat-wrapper__dev-settings-field">
+                    <label htmlFor="entity-type">Entity Type:</label>
+                    <select
+                      id="entity-type"
+                      value={tempEntityType}
+                      onChange={(e) => setTempEntityType(e.target.value as "BRAND" | "ACCOUNT" | "")}
+                      className="chat-wrapper__dev-settings-input"
+                      disabled={loading || !providerResId}
+                    >
+                      <option value="">-- Select Type --</option>
+                      <option value="BRAND">BRAND</option>
+                      <option value="ACCOUNT">ACCOUNT</option>
+                    </select>
+                    <p className="chat-wrapper__dev-settings-help">
+                      Type of entity (BRAND or ACCOUNT).
+                    </p>
+                  </div>
+                </div>
+              </details>
             </>
           )}
         </div>

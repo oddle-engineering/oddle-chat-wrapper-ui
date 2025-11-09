@@ -37,6 +37,7 @@ export {
   fetchThreadMessages,
   fetchThreadMessagesV2,
   updateThread,
+  updateThreadMetadata,
 } from './utils/threadApi';
 export type {
   ChatConfig,

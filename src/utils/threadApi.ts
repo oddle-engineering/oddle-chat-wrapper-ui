@@ -155,14 +155,14 @@ export async function fetchThreadMessagesV2(
   if (queryParams.entityType) {
     params.append("entityType", queryParams.entityType);
   }
-
+  console.log("Metadata to append:", queryParams.metadata);
   // Add metadata as JSON string if provided
   if (queryParams.metadata && Object.keys(queryParams.metadata).length > 0) {
     params.append("metadata", JSON.stringify(queryParams.metadata));
   }
 
   const url = `${apiBaseUrl}/api/v1/messages/query?${params.toString()}`;
-
+  console.log('clog url:', url);
   // Build headers with authentication
   const headers: HeadersInit = {};
   if (authOptions?.userMpAuthToken) {
@@ -196,7 +196,7 @@ export async function fetchThreadMessagesV2(
 }
 
 /**
- * Update thread properties (attach to entity, update metadata, tag, etc.)
+ * Update a thread by providerResId (PATCH)
  * 
  * This function allows you to:
  * - Attach a draft thread to an entity (brand/account)
@@ -246,7 +246,7 @@ export async function updateThread(
     chatServerKey?: string;
   }
 ): Promise<Thread> {
-  const url = `${apiBaseUrl}/api/v1/threads/provider/${providerResId}`;
+  const url = `${apiBaseUrl}/api/v1/threads/${providerResId}`;
 
   // Build headers with authentication
   const headers: HeadersInit = {
@@ -277,6 +277,88 @@ export async function updateThread(
   
   if (!result.success) {
     throw new Error(result.error || "Failed to update thread");
+  }
+
+  return result.data;
+}
+
+/**
+ * Update thread metadata and/or tag (PATCH)
+ * 
+ * This function is specifically for updating the dynamic business context of a thread
+ * without changing its entity association. Use this for frequently changing data like:
+ * - Order IDs, table IDs, campaign IDs
+ * - Status updates, priority changes
+ * - Custom app-specific metadata
+ * 
+ * @param apiBaseUrl - Base URL of the API
+ * @param providerResId - Provider resource ID (conversationId) of the thread to update
+ * @param updates - Metadata and/or tag to update
+ * @param authOptions - Authentication options
+ * @returns Updated thread data
+ *
+ * @example
+ * // Update metadata with order context
+ * const thread = await updateThreadMetadata(apiUrl, 'conv_abc123', {
+ *   metadata: { orderId: 'order_789', tableId: 'table_5', status: 'in-progress' }
+ * }, authOptions);
+ *
+ * @example
+ * // Update tag and metadata together
+ * const thread = await updateThreadMetadata(apiUrl, 'conv_abc123', {
+ *   tag: 'high-priority',
+ *   metadata: { priority: 'urgent', assignedTo: 'agent-123' }
+ * }, authOptions);
+ *
+ * @example
+ * // Clear metadata
+ * const thread = await updateThreadMetadata(apiUrl, 'conv_abc123', {
+ *   metadata: null
+ * }, authOptions);
+ */
+export async function updateThreadMetadata(
+  apiBaseUrl: string,
+  providerResId: string,
+  updates: {
+    tag?: string | null;
+    metadata?: any;
+  },
+  authOptions?: {
+    userMpAuthToken?: string;
+    chatServerKey?: string;
+  }
+): Promise<Thread> {
+  const url = `${apiBaseUrl}/api/v1/threads/${providerResId}`;
+
+  // Build headers with authentication
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  
+  if (authOptions?.userMpAuthToken) {
+    headers["x-oddle-mp-auth-token"] = authOptions.userMpAuthToken;
+  }
+  if (authOptions?.chatServerKey) {
+    headers["x-oddle-chat-server-key"] = authOptions.chatServerKey;
+  }
+
+  const response = await fetch(url, {
+    method: "PATCH",
+    headers,
+    body: JSON.stringify(updates),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({
+      error: "Failed to update thread metadata",
+    }));
+    throw new Error(error.error || "Failed to update thread metadata");
+  }
+
+  const result = await response.json();
+  
+  if (!result.success) {
+    throw new Error(result.error || "Failed to update thread metadata");
   }
 
   return result.data;

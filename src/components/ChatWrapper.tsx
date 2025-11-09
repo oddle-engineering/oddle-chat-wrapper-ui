@@ -51,6 +51,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       userId,
       entityId,
       entityType,
+      metadata,
 
       // Existing props
       config,
@@ -259,28 +260,57 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
             );
             return;
           }
-          
+
           if (!currentProviderResId) {
             console.warn(
               "ChatWrapper: Cannot update entityId - no active conversation (providerResId not set)"
             );
             return;
           }
-          
+
           if (!newEntityType) {
             console.warn(
               "ChatWrapper: Cannot update entityId - entityType is required"
             );
             return;
           }
-          
-          chatClient.updateEntityId(
-            currentProviderResId,
-            newEntityId,
-            newEntityType.toString()
-          ).catch((error) => {
-            console.error("ChatWrapper: Failed to update entity attachment:", error);
-          });
+
+          chatClient
+            .updateEntityId(
+              currentProviderResId,
+              newEntityId,
+              newEntityType.toString()
+            )
+            .catch((error) => {
+              console.error(
+                "ChatWrapper: Failed to update entity attachment:",
+                error
+              );
+            });
+        },
+        updateMetadata: (updates: { tag?: string | null; metadata?: any }) => {
+          if (!chatClient) {
+            console.warn(
+              "ChatWrapper: Cannot update metadata - chat client not initialized"
+            );
+            return;
+          }
+
+          if (!currentProviderResId) {
+            console.warn(
+              "ChatWrapper: Cannot update metadata - no active conversation (providerResId not set)"
+            );
+            return;
+          }
+
+          chatClient
+            .updateMetadata(currentProviderResId, updates)
+            .catch((error) => {
+              console.error(
+                "ChatWrapper: Failed to update thread metadata:",
+                error
+              );
+            });
         },
       }),
       [chatClient, currentProviderResId]
@@ -311,6 +341,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       setConversationError,
       setCurrentThreadId,
       setProviderResId,
+      metadata,
     });
 
     // Scroll animation frame ref

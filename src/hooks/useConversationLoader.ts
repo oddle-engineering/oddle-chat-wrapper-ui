@@ -15,6 +15,7 @@ interface UseConversationLoaderProps {
   setConversationError: (error: string | null) => void;
   setCurrentThreadId: (threadId: string | null) => void;
   setProviderResId: (providerResId: string | null) => void;
+  metadata?: any;
 }
 
 export function useConversationLoader({
@@ -30,6 +31,7 @@ export function useConversationLoader({
   setConversationError,
   setCurrentThreadId,
   setProviderResId,
+  metadata
 }: UseConversationLoaderProps) {
   const hasLoadedConversationRef = useRef<boolean>(false);
 
@@ -82,6 +84,7 @@ export function useConversationLoader({
             userId,
             entityId,
             entityType,
+            metadata
           },
           {
             userMpAuthToken,
@@ -130,6 +133,7 @@ export function useConversationLoader({
     setConversationError,
     setCurrentThreadId,
     setProviderResId,
+    metadata,
   ]);
 
   return {

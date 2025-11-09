@@ -126,7 +126,7 @@ function App() {
 
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [isThreadModalOpen, setIsThreadModalOpen] = useState(false);
-  
+
   // Get providerResId from the store
   const providerResId = useUIStore((state) => state.providerResId);
 
@@ -759,8 +759,9 @@ function App() {
       userId: "user_123_16",
 
       // Optional entity configuration
-      entityId: "mar_01",
+      entityId: "mar_02",
       entityType: EntityType.BRAND,
+      metadata: { marketing_id: "mar_01" },
 
       config: {
         ...customConfig,

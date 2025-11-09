@@ -83,6 +83,7 @@ export declare interface ChatWrapperProps {
     userId: string;
     entityId?: string;
     entityType?: EntityType;
+    metadata?: any;
     config: Omit<ChatConfig, "apiEndpoint">;
     tools?: Tools;
     devMode?: boolean;
@@ -91,11 +92,14 @@ export declare interface ChatWrapperProps {
 
 export declare interface ChatWrapperRef {
     /**
-     * Update the entity ID and/or entity type associated with this chat
+     * Update the entity ID and entity type associated with this chat
      * Useful when a conversation starts without an entity, then later gets associated with one
      *
+     * Note: This should be used for changing entity ownership (rare).
+     * For updating business context (orderId, tableId, etc.), use updateMetadata() instead.
+     *
      * @param entityId - The new entity ID to associate
-     * @param entityType - Optional: The new entity type (only if it changed)
+     * @param entityType - The entity type (BRAND or ACCOUNT) - required
      *
      * @example
      * ```tsx
@@ -106,6 +110,37 @@ export declare interface ChatWrapperRef {
      * ```
      */
     updateEntityId: (entityId: string, entityType?: EntityType) => void;
+    /**
+     * Update thread metadata and/or tag for dynamic business context
+     * Use this for frequently changing data without affecting entity ownership
+     *
+     * Common use cases:
+     * - Order IDs, table IDs, campaign IDs
+     * - Status updates, priority changes
+     * - Custom app-specific metadata
+     *
+     * @param updates - Object containing tag and/or metadata to update
+     *
+     * @example
+     * ```tsx
+     * const chatRef = useRef<ChatWrapperRef>(null);
+     *
+     * // Update order context
+     * chatRef.current?.updateMetadata({
+     *   metadata: { orderId: 'order_789', tableId: 'table_5', status: 'pending' }
+     * });
+     *
+     * // Update tag and metadata together
+     * chatRef.current?.updateMetadata({
+     *   tag: 'high-priority',
+     *   metadata: { priority: 'urgent', assignedTo: 'agent-123' }
+     * });
+     * ```
+     */
+    updateMetadata: (updates: {
+        tag?: string | null;
+        metadata?: any;
+    }) => void;
 }
 
 export declare interface ClientTool {
@@ -565,7 +600,7 @@ export declare interface ToolSchema {
 export declare type UIStore = LayoutSlice & ChatSlice & ConversationSlice & ThreadSlice & DevSlice & MessagesSlice;
 
 /**
- * Update thread properties (attach to entity, update metadata, tag, etc.)
+ * Update a thread by providerResId (PATCH)
  *
  * This function allows you to:
  * - Attach a draft thread to an entity (brand/account)
@@ -606,6 +641,48 @@ export declare function updateThread(apiBaseUrl: string, providerResId: string, 
     metadata?: any;
     entityId?: string | null;
     entityType?: string | null;
+}, authOptions?: {
+    userMpAuthToken?: string;
+    chatServerKey?: string;
+}): Promise<Thread>;
+
+/**
+ * Update thread metadata and/or tag (PATCH)
+ *
+ * This function is specifically for updating the dynamic business context of a thread
+ * without changing its entity association. Use this for frequently changing data like:
+ * - Order IDs, table IDs, campaign IDs
+ * - Status updates, priority changes
+ * - Custom app-specific metadata
+ *
+ * @param apiBaseUrl - Base URL of the API
+ * @param providerResId - Provider resource ID (conversationId) of the thread to update
+ * @param updates - Metadata and/or tag to update
+ * @param authOptions - Authentication options
+ * @returns Updated thread data
+ *
+ * @example
+ * // Update metadata with order context
+ * const thread = await updateThreadMetadata(apiUrl, 'conv_abc123', {
+ *   metadata: { orderId: 'order_789', tableId: 'table_5', status: 'in-progress' }
+ * }, authOptions);
+ *
+ * @example
+ * // Update tag and metadata together
+ * const thread = await updateThreadMetadata(apiUrl, 'conv_abc123', {
+ *   tag: 'high-priority',
+ *   metadata: { priority: 'urgent', assignedTo: 'agent-123' }
+ * }, authOptions);
+ *
+ * @example
+ * // Clear metadata
+ * const thread = await updateThreadMetadata(apiUrl, 'conv_abc123', {
+ *   metadata: null
+ * }, authOptions);
+ */
+export declare function updateThreadMetadata(apiBaseUrl: string, providerResId: string, updates: {
+    tag?: string | null;
+    metadata?: any;
 }, authOptions?: {
     userMpAuthToken?: string;
     chatServerKey?: string;

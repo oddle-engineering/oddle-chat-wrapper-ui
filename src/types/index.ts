@@ -1,15 +1,14 @@
 import React from "react";
-import type { ContextHelpers } from '../client/types/shared';
+import type { ContextHelpers } from "../client/types/shared";
 
 export type ChatMode = "sidebar" | "fullscreen" | "modal" | "embedded";
 export type ChatPosition = "left" | "right";
 export type ChatTheme = "light" | "dark" | "auto";
 export enum EntityType {
   BRAND = "BRAND",
-  ACCOUNT = "ACCOUNT", 
+  ACCOUNT = "ACCOUNT",
   USER = "USER",
 }
-
 
 export interface Message {
   id: string;
@@ -87,21 +86,53 @@ export interface ChatConfig {
 
 export interface ChatWrapperRef {
   /**
-   * Update the entity ID and/or entity type associated with this chat
+   * Update the entity ID and entity type associated with this chat
    * Useful when a conversation starts without an entity, then later gets associated with one
-   * 
+   *
+   * Note: This should be used for changing entity ownership (rare).
+   * For updating business context (orderId, tableId, etc.), use updateMetadata() instead.
+   *
    * @param entityId - The new entity ID to associate
-   * @param entityType - Optional: The new entity type (only if it changed)
-   * 
+   * @param entityType - The entity type (BRAND or ACCOUNT) - required
+   *
    * @example
    * ```tsx
    * const chatRef = useRef<ChatWrapperRef>(null);
-   * 
+   *
    * // Later, after user creates/selects an entity
    * chatRef.current?.updateEntityId('brand-123', EntityType.BRAND);
    * ```
    */
   updateEntityId: (entityId: string, entityType?: EntityType) => void;
+
+  /**
+   * Update thread metadata and/or tag for dynamic business context
+   * Use this for frequently changing data without affecting entity ownership
+   *
+   * Common use cases:
+   * - Order IDs, table IDs, campaign IDs
+   * - Status updates, priority changes
+   * - Custom app-specific metadata
+   *
+   * @param updates - Object containing tag and/or metadata to update
+   *
+   * @example
+   * ```tsx
+   * const chatRef = useRef<ChatWrapperRef>(null);
+   *
+   * // Update order context
+   * chatRef.current?.updateMetadata({
+   *   metadata: { orderId: 'order_789', tableId: 'table_5', status: 'pending' }
+   * });
+   *
+   * // Update tag and metadata together
+   * chatRef.current?.updateMetadata({
+   *   tag: 'high-priority',
+   *   metadata: { priority: 'urgent', assignedTo: 'agent-123' }
+   * });
+   * ```
+   */
+  updateMetadata: (updates: { tag?: string | null; metadata?: any }) => void;
 }
 
 export interface ChatWrapperProps {
@@ -109,13 +140,13 @@ export interface ChatWrapperProps {
   userMpAuthToken: string; // Use for Authorization header in HTTPS requests and WebSocket initialization
   chatServerUrl: string; // Making connection to WebSocket and HTTP requests
   chatServerKey: string; // Server can detect which app is using the chat server (UD21, etc.)
-  
+
   // Entity and conversation configuration
   userId: string;
   entityId?: string; // Either brandId or accountId, depending on EntityType
   entityType?: EntityType;
-  
-  
+  metadata?: any; // Additional metadata for business context (orderId, tableId, etc.)
+
   // Existing props
   config: Omit<ChatConfig, "apiEndpoint">;
   tools?: Tools; // Unified tools with execution functions
@@ -190,25 +221,25 @@ export interface ClientTool {
 export type ClientTools = ClientTool[];
 
 // Re-export shared types for backward compatibility
-export type { ToolCallRequest, ContextHelpers } from '../client/types/shared';
+export type { ToolCallRequest, ContextHelpers } from "../client/types/shared";
 
 // Re-export status constants and types
-export type { 
-  ChatStatus, 
-  StreamingStatus, 
-  ProcessingStatus 
-} from '../constants/chatStatus';
-export { 
-  CHAT_STATUS, 
-  STREAMING_STATUS, 
+export type {
+  ChatStatus,
+  StreamingStatus,
+  ProcessingStatus,
+} from "../constants/chatStatus";
+export {
+  CHAT_STATUS,
+  STREAMING_STATUS,
   PROCESSING_STATUS,
   isChatActive,
   isChatIdle,
   isChatError,
   isProcessingActive,
   isProcessingComplete,
-  isProcessingError
-} from '../constants/chatStatus';
+  isProcessingError,
+} from "../constants/chatStatus";
 
 // Re-export typed WebSocket message interfaces (recommended over deprecated WebSocketMessage)
 export type {
@@ -219,8 +250,8 @@ export type {
   ChatEventMessage,
   ToolCallRequestMessage,
   SystemEvent,
-  SystemEventType
-} from '../client/types';
+  SystemEventType,
+} from "../client/types";
 
 // DEPRECATED: Use InboundMessage or OutboundMessage from client/types instead
 // This interface is kept temporarily for backward compatibility
