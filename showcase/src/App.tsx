@@ -51,7 +51,7 @@ function App() {
       "Ask Oddle AI to generate irresistible offers..",
     ],
     headerVisible: false,
-    chipName: "McDonald's Downtown",
+    chipName: "McDonald's",
     chipLogo:
       "https://lounge.beta.oddle.me/_next/image?url=https%3A%2F%2Fs3-ap-southeast-1.amazonaws.com%2Fv3-beta.image.oddle.me%2Flogo%2Fmenu_logo_Nomnom5a565b.jpg&w=96&q=75",
 
@@ -759,9 +759,9 @@ function App() {
       userId: "user_123_16",
 
       // Optional entity configuration
-      entityId: "",
+      entityId: "mar_02",
       entityType: EntityType.BRAND,
-      metadata: { marketing_id: "mar_01+" },
+      metadata: { marketing_id: "mar_01" },
 
       config: {
         ...customConfig,

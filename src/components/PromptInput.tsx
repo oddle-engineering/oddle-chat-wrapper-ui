@@ -249,6 +249,7 @@ export const PromptInputSubmit = ({
         "chat-wrapper__prompt-submit",
         `chat-wrapper__prompt-submit--${variant}`,
         `chat-wrapper__prompt-submit--${size}`,
+        !disabled && "chat-wrapper__prompt-submit--enabled",
         // status === "streaming" && "chat-wrapper__prompt-submit--stop",
         className
       )}

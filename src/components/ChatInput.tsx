@@ -163,7 +163,11 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
   }, [onFileUpload]);
 
   return (
-    <PromptInput onSubmit={handleSubmit} style={{ position: "relative" }}>
+    <PromptInput 
+      onSubmit={handleSubmit} 
+      style={{ position: "relative" }}
+      className={isStreaming || isLoadingConversation ? "chat-wrapper__prompt-input--disabled" : ""}
+    >
       <PromptInputTextarea
         ref={textareaRef}
         name="message"
