@@ -234,22 +234,6 @@ export declare enum EntityType {
 }
 
 /**
- * Fetch thread by conversation UUID
- */
-export declare function fetchThreadByConvUuid(apiBaseUrl: string, convUuid: string): Promise<Thread>;
-
-/**
- * Fetch messages for a thread
- */
-export declare function fetchThreadMessages(apiBaseUrl: string, threadId: string, authOptions?: {
-    userMpAuthToken?: string;
-    chatServerKey?: string;
-}): Promise<{
-    messages: Message[];
-    providerResId?: string;
-}>;
-
-/**
  * Fetch messages for a thread with flexible query parameters (V2)
  *
  * This version allows querying by entityId, userId, or custom metadata
@@ -263,14 +247,14 @@ export declare function fetchThreadMessages(apiBaseUrl: string, threadId: string
  *
  * @example
  * // Query by entityId and userId
- * const result = await fetchThreadMessagesV2(apiUrl, {
+ * const result = await fetchThreadMessages(apiUrl, {
  *   entityId: 'brand_123',
  *   userId: 'user_456'
  * }, authOptions);
  *
  * @example
  * // Query with custom metadata
- * const result = await fetchThreadMessagesV2(apiUrl, {
+ * const result = await fetchThreadMessages(apiUrl, {
  *   userId: 'user_456',
  *   metadata: {
  *     orderId: 'order_789',
@@ -278,7 +262,7 @@ export declare function fetchThreadMessages(apiBaseUrl: string, threadId: string
  *   }
  * }, authOptions);
  */
-export declare function fetchThreadMessagesV2(apiBaseUrl: string, queryParams: {
+export declare function fetchThreadMessages(apiBaseUrl: string, queryParams: {
     userId: string;
     entityId?: string;
     entityType?: string;
@@ -291,14 +275,6 @@ export declare function fetchThreadMessagesV2(apiBaseUrl: string, queryParams: {
     providerResId?: string;
     threadId?: string;
 }>;
-
-/**
- * Fetch user threads from the API
- */
-export declare function fetchUserThreads(apiBaseUrl: string, userId: string, options?: {
-    includeArchived?: boolean;
-    limit?: number;
-}): Promise<Thread[]>;
 
 export declare const FullscreenIcon: default_2.FC<FullscreenIconProps>;
 

@@ -60,9 +60,14 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
     },
     setText: (text: string) => {
       setInput(text);
-      // Focus the textarea after setting text
+      // Focus the textarea and move cursor to the end
       setTimeout(() => {
-        textareaRef.current?.focus();
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+          // Set cursor position to the end of the text
+          const length = text.length;
+          textareaRef.current.setSelectionRange(length, length);
+        }
       }, 0);
     },
   }));

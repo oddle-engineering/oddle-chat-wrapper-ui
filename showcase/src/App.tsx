@@ -759,9 +759,9 @@ function App() {
       userId: "user_123_16",
 
       // Optional entity configuration
-      entityId: "mar_02",
+      entityId: "",
       entityType: EntityType.BRAND,
-      metadata: { marketing_id: "mar_01" },
+      metadata: { marketing_id: "mar_01+" },
 
       config: {
         ...customConfig,

@@ -38,51 +38,12 @@ async function rs(e, t, n) {
   }
   return (await i.json()).configuration;
 }
-async function Lh(e, t, n) {
-  const r = new URLSearchParams();
-  n != null && n.includeArchived && r.append("includeArchived", "true"), n != null && n.limit && r.append("limit", n.limit.toString());
-  const i = `${e}/api/v1/threads/user/${t}${r.toString() ? `?${r.toString()}` : ""}`, a = await fetch(i);
-  if (!a.ok) {
-    const o = await a.json().catch(() => ({
-      error: "Failed to fetch threads"
-    }));
-    throw new Error(o.error || "Failed to fetch threads");
-  }
-  return (await a.json()).threads;
-}
-async function Oh(e, t) {
-  const n = `${e}/api/v1/threads/conv/${t}`, r = await fetch(n);
-  if (!r.ok) {
-    const i = await r.json().catch(() => ({
-      error: "Thread not found"
-    }));
-    throw new Error(i.error || "Thread not found");
-  }
-  return r.json();
-}
-async function Dh(e, t, n) {
-  const r = `${e}/api/v1/messages/thread/${t}?format=client`, i = {};
-  n != null && n.userMpAuthToken && (i["x-oddle-mp-auth-token"] = n.userMpAuthToken), n != null && n.chatServerKey && (i["x-oddle-chat-server-key"] = n.chatServerKey);
-  const a = await fetch(r, { headers: i });
-  if (!a.ok) {
-    const l = await a.json().catch(() => ({
-      error: "Failed to fetch messages"
-    }));
-    throw new Error(l.error || "Failed to fetch messages");
-  }
-  const s = await a.json();
-  return {
-    messages: s.messages.map((l) => ({
-      ...l,
-      timestamp: new Date(l.timestamp)
-    })),
-    providerResId: s.providerResId
-  };
-}
 async function is(e, t, n) {
   const r = new URLSearchParams();
-  r.append("userId", t.userId), r.append("format", "client"), t.entityId && r.append("entityId", t.entityId), t.entityType && r.append("entityType", t.entityType), t.metadata && Object.keys(t.metadata).length > 0 && r.append("metadata", JSON.stringify(t.metadata));
-  const i = `${e}/api/v1/messages/query?${r.toString()}`, a = {};
+  r.append("userId", t.userId), r.append("format", "client"), t.entityId && r.append("entityId", t.entityId), t.entityType && r.append("entityType", t.entityType), console.log("Metadata to append:", t.metadata), t.metadata && Object.keys(t.metadata).length > 0 && r.append("metadata", JSON.stringify(t.metadata));
+  const i = `${e}/api/v1/messages/query?${r.toString()}`;
+  console.log("clog url:", i);
+  const a = {};
   n != null && n.userMpAuthToken && (a["x-oddle-mp-auth-token"] = n.userMpAuthToken), n != null && n.chatServerKey && (a["x-oddle-chat-server-key"] = n.chatServerKey);
   const s = await fetch(i, { headers: a });
   if (!s.ok) {
@@ -372,7 +333,7 @@ const ls = (e) => {
   PROCESSING: "processing",
   COMPLETED: "completed",
   ERROR: "error"
-}, Ph = (e) => e === Ye.SUBMITTED || e === Ye.STREAMING, Hh = (e) => e === Ye.IDLE, Fh = (e) => e === Ye.ERROR, Uh = (e) => e === Re.PROCESSING, zh = (e) => e === Re.COMPLETED, Bh = (e) => e === Re.ERROR, ms = (e) => ({
+}, Lh = (e) => e === Ye.SUBMITTED || e === Ye.STREAMING, Oh = (e) => e === Ye.IDLE, Dh = (e) => e === Ye.ERROR, Ph = (e) => e === Re.PROCESSING, Hh = (e) => e === Re.COMPLETED, Fh = (e) => e === Re.ERROR, ms = (e) => ({
   // Initial state
   chatStatus: Ye.IDLE,
   streamingStatus: Sn.IDLE,
@@ -454,7 +415,7 @@ const ls = (e) => {
       name: "ChatUI-Store"
     }
   )
-), Gh = () => $((e) => ({
+), Uh = () => $((e) => ({
   isModalOpen: e.isModalOpen,
   isCollapsed: e.isCollapsed,
   currentMode: e.currentMode,
@@ -462,25 +423,25 @@ const ls = (e) => {
   closeModal: e.closeModal,
   toggleCollapse: e.toggleCollapse,
   toggleFullscreen: e.toggleFullscreen
-})), Wh = () => $((e) => ({
+})), zh = () => $((e) => ({
   chatStatus: e.chatStatus,
   streamingStatus: e.streamingStatus,
   setChatStatus: e.setChatStatus,
   setStreamingStatus: e.setStreamingStatus,
   resetChatStatus: e.resetChatStatus
-})), Vh = () => $((e) => ({
+})), Bh = () => $((e) => ({
   isLoadingConversation: e.isLoadingConversation,
   conversationError: e.conversationError,
   setIsLoadingConversation: e.setIsLoadingConversation,
   setConversationError: e.setConversationError,
   clearConversationError: e.clearConversationError
-})), jh = () => $((e) => ({
+})), Gh = () => $((e) => ({
   currentThreadId: e.currentThreadId,
   providerResId: e.providerResId,
   setCurrentThreadId: e.setCurrentThreadId,
   setProviderResId: e.setProviderResId,
   clearThreadData: e.clearThreadData
-})), $h = () => $((e) => ({
+})), Wh = () => $((e) => ({
   isDevSettingsOpen: e.isDevSettingsOpen,
   setIsDevSettingsOpen: e.setIsDevSettingsOpen,
   toggleDevSettings: e.toggleDevSettings
@@ -3114,7 +3075,7 @@ function lo() {
     finalizeCurrentStreamingMessage: i.finalizeCurrentStreamingMessage
   };
 }
-function Zh({ initialMode: e = "sidebar" }) {
+function Vh({ initialMode: e = "sidebar" }) {
   const t = $();
   return Ie(() => {
     e && t.currentMode !== e && t.setCurrentMode(e);
@@ -11832,11 +11793,11 @@ const wh = ({
       children: i ?? o
     }
   );
-}, Kh = ({
+}, jh = ({
   className: e,
   children: t,
   ...n
-}) => /* @__PURE__ */ h("select", { className: rt("chat-wrapper__prompt-select", e), ...n, children: t }), qh = ({
+}) => /* @__PURE__ */ h("select", { className: rt("chat-wrapper__prompt-select", e), ...n, children: t }), $h = ({
   className: e,
   children: t,
   ...n
@@ -11848,7 +11809,7 @@ const wh = ({
     ...n,
     children: t
   }
-), Xh = ({
+), Zh = ({
   className: e,
   ...t
 }) => /* @__PURE__ */ h(
@@ -11857,7 +11818,7 @@ const wh = ({
     className: rt("chat-wrapper__prompt-select-content", e),
     ...t
   }
-), Yh = ({
+), Kh = ({
   className: e,
   value: t,
   ...n
@@ -11868,7 +11829,7 @@ const wh = ({
     "data-value": t,
     ...n
   }
-), Jh = ({
+), qh = ({
   className: e,
   placeholder: t,
   ...n
@@ -11930,8 +11891,11 @@ const wh = ({
     },
     setText: (D) => {
       y(D), setTimeout(() => {
-        var H;
-        (H = _.current) == null || H.focus();
+        if (_.current) {
+          _.current.focus();
+          const H = D.length;
+          _.current.setSelectionRange(H, H);
+        }
       }, 0);
     }
   }));
@@ -12832,13 +12796,13 @@ const wh = ({
   }
 );
 qa.displayName = "ChatWrapperContainer";
-const Qh = ji(qa);
+const Xh = ji(qa);
 var Rh = /* @__PURE__ */ ((e) => (e.BRAND = "BRAND", e.ACCOUNT = "ACCOUNT", e.USER = "USER", e))(Rh || {});
 export {
   _h as AnimatedPlaceholder,
   Ye as CHAT_STATUS,
   yo as ChatIcon,
-  Qh as ChatWrapper,
+  Xh as ChatWrapper,
   wo as CloseIcon,
   Eo as CollapseIcon,
   Co as ConnectionNotification,
@@ -12851,11 +12815,11 @@ export {
   Re as PROCESSING_STATUS,
   yh as PromptInput,
   Eh as PromptInputButton,
-  Kh as PromptInputModelSelect,
-  Xh as PromptInputModelSelectContent,
-  Yh as PromptInputModelSelectItem,
-  qh as PromptInputModelSelectTrigger,
-  Jh as PromptInputModelSelectValue,
+  jh as PromptInputModelSelect,
+  Zh as PromptInputModelSelectContent,
+  Kh as PromptInputModelSelectItem,
+  $h as PromptInputModelSelectTrigger,
+  qh as PromptInputModelSelectValue,
   Th as PromptInputSubmit,
   Ka as PromptInputTextarea,
   wh as PromptInputToolbar,
@@ -12866,23 +12830,20 @@ export {
   Sn as STREAMING_STATUS,
   ra as SettingsIcon,
   xh as SuggestedPrompts,
-  Oh as fetchThreadByConvUuid,
-  Dh as fetchThreadMessages,
-  is as fetchThreadMessagesV2,
-  Lh as fetchUserThreads,
-  Ph as isChatActive,
-  Fh as isChatError,
-  Hh as isChatIdle,
-  Uh as isProcessingActive,
-  zh as isProcessingComplete,
-  Bh as isProcessingError,
+  is as fetchThreadMessages,
+  Lh as isChatActive,
+  Dh as isChatError,
+  Oh as isChatIdle,
+  Ph as isProcessingActive,
+  Hh as isProcessingComplete,
+  Fh as isProcessingError,
   Zi as updateThread,
   Ki as updateThreadMetadata,
-  Wh as useChatState,
-  Vh as useConversationState,
-  $h as useDevState,
-  Gh as useLayoutState,
-  jh as useThreadState,
-  Zh as useUIState,
+  zh as useChatState,
+  Bh as useConversationState,
+  Wh as useDevState,
+  Uh as useLayoutState,
+  Gh as useThreadState,
+  Vh as useUIState,
   $ as useUIStore
 };
