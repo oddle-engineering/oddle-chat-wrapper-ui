@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Message } from "../types";
-import { fetchThreadMessagesV2 } from "../utils/threadApi";
+import { fetchThreadMessages } from "../utils/threadApi";
 
 interface UseConversationLoaderProps {
   entityId?: string;
@@ -78,7 +78,7 @@ export function useConversationLoader({
         console.log("useConversationLoader: Fetching messages for entityId:", entityId, "entityType:", entityType);
 
         // Fetch messages using entityId and userId
-        const response = await fetchThreadMessagesV2(
+        const response = await fetchThreadMessages(
           httpApiUrl,
           {
             userId,

@@ -35,7 +35,6 @@ export {
   fetchUserThreads,
   fetchThreadByConvUuid,
   fetchThreadMessages,
-  fetchThreadMessagesV2,
   updateThread,
   updateThreadMetadata,
 } from './utils/threadApi';

@@ -56,50 +56,6 @@ export async function fetchThreadByConvUuid(
 }
 
 /**
- * Fetch messages for a thread
- */
-export async function fetchThreadMessages(
-  apiBaseUrl: string,
-  threadId: string,
-  authOptions?: {
-    userMpAuthToken?: string;
-    chatServerKey?: string;
-  }
-): Promise<{ messages: Message[]; providerResId?: string }> {
-  const url = `${apiBaseUrl}/api/v1/messages/thread/${threadId}?format=client`;
-
-  // Build headers with authentication
-  const headers: HeadersInit = {};
-  if (authOptions?.userMpAuthToken) {
-    headers["x-oddle-mp-auth-token"] = authOptions.userMpAuthToken;
-  }
-  if (authOptions?.chatServerKey) {
-    headers["x-oddle-chat-server-key"] = authOptions.chatServerKey;
-  }
-
-  const response = await fetch(url, { headers });
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({
-      error: "Failed to fetch messages",
-    }));
-    throw new Error(error.error || "Failed to fetch messages");
-  }
-
-  const data: MessagesResponse = await response.json();
-
-  // Convert timestamp strings to Date objects
-  const messages = data.messages.map((msg) => ({
-    ...msg,
-    timestamp: new Date(msg.timestamp),
-  }));
-
-  return {
-    messages,
-    providerResId: data.providerResId,
-  };
-}
-
-/**
  * Fetch messages for a thread with flexible query parameters (V2)
  *
  * This version allows querying by entityId, userId, or custom metadata
@@ -113,14 +69,14 @@ export async function fetchThreadMessages(
  *
  * @example
  * // Query by entityId and userId
- * const result = await fetchThreadMessagesV2(apiUrl, {
+ * const result = await fetchThreadMessages(apiUrl, {
  *   entityId: 'brand_123',
  *   userId: 'user_456'
  * }, authOptions);
  *
  * @example
  * // Query with custom metadata
- * const result = await fetchThreadMessagesV2(apiUrl, {
+ * const result = await fetchThreadMessages(apiUrl, {
  *   userId: 'user_456',
  *   metadata: {
  *     orderId: 'order_789',
@@ -128,7 +84,7 @@ export async function fetchThreadMessages(
  *   }
  * }, authOptions);
  */
-export async function fetchThreadMessagesV2(
+export async function fetchThreadMessages(
   apiBaseUrl: string,
   queryParams: {
     userId: string;
@@ -162,7 +118,7 @@ export async function fetchThreadMessagesV2(
   }
 
   const url = `${apiBaseUrl}/api/v1/messages/query?${params.toString()}`;
-  console.log('clog url:', url);
+  console.log("clog url:", url);
   // Build headers with authentication
   const headers: HeadersInit = {};
   if (authOptions?.userMpAuthToken) {
@@ -197,7 +153,7 @@ export async function fetchThreadMessagesV2(
 
 /**
  * Update a thread by providerResId (PATCH)
- * 
+ *
  * This function allows you to:
  * - Attach a draft thread to an entity (brand/account)
  * - Update thread title, tag, or metadata
@@ -252,7 +208,7 @@ export async function updateThread(
   const headers: HeadersInit = {
     "Content-Type": "application/json",
   };
-  
+
   if (authOptions?.userMpAuthToken) {
     headers["x-oddle-mp-auth-token"] = authOptions.userMpAuthToken;
   }
@@ -274,7 +230,7 @@ export async function updateThread(
   }
 
   const result = await response.json();
-  
+
   if (!result.success) {
     throw new Error(result.error || "Failed to update thread");
   }
@@ -284,13 +240,13 @@ export async function updateThread(
 
 /**
  * Update thread metadata and/or tag (PATCH)
- * 
+ *
  * This function is specifically for updating the dynamic business context of a thread
  * without changing its entity association. Use this for frequently changing data like:
  * - Order IDs, table IDs, campaign IDs
  * - Status updates, priority changes
  * - Custom app-specific metadata
- * 
+ *
  * @param apiBaseUrl - Base URL of the API
  * @param providerResId - Provider resource ID (conversationId) of the thread to update
  * @param updates - Metadata and/or tag to update
@@ -334,7 +290,7 @@ export async function updateThreadMetadata(
   const headers: HeadersInit = {
     "Content-Type": "application/json",
   };
-  
+
   if (authOptions?.userMpAuthToken) {
     headers["x-oddle-mp-auth-token"] = authOptions.userMpAuthToken;
   }
@@ -356,7 +312,7 @@ export async function updateThreadMetadata(
   }
 
   const result = await response.json();
-  
+
   if (!result.success) {
     throw new Error(result.error || "Failed to update thread metadata");
   }
