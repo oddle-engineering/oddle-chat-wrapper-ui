@@ -15,6 +15,31 @@ declare interface AnimatedPlaceholderProps {
     className?: string;
 }
 
+/**
+ * Authentication and entity context configuration
+ * Groups authentication credentials and entity association into a single object
+ */
+export declare interface AuthConfig {
+    /** Authentication token value */
+    token: string;
+    /** Type of authentication token being used */
+    tokenType?: AuthTokenType;
+    /** Entity ID (brandId or accountId) - for entity-scoped conversations */
+    entityId?: string;
+    /** Entity type - BRAND, ACCOUNT, or USER */
+    entityType?: EntityType;
+}
+
+/**
+ * Supported authentication token types
+ */
+export declare enum AuthTokenType {
+    /** Oddle MP Auth Token (current) */
+    MP_AUTH = "MP_AUTH",
+    /** OddlePass Token (future support) */
+    ODDLE_PASS = "ODDLE_PASS"
+}
+
 export declare const CHAT_STATUS: {
     readonly IDLE: "idle";
     readonly SUBMITTED: "submitted";
@@ -77,11 +102,9 @@ export declare type ChatTheme = "light" | "dark" | "auto";
 export declare const ChatWrapper: MemoExoticComponent<ForwardRefExoticComponent<ChatWrapperProps & RefAttributes<ChatWrapperRef>>>;
 
 export declare interface ChatWrapperProps {
-    userMpAuthToken: string;
+    auth: AuthConfig;
     chatServerUrl: string;
     chatServerKey: string;
-    entityId?: string;
-    entityType?: EntityType;
     metadata?: any;
     config: Omit<ChatConfig, "apiEndpoint">;
     tools?: Tools;

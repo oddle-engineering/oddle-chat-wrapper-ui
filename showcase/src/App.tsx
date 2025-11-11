@@ -1,8 +1,9 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 
 import {
   ChatWrapper,
   ChatWrapperProps,
+  ChatWrapperRef,
   ChatMode,
   ChatPosition,
   ChatTheme,
@@ -127,8 +128,49 @@ function App() {
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [isThreadModalOpen, setIsThreadModalOpen] = useState(false);
 
+  // Ref to ChatWrapper for imperative API access
+  const chatWrapperRef = useRef<ChatWrapperRef>(null);
+
   // Get providerResId from the store
   const providerResId = useUIStore((state) => state.providerResId);
+
+  // Handler for thread attachment using ChatWrapper's exposed methods
+  const handleThreadAttachment = useCallback(
+    async (data: {
+      entityId?: string;
+      entityType?: EntityType;
+      tag?: string;
+      metadata?: any;
+    }) => {
+      if (!chatWrapperRef.current) {
+        throw new Error("Chat wrapper not initialized");
+      }
+
+      if (!providerResId) {
+        throw new Error("No active conversation to attach");
+      }
+
+      const { entityId, entityType, tag, metadata } = data;
+
+      // Update entity if provided (rare - changing ownership)
+      if (entityId && entityType) {
+        chatWrapperRef.current.updateEntityId(entityId, entityType);
+      }
+
+      // Update metadata/tag if provided (common - business context)
+      if (tag || metadata) {
+        chatWrapperRef.current.updateMetadata({
+          tag: tag || undefined,
+          metadata,
+        });
+      }
+
+      if (!entityId && !tag && !metadata) {
+        throw new Error("Please provide at least one field to update");
+      }
+    },
+    [providerResId]
+  );
 
   // Helper functions for panels
   const handleAddTodo = useCallback(async (task: string) => {
@@ -750,17 +792,21 @@ function App() {
 
   const sidebarChatProps: ChatWrapperProps = useMemo(
     () => ({
-      // Required authentication and server configuration
-      userMpAuthToken:
-        "7639be8ebcd2103585f85687b5cf7392699c2a1c57fbaecb316992fb05c1768f84468f2bcdfc1ca1c381c6cbb72f6131b033dabeea908114767087e7061e1a9f",
+      // Authentication and entity context
+      auth: {
+        token:
+          "7639be8ebcd2103585f85687b5cf7392699c2a1c57fbaecb316992fb05c1768f84468f2bcdfc1ca1c381c6cbb72f6131b033dabeea908114767087e7061e1a9f",
+        entityId: "8a818ca9776ae07301776c71205c0ba8",
+        entityType: EntityType.BRAND,
+      },
+
+      // Server configuration
       // chatServerUrl: "http://34.56.173.183",
       chatServerUrl: "https://localhost:3000",
       chatServerKey: "demo-chat-server-key",
 
-      // Optional entity configuration
-      entityId: "8a818ca9776ae07301776c71205c0ba8",
-      entityType: EntityType.BRAND,
-      metadata: { marketing_id: "01+" },
+      // Conversation metadata
+      metadata: { marketing_id: "mar_01" },
 
       config: {
         ...customConfig,
@@ -838,9 +884,7 @@ function App() {
         isOpen={isThreadModalOpen}
         onClose={() => setIsThreadModalOpen(false)}
         providerResId={providerResId}
-        apiUrl={sidebarChatProps.chatServerUrl}
-        userMpAuthToken={sidebarChatProps.userMpAuthToken}
-        chatServerKey={sidebarChatProps.chatServerKey}
+        onAttach={handleThreadAttachment}
       />
 
       <div className="main-content">
@@ -850,7 +894,7 @@ function App() {
             display: isSidebarVisible ? "block" : "none",
           }}
         >
-          <ChatWrapper {...sidebarChatProps} devMode={true} />
+          <ChatWrapper ref={chatWrapperRef} {...sidebarChatProps} devMode={true} />
         </div>
         <div
           className="panels-container"

@@ -46,7 +46,11 @@ function App() {
 
   return (
     <ChatWrapper
-      userMpAuthToken="your-auth-token"
+      auth={{
+        token: "your-auth-token",
+        entityId: "brand_123",
+        entityType: EntityType.BRAND,
+      }}
       chatServerUrl="https://your-chat-server.com"
       chatServerKey="your-server-key"
       config={{
@@ -129,13 +133,17 @@ The ChatWrapper uses advanced ticket-based authentication with automatic reconne
 
 ```tsx
 ```tsx
-import { ChatWrapper, useConnectionState, useAuthState } from "@oddle/chat-wrapper-ui";
+import { ChatWrapper, useConnectionState, useAuthState, EntityType } from "@oddle/chat-wrapper-ui";
 
 function ChatWithStatus() {
   return (
     <ChatStoreProvider enableDevTools={true}>
       <ChatWrapper
-        userMpAuthToken="your-token"
+        auth={{
+          token: "your-token",
+          entityId: "brand_456",
+          entityType: EntityType.BRAND,
+        }}
         chatServerUrl="https://api.example.com"
         chatServerKey="your-key"
         config={{
@@ -166,7 +174,7 @@ function ConnectionStatus() {
 ### Tool Integration with State Management
 
 ```tsx
-import { ChatWrapper, useMessageActions } from "@oddle/chat-wrapper-ui";
+import { ChatWrapper, useMessageActions, EntityType } from "@oddle/chat-wrapper-ui";
 
 function ChatWithTools() {
   const messageActions = useMessageActions();
@@ -202,10 +210,13 @@ function ChatWithTools() {
 
   return (
     <ChatWrapper
-      userMpAuthToken="your-token"
-      chatServerUrl="wss://api.example.com"
-      chatServerKey="your-key" 
-      userId="user-123"
+      auth={{
+        token: "your-mp-auth-token",
+        entityId: "brand_123",
+        entityType: EntityType.BRAND
+      }}
+      chatServerUrl="https://api.example.com"
+      chatServerKey="your-key"
       config={{
         mode: "embedded",
         appName: "Task Manager",
@@ -226,7 +237,11 @@ function ChatWithTools() {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `userMpAuthToken` | `string` | **Authentication token** - Used for Authorization header in HTTPS requests and WebSocket initialization. userId is extracted from this token on the server. |
+| `auth` | `AuthConfig` | **Authentication and entity context** - Object containing token, tokenType, entityId, and entityType |
+| `auth.token` | `string` | **Authentication token** - MP Auth Token or OddlePass token. userId is extracted from this token on the server. |
+| `auth.tokenType` | `AuthTokenType` | **Token type** - `MP_AUTH` (default) or `ODDLE_PASS` (future support) |
+| `auth.entityId` | `string` | **Entity ID** - brandId or accountId for entity-scoped conversations (optional) |
+| `auth.entityType` | `EntityType` | **Entity type** - `BRAND`, `ACCOUNT`, or `USER` (optional) |
 | `chatServerUrl` | `string` | **Server URL** - Base URL for HTTP and WebSocket connections (e.g., `"https://api.example.com"` - automatically converted to wss://) |
 | `chatServerKey` | `string` | **Server identification key** - Server can detect which app is using the chat server (UD21, Host, Reserve, etc.) |
 | `config` | `ChatConfig` | **Configuration object** - Chat interface settings and behavior |
@@ -236,8 +251,6 @@ function ChatWithTools() {
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | `tools` | `Tools` | `[]` | **Tool definitions** - Array of tools with schema and execution functions |
-| `entityId` | `string` | `undefined` | **Entity identifier** - Either brandId or accountId, depending on EntityType |
-| `entityType` | `EntityType` | `undefined` | **Entity type** - `BRAND`, `ACCOUNT`, or `USER` |
 | `providerResId` | `string` | `undefined` | **Provider resource ID** - If empty, generates conversation based on EntityType and entityId |
 | `devMode` | `boolean` | `false` | **Developer mode** - Enable developer settings and debug features |
 | `contextHelpers` | `ContextHelpers` | `{}` | **Context helpers** - Additional context data for enhanced functionality |
@@ -308,6 +321,22 @@ enum EntityType {
   BRAND = "BRAND",     // Brand-level entity
   ACCOUNT = "ACCOUNT", // Account-level entity  
   USER = "USER"        // User-level entity
+}
+```
+
+### AuthConfig Interface
+
+```typescript
+interface AuthConfig {
+  token: string;                    // MP Auth Token or OddlePass token
+  tokenType?: AuthTokenType;        // Token type (default: MP_AUTH)
+  entityId?: string;                // Entity ID for scoped conversations
+  entityType?: EntityType;          // Entity type (BRAND, ACCOUNT, USER)
+}
+
+enum AuthTokenType {
+  MP_AUTH = "MP_AUTH",              // Marketplace Auth Token (default)
+  ODDLE_PASS = "ODDLE_PASS"         // OddlePass Token (future support)
 }
 ```
 
@@ -541,6 +570,8 @@ import {
   Tools,
   Tool,
   EntityType,
+  AuthConfig,
+  AuthTokenType,
   // State types
   RootState,
   ConnectionState,

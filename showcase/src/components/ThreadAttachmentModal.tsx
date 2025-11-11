@@ -1,23 +1,24 @@
 import { useState, useCallback, useEffect } from "react";
-import { updateThread, updateThreadMetadata } from "@oddle/chat-wrapper-ui";
+import { EntityType } from "@oddle/chat-wrapper-ui";
 import "./ThreadAttachmentModal.css";
 
 interface ThreadAttachmentModalProps {
   isOpen: boolean;
   onClose: () => void;
   providerResId: string | null;
-  apiUrl: string;
-  userMpAuthToken?: string;
-  chatServerKey?: string;
+  onAttach: (data: {
+    entityId?: string;
+    entityType?: EntityType;
+    tag?: string;
+    metadata?: any;
+  }) => Promise<void>;
 }
 
 export const ThreadAttachmentModal = ({
   isOpen,
   onClose,
   providerResId,
-  apiUrl,
-  userMpAuthToken,
-  chatServerKey,
+  onAttach,
 }: ThreadAttachmentModalProps) => {
   const [tempEntityId, setTempEntityId] = useState("");
   const [tempEntityType, setTempEntityType] = useState<"BRAND" | "ACCOUNT" | "">("BRAND");
@@ -61,46 +62,22 @@ export const ThreadAttachmentModal = ({
         }
       }
 
-      // Separate entity updates from metadata updates
+      // Check if any updates were provided
       const hasEntityUpdate = tempEntityId && tempEntityType;
       const hasMetadataUpdate = tempTag || parsedMetadata;
-
-      // First, update entity if provided (rare - changing ownership)
-      if (hasEntityUpdate) {
-        await updateThread(
-          apiUrl,
-          providerResId,
-          {
-            entityId: tempEntityId,
-            entityType: tempEntityType,
-          },
-          {
-            userMpAuthToken,
-            chatServerKey,
-          }
-        );
-      }
-
-      // Then, update metadata/tag if provided (common - business context)
-      if (hasMetadataUpdate) {
-        await updateThreadMetadata(
-          apiUrl,
-          providerResId,
-          {
-            tag: tempTag || undefined,
-            metadata: parsedMetadata,
-          },
-          {
-            userMpAuthToken,
-            chatServerKey,
-          }
-        );
-      }
 
       if (!hasEntityUpdate && !hasMetadataUpdate) {
         setError("Please provide at least one field to update");
         return;
       }
+
+      // Call the parent's handler with all the data
+      await onAttach({
+        entityId: hasEntityUpdate ? tempEntityId : undefined,
+        entityType: hasEntityUpdate ? (tempEntityType as EntityType) : undefined,
+        tag: tempTag || undefined,
+        metadata: parsedMetadata,
+      });
 
       setSuccessMessage("Thread attached successfully!");
       
@@ -113,7 +90,7 @@ export const ThreadAttachmentModal = ({
     } finally {
       setLoading(false);
     }
-  }, [apiUrl, providerResId, tempEntityId, tempEntityType, tempTag, tempMetadata, userMpAuthToken, chatServerKey, onClose]);
+  }, [providerResId, tempEntityId, tempEntityType, tempTag, tempMetadata, onAttach, onClose]);
 
   if (!isOpen) return null;
 

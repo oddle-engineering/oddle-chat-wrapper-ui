@@ -42,14 +42,14 @@ import "../styles/chat-wrapper.css";
 const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
   (
     {
-      // Authentication and server configuration
-      userMpAuthToken,
+      // Authentication and entity context
+      auth,
+      
+      // Server configuration
       chatServerUrl,
       chatServerKey,
 
-      // Entity and conversation configuration
-      entityId,
-      entityType,
+      // Conversation configuration
       metadata,
 
       // Existing props
@@ -60,6 +60,9 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
     },
     ref
   ) => {
+    // Extract auth properties for easier access
+    const { token: userMpAuthToken, entityId, entityType } = auth;
+    
     // Validate required props early using utility
     chatUtils.validation.validateAuthProps({
       userMpAuthToken,

@@ -4,10 +4,39 @@ import type { ContextHelpers } from "../client/types/shared";
 export type ChatMode = "sidebar" | "fullscreen" | "modal" | "embedded";
 export type ChatPosition = "left" | "right";
 export type ChatTheme = "light" | "dark" | "auto";
+
 export enum EntityType {
   BRAND = "BRAND",
   ACCOUNT = "ACCOUNT",
   USER = "USER",
+}
+
+/**
+ * Supported authentication token types
+ */
+export enum AuthTokenType {
+  /** Oddle MP Auth Token (current) */
+  MP_AUTH = "MP_AUTH",
+  /** OddlePass Token (future support) */
+  ODDLE_PASS = "ODDLE_PASS",
+}
+
+/**
+ * Authentication and entity context configuration
+ * Groups authentication credentials and entity association into a single object
+ */
+export interface AuthConfig {
+  /** Authentication token value */
+  token: string;
+  
+  /** Type of authentication token being used */
+  tokenType?: AuthTokenType;
+  
+  /** Entity ID (brandId or accountId) - for entity-scoped conversations */
+  entityId?: string;
+  
+  /** Entity type - BRAND, ACCOUNT, or USER */
+  entityType?: EntityType;
 }
 
 export interface Message {
@@ -136,14 +165,14 @@ export interface ChatWrapperRef {
 }
 
 export interface ChatWrapperProps {
-  // Authentication and server configuration
-  userMpAuthToken: string; // Use for Authorization header in HTTPS requests and WebSocket initialization
+  // Authentication and entity context (grouped)
+  auth: AuthConfig;
+  
+  // Server configuration
   chatServerUrl: string; // Making connection to WebSocket and HTTP requests
   chatServerKey: string; // Server can detect which app is using the chat server (UD21, etc.)
 
-  // Entity and conversation configuration
-  entityId?: string; // Either brandId or accountId, depending on EntityType
-  entityType?: EntityType;
+  // Conversation configuration
   metadata?: any; // Additional metadata for business context (orderId, tableId, etc.)
 
   // Existing props
