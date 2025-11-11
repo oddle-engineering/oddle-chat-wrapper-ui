@@ -32,8 +32,6 @@ export {
   PromptInputModelSelectValue
 } from './components/PromptInput';
 export {
-  fetchUserThreads,
-  fetchThreadByConvUuid,
   fetchThreadMessages,
   updateThread,
   updateThreadMetadata,
