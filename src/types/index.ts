@@ -142,7 +142,6 @@ export interface ChatWrapperProps {
   chatServerKey: string; // Server can detect which app is using the chat server (UD21, etc.)
 
   // Entity and conversation configuration
-  userId: string;
   entityId?: string; // Either brandId or accountId, depending on EntityType
   entityType?: EntityType;
   metadata?: any; // Additional metadata for business context (orderId, tableId, etc.)
@@ -161,7 +160,6 @@ export interface ConversationResponse {
 
 export interface Thread {
   id: string;
-  userId: string;
   convUuid: string;
   providerResId?: string;
   title: string;

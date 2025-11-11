@@ -117,7 +117,6 @@ export const validationHelpers = {
     userMpAuthToken?: string;
     chatServerUrl?: string;
     chatServerKey?: string;
-    userId?: string;
   }): void => {
     if (!props.userMpAuthToken) {
       throw new Error("ChatWrapper: userMpAuthToken is required");
@@ -127,9 +126,6 @@ export const validationHelpers = {
     }
     if (!props.chatServerKey) {
       throw new Error("ChatWrapper: chatServerKey is required");
-    }
-    if (!props.userId) {
-      throw new Error("ChatWrapper: userId is required");
     }
   },
 

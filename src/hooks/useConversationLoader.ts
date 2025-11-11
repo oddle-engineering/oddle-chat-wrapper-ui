@@ -5,7 +5,6 @@ import { fetchThreadMessages } from "../utils/threadApi";
 interface UseConversationLoaderProps {
   entityId?: string;
   entityType?: string;
-  userId: string;
   httpApiUrl: string;
   userMpAuthToken: string;
   chatServerKey: string;
@@ -21,7 +20,6 @@ interface UseConversationLoaderProps {
 export function useConversationLoader({
   entityId,
   entityType,
-  userId,
   httpApiUrl,
   userMpAuthToken,
   chatServerKey,
@@ -44,10 +42,6 @@ export function useConversationLoader({
       }
 
       // Validate required props
-      if (!userId) {
-        console.error("userId is required for conversation loading");
-        return;
-      }
       if (!httpApiUrl) {
         console.error("httpApiUrl is required for conversation loading");
         return;
@@ -77,11 +71,10 @@ export function useConversationLoader({
 
         console.log("useConversationLoader: Fetching messages for entityId:", entityId, "entityType:", entityType);
 
-        // Fetch messages using entityId and userId
+        // Fetch messages using entityId
         const response = await fetchThreadMessages(
           httpApiUrl,
           {
-            userId,
             entityId,
             entityType,
             metadata
@@ -123,7 +116,6 @@ export function useConversationLoader({
   }, [
     entityId,
     entityType,
-    userId,
     httpApiUrl,
     userMpAuthToken,
     chatServerKey,

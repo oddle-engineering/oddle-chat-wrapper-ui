@@ -1,6 +1,5 @@
 export interface ConnectionConfig {
   apiUrl: string;
-  userId?: string;
   maxReconnectAttempts: number;
   reconnectDelay: number;
   heartbeatInterval: number;

@@ -80,7 +80,6 @@ export declare interface ChatWrapperProps {
     userMpAuthToken: string;
     chatServerUrl: string;
     chatServerKey: string;
-    userId: string;
     entityId?: string;
     entityType?: EntityType;
     metadata?: any;
@@ -236,9 +235,10 @@ export declare enum EntityType {
 /**
  * Fetch messages for a thread with flexible query parameters (V2)
  *
- * This version allows querying by entityId, userId, or custom metadata
- * instead of requiring a specific threadId. The server will match threads
- * based on the provided query parameters.
+ * This version allows querying by entityId or custom metadata
+ * instead of requiring a specific threadId or userId. The server will match threads
+ * based on the provided query parameters. The userId is extracted from the
+ * userMpAuthToken on the server side.
  *
  * @param apiBaseUrl - Base URL of the API
  * @param queryParams - Flexible query parameters
@@ -246,16 +246,14 @@ export declare enum EntityType {
  * @returns Messages and optional providerResId
  *
  * @example
- * // Query by entityId and userId
+ * // Query by entityId
  * const result = await fetchThreadMessages(apiUrl, {
  *   entityId: 'brand_123',
- *   userId: 'user_456'
  * }, authOptions);
  *
  * @example
  * // Query with custom metadata
  * const result = await fetchThreadMessages(apiUrl, {
- *   userId: 'user_456',
  *   metadata: {
  *     orderId: 'order_789',
  *     sessionId: 'session_abc'
@@ -263,7 +261,6 @@ export declare enum EntityType {
  * }, authOptions);
  */
 export declare function fetchThreadMessages(apiBaseUrl: string, queryParams: {
-    userId: string;
     entityId?: string;
     entityType?: string;
     metadata?: Record<string, any>;
@@ -514,7 +511,6 @@ export declare interface SVGIconProps extends IconProps {
 
 export declare interface Thread {
     id: string;
-    userId: string;
     convUuid: string;
     providerResId?: string;
     title: string;

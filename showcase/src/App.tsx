@@ -32,7 +32,7 @@ interface Reservation {
 }
 
 // Showcase App demonstrating ChatWrapper with new required authentication props
-// Updated to use: userMpAuthToken, chatServerUrl, chatServerKey, userId (all required)
+// Updated to use: userMpAuthToken, chatServerUrl, chatServerKey (all required)
 // Plus optional: entityId, entityType, providerResId for conversation generation
 function App() {
   const [customConfig] = useState({
@@ -752,16 +752,15 @@ function App() {
     () => ({
       // Required authentication and server configuration
       userMpAuthToken:
-        "c601a2a51e26184b923d323c7af8a7dd9a0825b6375cc5c5e3a63cb036b24c48823ba475672bc9e6dffe416aa429cbf81a1a504bed533c9790a6c492470fea7f",
+        "7639be8ebcd2103585f85687b5cf7392699c2a1c57fbaecb316992fb05c1768f84468f2bcdfc1ca1c381c6cbb72f6131b033dabeea908114767087e7061e1a9f",
       // chatServerUrl: "http://34.56.173.183",
       chatServerUrl: "https://localhost:3000",
       chatServerKey: "demo-chat-server-key",
-      userId: "user_123_16",
 
       // Optional entity configuration
-      entityId: "mar_02",
+      entityId: "8a818ca9776ae07301776c71205c0ba8",
       entityType: EntityType.BRAND,
-      metadata: { marketing_id: "mar_01" },
+      metadata: { marketing_id: "01+" },
 
       config: {
         ...customConfig,

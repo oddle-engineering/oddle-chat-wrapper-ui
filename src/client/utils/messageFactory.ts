@@ -18,14 +18,12 @@ export class MessageFactory {
   static createChatMessage(params: {
     content: string;
     media?: string[];
-    userId?: string;
     providerResId?: string;
   }): ChatMessage {
     return {
       type: OutboundMessageType.CHAT_MESSAGE,
       content: params.content,
       media: params.media || [],
-      userId: params.userId,
       providerResId: params.providerResId,
     };
   }
@@ -142,7 +140,6 @@ export class MessageFactory {
   static serializeChatMessage(params: {
     content: string;
     media?: string[];
-    userId?: string;
     providerResId?: string;
   }): string {
     return this.createAndSerialize(() => this.createChatMessage(params));

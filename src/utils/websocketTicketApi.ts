@@ -3,7 +3,7 @@
  *
  * This service handles the "ticket-based" authentication system for WebSocket connections.
  * The flow is:
- * 1. Client requests a WebSocket ticket from the HTTP server
+ * 1. Client requests a WebSocket ticket from the HTTP server (userId extracted from userMpAuthToken)
  * 2. Server generates and stores the ticket, returns it to client
  * 3. Client uses ticket in WebSocket connection URL (as query parameter)
  * 4. Server validates ticket during connection establishment and authenticates the connection
@@ -13,7 +13,6 @@ export interface WebSocketTicketRequest {
   // Authentication data
   userMpAuthToken: string;
   chatServerKey: string;
-  userId: string;
 
   // Optional entity context
   entityId?: string;
@@ -42,6 +41,7 @@ export interface WebSocketTicketError {
 
 /**
  * Request a WebSocket authentication ticket from the server
+ * The server will extract userId from the userMpAuthToken
  */
 export async function requestWebSocketTicket(
   apiUrl: string,
@@ -62,7 +62,6 @@ export async function requestWebSocketTicket(
       method: "POST",
       headers,
       body: JSON.stringify({
-        userId: ticketRequest.userId,
         entityId: ticketRequest.entityId,
         entityType: ticketRequest.entityType,
         providerResId: ticketRequest.providerResId,

@@ -8,7 +8,6 @@ export interface WebSocketChatClientProps {
   chatServerKey: string;
   
   // Entity configuration
-  userId: string;
   entityId?: string;
   entityType?: string;
   

@@ -47,9 +47,8 @@ function App() {
   return (
     <ChatWrapper
       userMpAuthToken="your-auth-token"
-      chatServerUrl="wss://your-chat-server.com"
+      chatServerUrl="https://your-chat-server.com"
       chatServerKey="your-server-key"
-      userId="user-123"
       config={{
         mode: "sidebar",
         appName: "AI Assistant",
@@ -129,6 +128,7 @@ The reducer system manages four main state domains:
 The ChatWrapper uses advanced ticket-based authentication with automatic reconnection. See [WebSocket Ticket Implementation Guide](./docs/websocket-ticket-implementation.md) for detailed technical documentation.
 
 ```tsx
+```tsx
 import { ChatWrapper, useConnectionState, useAuthState } from "@oddle/chat-wrapper-ui";
 
 function ChatWithStatus() {
@@ -136,9 +136,8 @@ function ChatWithStatus() {
     <ChatStoreProvider enableDevTools={true}>
       <ChatWrapper
         userMpAuthToken="your-token"
-        chatServerUrl="wss://api.example.com"
+        chatServerUrl="https://api.example.com"
         chatServerKey="your-key"
-        userId="user-123"
         config={{
           mode: "fullscreen",
           appName: "Support Chat"
@@ -148,6 +147,7 @@ function ChatWithStatus() {
     </ChatStoreProvider>
   );
 }
+```
 
 function ConnectionStatus() {
   const connection = useConnectionState();
@@ -226,10 +226,9 @@ function ChatWithTools() {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `userMpAuthToken` | `string` | **Authentication token** - Used for Authorization header in HTTPS requests and WebSocket initialization |
-| `chatServerUrl` | `string` | **WebSocket server URL** - Making connection to WebSocket and HTTP requests (e.g., `"wss://api.example.com"`) |
+| `userMpAuthToken` | `string` | **Authentication token** - Used for Authorization header in HTTPS requests and WebSocket initialization. userId is extracted from this token on the server. |
+| `chatServerUrl` | `string` | **Server URL** - Base URL for HTTP and WebSocket connections (e.g., `"https://api.example.com"` - automatically converted to wss://) |
 | `chatServerKey` | `string` | **Server identification key** - Server can detect which app is using the chat server (UD21, Host, Reserve, etc.) |
-| `userId` | `string` | **User identifier** - Unique user ID for conversation tracking |
 | `config` | `ChatConfig` | **Configuration object** - Chat interface settings and behavior |
 
 ### Optional Props

@@ -1,11 +1,12 @@
-import { Thread, MessagesResponse, Message } from "../types";
+import { Thread, Message } from "../types";
 
 /**
  * Fetch messages for a thread with flexible query parameters (V2)
  *
- * This version allows querying by entityId, userId, or custom metadata
- * instead of requiring a specific threadId. The server will match threads
- * based on the provided query parameters.
+ * This version allows querying by entityId or custom metadata
+ * instead of requiring a specific threadId or userId. The server will match threads
+ * based on the provided query parameters. The userId is extracted from the
+ * userMpAuthToken on the server side.
  *
  * @param apiBaseUrl - Base URL of the API
  * @param queryParams - Flexible query parameters
@@ -13,16 +14,14 @@ import { Thread, MessagesResponse, Message } from "../types";
  * @returns Messages and optional providerResId
  *
  * @example
- * // Query by entityId and userId
+ * // Query by entityId
  * const result = await fetchThreadMessages(apiUrl, {
  *   entityId: 'brand_123',
- *   userId: 'user_456'
  * }, authOptions);
  *
  * @example
  * // Query with custom metadata
  * const result = await fetchThreadMessages(apiUrl, {
- *   userId: 'user_456',
  *   metadata: {
  *     orderId: 'order_789',
  *     sessionId: 'session_abc'
@@ -32,7 +31,6 @@ import { Thread, MessagesResponse, Message } from "../types";
 export async function fetchThreadMessages(
   apiBaseUrl: string,
   queryParams: {
-    userId: string;
     entityId?: string;
     entityType?: string;
     metadata?: Record<string, any>;
@@ -45,8 +43,7 @@ export async function fetchThreadMessages(
   // Build query string from parameters
   const params = new URLSearchParams();
 
-  // Add required userId
-  params.append("userId", queryParams.userId);
+  // Add format
   params.append("format", "client");
 
   // Add optional parameters
@@ -63,9 +60,11 @@ export async function fetchThreadMessages(
   }
 
   const url = `${apiBaseUrl}/api/v1/messages/query?${params.toString()}`;
-  console.log("clog url:", url);
-  // Build headers with authentication
-  const headers: HeadersInit = {};
+
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+
   if (authOptions?.userMpAuthToken) {
     headers["x-oddle-mp-auth-token"] = authOptions.userMpAuthToken;
   }
@@ -73,26 +72,22 @@ export async function fetchThreadMessages(
     headers["x-oddle-chat-server-key"] = authOptions.chatServerKey;
   }
 
-  const response = await fetch(url, { headers });
+  console.log("Fetching thread messages from:", url);
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers,
+  });
+
   if (!response.ok) {
-    const error = await response.json().catch(() => ({
-      error: "Failed to fetch messages",
-    }));
-    throw new Error(error.error || "Failed to fetch messages");
+    throw new Error(`Failed to fetch thread messages: ${response.statusText}`);
   }
 
-  const data: MessagesResponse & { threadId?: string } = await response.json();
-
-  // Convert timestamp strings to Date objects
-  const messages = data.messages.map((msg) => ({
-    ...msg,
-    timestamp: new Date(msg.timestamp),
-  }));
-
+  const data = await response.json();
   return {
-    messages,
+    messages: data.messages || [],
     providerResId: data.providerResId,
-    threadId: data.threadId, // Server may return the matched threadId
+    threadId: data.threadId,
   };
 }
 

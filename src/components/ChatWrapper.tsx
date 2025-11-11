@@ -48,7 +48,6 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       chatServerKey,
 
       // Entity and conversation configuration
-      userId,
       entityId,
       entityType,
       metadata,
@@ -66,7 +65,6 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       userMpAuthToken,
       chatServerUrl,
       chatServerKey,
-      userId,
     });
 
     // Convert chatServerUrl to HTTP URL for REST API calls
@@ -234,8 +232,6 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         chatServerKey,
 
         // Entity configuration
-
-        userId,
         entityId,
         entityType,
 
@@ -331,7 +327,6 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
     useConversationLoader({
       entityId,
       entityType,
-      userId,
       httpApiUrl,
       userMpAuthToken,
       chatServerKey,

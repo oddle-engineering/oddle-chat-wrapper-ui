@@ -151,7 +151,6 @@ export class WebSocketChatClient {
       {
         userMpAuthToken: props.userMpAuthToken!,
         chatServerKey: props.chatServerKey!,
-        userId: props.userId!,
         entityId: props.entityId,
         entityType: props.entityType,
       },
@@ -210,9 +209,6 @@ export class WebSocketChatClient {
     if (props.chatServerUrl) {
       this.config.apiUrl = props.chatServerUrl;
     }
-    if (props.userId) {
-      this.config.userId = props.userId;
-    }
   }
 
   async onTriggerMessage(params: TriggerMessageParams): Promise<void> {
@@ -228,7 +224,6 @@ export class WebSocketChatClient {
       const chatMessage = MessageFactory.serializeChatMessage({
         content: message,
         media,
-        userId: this.config.userId,
         providerResId,
       });
       this.wsManager.send(chatMessage);

@@ -8,7 +8,6 @@ import {
 export interface AuthData {
   userMpAuthToken: string;
   chatServerKey: string;
-  userId: string;
   entityId?: string;
   entityType?: string;
   providerResId?: string;
@@ -130,7 +129,6 @@ export class TicketManager {
    */
   private async _doRefresh(): Promise<string> {
     console.log('TicketManager: Requesting new ticket...', {
-      userId: this.authData.userId,
       apiUrl: this.apiUrl,
     });
 

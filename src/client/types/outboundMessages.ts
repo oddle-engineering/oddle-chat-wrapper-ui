@@ -27,7 +27,6 @@ export interface ChatMessage extends BaseOutboundMessage {
   type: OutboundMessageType.CHAT_MESSAGE;
   content: string;
   media: string[];
-  userId?: string;
   providerResId?: string;
 }
 
