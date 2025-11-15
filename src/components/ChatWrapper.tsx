@@ -227,7 +227,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
     );
 
     // Initialize WebSocket connection
-    const { chatClient, isConnected, isConnecting, connectChatClient } =
+    const { chatClient, isConnected, isConnecting, connectChatClient, disconnectChatClient } =
       useWebSocketConnection({
         // Authentication and server properties
         userMpAuthToken,
@@ -327,7 +327,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
     );
 
     // Initialize conversation loader
-    useConversationLoader({
+    const { resetConversationLoader, reloadConversation } = useConversationLoader({
       entityId,
       entityType,
       httpApiUrl,
@@ -341,6 +341,20 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       setProviderResId,
       metadata,
     });
+
+    // Handle retry: reconnect WebSocket and reload conversation
+    const handleRetryConnection = useCallback(async () => {
+      console.log("ChatWrapper: Retrying connection and reloading conversation...");
+      
+      // Reset conversation loader to allow reloading
+      resetConversationLoader();
+      
+      // Reconnect WebSocket
+      await connectChatClient();
+      
+      // Reload conversation messages
+      await reloadConversation();
+    }, [resetConversationLoader, connectChatClient, reloadConversation]);
 
     // Scroll animation frame ref
     const scrollAnimationFrame = useRef<number | null>(null);
@@ -635,7 +649,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
             <ConnectionNotification
               isConnected={isConnected}
               isConnecting={isConnecting}
-              onRetry={connectChatClient}
+              onRetry={handleRetryConnection}
             />
 
             {/* Floating settings button for when header is not visible */}
@@ -687,6 +701,8 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
               apiUrl={httpApiUrl}
               userMpAuthToken={userMpAuthToken}
               chatServerKey={chatServerKey}
+              onDisconnect={disconnectChatClient}
+              isConnected={isConnected}
             />
           </div>
         </WebSocketErrorBoundary>
