@@ -64,6 +64,7 @@ export interface ChatContextValue {
   onFileUpload: (files: File[]) => Promise<string[]>;
   onStopGeneration: () => void;
   onPromptSelect?: (prompt: { description: string }) => void;
+  onRetryMessage?: (messageId: string) => void;
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null);

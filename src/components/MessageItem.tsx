@@ -75,6 +75,7 @@ export const MessageItem = memo<MessageItemProps>(
       getToolingStatus,
       clientTools,
       currentAssistantMessageIdRef,
+      onRetryMessage,
     } = useChatContext();
     
     const [copied, setCopied] = useState(false);
@@ -90,10 +91,46 @@ export const MessageItem = memo<MessageItemProps>(
       }
     }, [message.content]);
 
+    const handleRetry = useCallback(() => {
+      if (onRetryMessage) {
+        onRetryMessage(message.id);
+      }
+    }, [onRetryMessage, message.id]);
+
     const renderStreamingPlaceholder = () => (
       <div className="chat-wrapper__streaming-placeholder">
         <Loader size={16} variant="dots" />
         <span>{REASONING_CONSTANTS.UI_TEXT.THINKING}</span>
+      </div>
+    );
+
+    const renderRetryingMessage = () => (
+      <div className="chat-wrapper__error-message chat-wrapper__error-message--retrying">
+        <div className="chat-wrapper__error-icon">🔄</div>
+        <div className="chat-wrapper__error-content">
+          <div className="chat-wrapper__error-text chat-wrapper__error-text--retrying">
+            Retrying message...
+          </div>
+        </div>
+      </div>
+    );
+
+    const renderErrorMessage = () => (
+      <div className="chat-wrapper__error-message">
+        <div className="chat-wrapper__error-icon">⚠️</div>
+        <div className="chat-wrapper__error-content">
+          <div className="chat-wrapper__error-text">
+            {message.errorMessage || "Failed to send message. Server may be down."}
+          </div>
+          {onRetryMessage && (
+            <button 
+              className="chat-wrapper__retry-button"
+              onClick={handleRetry}
+            >
+              🔄 Retry
+            </button>
+          )}
+        </div>
       </div>
     );
 
@@ -146,6 +183,8 @@ export const MessageItem = memo<MessageItemProps>(
             ))}
           </div>
         )}
+        {message.isRetrying && renderRetryingMessage()}
+        {message.hasError && !message.isRetrying && renderErrorMessage()}
       </div>
     );
 

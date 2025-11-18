@@ -357,6 +357,9 @@ export declare interface Message {
     timestamp: Date;
     isStreaming?: boolean;
     media?: string[];
+    hasError?: boolean;
+    errorMessage?: string;
+    isRetrying?: boolean;
     toolData?: {
         toolName: string;
         callId: string;

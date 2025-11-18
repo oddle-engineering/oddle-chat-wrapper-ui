@@ -3153,3 +3153,111 @@ select.chat-wrapper__dev-settings-input {
   border-color: #4a5568;
   color: #a0aec0;
 }
+
+/* Error Message Styles */
+.chat-wrapper__error-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.chat-wrapper__error-icon {
+  font-size: 16px;
+  line-height: 1;
+  margin-top: 1px;
+}
+
+.chat-wrapper__error-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chat-wrapper__error-text {
+  color: #991b1b;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.chat-wrapper__retry-button {
+  align-self: flex-start;
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chat-wrapper__retry-button:hover {
+  background: #b91c1c;
+}
+
+.chat-wrapper__retry-button:active {
+  background: #991b1b;
+}
+
+/* Dark theme error message styles */
+.chat-wrapper--dark .chat-wrapper__error-message {
+  background: rgba(185, 28, 28, 0.1);
+  border-color: rgba(185, 28, 28, 0.3);
+}
+
+.chat-wrapper--dark .chat-wrapper__error-text {
+  color: #f87171;
+}
+
+.chat-wrapper--dark .chat-wrapper__retry-button {
+  background: #dc2626;
+}
+
+.chat-wrapper--dark .chat-wrapper__retry-button:hover {
+  background: #b91c1c;
+}
+
+/* Retrying Message Styles */
+.chat-wrapper__error-message--retrying {
+  background: #f0f9ff;
+  border-color: #7dd3fc;
+}
+
+.chat-wrapper__error-message--retrying .chat-wrapper__error-icon {
+  animation: spin 1s linear infinite;
+}
+
+.chat-wrapper__error-text--retrying {
+  color: #0369a1;
+  font-weight: 500;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Dark theme retrying message styles */
+.chat-wrapper--dark .chat-wrapper__error-message--retrying {
+  background: rgba(14, 165, 233, 0.1);
+  border-color: rgba(14, 165, 233, 0.3);
+}
+
+.chat-wrapper--dark .chat-wrapper__error-text--retrying {
+  color: #38bdf8;
+}

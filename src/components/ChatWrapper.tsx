@@ -31,7 +31,7 @@ import {
   WebSocketErrorBoundary,
   FileUploadErrorBoundary,
 } from "./error";
-import { ConnectionNotification } from "./ConnectionNotification";
+// import { ConnectionNotification } from "./ConnectionNotification";
 import { ChatBubbleButton } from "./chat/ChatBubbleButton";
 import { ChatHeader } from "./chat/ChatHeader";
 import { ChatContent } from "./chat/ChatContent";
@@ -185,7 +185,6 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       getReasoningTitle,
       getToolingTitle,
       getToolingStatus,
-      addMessage,
       handleSetMessage,
       handleReasoningUpdate,
       handleChatFinished,
@@ -245,9 +244,9 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
     const { 
       chatClient, 
       isConnected, 
-      isConnecting, 
-      isReconnecting,
-      reconnectAttempts: reconnectAttempt,
+      // isConnecting, 
+      // isReconnecting,
+      // reconnectAttempts: reconnectAttempt,
       connectChatClient, 
       disconnectChatClient 
     } =
@@ -350,7 +349,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
     );
 
     // Initialize conversation loader
-    const { resetConversationLoader, reloadConversation } = useConversationLoader({
+    const { resetConversationLoader /*, reloadConversation*/ } = useConversationLoader({
       entityId,
       entityType,
       httpApiUrl,
@@ -366,18 +365,20 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
     });
 
     // Handle retry: reconnect WebSocket and reload conversation
-    const handleRetryConnection = useCallback(async () => {
-      console.log("ChatWrapper: Retrying connection and reloading conversation...");
-      
-      // Reset conversation loader to allow reloading
-      resetConversationLoader();
-      
-      // Reconnect WebSocket
-      await connectChatClient();
-      
-      // Reload conversation messages
-      await reloadConversation();
-    }, [resetConversationLoader, connectChatClient, reloadConversation]);
+    // const handleRetryConnection = useCallback(async () => {
+    //   console.log("ChatWrapper: Retrying connection and reloading conversation...");
+    //   
+    //   // Reset conversation loader to allow reloading
+    //   resetConversationLoader();
+    //   
+    //   // Reconnect WebSocket
+    //   await connectChatClient();
+    //   
+    //   // Reload conversation messages
+    //   await reloadConversation();
+    // }, [resetConversationLoader, connectChatClient, reloadConversation]);
+
+    // Removed retryingMessageId state - no longer needed with simplified approach
 
     // Scroll animation frame ref
     const scrollAnimationFrame = useRef<number | null>(null);
@@ -426,9 +427,12 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
     // Handle message submission via WebSocketChatClient
     const handleSubmit = useCallback(
       async (message: string, media?: string[]) => {
-        // Early validation using service
+        // Basic validation - allow submission even when disconnected to show error state
         if (
-          !chatSubmissionService?.canSubmit(message, isStreaming, isConnected)
+          !message.trim() ||
+          isStreaming ||
+          !chatSubmissionService ||
+          !chatClient
         ) {
           return;
         }
@@ -439,26 +443,42 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         setChatStatus(CHAT_STATUS.SUBMITTED);
         setStreamingStatus(STREAMING_STATUS.STARTING);
 
+        // Create user message first
+        const userMessage = chatSubmissionService.createUserMessage(message, media);
+        
+        // Add user message to state
+        setMessages((prev) => [...prev, userMessage]);
+
         try {
           // Business logic: Submit message via service
           // Use currentProviderResId (from loaded thread) for conversation continuity
-          const userMessage = await chatSubmissionService.submitMessage({
-            message,
+          await chatClient.onTriggerMessage({
+            message: userMessage.content,
             media,
             providerResId: currentProviderResId || undefined,
           });
 
-          // State updates: Add user message and transition to streaming
-          setMessages((prev) => [...prev, userMessage]);
+          // State updates: Transition to streaming
           setChatStatus(CHAT_STATUS.STREAMING);
         } catch (error) {
           // State updates: Handle error state
           setIsThinking(false);
           setChatStatus(CHAT_STATUS.ERROR);
 
-          // Business logic: Create and add error message
-          const errorMessage = chatSubmissionService.createErrorMessage(error);
-          addMessage("system", errorMessage);
+          // Mark the user message with error state
+          setMessages((prev) => 
+            prev.map(msg => 
+              msg.id === userMessage.id 
+                ? { 
+                    ...msg, 
+                    hasError: true, 
+                    errorMessage: !isConnected 
+                      ? "Failed to send message."
+                      : (error instanceof Error ? error.message : "Failed to send message")
+                  }
+                : msg
+            )
+          );
 
           // State updates: Reset to idle
           setIsStreaming(false);
@@ -468,6 +488,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       },
       [
         chatSubmissionService,
+        chatClient,
         isStreaming,
         isConnected,
         setMessages,
@@ -475,7 +496,6 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         setIsThinking,
         setChatStatus,
         setStreamingStatus,
-        addMessage,
         currentProviderResId,
       ]
     );
@@ -596,14 +616,77 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       ]
     );
 
+    // Handle retry message: mark message for retry and reconnect
+    const handleRetryMessage = useCallback(async (messageId: string) => {
+      console.log("ChatWrapper: Retrying message:", messageId);
+      
+      // Find the message to retry
+      const messageToRetry = messages.find(msg => msg.id === messageId);
+      if (!messageToRetry) {
+        console.warn("ChatWrapper: Message not found for retry:", messageId);
+        return;
+      }
+
+      // Mark message as retrying
+      console.log('[handleRetryMessage] Marking message as retrying:', messageId);
+      setMessages(prevMessages => {
+        console.log('[handleRetryMessage] Marking message as retrying, messageId:', messageId);
+        return prevMessages.map(msg => 
+          msg.id === messageId 
+            ? { ...msg, hasError: false, isRetrying: true, errorMessage: undefined }
+            : msg
+        );
+      });
+
+      try {
+        // Reset conversation loader and reconnect
+        resetConversationLoader();
+        await connectChatClient();
+        
+        // Submit the message directly without creating a new user message
+        await chatClient?.onTriggerMessage({
+          message: messageToRetry.content,
+          media: messageToRetry.media,
+          providerResId: currentProviderResId || undefined,
+        });
+
+        // Clear the retrying state on the original message (it will show as a normal sent message)
+        setMessages(prevMessages => 
+          prevMessages.map(msg => 
+            msg.id === messageId 
+              ? { ...msg, isRetrying: false }
+              : msg
+          )
+        );
+        
+        console.log('[handleRetryMessage] Retry succeeded for message:', messageId);
+      } catch (error) {
+        // Retry failed - show error state again
+        console.log('[handleRetryMessage] Retry failed for message:', messageId, error);
+        setMessages(prevMessages => 
+          prevMessages.map(msg => 
+            msg.id === messageId 
+              ? { 
+                  ...msg, 
+                  isRetrying: false, 
+                  hasError: true, 
+                  errorMessage: error instanceof Error ? error.message : "Retry failed"
+                }
+              : msg
+          )
+        );
+      }
+    }, [messages, setMessages, resetConversationLoader, connectChatClient, handleSubmit]);
+
     const handlers = useMemo(
       () => ({
         onSubmit: handleSubmit,
         onFileUpload: handleFileUpload,
         onStopGeneration: stopGeneration,
         onPromptSelect: handlePromptSelect,
+        onRetryMessage: handleRetryMessage,
       }),
-      [handleSubmit, handleFileUpload, stopGeneration, handlePromptSelect]
+      [handleSubmit, handleFileUpload, stopGeneration, handlePromptSelect, handleRetryMessage]
     );
 
     // Combine all memos into final context value
@@ -669,14 +752,14 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         >
           <div className={containerClasses} style={config.customStyles}>
             {/* Connection Status Notification */}
-            <ConnectionNotification
+            {/* <ConnectionNotification
               isConnected={isConnected}
               isConnecting={isConnecting}
               isReconnecting={isReconnecting}
               reconnectAttempt={reconnectAttempt}
               maxReconnectAttempts={Infinity}
               onRetry={handleRetryConnection}
-            />
+            /> */}
 
             {/* Floating settings button for when header is not visible */}
             {devMode && config.headerVisible === false && (
