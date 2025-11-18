@@ -19,7 +19,7 @@ declare interface AnimatedPlaceholderProps {
  * Authentication and entity context configuration
  * Groups authentication credentials and entity association into a single object
  */
-export declare interface AuthConfig {
+declare interface AuthConfig {
     /** Authentication token value */
     token: string;
     /** Type of authentication token being used */
@@ -33,7 +33,7 @@ export declare interface AuthConfig {
 /**
  * Supported authentication token types
  */
-export declare enum AuthTokenType {
+declare enum AuthTokenType {
     /** Oddle MP Auth Token (current) */
     MP_AUTH = "MP_AUTH",
     /** OddlePass Token (future support) */
@@ -178,10 +178,10 @@ export declare const CloseIcon: default_2.FC<IconProps>;
 export declare const CollapseIcon: default_2.FC<IconProps>;
 
 /**
- * ConnectionNotification - Full overlay notification for connection status
+ * ConnectionNotification - Subtle banner notification for connection status
  *
- * Displays a full-screen overlay when connection is lost, blocking interaction
- * until connection is restored or user manually retries.
+ * Shows a non-blocking top banner when connection is lost or reconnecting.
+ * Chat conversation remains visible and accessible during reconnection.
  *
  * @example
  * ```tsx
@@ -232,7 +232,7 @@ export declare interface ConversationSlice {
 
 export declare const CopyIcon: default_2.FC<IconProps>;
 
-export declare const DevSettings: ({ isOpen, onClose, apiUrl, userMpAuthToken, chatServerKey, app, }: DevSettingsProps) => JSX_2.Element | null;
+export declare const DevSettings: ({ isOpen, onClose, apiUrl, userMpAuthToken, chatServerKey, app, onDisconnect, isConnected, }: DevSettingsProps) => JSX_2.Element | null;
 
 declare interface DevSettingsProps {
     isOpen: boolean;
@@ -241,6 +241,8 @@ declare interface DevSettingsProps {
     userMpAuthToken?: string;
     chatServerKey?: string;
     app?: string;
+    onDisconnect?: () => void;
+    isConnected?: boolean;
 }
 
 export declare interface DevSlice {

@@ -15,6 +15,7 @@ export class WebSocketManager {
   private heartbeatInterval: number | null = null;
   private visibilityChangeHandler: () => void;
   private currentTicket: string | null = null;
+  private currentSessionId: string | null = null;
   private intentionalDisconnect: boolean = false; // Track intentional disconnects
 
   private onOpen?: () => void;
@@ -64,7 +65,15 @@ export class WebSocketManager {
     // Add the /ws path if it's not already there
     url = url.endsWith('/ws') ? url : url + '/ws';
     
-    // Add ticket to URL if available
+    // Prefer sessionId for reconnection if available (session-based resume)
+    // Otherwise fallback to single-use ticket for initial auth
+    if (this.currentSessionId) {
+      const separator = url.includes('?') ? '&' : '?';
+      url = `${url}${separator}sessionId=${this.currentSessionId}`;
+      return url;
+    }
+
+    // Add ticket to URL if available (used only for initial authentication)
     if (this.currentTicket) {
       const separator = url.includes('?') ? '&' : '?';
       url = `${url}${separator}ticket=${this.currentTicket}`;
@@ -94,25 +103,39 @@ export class WebSocketManager {
 
   private handleConnectionError(
     error: Event,
-    resolve?: (value?: any) => void,
+    _resolve?: (value?: any) => void,
     reject?: (reason?: any) => void
   ): void {
     this.onError?.(error);
+    this.connectionState.setConnected(false);
 
-    if (error instanceof Event && resolve) {
-      this.connectionState.setConnected(true);
-      resolve();
-    } else {
-      reject?.(error);
+    // If this is during initial connection, reject the promise and don't auto-reconnect
+    if (reject) {
+      reject(error);
+      return;
+    }
+    
+    // Only schedule reconnection for established connections that fail
+    // (not initial connection failures)
+    if (!this.intentionalDisconnect) {
+      this.scheduleReconnectAfterError();
     }
   }
 
   private handleConnectionClosed(event: CloseEvent): void {
+    console.log('[WebSocketManager] Connection closed', { 
+      code: event.code, 
+      reason: event.reason,
+      intentionalDisconnect: this.intentionalDisconnect 
+    });
     this.processConnectionClosure(event);
     this.onClose?.(event);
 
     if (this.shouldReconnectAfterClose(event.code)) {
+      console.log('[WebSocketManager] Should reconnect, calling attemptReconnect');
       this.attemptReconnect();
+    } else {
+      console.log('[WebSocketManager] Should NOT reconnect');
     }
   }
 
@@ -129,13 +152,33 @@ export class WebSocketManager {
   }
 
   private shouldReconnectAfterClose(closeCode: number): boolean {
+    console.log('[WebSocketManager] shouldReconnectAfterClose check', {
+      closeCode,
+      intentionalDisconnect: this.intentionalDisconnect,
+      NORMAL: WEBSOCKET_CLOSE_CODES.NORMAL,
+      GOING_AWAY: WEBSOCKET_CLOSE_CODES.GOING_AWAY,
+    });
+
     // Don't reconnect if it was an intentional disconnect
     if (this.intentionalDisconnect) {
+      console.log('[WebSocketManager] Intentional disconnect - no reconnect');
       return false;
     }
     
-    const { NORMAL, GOING_AWAY } = WEBSOCKET_CLOSE_CODES;
-    return closeCode !== NORMAL && closeCode !== GOING_AWAY;
+    // For chat apps, reconnect on ANY abnormal closure
+    // Close code 1000 = Normal closure (user initiated)
+    // Close code 1001 = Going away (browser closing)
+    // Close code 1006 = Abnormal closure (server crash, no close frame)
+    // Any other code = server error or network issue
+    
+    const { NORMAL } = WEBSOCKET_CLOSE_CODES;
+    
+    // Only skip reconnection for normal, user-initiated closures
+    // Reconnect for everything else including server crashes (1006), errors (1011), etc.
+    const shouldReconnect = closeCode !== NORMAL;
+    
+    console.log('[WebSocketManager] Should reconnect?', shouldReconnect);
+    return shouldReconnect;
   }
 
   private handleVisibilityChange(): void {
@@ -158,18 +201,27 @@ export class WebSocketManager {
   }
 
   private attemptReconnect(): void {
-    if (
-      this.connectionState.isReconnecting ||
-      this.connectionState.reconnectAttempts >= this.config.maxReconnectAttempts
-    ) {
-      if (
-        this.connectionState.reconnectAttempts >=
-        this.config.maxReconnectAttempts
-      ) {
-        this.onSystemEvent?.(
-          SystemEventFactory.connectionLost("Max reconnection attempts reached")
-        );
-      }
+    console.log('[WebSocketManager] attemptReconnect called', {
+      reconnectAttempts: this.connectionState.reconnectAttempts,
+      maxReconnectAttempts: this.config.maxReconnectAttempts,
+      isReconnecting: this.connectionState.isReconnecting,
+      reconnectTimer: this.reconnectTimer,
+    });
+
+    // Check if we've hit max reconnection attempts
+    if (this.connectionState.reconnectAttempts >= this.config.maxReconnectAttempts) {
+      console.log('[WebSocketManager] Max reconnection attempts reached');
+      this.onSystemEvent?.(
+        SystemEventFactory.connectionLost("Max reconnection attempts reached")
+      );
+      this.connectionState.setReconnecting(false);
+      return;
+    }
+
+    // Check if a reconnection is already in progress (timer is set)
+    if (this.reconnectTimer !== null) {
+      console.log('[WebSocketManager] Reconnection already in progress, skipping');
+      // Already scheduled, don't create duplicate timers
       return;
     }
 
@@ -178,16 +230,19 @@ export class WebSocketManager {
 
     const attempt = this.connectionState.reconnectAttempts;
     const maxAttempts = this.config.maxReconnectAttempts;
+    console.log('[WebSocketManager] Firing RECONNECTING event', { attempt, maxAttempts });
     this.onSystemEvent?.(SystemEventFactory.reconnecting(attempt, maxAttempts));
 
+    const baseDelay = this.config.reconnectDelay;
+    const jitter = Math.random() * 90 + 10; // 10-100ms jitter
+    const delayWithJitter = baseDelay + jitter;
+    
     this.reconnectTimer = window.setTimeout(() => {
+      this.reconnectTimer = null; // Clear the timer reference
       if (!this.connectionState.isConnected) {
         this.reconnect();
       }
-    }, this.connectionState.reconnectDelay);
-
-    const newDelay = Math.min(this.connectionState.reconnectDelay * 1.5, 30000);
-    this.connectionState.updateReconnectDelay(newDelay);
+    }, delayWithJitter);
   }
 
   private reconnect(): void {
@@ -207,6 +262,15 @@ export class WebSocketManager {
    */
   updateTicket(ticket: string): void {
     this.currentTicket = ticket;
+  }
+
+  /**
+   * Update the sessionId to be used for reconnections.
+   * The server issues a sessionId in the `session_established` message which
+   * should be used for subsequent reconnect attempts (tickets can be single-use).
+   */
+  updateSession(sessionId: string): void {
+    this.currentSessionId = sessionId;
   }
 
   private setupReconnectHandlers(): void {
@@ -230,19 +294,34 @@ export class WebSocketManager {
   }
 
   private scheduleReconnectAfterError(): void {
-    this.connectionState.setReconnecting(false);
+    // Keep reconnecting state true during the delay to maintain UI consistency
+    // Just schedule another attempt - attemptReconnect will handle deduplication
+    const baseDelay = this.config.reconnectDelay;
+    const jitter = Math.random() * 90 + 10; // 10-100ms jitter
+    const delayWithJitter = baseDelay + jitter;
+    
+    // Clear any existing timer first
+    if (this.reconnectTimer !== null) {
+      window.clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    
     setTimeout(
       () => this.attemptReconnect(),
-      this.connectionState.reconnectDelay
+      delayWithJitter
     );
   }
 
   private handleReconnectionClosed(event: CloseEvent): void {
     this.processConnectionClosure(event);
-    this.connectionState.setReconnecting(false);
+    // Don't set reconnecting to false here - let attemptReconnect manage the state
+    // This prevents UI flashing between "reconnecting" and "disconnected"
 
     if (this.shouldReconnectAfterClose(event.code)) {
       this.attemptReconnect();
+    } else {
+      // Only set to false if we're NOT going to reconnect
+      this.connectionState.setReconnecting(false);
     }
   }
 

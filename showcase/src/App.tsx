@@ -795,7 +795,7 @@ function App() {
       // Authentication and entity context
       auth: {
         token:
-          "7639be8ebcd2103585f85687b5cf7392699c2a1c57fbaecb316992fb05c1768f84468f2bcdfc1ca1c381c6cbb72f6131b033dabeea908114767087e7061e1a9f",
+          "d9a899a70af14c0826b719fb30674840b591961db1fca7f4985c7511b55bb356afaebe05dfa0dd9f75ffa150b9caf7e61a438718a9fd1becbea570091a0b82c9",
         entityId: "8a818ca9776ae07301776c71205c0ba8",
         entityType: EntityType.BRAND,
       },
@@ -803,10 +803,15 @@ function App() {
       // Server configuration
       // chatServerUrl: "http://34.56.173.183",
       chatServerUrl: "https://localhost:3000",
-      chatServerKey: "demo-chat-server-key",
+      chatServerKey: "reserve-chat-server-key",
+      uploadServerUrl: "https://oddle-media-library-staging-215139993835.asia-southeast1.run.app//api/media/upload",
 
       // Conversation metadata
-      metadata: { marketing_id: "mar_01" },
+      metadata: { marketing_id: "001" }, // 
+
+      // metadata: {}, 
+      // metadata: { marketing_id: "mar_01" }, 
+      // 
 
       config: {
         ...customConfig,

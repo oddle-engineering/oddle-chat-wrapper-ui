@@ -200,6 +200,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
     // Handle system events
     const handleSystemEvent = useCallback(
       (event: SystemEvent) => {
+        console.log('[ChatWrapper] System event received:', event);
         switch (event.type) {
           case SystemEventType.CHAT_COMPLETED:
             // Capture provider resource ID from conversation completion
@@ -218,7 +219,17 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
             }
             break;
           case SystemEventType.CONNECTION_LOST:
+            console.log('[ChatWrapper] CONNECTION_LOST event');
+            // Reconnection state is now tracked directly from connection status
+            break;
           case SystemEventType.CONNECTION_RESTORED:
+            console.log('[ChatWrapper] CONNECTION_RESTORED event');
+            // Reconnection state is now tracked directly from connection status
+            break;
+          case SystemEventType.RECONNECTING:
+            console.log('[ChatWrapper] RECONNECTING event, attempt:', event.data?.attempt);
+            // Reconnection state is now tracked directly from connection status
+            break;
           default:
             break;
         }
@@ -226,8 +237,20 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       [handleChatFinished, handleChatError, setProviderResId]
     );
 
+    // Reconnection state tracking (now coming from useWebSocketConnection hook)
+    // const [isReconnecting, setIsReconnecting] = useState(false);
+    // const [reconnectAttempt, setReconnectAttempt] = useState(0);
+
     // Initialize WebSocket connection
-    const { chatClient, isConnected, isConnecting, connectChatClient, disconnectChatClient } =
+    const { 
+      chatClient, 
+      isConnected, 
+      isConnecting, 
+      isReconnecting,
+      reconnectAttempts: reconnectAttempt,
+      connectChatClient, 
+      disconnectChatClient 
+    } =
       useWebSocketConnection({
         // Authentication and server properties
         userMpAuthToken,
@@ -649,6 +672,9 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
             <ConnectionNotification
               isConnected={isConnected}
               isConnecting={isConnecting}
+              isReconnecting={isReconnecting}
+              reconnectAttempt={reconnectAttempt}
+              maxReconnectAttempts={Infinity}
               onRetry={handleRetryConnection}
             />
 

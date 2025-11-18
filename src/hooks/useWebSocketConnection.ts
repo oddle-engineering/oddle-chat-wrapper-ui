@@ -7,14 +7,14 @@ interface UseWebSocketConnectionProps {
   userMpAuthToken: string;
   chatServerUrl: string;
   chatServerKey: string;
-  
+
   // Entity configuration
   entityId?: string;
   entityType?: EntityType;
-  
+
   // Tools configuration
   tools?: Tools; // Unified tools with execution functions
-  
+
   // Other properties
   contextHelpers?: ContextHelpers;
   onSetMessage: (char: string) => void;
@@ -31,23 +31,27 @@ export function useWebSocketConnection({
   userMpAuthToken,
   chatServerUrl,
   chatServerKey,
-  
+
   // Entity configuration
   entityId,
   entityType,
-  
+
   // Tools configuration
   tools,
-  
+
   // Other properties
   contextHelpers,
   onSetMessage,
   onSystemEvent,
   onReasoningUpdate,
 }: UseWebSocketConnectionProps) {
-  const [chatClient, setChatClient] = useState<WebSocketChatClient | null>(null);
+  const [chatClient, setChatClient] = useState<WebSocketChatClient | null>(
+    null
+  );
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [connectionReconnecting, setConnectionReconnecting] = useState(false);
+  const [connectionAttempts, setConnectionAttempts] = useState(0);
   const chatClientRef = useRef<WebSocketChatClient | null>(null);
 
   // Use refs to store callbacks to prevent reconnections when they change
@@ -68,23 +72,26 @@ export function useWebSocketConnection({
       // Extract schemas (without execute functions) for server
       const schemas = tools.map(({ execute, ...schema }) => schema);
       const executors: Record<string, (...args: any[]) => any> = {};
-      
+
       // Extract execution functions for client-side use
-      tools.forEach(tool => {
+      tools.forEach((tool) => {
         executors[tool.name] = tool.execute;
       });
-      
+
       return {
         toolSchemas: schemas,
         clientToolExecutors: executors,
       };
     }
-    
+
     return {
       toolSchemas: [],
       clientToolExecutors: {},
     };
   }, [tools]);
+
+  // Retry function that doesn't depend on connectChatClient
+  const retryConnectionRef = useRef<() => void>();
 
   const connectChatClient = useCallback(async () => {
     try {
@@ -111,10 +118,10 @@ export function useWebSocketConnection({
         userMpAuthToken,
         chatServerUrl,
         chatServerKey,
-        
+
         entityId,
         entityType: entityType?.toString(),
-        
+
         // Tools configuration
         toolSchemas: toolSchemas,
         clientTools: clientToolExecutors,
@@ -128,6 +135,17 @@ export function useWebSocketConnection({
     } catch (error) {
       console.error("Error connecting WebSocketChatClient:", error);
       setIsConnected(false);
+
+      // For chat apps, auto-retry initial connection failures
+      // This handles the case where server is down during initial connection
+      setTimeout(() => {
+        if (
+          chatClientRef.current === null ||
+          !chatClientRef.current.getConnectionStatus().connected
+        ) {
+          retryConnectionRef.current?.();
+        }
+      }, 2000);
     } finally {
       setIsConnecting(false);
     }
@@ -152,6 +170,9 @@ export function useWebSocketConnection({
     setIsConnected(false);
   }, []);
 
+  // Set up retry function ref
+  retryConnectionRef.current = connectChatClient;
+
   // Auto-connect on mount and setup connection monitoring
   useEffect(() => {
     connectChatClient();
@@ -167,6 +188,8 @@ export function useWebSocketConnection({
       if (chatClientRef.current) {
         const status = chatClientRef.current.getConnectionStatus();
         setIsConnected(status.connected);
+        setConnectionReconnecting(status.isReconnecting);
+        setConnectionAttempts(status.reconnectAttempts);
       }
     }, 1000);
 
@@ -177,6 +200,8 @@ export function useWebSocketConnection({
     chatClient,
     isConnected,
     isConnecting,
+    isReconnecting: connectionReconnecting,
+    reconnectAttempts: connectionAttempts,
     connectChatClient,
     disconnectChatClient,
   };
