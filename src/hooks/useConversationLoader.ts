@@ -40,6 +40,12 @@ export function useConversationLoader({
       return;
     }
 
+    // Skip if metadata is empty/undefined - start fresh conversation
+    if (!metadata || (typeof metadata === 'object' && Object.keys(metadata).length === 0)) {
+      console.log("useConversationLoader: No metadata provided (empty/undefined), skipping history fetch - starting fresh conversation");
+      return;
+    }
+
     // Validate required props
     if (!httpApiUrl) {
       console.error("httpApiUrl is required for conversation loading");

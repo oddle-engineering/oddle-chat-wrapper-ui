@@ -7,12 +7,7 @@ import {
   useImperativeHandle,
   forwardRef,
 } from "react";
-import {
-  ChatWrapperProps,
-  ChatMode,
-  ChatWrapperRef,
-  EntityType,
-} from "../types";
+import { ChatWrapperProps, ChatMode, ChatWrapperRef } from "../types";
 import { ChatInputRef } from "./ChatInput";
 import { DevSettings } from "./DevSettings";
 import { SystemEvent, SystemEventType } from "../client";
@@ -20,6 +15,7 @@ import {
   useWebSocketConnection,
   useMessageHandling,
   useConversationLoader,
+  useMetadataSync,
 } from "../hooks";
 import { useUIStore } from "../store";
 import { CHAT_STATUS, STREAMING_STATUS } from "../constants/chatStatus";
@@ -44,7 +40,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
     {
       // Authentication and entity context
       auth,
-      
+
       // Server configuration
       chatServerUrl,
       chatServerKey,
@@ -62,7 +58,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
   ) => {
     // Extract auth properties for easier access
     const { token: userMpAuthToken, entityId, entityType } = auth;
-    
+
     // Validate required props early using utility
     chatUtils.validation.validateAuthProps({
       userMpAuthToken,
@@ -196,10 +192,48 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const chatInputRef = useRef<ChatInputRef>(null);
 
+    // Create a ref to store chatClient so we can access it in handleSystemEvent
+    const chatClientRef = useRef<any>(null);
+
+    // Handle thread creation
+    const handleThreadCreated = useCallback(
+      (data: {
+        providerResId: string;
+        threadId: string;
+        canUpdateMetadata: boolean;
+        updateEndpoint: string;
+      }) => {
+        // Update provider resource ID and thread ID
+        setProviderResId(data.providerResId);
+        setCurrentThreadId(data.threadId);
+
+        // Update metadata if server allows it and we have metadata
+        if (
+          data.canUpdateMetadata &&
+          metadata &&
+          Object.keys(metadata).length > 0 &&
+          chatClientRef.current
+        ) {
+          chatClientRef.current
+            .updateMetadata(data.providerResId, { metadata })
+            .then(() => {
+              console.log("[ChatWrapper] ✅ Metadata update successful");
+            })
+            .catch((error: any) => {
+              console.error(
+                "[ChatWrapper] ❌ Failed to update metadata:",
+                error
+              );
+            });
+        }
+      },
+      [setProviderResId, setCurrentThreadId, metadata]
+    );
+
     // Handle system events
     const handleSystemEvent = useCallback(
       (event: SystemEvent) => {
-        console.log('[ChatWrapper] System event received:', event);
+        console.log("[ChatWrapper] System event received:", event);
         switch (event.type) {
           case SystemEventType.CHAT_COMPLETED:
             // Capture provider resource ID from conversation completion
@@ -218,97 +252,76 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
             }
             break;
           case SystemEventType.CONNECTION_LOST:
-            console.log('[ChatWrapper] CONNECTION_LOST event');
             // Reconnection state is now tracked directly from connection status
             break;
           case SystemEventType.CONNECTION_RESTORED:
-            console.log('[ChatWrapper] CONNECTION_RESTORED event');
             // Reconnection state is now tracked directly from connection status
             break;
           case SystemEventType.RECONNECTING:
-            console.log('[ChatWrapper] RECONNECTING event, attempt:', event.data?.attempt);
             // Reconnection state is now tracked directly from connection status
             break;
           default:
             break;
         }
       },
-      [handleChatFinished, handleChatError, setProviderResId]
+      [
+        handleChatFinished,
+        handleChatError,
+        setProviderResId,
+        setCurrentThreadId,
+      ]
     );
 
-    // Reconnection state tracking (now coming from useWebSocketConnection hook)
-    // const [isReconnecting, setIsReconnecting] = useState(false);
-    // const [reconnectAttempt, setReconnectAttempt] = useState(0);
-
     // Initialize WebSocket connection
-    const { 
-      chatClient, 
-      isConnected, 
-      // isConnecting, 
+    const {
+      chatClient,
+      isConnected,
+      // isConnecting,
       // isReconnecting,
       // reconnectAttempts: reconnectAttempt,
-      connectChatClient, 
-      disconnectChatClient 
-    } =
-      useWebSocketConnection({
-        // Authentication and server properties
-        userMpAuthToken,
-        chatServerUrl,
-        chatServerKey,
+      connectChatClient,
+      disconnectChatClient,
+    } = useWebSocketConnection({
+      // Authentication and server properties
+      userMpAuthToken,
+      chatServerUrl,
+      chatServerKey,
 
-        // Entity configuration
-        entityId,
-        entityType,
+      // Entity configuration
+      entityId,
+      entityType,
 
-        // Tools configuration
-        tools,
+      // Tools configuration
+      tools,
 
-        // Other properties
-        contextHelpers,
-        onSetMessage: handleSetMessage,
-        onSystemEvent: handleSystemEvent,
-        onReasoningUpdate: handleReasoningUpdate,
-      });
+      // Other properties
+      contextHelpers,
+      onSetMessage: handleSetMessage,
+      onSystemEvent: handleSystemEvent,
+      onReasoningUpdate: handleReasoningUpdate,
+      onThreadCreated: handleThreadCreated,
+    });
+
+    // Update the chatClient ref when it changes
+    useEffect(() => {
+      chatClientRef.current = chatClient;
+    }, [chatClient]);
+
+    // Handle all metadata synchronization scenarios (Cases 1, 2, 3)
+    useMetadataSync({
+      metadata,
+      chatClient,
+      currentProviderResId,
+      isLoadingConversation,
+      messages,
+      entityId,
+      entityType,
+    });
 
     // Expose imperative handle for parent components
     useImperativeHandle(
       ref,
       () => ({
-        updateEntityId: (newEntityId: string, newEntityType?: EntityType) => {
-          if (!chatClient) {
-            console.warn(
-              "ChatWrapper: Cannot update entityId - chat client not initialized"
-            );
-            return;
-          }
-
-          if (!currentProviderResId) {
-            console.warn(
-              "ChatWrapper: Cannot update entityId - no active conversation (providerResId not set)"
-            );
-            return;
-          }
-
-          if (!newEntityType) {
-            console.warn(
-              "ChatWrapper: Cannot update entityId - entityType is required"
-            );
-            return;
-          }
-
-          chatClient
-            .updateEntityId(
-              currentProviderResId,
-              newEntityId,
-              newEntityType.toString()
-            )
-            .catch((error) => {
-              console.error(
-                "ChatWrapper: Failed to update entity attachment:",
-                error
-              );
-            });
-        },
         updateMetadata: (updates: { tag?: string | null; metadata?: any }) => {
           if (!chatClient) {
             console.warn(
@@ -349,36 +362,35 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
     );
 
     // Initialize conversation loader
-    const { resetConversationLoader /*, reloadConversation*/ } = useConversationLoader({
-      entityId,
-      entityType,
-      httpApiUrl,
-      userMpAuthToken,
-      chatServerKey,
-      messages,
-      setMessages,
-      setIsLoadingConversation,
-      setConversationError,
-      setCurrentThreadId,
-      setProviderResId,
-      metadata,
-    });
+    const { resetConversationLoader /*, reloadConversation*/ } =
+      useConversationLoader({
+        entityId,
+        entityType,
+        httpApiUrl,
+        userMpAuthToken,
+        chatServerKey,
+        messages,
+        setMessages,
+        setIsLoadingConversation,
+        setConversationError,
+        setCurrentThreadId,
+        setProviderResId,
+        metadata,
+      });
 
     // Handle retry: reconnect WebSocket and reload conversation
     // const handleRetryConnection = useCallback(async () => {
     //   console.log("ChatWrapper: Retrying connection and reloading conversation...");
-    //   
+    //
     //   // Reset conversation loader to allow reloading
     //   resetConversationLoader();
-    //   
+    //
     //   // Reconnect WebSocket
     //   await connectChatClient();
-    //   
+    //
     //   // Reload conversation messages
     //   await reloadConversation();
     // }, [resetConversationLoader, connectChatClient, reloadConversation]);
-
-    // Removed retryingMessageId state - no longer needed with simplified approach
 
     // Scroll animation frame ref
     const scrollAnimationFrame = useRef<number | null>(null);
@@ -444,8 +456,11 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         setStreamingStatus(STREAMING_STATUS.STARTING);
 
         // Create user message first
-        const userMessage = chatSubmissionService.createUserMessage(message, media);
-        
+        const userMessage = chatSubmissionService.createUserMessage(
+          message,
+          media
+        );
+
         // Add user message to state
         setMessages((prev) => [...prev, userMessage]);
 
@@ -466,15 +481,17 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
           setChatStatus(CHAT_STATUS.ERROR);
 
           // Mark the user message with error state
-          setMessages((prev) => 
-            prev.map(msg => 
-              msg.id === userMessage.id 
-                ? { 
-                    ...msg, 
-                    hasError: true, 
-                    errorMessage: !isConnected 
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === userMessage.id
+                ? {
+                    ...msg,
+                    hasError: true,
+                    errorMessage: !isConnected
                       ? "Failed to send message."
-                      : (error instanceof Error ? error.message : "Failed to send message")
+                      : error instanceof Error
+                      ? error.message
+                      : "Failed to send message",
                   }
                 : msg
             )
@@ -617,66 +634,73 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
     );
 
     // Handle retry message: mark message for retry and reconnect
-    const handleRetryMessage = useCallback(async (messageId: string) => {
-      console.log("ChatWrapper: Retrying message:", messageId);
-      
-      // Find the message to retry
-      const messageToRetry = messages.find(msg => msg.id === messageId);
-      if (!messageToRetry) {
-        console.warn("ChatWrapper: Message not found for retry:", messageId);
-        return;
-      }
+    const handleRetryMessage = useCallback(
+      async (messageId: string) => {
+        // Find the message to retry
+        const messageToRetry = messages.find((msg) => msg.id === messageId);
+        if (!messageToRetry) {
+          return;
+        }
 
-      // Mark message as retrying
-      console.log('[handleRetryMessage] Marking message as retrying:', messageId);
-      setMessages(prevMessages => {
-        console.log('[handleRetryMessage] Marking message as retrying, messageId:', messageId);
-        return prevMessages.map(msg => 
-          msg.id === messageId 
-            ? { ...msg, hasError: false, isRetrying: true, errorMessage: undefined }
-            : msg
-        );
-      });
+        // Mark message as retrying
 
-      try {
-        // Reset conversation loader and reconnect
-        resetConversationLoader();
-        await connectChatClient();
-        
-        // Submit the message directly without creating a new user message
-        await chatClient?.onTriggerMessage({
-          message: messageToRetry.content,
-          media: messageToRetry.media,
-          providerResId: currentProviderResId || undefined,
-        });
-
-        // Clear the retrying state on the original message (it will show as a normal sent message)
-        setMessages(prevMessages => 
-          prevMessages.map(msg => 
-            msg.id === messageId 
-              ? { ...msg, isRetrying: false }
-              : msg
-          )
-        );
-        
-        console.log('[handleRetryMessage] Retry succeeded for message:', messageId);
-      } catch (error) {
-        // Retry failed - show error state again
-        console.log('[handleRetryMessage] Retry failed for message:', messageId, error);
-        setMessages(prevMessages => 
-          prevMessages.map(msg => 
-            msg.id === messageId 
-              ? { 
-                  ...msg, 
-                  isRetrying: false, 
-                  hasError: true, 
-                  errorMessage: error instanceof Error ? error.message : "Retry failed"
+        setMessages((prevMessages) => {
+          return prevMessages.map((msg) =>
+            msg.id === messageId
+              ? {
+                  ...msg,
+                  hasError: false,
+                  isRetrying: true,
+                  errorMessage: undefined,
                 }
               : msg
-          )
-        );
-      }
-    }, [messages, setMessages, resetConversationLoader, connectChatClient, handleSubmit]);
+          );
+        });
+
+        try {
+          // Reset conversation loader and reconnect
+          resetConversationLoader();
+          await connectChatClient();
+
+          // Submit the message directly without creating a new user message
+          await chatClient?.onTriggerMessage({
+            message: messageToRetry.content,
+            media: messageToRetry.media,
+            providerResId: currentProviderResId || undefined,
+          });
+
+          // Clear the retrying state on the original message (it will show as a normal sent message)
+          setMessages((prevMessages) =>
+            prevMessages.map((msg) =>
+              msg.id === messageId ? { ...msg, isRetrying: false } : msg
+            )
+          );
+        } catch (error) {
+          // Retry failed - show error state again
+
+          setMessages((prevMessages) =>
+            prevMessages.map((msg) =>
+              msg.id === messageId
+                ? {
+                    ...msg,
+                    isRetrying: false,
+                    hasError: true,
+                    errorMessage:
+                      error instanceof Error ? error.message : "Retry failed",
+                  }
+                : msg
+            )
+          );
+        }
+      },
+      [
+        messages,
+        setMessages,
+        resetConversationLoader,
+        connectChatClient,
+        handleSubmit,
+      ]
+    );
 
     const handlers = useMemo(
       () => ({
@@ -686,7 +710,13 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         onPromptSelect: handlePromptSelect,
         onRetryMessage: handleRetryMessage,
       }),
-      [handleSubmit, handleFileUpload, stopGeneration, handlePromptSelect, handleRetryMessage]
+      [
+        handleSubmit,
+        handleFileUpload,
+        stopGeneration,
+        handlePromptSelect,
+        handleRetryMessage,
+      ]
     );
 
     // Combine all memos into final context value

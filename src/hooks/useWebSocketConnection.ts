@@ -24,6 +24,12 @@ interface UseWebSocketConnectionProps {
     content: string,
     toolCallRequest?: any
   ) => void;
+  onThreadCreated?: (data: {
+    providerResId: string;
+    threadId: string;
+    canUpdateMetadata: boolean;
+    updateEndpoint: string;
+  }) => void;
 }
 
 export function useWebSocketConnection({
@@ -44,6 +50,7 @@ export function useWebSocketConnection({
   onSetMessage,
   onSystemEvent,
   onReasoningUpdate,
+  onThreadCreated,
 }: UseWebSocketConnectionProps) {
   const [chatClient, setChatClient] = useState<WebSocketChatClient | null>(
     null
@@ -58,13 +65,15 @@ export function useWebSocketConnection({
   const onSetMessageRef = useRef(onSetMessage);
   const onSystemEventRef = useRef(onSystemEvent);
   const onReasoningUpdateRef = useRef(onReasoningUpdate);
+  const onThreadCreatedRef = useRef(onThreadCreated);
 
   // Keep refs up to date
   useEffect(() => {
     onSetMessageRef.current = onSetMessage;
     onSystemEventRef.current = onSystemEvent;
     onReasoningUpdateRef.current = onReasoningUpdate;
-  }, [onSetMessage, onSystemEvent, onReasoningUpdate]);
+    onThreadCreatedRef.current = onThreadCreated;
+  }, [onSetMessage, onSystemEvent, onReasoningUpdate, onThreadCreated]);
 
   // Process tools and extract schemas for server
   const { toolSchemas, clientToolExecutors } = useMemo(() => {
@@ -129,6 +138,7 @@ export function useWebSocketConnection({
         onSetMessage: onSetMessageRef.current,
         onSystemEvent: onSystemEventRef.current,
         onReasoningUpdate: onReasoningUpdateRef.current,
+        onThreadCreated: onThreadCreatedRef.current,
       });
 
       setIsConnected(true);

@@ -118,26 +118,6 @@ export interface ChatConfig {
 
 export interface ChatWrapperRef {
   /**
-   * Update the entity ID and entity type associated with this chat
-   * Useful when a conversation starts without an entity, then later gets associated with one
-   *
-   * Note: This should be used for changing entity ownership (rare).
-   * For updating business context (orderId, tableId, etc.), use updateMetadata() instead.
-   *
-   * @param entityId - The new entity ID to associate
-   * @param entityType - The entity type (BRAND or ACCOUNT) - required
-   *
-   * @example
-   * ```tsx
-   * const chatRef = useRef<ChatWrapperRef>(null);
-   *
-   * // Later, after user creates/selects an entity
-   * chatRef.current?.updateEntityId('brand-123', EntityType.BRAND);
-   * ```
-   */
-  updateEntityId: (entityId: string, entityType?: EntityType) => void;
-
-  /**
    * Update thread metadata and/or tag for dynamic business context
    * Use this for frequently changing data without affecting entity ownership
    *

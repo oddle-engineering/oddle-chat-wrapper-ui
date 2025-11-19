@@ -15,6 +15,9 @@ export enum InboundMessageType {
   CHAT_FINISHED = 'chat_finished',
   CHAT_ERROR = 'chat_error',
   
+  // Thread Management
+  THREAD_CREATED = 'thread_created',
+  
   // Tool Execution
   TOOL_CALL_REQUEST = 'tool_call_request',
   
@@ -120,6 +123,17 @@ export interface ChatErrorMessage extends BaseInboundMessage {
   };
 }
 
+// Thread management messages
+export interface ThreadCreatedMessage extends BaseInboundMessage {
+  type: InboundMessageType.THREAD_CREATED;
+  data: {
+    providerResId: string;
+    threadId: string;
+    canUpdateMetadata: boolean;
+    updateEndpoint: string;
+  };
+}
+
 // Tool execution messages
 export interface ToolCallRequestMessage extends BaseInboundMessage, ToolCallRequest {
   type: InboundMessageType.TOOL_CALL_REQUEST;
@@ -158,6 +172,7 @@ export type InboundMessage =
   | ChatEventMessage
   | ChatFinishedMessage
   | ChatErrorMessage
+  | ThreadCreatedMessage
   | ToolCallRequestMessage
   | HeartbeatPingMessage
   | HeartbeatAckMessage
@@ -179,3 +194,6 @@ export const isToolCallRequest = (msg: BaseInboundMessage): msg is ToolCallReque
 
 export const isChatError = (msg: BaseInboundMessage): msg is ChatErrorMessage =>
   msg.type === InboundMessageType.CHAT_ERROR;
+
+export const isThreadCreated = (msg: BaseInboundMessage): msg is ThreadCreatedMessage =>
+  msg.type === InboundMessageType.THREAD_CREATED;

@@ -128,13 +128,19 @@ function App() {
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [isThreadModalOpen, setIsThreadModalOpen] = useState(false);
 
+  // State for dynamic metadata (for testing metadata prop sync)
+  // Start with empty to test the "metadata starts empty then gets populated" scenario
+  const [dynamicMetadata, setDynamicMetadata] = useState<any>({
+    order_id: "order_0001",
+  });
+
   // Ref to ChatWrapper for imperative API access
   const chatWrapperRef = useRef<ChatWrapperRef>(null);
 
   // Get providerResId from the store
   const providerResId = useUIStore((state) => state.providerResId);
 
-  // Handler for thread attachment using ChatWrapper's exposed methods
+  // Handler for thread attachment - now updates metadata prop to test auto-sync
   const handleThreadAttachment = useCallback(
     async (data: {
       entityId?: string;
@@ -142,26 +148,35 @@ function App() {
       tag?: string;
       metadata?: any;
     }) => {
-      if (!chatWrapperRef.current) {
-        throw new Error("Chat wrapper not initialized");
-      }
-
       if (!providerResId) {
         throw new Error("No active conversation to attach");
       }
 
       const { entityId, entityType, tag, metadata } = data;
 
-      // Update entity if provided (rare - changing ownership)
-      if (entityId && entityType) {
-        chatWrapperRef.current.updateEntityId(entityId, entityType);
+      // Entity update functionality removed - use metadata for business context instead
+      // if (entityId && entityType && chatWrapperRef.current) {
+      //   chatWrapperRef.current.updateEntityId(entityId, entityType);
+      // }
+
+      // Update metadata via prop state (this will trigger automatic API sync!)
+      if (metadata) {
+        console.log(
+          "[App] Updating metadata prop to test auto-sync:",
+          metadata
+        );
+        setDynamicMetadata((prev: any) => ({
+          ...prev,
+          ...metadata,
+          updated_at: new Date().toISOString(),
+          update_source: "thread_attachment",
+        }));
       }
 
-      // Update metadata/tag if provided (common - business context)
-      if (tag || metadata) {
+      // Handle tag separately using imperative API (for now)
+      if (tag && chatWrapperRef.current) {
         chatWrapperRef.current.updateMetadata({
-          tag: tag || undefined,
-          metadata,
+          tag: tag,
         });
       }
 
@@ -804,14 +819,11 @@ function App() {
       // chatServerUrl: "http://34.56.173.183",
       chatServerUrl: "https://localhost:3000",
       chatServerKey: "reserve-chat-server-key",
-      uploadServerUrl: "https://oddle-media-library-staging-215139993835.asia-southeast1.run.app//api/media/upload",
+      uploadServerUrl:
+        "https://oddle-media-library-staging-215139993835.asia-southeast1.run.app//api/media/upload",
 
-      // Conversation metadata
-      metadata: { marketing_id: "001" }, // 
-
-      // metadata: {}, 
-      // metadata: { marketing_id: "mar_01" }, 
-      // 
+      // Conversation metadata (now dynamic for testing auto-sync!)
+      metadata: dynamicMetadata,
 
       config: {
         ...customConfig,
@@ -837,7 +849,7 @@ function App() {
         locale: "en-US",
       },
     }),
-    [customConfig, tools]
+    [customConfig, tools, dynamicMetadata]
   );
 
   return (
@@ -863,9 +875,9 @@ function App() {
         {isSidebarVisible ? "Hide Chat" : "Show Chat"}
       </button>
 
-      {/* Thread attachment button */}
+      {/* Metadata test buttons */}
       <button
-        onClick={() => setIsThreadModalOpen(true)}
+        onClick={() => setDynamicMetadata({ order_id: "order_323" })}
         style={{
           position: "fixed",
           top: "70px",
@@ -879,10 +891,81 @@ function App() {
           cursor: "pointer",
           transition: "left 0.3s ease",
           boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+          fontSize: "12px",
         }}
       >
-        📎 Attach Thread
+        🧪 Set order_323
       </button>
+
+      <button
+        onClick={() => setDynamicMetadata(undefined)}
+        style={{
+          position: "fixed",
+          top: "120px",
+          left: isSidebarVisible ? "420px" : "20px",
+          zIndex: 1000,
+          padding: "12px",
+          background: "#dc2626",
+          color: "white",
+          border: "none",
+          borderRadius: "8px",
+          cursor: "pointer",
+          transition: "left 0.3s ease",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+          fontSize: "12px",
+        }}
+      >
+        🗑️ Clear metadata
+      </button>
+
+      <button
+        onClick={() =>
+          setDynamicMetadata({
+            order_id: "order_456",
+            table_id: "table_5",
+            status: "pending",
+            timestamp: new Date().toISOString(),
+          })
+        }
+        style={{
+          position: "fixed",
+          top: "170px",
+          left: isSidebarVisible ? "420px" : "20px",
+          zIndex: 1000,
+          padding: "12px",
+          background: "#7c3aed",
+          color: "white",
+          border: "none",
+          borderRadius: "8px",
+          cursor: "pointer",
+          transition: "left 0.3s ease",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+          fontSize: "12px",
+        }}
+      >
+        📋 Set complex metadata
+      </button>
+
+      <div
+        style={{
+          position: "fixed",
+          top: "220px",
+          left: isSidebarVisible ? "420px" : "20px",
+          zIndex: 1000,
+          padding: "8px",
+          background: "rgba(0,0,0,0.8)",
+          color: "white",
+          borderRadius: "4px",
+          fontSize: "10px",
+          maxWidth: "200px",
+        }}
+      >
+        <strong>Case 1 Test:</strong>
+        <br />
+        Start fresh → Click "Set order_323" → Send message
+        <br />
+        <small>(Metadata updates before thread creation)</small>
+      </div>
 
       {/* Thread attachment modal */}
       <ThreadAttachmentModal
@@ -899,7 +982,11 @@ function App() {
             display: isSidebarVisible ? "block" : "none",
           }}
         >
-          <ChatWrapper ref={chatWrapperRef} {...sidebarChatProps} devMode={true} />
+          <ChatWrapper
+            ref={chatWrapperRef}
+            {...sidebarChatProps}
+            devMode={true}
+          />
         </div>
         <div
           className="panels-container"

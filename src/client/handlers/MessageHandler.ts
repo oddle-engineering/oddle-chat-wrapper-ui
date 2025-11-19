@@ -1,17 +1,17 @@
-import { ToolCallRequest } from '../types/shared';
-import { WebSocketMessage } from '../../types';
-import { 
+import { ToolCallRequest } from "../types/shared";
+import { WebSocketMessage } from "../../types";
+import {
   ChatEventHandlers,
   InboundMessageType,
   ChatEventType,
   ProviderEventType,
-} from '../types';
-import { ReasoningHandler } from './ReasoningHandler';
-import { ToolHandler } from './ToolHandler';
-import { SystemEventFactory } from '../utils/eventFactory';
-import { MessageFactory } from '../utils/messageFactory';
-import { ToolCallFactory } from '../utils/toolCallFactory';
-import { REASONING_CONSTANTS } from '../constants/reasoning';
+} from "../types";
+import { ReasoningHandler } from "./ReasoningHandler";
+import { ToolHandler } from "./ToolHandler";
+import { SystemEventFactory } from "../utils/eventFactory";
+import { MessageFactory } from "../utils/messageFactory";
+import { ToolCallFactory } from "../utils/toolCallFactory";
+import { REASONING_CONSTANTS } from "../constants/reasoning";
 
 export class MessageHandler {
   private reasoningHandler: ReasoningHandler;
@@ -31,7 +31,7 @@ export class MessageHandler {
   handleMessage(event: MessageEvent): WebSocketMessage | null {
     try {
       const data: WebSocketMessage = JSON.parse(event.data);
-      
+
       switch (data.type) {
         case InboundMessageType.SESSION_ESTABLISHED:
           this.handleSessionEstablished();
@@ -114,7 +114,7 @@ export class MessageHandler {
 
   private handleProviderEvent(data: WebSocketMessage): void {
     const eventType = data.data?.type;
-    
+
     switch (eventType) {
       case ProviderEventType.TEXT_DELTA:
         if (data.data.textDelta) {
@@ -143,16 +143,18 @@ export class MessageHandler {
   }
 
   private handleLatitudeEvent(data: WebSocketMessage): void {
-    
-    if (data.data?.type === ProviderEventType.TOOL_RESULT && this.handlers.onReasoningUpdate) {
+    if (
+      data.data?.type === ProviderEventType.TOOL_RESULT &&
+      this.handlers.onReasoningUpdate
+    ) {
       const toolResultData = data.data;
-      
+
       if (toolResultData.toolCallId && toolResultData.toolName) {
         const syntheticRequest = ToolCallFactory.createServerToolCall(
           toolResultData.toolName,
           toolResultData.toolCallId
         );
-        
+
         this.handlers.onReasoningUpdate(
           false,
           `${REASONING_CONSTANTS.COMPLETED_MARKER} ${toolResultData.toolName}`,
@@ -167,13 +169,14 @@ export class MessageHandler {
   }
 
   private handleChatError(data: WebSocketMessage): void {
-    this.handlers.onSystemEvent?.(SystemEventFactory.chatError(data.error || 'Unknown error'));
+    this.handlers.onSystemEvent?.(
+      SystemEventFactory.chatError(data.error || "Unknown error")
+    );
   }
 
   private handleToolCallRequest(request: ToolCallRequest): void {
     this.toolHandler.handleToolCallRequest(request);
   }
-
 
   private handleHeartbeatPing(data: WebSocketMessage): void {
     if (!this.sendMessage) {
@@ -188,7 +191,9 @@ export class MessageHandler {
   }
 
   private handleError(data: WebSocketMessage): void {
-    this.handlers.onSystemEvent?.(SystemEventFactory.chatError(data.error || 'Unknown WebSocket error'));
+    this.handlers.onSystemEvent?.(
+      SystemEventFactory.chatError(data.error || "Unknown WebSocket error")
+    );
   }
 
   updateClientTools(tools: Record<string, Function>): void {
@@ -206,7 +211,7 @@ export class MessageHandler {
 
   updateEventHandlers(handlers: Partial<ChatEventHandlers>): void {
     Object.assign(this.handlers, handlers);
-    
+
     // Update all sub-handlers
     this.reasoningHandler.updateEventHandlers(handlers);
     this.toolHandler.updateEventHandlers(handlers);

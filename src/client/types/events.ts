@@ -22,6 +22,12 @@ export interface WebSocketChatClientProps {
     content: string,
     toolCallRequest?: ToolCallRequest
   ) => void;
+  onThreadCreated?: (data: {
+    providerResId: string;
+    threadId: string;
+    canUpdateMetadata: boolean;
+    updateEndpoint: string;
+  }) => void;
 }
 
 export interface ChatEventHandlers {
@@ -32,6 +38,12 @@ export interface ChatEventHandlers {
     content: string,
     request: ToolCallRequest
   ) => void;
+  onThreadCreated?: (data: {
+    providerResId: string;
+    threadId: string;
+    canUpdateMetadata: boolean;
+    updateEndpoint: string;
+  }) => void;
 }
 
 export interface ReasoningEvent {
