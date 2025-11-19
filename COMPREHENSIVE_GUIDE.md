@@ -185,15 +185,14 @@ import { ChatWrapper, EntityType } from "@oddle/chat-wrapper-ui";
 function App() {
   return (
     <ChatWrapper
-      // Required: Authentication
-      userMpAuthToken="your-user-token"
+      // Required: Authentication and entity context
+      auth={{
+        token: "your-mp-auth-token",
+        entityId: "brand_456",
+        entityType: EntityType.BRAND
+      }}
       chatServerUrl="https://chat.oddle.me"
       chatServerKey="YOUR_APP_KEY"
-      // Required: User context
-      userId="user_123"
-      // Optional: Entity context
-      entityId="brand_456"
-      entityType={EntityType.BRAND}
       // Required: Configuration
       config={{
         mode: "sidebar",
@@ -229,12 +228,13 @@ function MyApp() {
   return (
     <div className="app">
       <ChatWrapper
-        userMpAuthToken={process.env.REACT_APP_USER_TOKEN}
+        auth={{
+          token: process.env.REACT_APP_USER_TOKEN,
+          entityId: "brand_456",
+          entityType: EntityType.BRAND
+        }}
         chatServerUrl={process.env.REACT_APP_CHAT_SERVER_URL}
         chatServerKey="MYAPP"
-        userId="user_123"
-        entityId="brand_456"
-        entityType={EntityType.BRAND}
         config={config}
       />
     </div>
@@ -276,11 +276,12 @@ metadata: {
 ### 4.2 Authentication Flow
 
 ```
-1. App provides userMpAuthToken (long-lived) + chatServerUrl (https://)
+1. App provides auth.token (long-lived MP Auth Token) + chatServerUrl (https://)
    ↓
 2. WebSocket client requests ticket
    POST /api/v1/ws-tickets/generate
-   Headers: { x-oddle-mp-auth-token, x-oddle-chat-server-key }
+   Headers: { x-oddle-mp-auth-token: auth.token, x-oddle-chat-server-key }
+   Server extracts userId from the token
    ↓
 3. Server returns short-lived ticket (valid ~5 minutes)
    { ticket: "abc123...", expiresAt: "2025-11-10T10:00:00Z" }
@@ -364,12 +365,13 @@ import { ChatWrapper, EntityType } from "@oddle/chat-wrapper-ui";
 
 ```tsx
 <ChatWrapper
-  userMpAuthToken={authToken}
+  auth={{
+    token: authToken,
+    entityId: brand.id,
+    entityType: EntityType.BRAND
+  }}
   chatServerUrl="https://chat.oddle.me"
   chatServerKey="MYAPP"
-  userId={currentUser.id}
-  entityId={brand.id}
-  entityType={EntityType.BRAND}
   config={{
     mode: "sidebar",
     headerName: "AI Assistant",
@@ -515,12 +517,13 @@ function OrderManagementApp() {
     <div>
       <ChatWrapper
         ref={chatRef}
-        userMpAuthToken={token}
+        auth={{
+          token: token,
+          entityId: restaurant.id,
+          entityType: EntityType.BRAND
+        }}
         chatServerUrl="https://chat.oddle.me"
         chatServerKey="ORDERS"
-        userId={currentUser.id}
-        entityId={restaurant.id}
-        entityType={EntityType.BRAND}
         config={{
           mode: "sidebar",
           headerName: "Order Assistant",
@@ -576,19 +579,14 @@ const config = chatConfig[env];
 interface ChatWrapperProps {
   // === REQUIRED AUTHENTICATION ===
 
-  /** User's authentication token (long-lived) */
-  userMpAuthToken: string;
+  /** Authentication and entity context */
+  auth: AuthConfig;
 
   /** Chat server URL (https://... - automatically converted to wss:// for WebSocket) */
   chatServerUrl: string;
 
   /** Application identifier key */
   chatServerKey: string;
-
-  // === REQUIRED USER CONTEXT ===
-
-  /** Current user's ID */
-  userId: string;
 
   // === OPTIONAL ENTITY CONTEXT ===
 
@@ -619,7 +617,32 @@ interface ChatWrapperProps {
 }
 ```
 
-### 6.2 ChatConfig Interface
+### 6.2 AuthConfig Interface
+
+```typescript
+interface AuthConfig {
+  /** MP Auth Token or OddlePass token */
+  token: string;
+
+  /** Token type - MP_AUTH (default) or ODDLE_PASS (future support) */
+  tokenType?: AuthTokenType;
+
+  /** Entity ID for scoped conversations (brandId or accountId) */
+  entityId?: string;
+
+  /** Entity type - BRAND, ACCOUNT, or USER */
+  entityType?: EntityType;
+}
+
+enum AuthTokenType {
+  MP_AUTH = "MP_AUTH",       // Marketplace Auth Token (default)
+  ODDLE_PASS = "ODDLE_PASS"  // OddlePass Token (future support)
+}
+```
+
+**Note:** The `userId` is automatically extracted from the auth token on the server, so you don't need to pass it separately.
+
+### 6.3 ChatConfig Interface
 
 ```typescript
 interface ChatConfig {
@@ -735,12 +758,11 @@ import {
 const result = await fetchThreadMessages(
   apiUrl,
   {
-    userId: "user_123",
     entityId: "brand_456",
     entityType: "BRAND",
     metadata: { orderId: "789" },
   },
-  { userMpAuthToken, chatServerKey }
+  { authToken: userMpAuthToken, chatServerKey }
 );
 
 // Update thread entity ownership
@@ -751,7 +773,7 @@ await updateThread(
     entityId: "brand_new",
     entityType: "BRAND",
   },
-  { userMpAuthToken, chatServerKey }
+  { authToken: userMpAuthToken, chatServerKey }
 );
 
 // Update thread metadata
@@ -762,7 +784,7 @@ await updateThreadMetadata(
     tag: "urgent",
     metadata: { orderId: "123", status: "pending" },
   },
-  { userMpAuthToken, chatServerKey }
+  { authToken: userMpAuthToken, chatServerKey }
 );
 ```
 
@@ -779,7 +801,6 @@ The chat wrapper automatically loads previous conversation history when `entityI
 <ChatWrapper
   entityId="brand_123"  // Loads conversation for this brand
   entityType={EntityType.BRAND}
-  userId="user_456"
   {...otherProps}
 />
 
@@ -913,7 +934,7 @@ React to chat events in your application:
       // Send to error tracking
       Sentry.captureException(error);
     },
-
+comp
     onToolResult: (toolName, result) => {
       console.log("Tool executed:", toolName, result);
       // Update app state based on tool execution
@@ -1092,29 +1113,33 @@ _System event:_
 
 ### 9.3 Auto-Reconnection
 
-The client automatically handles connection drops:
+The client automatically handles connection drops with unlimited reconnection attempts:
 
 ```typescript
 // Reconnection strategy
-maxReconnectAttempts: 5
-reconnectDelay: 1000ms (doubles each attempt)
-maxReconnectDelay: 30000ms
+maxReconnectAttempts: Infinity  // Never gives up
+reconnectDelay: 1000ms          // Fixed base delay
+jitter: 10-100ms                // Random jitter to prevent thundering herd
 
-// Backoff sequence
-Attempt 1: 1000ms
-Attempt 2: 2000ms
-Attempt 3: 4000ms
-Attempt 4: 8000ms
-Attempt 5: 16000ms
-Attempt 6+: 30000ms (max)
+// Reconnection pattern (all attempts use same delay)
+Attempt 1: ~1000ms (1000ms + random 10-100ms jitter)
+Attempt 2: ~1000ms (1000ms + random 10-100ms jitter)
+Attempt 3: ~1000ms (1000ms + random 10-100ms jitter)
+... continues indefinitely until reconnected
 ```
+
+**Why no exponential backoff?**
+- Chat is a persistent service - users expect it to work when they return
+- Fixed delay provides predictable, responsive reconnection
+- Jitter prevents thundering herd if many clients reconnect simultaneously
+- Better user experience than increasing delays that make app feel "broken"
 
 **User experience:**
 
 - Connection lost → Shows notification "Reconnecting..."
-- Reconnecting → Shows retry attempt number
+- Reconnecting → Shows retry attempt number (will retry indefinitely)
 - Connected → Notification disappears
-- Failed after max attempts → Shows "Connection failed" with retry button
+- App properly cleans up connections when component unmounts
 
 ---
 
@@ -1432,12 +1457,13 @@ describe("ChatWrapper Integration", () => {
   it("renders with required props", () => {
     render(
       <ChatWrapper
-        userMpAuthToken="test-token"
+        auth={{
+          token: "test-token",
+          entityId: "brand_test",
+          entityType: EntityType.BRAND
+        }}
         chatServerUrl="https://test.oddle.me"
         chatServerKey="TEST"
-        userId="user_test"
-        entityId="brand_test"
-        entityType={EntityType.BRAND}
         config={{
           mode: "sidebar",
           headerName: "Test Chat",
@@ -1578,7 +1604,7 @@ Error: Cannot send message - not connected
 **Solutions:**
 
 1. Wait for connection to establish (check connection indicator)
-2. Verify `userId` is provided
+2. Verify auth token is valid
 3. Check network connectivity
 4. Restart WebSocket connection (refresh page)
 
@@ -1590,10 +1616,10 @@ Warning: No entityId provided, skipping history fetch
 
 **Solutions:**
 
-1. Ensure `entityId` prop is provided
+1. Ensure `auth.entityId` prop is provided
 2. Verify entity exists in database
 3. Check API URL is correct
-4. Verify auth tokens have permission to access entity
+4. Verify auth token has permission to access entity
 
 **Issue: Tools not executing**
 
@@ -2002,12 +2028,13 @@ function CompleteExample() {
 
       <ChatWrapper
         ref={chatRef}
-        userMpAuthToken={process.env.REACT_APP_USER_TOKEN!}
+        auth={{
+          token: process.env.REACT_APP_USER_TOKEN!,
+          entityId: "demo_account",
+          entityType: EntityType.ACCOUNT
+        }}
         chatServerUrl={process.env.REACT_APP_CHAT_SERVER_URL!}
         chatServerKey="TODO_APP"
-        userId="user_demo"
-        entityId="demo_account"
-        entityType={EntityType.ACCOUNT}
         metadata={{
           appVersion: "1.0.0",
           totalTodos: todos.length,
@@ -2042,16 +2069,17 @@ export default CompleteExample;
 ```http
 POST /api/v1/ws-tickets/generate
 Headers:
-  x-oddle-mp-auth-token: <userMpAuthToken>
+  x-oddle-mp-auth-token: <auth.token>
   x-oddle-chat-server-key: <chatServerKey>
 Content-Type: application/json
 
 Body:
 {
-  "userId": "user_123",
   "entityId": "brand_456",
   "entityType": "BRAND"
 }
+
+Note: The userId is extracted from the auth.token on the server.
 
 Response:
 {
@@ -2064,9 +2092,9 @@ Response:
 ### Fetch Thread Messages (V2)
 
 ```http
-GET /api/v1/threads/messages/v2?userId=user_123&entityId=brand_456&entityType=BRAND&format=client
+GET /api/v1/threads/messages/v2?entityId=brand_456&entityType=BRAND&format=client
 Headers:
-  x-oddle-mp-auth-token: <userMpAuthToken>
+  x-oddle-mp-auth-token: <auth.token>
   x-oddle-chat-server-key: <chatServerKey>
 
 Response:
@@ -2082,7 +2110,7 @@ Response:
 ```http
 PATCH /api/v1/threads/provider/{providerResId}
 Headers:
-  x-oddle-mp-auth-token: <userMpAuthToken>
+  x-oddle-mp-auth-token: <auth.token>
   x-oddle-chat-server-key: <chatServerKey>
 Content-Type: application/json
 
