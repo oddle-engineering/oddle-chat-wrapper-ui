@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Message } from "../types";
 import { fetchThreadMessages } from "../utils/threadApi";
+import { logClassifiedError } from "../utils/errorClassification";
 
 interface UseConversationLoaderProps {
   entityId?: string;
@@ -107,11 +108,19 @@ export function useConversationLoader({
 
       hasLoadedConversationRef.current = true;
     } catch (error) {
-      console.error("❌ Error loading conversation:", error);
+      const classification = logClassifiedError(error, "ConversationLoader");
+      
       setConversationError(
         error instanceof Error ? error.message : "Failed to load conversation"
       );
+      
+      // Always mark as loaded to prevent infinite retries
+      // The error classification is just for logging/debugging
       hasLoadedConversationRef.current = true;
+      
+      if (!classification.isRetryable) {
+        console.warn(`[ConversationLoader] Will not retry conversation loading: ${classification.reason}`);
+      }
     } finally {
       setIsLoadingConversation(false);
     }

@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { WebSocketChatClient, SystemEvent } from "../client";
 import { ContextHelpers, EntityType, Tools } from "../types";
+import { logClassifiedError } from "../utils/errorClassification";
 
 interface UseWebSocketConnectionProps {
   // Authentication and server properties
@@ -143,19 +144,24 @@ export function useWebSocketConnection({
 
       setIsConnected(true);
     } catch (error) {
-      console.error("Error connecting WebSocketChatClient:", error);
+      const classification = logClassifiedError(error, "WebSocketConnection");
       setIsConnected(false);
 
-      // For chat apps, auto-retry initial connection failures
-      // This handles the case where server is down during initial connection
-      setTimeout(() => {
-        if (
-          chatClientRef.current === null ||
-          !chatClientRef.current.getConnectionStatus().connected
-        ) {
-          retryConnectionRef.current?.();
-        }
-      }, 2000);
+      // Only retry for retryable errors (network issues, server errors)
+      // Skip retrying for CORS, authentication, and permission errors
+      if (classification.isRetryable) {
+        console.log(`[WebSocketConnection] Will retry in 2s: ${classification.reason}`);
+        setTimeout(() => {
+          if (
+            chatClientRef.current === null ||
+            !chatClientRef.current.getConnectionStatus().connected
+          ) {
+            retryConnectionRef.current?.();
+          }
+        }, 2000);
+      } else {
+        console.warn(`[WebSocketConnection] Will not retry: ${classification.reason}`);
+      }
     } finally {
       setIsConnecting(false);
     }

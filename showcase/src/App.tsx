@@ -876,8 +876,10 @@ function App() {
       </button>
 
       {/* Metadata test buttons */}
-      <button
-        onClick={() => setDynamicMetadata({ order_id: "order_323" })}
+      {/* <button
+        onClick={() =>
+          setDynamicMetadata({ order_id: `order_${new Date().toISOString()}` })
+        }
         style={{
           position: "fixed",
           top: "70px",
@@ -894,7 +896,7 @@ function App() {
           fontSize: "12px",
         }}
       >
-        🧪 Set order_323
+        🧪 Set random order id
       </button>
 
       <button
@@ -916,56 +918,7 @@ function App() {
         }}
       >
         🗑️ Clear metadata
-      </button>
-
-      <button
-        onClick={() =>
-          setDynamicMetadata({
-            order_id: "order_456",
-            table_id: "table_5",
-            status: "pending",
-            timestamp: new Date().toISOString(),
-          })
-        }
-        style={{
-          position: "fixed",
-          top: "170px",
-          left: isSidebarVisible ? "420px" : "20px",
-          zIndex: 1000,
-          padding: "12px",
-          background: "#7c3aed",
-          color: "white",
-          border: "none",
-          borderRadius: "8px",
-          cursor: "pointer",
-          transition: "left 0.3s ease",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-          fontSize: "12px",
-        }}
-      >
-        📋 Set complex metadata
-      </button>
-
-      <div
-        style={{
-          position: "fixed",
-          top: "220px",
-          left: isSidebarVisible ? "420px" : "20px",
-          zIndex: 1000,
-          padding: "8px",
-          background: "rgba(0,0,0,0.8)",
-          color: "white",
-          borderRadius: "4px",
-          fontSize: "10px",
-          maxWidth: "200px",
-        }}
-      >
-        <strong>Case 1 Test:</strong>
-        <br />
-        Start fresh → Click "Set order_323" → Send message
-        <br />
-        <small>(Metadata updates before thread creation)</small>
-      </div>
+      </button> */}
 
       {/* Thread attachment modal */}
       <ThreadAttachmentModal

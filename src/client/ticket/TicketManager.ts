@@ -4,6 +4,7 @@ import {
   getTicketInfo,
   WebSocketTicketResponse 
 } from "../../utils/websocketTicketApi";
+import { logClassifiedError } from "../../utils/errorClassification";
 
 export interface AuthData {
   userMpAuthToken: string;
@@ -142,10 +143,17 @@ export class TicketManager {
 
       return this.ticket.ticket;
     } catch (error) {
-      console.error('TicketManager: Failed to refresh ticket', error);
-      throw new Error(
-        `Ticket refresh failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      const classification = logClassifiedError(error, 'TicketManager');
+      
+      if (classification.isRetryable) {
+        throw new Error(
+          `Ticket refresh failed (retryable): ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
+      } else {
+        throw new Error(
+          `Ticket refresh failed (non-retryable - ${classification.reason}): ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
+      }
     }
   }
 
@@ -194,7 +202,12 @@ export class TicketManager {
         onRenewed?.();
       }
     } catch (error) {
-      console.error('TicketManager: Error during proactive renewal', error);
+      const classification = logClassifiedError(error, 'TicketManager:ProactiveRenewal');
+      
+      if (!classification.isRetryable) {
+        console.warn(`TicketManager: Stopping proactive renewal due to non-retryable error: ${classification.reason}`);
+        this.stopProactiveRenewal();
+      }
     }
   }
 

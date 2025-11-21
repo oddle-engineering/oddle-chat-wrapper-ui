@@ -13,6 +13,7 @@ import { MessageHandler } from "./handlers";
 import { MessageFactory } from "./utils/messageFactory";
 import { TicketManager, AuthData } from "./ticket";
 import { updateThread, updateThreadMetadata } from "../utils/threadApi";
+import { logClassifiedError } from "../utils/errorClassification";
 
 export class WebSocketChatClient {
   private readonly config: ConnectionConfig;
@@ -127,14 +128,20 @@ export class WebSocketChatClient {
       hasTicket: this.ticketManager?.isValid() ?? false,
     });
 
-    // Auto-retry with new ticket if authentication fails
+    // Auto-retry with new ticket if authentication fails due to expired tickets
     if (
       errorData?.code === "TICKET_INVALID" ||
       errorData?.code === "TICKET_EXPIRED"
     ) {
       console.log("Attempting to refresh ticket and reconnect...");
       this.refreshTicketAndReconnect().catch((err) => {
-        console.error("Failed to refresh ticket:", err);
+        const classification = logClassifiedError(err, "TicketRefresh");
+        
+        // Only retry if the ticket refresh failure is retryable (e.g., network issues)
+        if (!classification.isRetryable) {
+          console.warn(`[WebSocketClient] Ticket refresh failed, will not retry: ${classification.reason}`);
+        }
+        
         // Reject initialization if we can't recover from auth failure
         this.initReject?.(err);
       });

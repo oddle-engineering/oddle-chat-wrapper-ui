@@ -2552,22 +2552,6 @@
   font-weight: 500;
 }
 
-/* Conversation Error Styles */
-.chat-wrapper__conversation-error {
-  padding: 16px 20px;
-  margin: 16px;
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 8px;
-}
-
-.chat-wrapper__conversation-error p {
-  margin: 0;
-  color: #dc2626;
-  font-size: 14px;
-  font-weight: 500;
-}
-
 /* Dark mode variants */
 .chat-wrapper--dark .chat-wrapper__loading-overlay {
   background-color: rgba(17, 24, 39, 0.95);

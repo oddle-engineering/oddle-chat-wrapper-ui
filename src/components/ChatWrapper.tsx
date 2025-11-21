@@ -16,11 +16,13 @@ import {
   useMessageHandling,
   useConversationLoader,
   useMetadataSync,
+  useNetworkStatus,
 } from "../hooks";
 import { useUIStore } from "../store";
 import { CHAT_STATUS, STREAMING_STATUS } from "../constants/chatStatus";
 import { FileUploadService } from "../services/fileUploadService";
 import { ChatSubmissionService } from "../services/chatSubmissionService";
+import { logClassifiedError } from "../utils/errorClassification";
 import { chatUtils } from "../utils/chatUtils";
 import {
   ChatErrorBoundary,
@@ -33,6 +35,7 @@ import { ChatHeader } from "./chat/ChatHeader";
 import { ChatContent } from "./chat/ChatContent";
 import { SettingsIcon } from "./icons";
 import { ChatProvider } from "../contexts";
+import { NetworkStatusBanner } from "./NetworkStatusBanner";
 import "../styles/chat-wrapper.css";
 
 const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
@@ -93,6 +96,10 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
 
     // Initialize custom hooks for state management
     const messageHandling = useMessageHandling();
+    const { isOnline, wasOffline } = useNetworkStatus();
+    
+    // Track whether last connection error was retryable
+    const lastConnectionRetryableRef = useRef(true);
 
     // Zustand state - use individual selectors to avoid infinite re-renders
     // Layout state
@@ -277,7 +284,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       chatClient,
       isConnected,
       // isConnecting,
-      // isReconnecting,
+      isReconnecting,
       // reconnectAttempts: reconnectAttempt,
       connectChatClient,
       disconnectChatClient,
@@ -317,6 +324,23 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       entityId,
       entityType,
     });
+
+    // Handle network reconnection
+    useEffect(() => {
+      if (wasOffline && isOnline && lastConnectionRetryableRef.current) {
+        console.log('[ChatWrapper] Network restored, attempting reconnection...');
+        connectChatClient().catch((error) => {
+          const classification = logClassifiedError(error, 'NetworkReconnection');
+          lastConnectionRetryableRef.current = classification.isRetryable;
+          
+          if (!classification.isRetryable) {
+            console.warn(`[ChatWrapper] Network reconnection failed with non-retryable error: ${classification.reason}`);
+          }
+        });
+      } else if (wasOffline && isOnline && !lastConnectionRetryableRef.current) {
+        console.warn('[ChatWrapper] Network restored but last error was non-retryable (CORS/auth), skipping reconnection');
+      }
+    }, [isOnline, wasOffline, connectChatClient]);
 
     // Expose imperative handle for parent components
     useImperativeHandle(
@@ -772,6 +796,10 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
 
     return (
       <ChatErrorBoundary>
+        <NetworkStatusBanner 
+          isVisible={!isOnline} 
+          isReconnecting={isReconnecting}
+        />
         <WebSocketErrorBoundary
           onError={(error) => {
             console.error("WebSocket error in ChatWrapper:", error);
