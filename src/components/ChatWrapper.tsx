@@ -890,8 +890,6 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
               apiUrl={httpApiUrl}
               userMpAuthToken={userMpAuthToken}
               chatServerKey={chatServerKey}
-              onDisconnect={disconnectChatClient}
-              isConnected={isConnected}
             />
           </div>
         </WebSocketErrorBoundary>

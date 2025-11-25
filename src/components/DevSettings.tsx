@@ -10,8 +10,6 @@ interface DevSettingsProps {
   userMpAuthToken?: string;
   chatServerKey?: string;
   app?: string; // Add app parameter to specify which configuration to load
-  onDisconnect?: () => void; // Function to disconnect WebSocket
-  isConnected?: boolean; // Current connection status
 }
 
 export const DevSettings = ({
@@ -21,8 +19,6 @@ export const DevSettings = ({
   userMpAuthToken,
   chatServerKey,
   app = "UD21", // Default to UD21 if not specified
-  onDisconnect,
-  isConnected = false,
 }: DevSettingsProps) => {
   // Agent configuration state
   const [config, setConfig] = useState<AgentConfiguration | null>(null);
@@ -40,7 +36,7 @@ export const DevSettings = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"agent" | "thread" | "connection">("agent");
+  const [activeTab, setActiveTab] = useState<"agent" | "thread">("agent");
 
   // Fetch configuration when modal opens
   useEffect(() => {
@@ -182,18 +178,6 @@ export const DevSettings = ({
     }
   }, [providerResId, apiUrl, tempEntityId, tempEntityType, tempTag, tempMetadata, userMpAuthToken, chatServerKey]);
 
-  const handleDisconnect = useCallback(() => {
-    if (onDisconnect) {
-      setError(null);
-      setSuccessMessage(null);
-      onDisconnect();
-      setSuccessMessage("WebSocket disconnected successfully!");
-      setTimeout(() => {
-        setSuccessMessage(null);
-        onClose();
-      }, 1500);
-    }
-  }, [onDisconnect, onClose]);
 
   const handleCancel = useCallback(() => {
     if (config) {
@@ -244,12 +228,6 @@ export const DevSettings = ({
             onClick={() => setActiveTab("thread")}
           >
             Thread Attachment
-          </button>
-          <button
-            className={`chat-wrapper__dev-settings-tab ${activeTab === "connection" ? "active" : ""}`}
-            onClick={() => setActiveTab("connection")}
-          >
-            Connection
           </button>
         </div>
         
@@ -432,39 +410,6 @@ export const DevSettings = ({
             </>
           )}
 
-          {/* Connection Tab */}
-          {activeTab === "connection" && !loading && (
-            <>
-              <div className="chat-wrapper__dev-settings-info">
-                <p><strong>Connection Status:</strong> {isConnected ? "🟢 Connected" : "🔴 Disconnected"}</p>
-                <p style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
-                  Manage your WebSocket connection to the chat server.
-                </p>
-              </div>
-
-              <div className="chat-wrapper__dev-settings-section">
-                <h4 style={{ marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>Disconnect WebSocket</h4>
-                <p style={{ marginBottom: '12px', fontSize: '12px', color: '#666' }}>
-                  Click the button below to manually disconnect the WebSocket connection. This will stop all communication with the chat server.
-                </p>
-
-                <button
-                  className="chat-wrapper__dev-settings-btn chat-wrapper__dev-settings-btn--save"
-                  onClick={handleDisconnect}
-                  disabled={!isConnected || !onDisconnect}
-                  style={{ width: '100%', marginTop: '12px' }}
-                >
-                  {isConnected ? 'Disconnect WebSocket' : 'Already Disconnected'}
-                </button>
-
-                {!onDisconnect && (
-                  <p style={{ fontSize: '12px', color: '#ff6b6b', marginTop: '8px' }}>
-                    ⚠️ Disconnect function not available
-                  </p>
-                )}
-              </div>
-            </>
-          )}
         </div>
         
         <div className="chat-wrapper__dev-settings-footer">
