@@ -8,6 +8,7 @@ import {
   ToolCallResponseMessage,
   OutboundHeartbeatPingMessage,
   HeartbeatPongMessage,
+  StopRunMessage,
   OutboundMessage,
 } from '../types/outboundMessages';
 
@@ -119,6 +120,16 @@ export class MessageFactory {
   }
 
   /**
+   * Create a stop run message
+   */
+  static createStopRunMessage(conversationUuid: string): StopRunMessage {
+    return {
+      type: OutboundMessageType.STOP_RUN,
+      conversationUuid,
+    };
+  }
+
+  /**
    * Serialize a message to JSON string for sending over WebSocket
    */
   static serialize(message: OutboundMessage): string {
@@ -186,6 +197,12 @@ export class MessageFactory {
   ): string {
     return this.createAndSerialize(() => 
       this.createHeartbeatPong(originalTimestamp, pingTime)
+    );
+  }
+
+  static serializeStopRun(conversationUuid: string): string {
+    return this.createAndSerialize(() => 
+      this.createStopRunMessage(conversationUuid)
     );
   }
 }

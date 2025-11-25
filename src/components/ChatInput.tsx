@@ -13,7 +13,7 @@ import {
   PromptInputButton,
   PromptInputSubmit,
 } from "./PromptInput";
-import { CHAT_STATUS } from "../constants/chatStatus";
+import { isChatActive } from "../constants/chatStatus";
 import { AnimatedPlaceholder } from "./AnimatedPlaceholder";
 import { sanitizeMessage, sanitizeFileName } from "../utils/security";
 import { useChatContext } from "../contexts";
@@ -502,9 +502,13 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
         </PromptInputTools>
         <PromptInputSubmit
           status={chatStatus}
-          disabled={!input.trim() || isLoadingConversation}
+          disabled={
+            isChatActive(chatStatus)
+              ? false // Never disable stop button when chat is active
+              : !input.trim() || isLoadingConversation // Normal disabled logic when idle
+          }
           onClick={
-            chatStatus === CHAT_STATUS.STREAMING && onStopGeneration
+            isChatActive(chatStatus) && onStopGeneration
               ? () => {
                   onStopGeneration();
                 }

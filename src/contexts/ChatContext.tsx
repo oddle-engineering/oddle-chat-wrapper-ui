@@ -27,6 +27,7 @@ export interface ChatContextValue {
   isLoadingConversation: boolean;
   chatStatus: ChatStatus;
   conversationError?: string | null;
+  isOffline?: boolean;
   
   // ===== Configuration =====
   headerName: string;

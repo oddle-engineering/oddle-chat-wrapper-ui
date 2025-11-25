@@ -15,6 +15,9 @@ export enum OutboundMessageType {
   // Connection Management
   HEARTBEAT_PING = 'heartbeat_ping',
   HEARTBEAT_PONG = 'heartbeat_pong',
+  
+  // Chat Control
+  STOP_RUN = 'stop_run',
 }
 
 // Base interface for all outbound messages
@@ -72,6 +75,12 @@ export interface HeartbeatPongMessage extends BaseOutboundMessage {
   pingTime?: string | number;
 }
 
+// Stop run message
+export interface StopRunMessage extends BaseOutboundMessage {
+  type: OutboundMessageType.STOP_RUN;
+  conversationUuid: string;
+}
+
 // Union type for all outbound messages
 export type OutboundMessage = 
   | ChatMessage
@@ -80,4 +89,5 @@ export type OutboundMessage =
   | UpdateContextHelpersMessage
   | ToolCallResponseMessage
   | OutboundHeartbeatPingMessage
-  | HeartbeatPongMessage;
+  | HeartbeatPongMessage
+  | StopRunMessage;

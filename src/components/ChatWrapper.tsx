@@ -192,7 +192,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       handleReasoningUpdate,
       handleChatFinished,
       handleChatError,
-      stopGeneration,
+      stopGeneration: originalStopGeneration,
     } = messageHandling;
 
     // Refs for managing UI
@@ -248,6 +248,9 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
               setProviderResId(event.data.conversationId);
             }
             handleChatFinished();
+            // Reset chat status to IDLE so button switches back to send
+            setChatStatus(CHAT_STATUS.IDLE);
+            setStreamingStatus(STREAMING_STATUS.IDLE);
             // Focus the input after assistant response completes
             setTimeout(() => {
               chatInputRef.current?.focus();
@@ -341,6 +344,24 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         console.warn('[ChatWrapper] Network restored but last error was non-retryable (CORS/auth), skipping reconnection');
       }
     }, [isOnline, wasOffline, connectChatClient]);
+
+    // Custom stop generation that sends WebSocket stop_run message
+    const stopGeneration = useCallback(() => {
+      // First, handle UI state changes
+      originalStopGeneration();
+      
+      // Reset chat status to IDLE so button switches back to send
+      setChatStatus(CHAT_STATUS.IDLE);
+      setStreamingStatus(STREAMING_STATUS.IDLE);
+      
+      // Then send WebSocket stop_run message if we have a conversation
+      if (chatClient && currentProviderResId) {
+        console.log('[ChatWrapper] Sending stop_run message for conversation:', currentProviderResId);
+        chatClient.stopRun(currentProviderResId);
+      } else {
+        console.warn('[ChatWrapper] Cannot send stop_run: missing chatClient or currentProviderResId');
+      }
+    }, [originalStopGeneration, chatClient, currentProviderResId, setChatStatus, setStreamingStatus]);
 
     // Expose imperative handle for parent components
     useImperativeHandle(
@@ -611,8 +632,9 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         isLoadingConversation,
         chatStatus,
         conversationError,
+        isOffline: !isOnline,
       }),
-      [isLoadingConversation, chatStatus, conversationError]
+      [isLoadingConversation, chatStatus, conversationError, isOnline]
     );
 
     const configState = useMemo(
@@ -796,10 +818,6 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
 
     return (
       <ChatErrorBoundary>
-        <NetworkStatusBanner 
-          isVisible={!isOnline} 
-          isReconnecting={isReconnecting}
-        />
         <WebSocketErrorBoundary
           onError={(error) => {
             console.error("WebSocket error in ChatWrapper:", error);
@@ -809,6 +827,10 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
           }}
         >
           <div className={containerClasses} style={config.customStyles}>
+            <NetworkStatusBanner 
+              isVisible={!isOnline} 
+              isReconnecting={isReconnecting}
+            />
             {/* Connection Status Notification */}
             {/* <ConnectionNotification
               isConnected={isConnected}

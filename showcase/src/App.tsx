@@ -32,6 +32,52 @@ interface Reservation {
   updated_at?: string;
 }
 
+async function fetchTodos() {
+  // Mock async function to fetch todos with delay
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve([
+        {
+          id: "1",
+          task: "Review reservation system",
+          status: "pending",
+          created_at: new Date().toISOString(),
+        },
+        {
+          id: "2",
+          task: "Update menu items",
+          status: "pending",
+          created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        },
+      ]);
+    }, 800); // 800ms delay
+  });
+}
+
+async function fetchMenuItems() {
+  try {
+    const response = await fetch(
+      `https://oddlemenumanagement.beta.oddleapp.com/api/v1/menus/370513651653558296?all-versions=true`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "x-oddle-mp-auth-token":
+            "6ac46bfaa45e594ed5957aa1de49d51bb0d92aeacdc28574fe8ae644c3b17d05d0da4bc121c4b693727472cdc2c83fcd9f14a7c26a006a6a913d21fa1e244380",
+          "x-oddle-chat-server-key": "mock-api-key",
+        },
+      }
+    );
+    const res = await response.json();
+    return {
+      success: true,
+      items: res.data,
+      message: `Retrieved ${res.data.length} menu items for brand 8a818ca9776ae07301776c71205c0ba8`,
+    };
+  } catch (error) {
+    return { success: false, message: "Failed to retrieve menu items" };
+  }
+}
+
 // Showcase App demonstrating ChatWrapper with new required authentication props
 // Updated to use: userMpAuthToken, chatServerUrl, chatServerKey (all required)
 // Plus optional: entityId, entityType, providerResId for conversation generation
@@ -131,7 +177,7 @@ function App() {
   // State for dynamic metadata (for testing metadata prop sync)
   // Start with empty to test the "metadata starts empty then gets populated" scenario
   const [dynamicMetadata, setDynamicMetadata] = useState<any>({
-    order_id: "order_0001",
+    order_id: "order_0007",
   });
 
   // Ref to ChatWrapper for imperative API access
@@ -267,16 +313,13 @@ function App() {
 
   const readTodos = useCallback(async () => {
     console.log("Reading to-dos");
-    return new Promise<any>((resolve) => {
-      setTodos((prev) => {
-        resolve({
-          success: true,
-          todos: prev,
-          message: `Retrieved ${prev.length} to-do items`,
-        });
-        return prev;
-      });
-    });
+    const todosList = await fetchTodos();
+    setTodos(todosList as any[]);
+    return {
+      success: true,
+      todos: todosList as any[],
+      message: `Retrieved ${(todosList as any[]).length} to-do items`,
+    };
   }, []);
 
   const createReservation = useCallback(async (params: any) => {
@@ -538,6 +581,12 @@ function App() {
     });
   }, []);
 
+  const getBrandItems = useCallback(async () => {
+    const items = await fetchMenuItems();
+    console.log("items");
+    return items;
+  }, []);
+
   // New unified tools with execution functions
   const tools: Tools = useMemo(
     () => [
@@ -788,6 +837,12 @@ function App() {
         description: "Get reservation statistics and summary",
         parameters: [],
         execute: getReservationStats,
+      },
+      {
+        name: "get_brand_items",
+        description: "Retrieve a list of menu items for specified brand",
+        parameters: [],
+        execute: getBrandItems,
       },
     ],
     [

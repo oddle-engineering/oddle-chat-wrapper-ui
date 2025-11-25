@@ -26,7 +26,8 @@ export const ChatContent: React.FC = () => {
     suggestedPrompts,
     messagesEndRef,
     chatInputRef,
-    conversationError,
+    isOffline,
+    // conversationError,
   } = useChatContext();
   const shouldShowMainHeader = chatUtils.state.shouldShowMainHeader(
     messages.length,
@@ -51,14 +52,19 @@ export const ChatContent: React.FC = () => {
     <>
       {/* Main Header Section - only show when no messages and not loading */}
       {shouldShowMainHeader && (
-        <ChatMainHeader
-          headerName={headerName}
-          headerDescription={headerDescription}
-        />
+        <div style={isOffline ? { paddingTop: '32px' } : undefined}>
+          <ChatMainHeader
+            headerName={headerName}
+            headerDescription={headerDescription}
+          />
+        </div>
       )}
 
       {/* Chat Content Area - flexible layout based on message state */}
-      <div className={contentAreaClass}>
+      <div 
+        className={contentAreaClass} 
+        style={isOffline ? { paddingTop: '32px' } : undefined}
+      >
         {/* Messages Area */}
         {isLoadingConversation && messages.length === 0 ? (
           <div className="chat-wrapper__messages">

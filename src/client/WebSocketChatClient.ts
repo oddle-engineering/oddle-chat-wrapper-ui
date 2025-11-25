@@ -352,6 +352,22 @@ export class WebSocketChatClient {
   }
 
   /**
+   * Stop the current conversation run
+   * Sends a stop_run message to the server to halt the current response generation
+   */
+  stopRun(conversationUuid: string): void {
+    if (!this.connectionState.isConnected) {
+      console.warn("WebSocketChatClient: Cannot stop run - client not connected");
+      return;
+    }
+
+    console.log("WebSocketChatClient: Stopping conversation run:", conversationUuid);
+    
+    const message = MessageFactory.serializeStopRun(conversationUuid);
+    this.wsManager.send(message);
+  }
+
+  /**
    * Update entity information (entityId and entityType) for a conversation
    * This is useful when a conversation starts without an entity,
    * then later gets associated with one (e.g., user creates/selects an entity)

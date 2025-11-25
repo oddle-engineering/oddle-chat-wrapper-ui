@@ -1,5 +1,5 @@
 import React, { ReactNode, KeyboardEventHandler, forwardRef } from "react";
-import { ChatStatus, CHAT_STATUS } from "../constants/chatStatus";
+import { ChatStatus, CHAT_STATUS, isChatActive } from "../constants/chatStatus";
 
 // Base utility function for class names (simplified version of cn)
 const cn = (...classes: (string | undefined | false | null)[]): string => {
@@ -90,6 +90,81 @@ const SendIcon = () => (
           transform="translate(11 10.3541)"
         />
       </clipPath>
+    </defs>
+  </svg>
+);
+
+// Stop Icon component
+const StopIcon = () => (
+  <svg
+    width="54"
+    height="55"
+    viewBox="0 0 54 55"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <g filter="url(#filter0_dd_121_23927)">
+      <path
+        d="M3 26.3541C3 13.0993 13.7452 2.35413 27 2.35413C40.2548 2.35413 51 13.0993 51 26.3541C51 39.609 40.2548 50.3541 27 50.3541C13.7452 50.3541 3 39.609 3 26.3541Z"
+        fill="inherit"
+        shapeRendering="crispEdges"
+      />
+      <rect x="19" y="19.3541" width="16" height="16" rx="2" fill="white" />
+    </g>
+    <defs>
+      <filter
+        id="filter0_dd_121_23927"
+        x="0"
+        y="0.354126"
+        width="54"
+        height="54"
+        filterUnits="userSpaceOnUse"
+        colorInterpolationFilters="sRGB"
+      >
+        <feFlood floodOpacity="0" result="BackgroundImageFix" />
+        <feColorMatrix
+          in="SourceAlpha"
+          type="matrix"
+          values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+          result="hardAlpha"
+        />
+        <feOffset dy="1" />
+        <feGaussianBlur stdDeviation="1" />
+        <feComposite in2="hardAlpha" operator="out" />
+        <feColorMatrix
+          type="matrix"
+          values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.06 0"
+        />
+        <feBlend
+          mode="normal"
+          in2="BackgroundImageFix"
+          result="effect1_dropShadow_121_23927"
+        />
+        <feColorMatrix
+          in="SourceAlpha"
+          type="matrix"
+          values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+          result="hardAlpha"
+        />
+        <feOffset dy="1" />
+        <feGaussianBlur stdDeviation="1.5" />
+        <feComposite in2="hardAlpha" operator="out" />
+        <feColorMatrix
+          type="matrix"
+          values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0"
+        />
+        <feBlend
+          mode="normal"
+          in2="effect1_dropShadow_121_23927"
+          result="effect2_dropShadow_121_23927"
+        />
+        <feBlend
+          mode="normal"
+          in="SourceGraphic"
+          in2="effect2_dropShadow_121_23927"
+          result="shape"
+        />
+      </filter>
     </defs>
   </svg>
 );
@@ -241,7 +316,9 @@ export const PromptInputSubmit = ({
   disabled,
   ...props
 }: PromptInputSubmitProps) => {
-  let Icon: ReactNode = <SendIcon />;
+  // Show stop icon when chat is active (submitted or streaming)
+  const showStopButton = isChatActive(status);
+  let Icon: ReactNode = showStopButton ? <StopIcon /> : <SendIcon />;
 
   return (
     <button
@@ -250,10 +327,10 @@ export const PromptInputSubmit = ({
         `chat-wrapper__prompt-submit--${variant}`,
         `chat-wrapper__prompt-submit--${size}`,
         !disabled && "chat-wrapper__prompt-submit--enabled",
-        // status === "streaming" && "chat-wrapper__prompt-submit--stop",
+        showStopButton && "chat-wrapper__prompt-submit--stop",
         className
       )}
-      type="submit"
+      type={showStopButton ? "button" : "submit"}
       disabled={disabled}
       {...props}
     >

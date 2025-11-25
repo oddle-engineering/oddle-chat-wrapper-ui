@@ -104,34 +104,16 @@ export const MessageItem = memo<MessageItemProps>(
       </div>
     );
 
-    const renderRetryingMessage = () => (
-      <div className="chat-wrapper__error-message chat-wrapper__error-message--retrying">
-        <div className="chat-wrapper__error-icon">🔄</div>
-        <div className="chat-wrapper__error-content">
-          <div className="chat-wrapper__error-text chat-wrapper__error-text--retrying">
-            Retrying message...
-          </div>
-        </div>
-      </div>
-    );
 
-    const renderErrorMessage = () => (
-      <div className="chat-wrapper__error-message">
-        <div className="chat-wrapper__error-icon">⚠️</div>
-        <div className="chat-wrapper__error-content">
-          <div className="chat-wrapper__error-text">
-            {message.errorMessage || "Failed to send message. Server may be down."}
-          </div>
-          {onRetryMessage && (
-            <button 
-              className="chat-wrapper__retry-button"
-              onClick={handleRetry}
-            >
-              🔄 Retry
-            </button>
-          )}
-        </div>
-      </div>
+    const renderRetryButton = () => (
+      onRetryMessage && (
+        <button 
+          className="chat-wrapper__retry-button"
+          onClick={handleRetry}
+        >
+          Retry
+        </button>
+      )
     );
 
     const renderCopyButton = () => (
@@ -183,8 +165,6 @@ export const MessageItem = memo<MessageItemProps>(
             ))}
           </div>
         )}
-        {message.isRetrying && renderRetryingMessage()}
-        {message.hasError && !message.isRetrying && renderErrorMessage()}
       </div>
     );
 
@@ -261,9 +241,12 @@ export const MessageItem = memo<MessageItemProps>(
         ) : message.role === "tooling" ? (
           renderToolingMessage()
         ) : (
-          <div className="chat-wrapper__message-content">
-            {renderMessageContent()}
-          </div>
+          <>
+            <div className="chat-wrapper__message-content">
+              {renderMessageContent()}
+            </div>
+            {message.role === "user" && message.hasError && !message.isRetrying && renderRetryButton()}
+          </>
         )}
       </div>
     );

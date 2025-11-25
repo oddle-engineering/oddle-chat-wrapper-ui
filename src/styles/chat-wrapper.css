@@ -2037,14 +2037,14 @@
 
 /* Stop Button Styling */
 .chat-wrapper__prompt-submit--stop {
-  background-color: #ef4444;
-  border-color: #ef4444;
+  background-color: #410099;
+  border-color: #410099;
   color: #ffffff;
 }
 
 .chat-wrapper__prompt-submit--stop:hover:not(:disabled) {
-  background-color: #dc2626;
-  border-color: #dc2626;
+  background-color: #330077;
+  border-color: #330077;
 }
 
 /* Icon Styles */
@@ -3171,27 +3171,28 @@ select.chat-wrapper__dev-settings-input {
 }
 
 .chat-wrapper__retry-button {
-  align-self: flex-start;
-  background: #dc2626;
-  color: white;
+  align-self: flex-end;
+  background: none;
+  color: #dc2626;
   border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 0;
+  border-radius: 0;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
-  display: flex;
+  transition: color 0.2s;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
+  text-decoration: underline;
+  margin-top: 8px;
 }
 
 .chat-wrapper__retry-button:hover {
-  background: #b91c1c;
+  color: #b91c1c;
 }
 
 .chat-wrapper__retry-button:active {
-  background: #991b1b;
+  color: #991b1b;
 }
 
 /* Dark theme error message styles */
@@ -3205,11 +3206,11 @@ select.chat-wrapper__dev-settings-input {
 }
 
 .chat-wrapper--dark .chat-wrapper__retry-button {
-  background: #dc2626;
+  color: #f87171;
 }
 
 .chat-wrapper--dark .chat-wrapper__retry-button:hover {
-  background: #b91c1c;
+  color: #fca5a5;
 }
 
 /* Retrying Message Styles */

@@ -1,14 +1,14 @@
 .network-status-banner {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   right: 0;
   background: #dc2626;
   color: white;
-  z-index: 9999;
-  padding: 12px 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  animation: slideDown 0.3s ease-out;
+  z-index: 1000;
+  padding: 8px 12px;
+  font-size: 12px;
+  border-radius: 4px 4px 0 0;
 }
 
 .network-status-banner__content {
@@ -16,7 +16,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
 }
 
