@@ -1636,14 +1636,20 @@
 
 .chat-wrapper__code-block {
   background-color: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  padding: 12px;
+  border-radius: 4px;
+  padding: 4px;
   margin: 8px 0;
   overflow-x: auto;
+  overflow-y: auto;
   font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
   font-size: 13px;
   line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  max-height: 500px;
+  position: relative;
 }
 
 .chat-wrapper__inline-code {
@@ -1668,6 +1674,14 @@
   padding: 8px 0 8px 16px;
   color: #6b7280;
   font-style: italic;
+}
+
+.chat-wrapper__hr {
+  border: none;
+  background: none;
+  margin: 4px 0;
+  padding: 0;
+  height: 0;
 }
 
 .chat-wrapper__bold {

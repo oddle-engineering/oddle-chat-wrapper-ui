@@ -213,7 +213,7 @@ export declare interface ConversationSlice {
 
 export declare const CopyIcon: default_2.FC<IconProps>;
 
-export declare const DevSettings: ({ isOpen, onClose, apiUrl, userMpAuthToken, chatServerKey, app, onDisconnect, isConnected, }: DevSettingsProps) => JSX_2.Element | null;
+export declare const DevSettings: ({ isOpen, onClose, apiUrl, userMpAuthToken, chatServerKey, app, }: DevSettingsProps) => JSX_2.Element | null;
 
 declare interface DevSettingsProps {
     isOpen: boolean;
@@ -222,8 +222,6 @@ declare interface DevSettingsProps {
     userMpAuthToken?: string;
     chatServerKey?: string;
     app?: string;
-    onDisconnect?: () => void;
-    isConnected?: boolean;
 }
 
 export declare interface DevSlice {

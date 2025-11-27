@@ -290,7 +290,6 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       isReconnecting,
       // reconnectAttempts: reconnectAttempt,
       connectChatClient,
-      disconnectChatClient,
     } = useWebSocketConnection({
       // Authentication and server properties
       userMpAuthToken,

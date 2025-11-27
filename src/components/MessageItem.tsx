@@ -26,7 +26,7 @@ const MarkdownComponents = {
         {children}
       </code>
     ) : (
-      <code className="chat-wrapper__code-block" {...props}>
+      <code className="chat-wrapper__code" {...props}>
         {children}
       </code>
     );
@@ -45,6 +45,9 @@ const MarkdownComponents = {
     <li className="chat-wrapper__list-item" {...props}>
       {children}
     </li>
+  ),
+  hr: ({ ...props }: any) => (
+    <hr className="chat-wrapper__hr" {...props} />
   ),
 };
 

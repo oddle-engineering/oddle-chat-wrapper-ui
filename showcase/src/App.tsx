@@ -32,6 +32,48 @@ interface Reservation {
   updated_at?: string;
 }
 
+interface MarketingToolsFunctions {
+  createCampaign: (
+    params: CreateCampaignParams,
+  ) => Promise<CreateCampaignResponse>
+  getBrandItems: () => Promise<unknown>
+  searchMediaLibrary: (params: {
+    queries: string
+    maxResults: number
+  }) => Promise<unknown>
+  getReservationTickets: () => Promise<unknown>
+}
+
+export interface CreateCampaignParams {
+  emailType: 'broadcast'
+  campaignJson: {
+    campaignName: string
+    campaignDesc: string
+    reminder: boolean
+    scheduling: {
+      date?: string
+      time?: string
+      option: 'now' | 'scheduled'
+    }
+  }
+  emailJson: {
+    subject: string
+    preHeader: string
+    reminderSubject?: string
+    reminderPreHeader?: string
+    content: Array<{
+      type: string
+      props: Record<string, unknown>
+    }>
+  }
+}
+
+export interface CreateCampaignResponse {
+  success: boolean
+  campaignJson: CreateCampaignParams['campaignJson']
+  emailJson: CreateCampaignParams['emailJson']
+}
+
 async function fetchTodos() {
   // Mock async function to fetch todos with delay
   return new Promise((resolve) => {
@@ -177,7 +219,7 @@ function App() {
   // State for dynamic metadata (for testing metadata prop sync)
   // Start with empty to test the "metadata starts empty then gets populated" scenario
   const [dynamicMetadata, setDynamicMetadata] = useState<any>({
-    order_id: "order_0007",
+    order_id: "order_0009",
   });
 
   // Ref to ChatWrapper for imperative API access
@@ -587,9 +629,249 @@ function App() {
     return items;
   }, []);
 
+  // Marketing tools implementation functions
+  const createCampaign = useCallback(async (params: CreateCampaignParams) => {
+    console.log("Creating campaign:", params);
+    // Mock campaign creation
+    return {
+      success: true,
+      campaignJson: params.campaignJson,
+      emailJson: params.emailJson,
+    };
+  }, []);
+
+  const searchMediaLibrary = useCallback(async (params: { queries: string; maxResults: number }) => {
+    console.log("Searching media library:", params);
+    // Mock media search
+    return {
+      success: true,
+      results: [
+        {
+          id: "1",
+          url: "https://example.com/image1.jpg",
+          title: "Sample Image 1",
+          tags: params.queries.split(',').map(q => q.trim())
+        },
+        {
+          id: "2", 
+          url: "https://example.com/image2.jpg",
+          title: "Sample Image 2",
+          tags: params.queries.split(',').map(q => q.trim())
+        }
+      ],
+      total: 2,
+      message: `Found 2 media items for queries: ${params.queries}`
+    };
+  }, []);
+
+  const getReservationTickets = useCallback(async () => {
+    console.log("Getting reservation tickets");
+    // Mock reservation tickets
+    return {
+      success: true,
+      tickets: [
+        {
+          id: "1",
+          name: "Dinner Reservation",
+          url: "https://booking.restaurant.com/dinner",
+          type: "dinner"
+        },
+        {
+          id: "2", 
+          name: "Lunch Reservation",
+          url: "https://booking.restaurant.com/lunch",
+          type: "lunch"
+        }
+      ],
+      message: "Retrieved reservation ticket types"
+    };
+  }, []);
+
+  // Marketing tools factory
+  const MARKETING_TOOLS: (functions: MarketingToolsFunctions) => Tools = (fn) => [
+    // media_library
+    {
+      name: 'search_media_library',
+      description: "Search a merchant's media library for media based on queries",
+      parameters: [
+        {
+          name: 'queries',
+          type: 'string',
+          description: 'Comma separated keywords to search for',
+          isRequired: true,
+          schema: { type: 'string' },
+        },
+        {
+          name: 'maxResults',
+          type: 'number',
+          description: 'Maximum number of results to return',
+          isRequired: true,
+          schema: { type: 'integer' },
+        },
+      ],
+      execute: fn.searchMediaLibrary,
+    },
+    // reservation
+    {
+      name: 'get_reservation_tickets',
+      description:
+        'Read all reservation related tickets / booking types and their links from a brand.',
+      parameters: [],
+      execute: fn.getReservationTickets,
+    },
+    {
+      name: 'get_brand_items',
+      description: 'Get a list of full items in the brand',
+      parameters: [],
+      execute: fn.getBrandItems,
+    },
+    {
+      name: 'create_campaign',
+      description:
+        "Creates an email marketing campaign in Oddle's email marketing module.",
+      parameters: [
+        {
+          name: 'emailType',
+          type: 'string',
+          description: 'Only "broadcast" is supported at this moment.',
+          isRequired: true,
+          schema: {
+            type: 'string',
+            enum: ['broadcast'],
+          },
+        },
+        {
+          name: 'campaignJson',
+          type: 'object',
+          description:
+            'Details of the campaign settings including, name description, scheduling and reminder options.',
+          isRequired: true,
+          schema: {
+            type: 'object',
+            properties: {
+              campaignName: {
+                type: 'string',
+                description: 'Name of the campaign for internal use.',
+              },
+              campaignDesc: {
+                type: 'string',
+                description: 'Description of the campaign for internal use.',
+              },
+              reminder: {
+                type: 'boolean',
+                description:
+                  'Enabling this sends a follow up email with a different email address to customers who did not open the initial email after 8 days. Default is true.',
+              },
+              scheduling: {
+                type: 'object',
+                description:
+                  'when to send the email. Either "now" or a scheduled date in future.',
+                properties: {
+                  date: {
+                    type: 'string',
+                    description:
+                      'Date to send the email in DD-MM-YYYY format. Must be a future date.',
+                  },
+                  time: {
+                    type: 'string',
+                    description:
+                      'Time of day to send the email in 24-hour HH:MM format. Only in 15 minute increments (e.g 00, 15, 30, 45).',
+                  },
+                  option: {
+                    type: 'string',
+                    description:
+                      'One of "now" or "scheduled". If "schedule", both date and time must be present and valid.',
+                    enum: ['now', 'scheduled'],
+                  },
+                },
+              },
+            },
+            required: ['campaignName', 'campaignDesc', 'reminder'],
+          },
+        },
+        {
+          name: 'emailJson',
+          type: 'object',
+          description:
+            'Details of the email content including subject, preheader, and email layout',
+          isRequired: true,
+          schema: {
+            type: 'object',
+            properties: {
+              subject: {
+                type: 'string',
+                description: 'The email subject title.',
+              },
+              preHeader: {
+                type: 'string',
+                description: 'The email preview text shown in inboxes',
+              },
+              reminderSubject: {
+                type: 'string',
+                description:
+                  'The subject title for the follow up email sent to non-openers after 8 days',
+              },
+              reminderPreHeader: {
+                type: 'string',
+                description:
+                  'The email preview text for the follow up email to non-openers after 8 days',
+              },
+              content: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    type: {
+                      type: 'string',
+                      enum: [
+                        'Header',
+                        'Title',
+                        'Text',
+                        'Button',
+                        'Image',
+                        'ImageWithText',
+                        'Divider',
+                        'Spacer',
+                        'MenuItem',
+                        'ReserveTicket',
+                        'Redeemable',
+                        'Promo',
+                        'PersonalSignOff',
+                        'Footer',
+                      ],
+                    },
+                    props: {
+                      type: 'object',
+                    },
+                  },
+                  required: ['type', 'props'],
+                },
+              },
+            },
+          },
+        },
+      ],
+      execute: fn.createCampaign,
+    },
+  ];
+
+  // Create marketing tools instance  
+  const marketingToolsInstance = useMemo(() => {
+    const marketingFunctions: MarketingToolsFunctions = {
+      createCampaign,
+      getBrandItems,
+      searchMediaLibrary,
+      getReservationTickets,
+    };
+    return MARKETING_TOOLS(marketingFunctions);
+  }, [createCampaign, getBrandItems, searchMediaLibrary, getReservationTickets]);
+
   // New unified tools with execution functions
   const tools: Tools = useMemo(
     () => [
+      // Marketing tools
+      ...marketingToolsInstance,
+      
       // To-do management tools
       {
         name: "create_to_do",
@@ -846,6 +1128,7 @@ function App() {
       },
     ],
     [
+      marketingToolsInstance,
       createTodo,
       readTodos,
       createReservation,
@@ -866,14 +1149,14 @@ function App() {
       auth: {
         token:
           "d9a899a70af14c0826b719fb30674840b591961db1fca7f4985c7511b55bb356afaebe05dfa0dd9f75ffa150b9caf7e61a438718a9fd1becbea570091a0b82c9",
-        entityId: "8a818ca9776ae07301776c71205c0ba8",
+        entityId: "8a8197e78054904a01805a25a4bb25be1",
         entityType: EntityType.BRAND,
       },
 
       // Server configuration
       // chatServerUrl: "http://34.56.173.183",
       chatServerUrl: "https://localhost:3000",
-      chatServerKey: "reserve-chat-server-key",
+      chatServerKey: "ud21-chat-server-key",
       uploadServerUrl:
         "https://oddle-media-library-staging-215139993835.asia-southeast1.run.app//api/media/upload",
 
