@@ -7,6 +7,7 @@ import {
   useImperativeHandle,
   forwardRef,
 } from "react";
+import { Tolgee, DevTools, TolgeeProvider } from "@tolgee/react";
 import { ChatWrapperProps, ChatMode, ChatWrapperRef } from "../types";
 import { ChatInputRef } from "./ChatInput";
 import { DevSettings } from "./DevSettings";
@@ -51,6 +52,9 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       // Conversation configuration
       metadata,
 
+      // Localization configuration
+      locale = 'en_SG',
+
       // Existing props
       config,
       tools,
@@ -68,6 +72,64 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       chatServerUrl,
       chatServerKey,
     });
+
+    // Default static translations (fallback)
+    const defaultTranslations = {
+      en_SG: {
+        'chat.loading': 'Loading...',
+        'chat.retry': 'Retry',
+        'chat.thinking': 'Thinking...',
+        'chat.copy': 'Copy message',
+        'chat.copied': 'Copied!',
+        'chat.settings': 'Developer Settings',
+        'chat.close': 'Close',
+        'chat.disconnect': 'Disconnect',
+        'chat.stop': 'Stop',
+        'chat.send': 'Send',
+        'chat.placeholder': 'Type your message...',
+        'chat.suggestedPrompts': 'Suggested Prompts',
+        'chat.systemMessage': 'System Message',
+        'chat.executingTool': 'Executing tool...',
+        'chat.running': 'Running...',
+        'chat.completed': 'Completed',
+        'chat.pending': 'Pending...',
+      },
+    };
+
+    // Initialize Tolgee for internationalization
+    const tolgee = useMemo(
+      () => {
+        const tolgeeInstance = Tolgee();
+        
+        // Add DevTools only in development
+        if (devMode) {
+          tolgeeInstance.use(DevTools());
+        }
+        
+        const initConfig: any = {
+          language: locale,
+          staticData: defaultTranslations,
+        };
+
+        // Auto-detect Tolgee configuration from environment variables
+        // This allows projects to simply set standard Tolgee env vars without any setup
+        // For now, use window globals - consuming apps can set these in their HTML or initialization
+        const tolgeeApiUrl = typeof window !== 'undefined' 
+          ? (window as any).__VITE_APP_TOLGEE_API_URL__ 
+          : undefined;
+        const tolgeeApiKey = typeof window !== 'undefined'
+          ? (window as any).__VITE_APP_TOLGEE_API_KEY__
+          : undefined;
+
+        if (tolgeeApiUrl && tolgeeApiKey) {
+          initConfig.apiUrl = tolgeeApiUrl;
+          initConfig.apiKey = tolgeeApiKey;
+        }
+
+        return tolgeeInstance.init(initConfig);
+      },
+      [locale, devMode]
+    );
 
     // Convert chatServerUrl to HTTP URL for REST API calls
     const httpApiUrl = useMemo(() => {
@@ -817,81 +879,83 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
 
     return (
       <ChatErrorBoundary>
-        <WebSocketErrorBoundary
-          onError={(error) => {
-            console.error("WebSocket error in ChatWrapper:", error);
-            if (config.onError) {
-              config.onError(error);
-            }
-          }}
-        >
-          <div className={containerClasses} style={config.customStyles}>
-            <NetworkStatusBanner 
-              isVisible={!isOnline} 
-              isReconnecting={isReconnecting}
-            />
-            {/* Connection Status Notification */}
-            {/* <ConnectionNotification
-              isConnected={isConnected}
-              isConnecting={isConnecting}
-              isReconnecting={isReconnecting}
-              reconnectAttempt={reconnectAttempt}
-              maxReconnectAttempts={Infinity}
-              onRetry={handleRetryConnection}
-            /> */}
-
-            {/* Floating settings button for when header is not visible */}
-            {devMode && config.headerVisible === false && (
-              <button
-                className="chat-wrapper__settings-button chat-wrapper__settings-button--floating"
-                onClick={handleOpenSettings}
-                title="Developer Settings"
-              >
-                <SettingsIcon size={16} />
-              </button>
-            )}
-
-            {/* Header */}
-            {chatUtils.state.shouldShowHeader(config.headerVisible) && (
-              <ChatHeader
-                headerName={config.headerName}
-                mode={currentMode as ChatMode}
-                isCollapsed={isCollapsed}
-                isModalOpen={isModalOpen}
-                devMode={devMode}
-                onClose={closeModal}
-                onToggleFullscreen={toggleFullscreen}
-                onToggleCollapse={toggleCollapse}
-                onOpenSettings={handleOpenSettings}
+        <TolgeeProvider tolgee={tolgee}>
+          <WebSocketErrorBoundary
+            onError={(error) => {
+              console.error("WebSocket error in ChatWrapper:", error);
+              if (config.onError) {
+                config.onError(error);
+              }
+            }}
+          >
+            <div className={containerClasses} style={config.customStyles}>
+              <NetworkStatusBanner 
+                isVisible={!isOnline} 
+                isReconnecting={isReconnecting}
               />
-            )}
+              {/* Connection Status Notification */}
+              {/* <ConnectionNotification
+                isConnected={isConnected}
+                isConnecting={isConnecting}
+                isReconnecting={isReconnecting}
+                reconnectAttempt={reconnectAttempt}
+                maxReconnectAttempts={Infinity}
+                onRetry={handleRetryConnection}
+              /> */}
 
-            {/* Main Content - only when not collapsed */}
-            {!isCollapsed && (
-              <FileUploadErrorBoundary
-                onError={(error) => {
-                  console.error("File upload error:", error);
-                  if (config.onError) {
-                    config.onError(error);
-                  }
-                }}
-              >
-                <ChatProvider value={chatContextValue}>
-                  <ChatContent />
-                </ChatProvider>
-              </FileUploadErrorBoundary>
-            )}
+              {/* Floating settings button for when header is not visible */}
+              {devMode && config.headerVisible === false && (
+                <button
+                  className="chat-wrapper__settings-button chat-wrapper__settings-button--floating"
+                  onClick={handleOpenSettings}
+                  title="Developer Settings"
+                >
+                  <SettingsIcon size={16} />
+                </button>
+              )}
 
-            {/* Dev Settings Popup */}
-            <DevSettings
-              isOpen={isDevSettingsOpen}
-              onClose={() => setIsDevSettingsOpen(false)}
-              apiUrl={httpApiUrl}
-              userMpAuthToken={userMpAuthToken}
-              chatServerKey={chatServerKey}
-            />
-          </div>
-        </WebSocketErrorBoundary>
+              {/* Header */}
+              {chatUtils.state.shouldShowHeader(config.headerVisible) && (
+                <ChatHeader
+                  headerName={config.headerName}
+                  mode={currentMode as ChatMode}
+                  isCollapsed={isCollapsed}
+                  isModalOpen={isModalOpen}
+                  devMode={devMode}
+                  onClose={closeModal}
+                  onToggleFullscreen={toggleFullscreen}
+                  onToggleCollapse={toggleCollapse}
+                  onOpenSettings={handleOpenSettings}
+                />
+              )}
+
+              {/* Main Content - only when not collapsed */}
+              {!isCollapsed && (
+                <FileUploadErrorBoundary
+                  onError={(error) => {
+                    console.error("File upload error:", error);
+                    if (config.onError) {
+                      config.onError(error);
+                    }
+                  }}
+                >
+                  <ChatProvider value={chatContextValue}>
+                    <ChatContent />
+                  </ChatProvider>
+                </FileUploadErrorBoundary>
+              )}
+
+              {/* Dev Settings Popup */}
+              <DevSettings
+                isOpen={isDevSettingsOpen}
+                onClose={() => setIsDevSettingsOpen(false)}
+                apiUrl={httpApiUrl}
+                userMpAuthToken={userMpAuthToken}
+                chatServerKey={chatServerKey}
+              />
+            </div>
+          </WebSocketErrorBoundary>
+        </TolgeeProvider>
       </ChatErrorBoundary>
     );
   }

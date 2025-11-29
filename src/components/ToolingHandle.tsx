@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { T } from "@tolgee/react";
 import { ClientTools } from "../types";
 
 interface ToolingHandleProps {
@@ -41,7 +42,7 @@ export function ToolingHandleTrigger({
   if (toolName?.startsWith("lat_")) {
     const query = toolData?.parameters?.query;
     const url = toolData?.parameters?.url; // Fixed: added 's' to 'parameters'
-    toolDescription = query || url || "Executing tool...";
+    toolDescription = query || url || <T keyName="chat.executingTool">Executing tool...</T>;
   } else {
     toolDescription = getToolDescription();
   }
@@ -185,7 +186,7 @@ export function ToolingHandleTrigger({
                   </svg>
                 </div>
               </div>
-              <span>Running...</span>
+              <span><T keyName="chat.running">Running...</T></span>
             </div>
           </div>
         );
@@ -284,7 +285,7 @@ export function ToolingHandleTrigger({
                   </svg>
                 </div>
               </div>
-              <span>Completed</span>
+              <span><T keyName="chat.completed">Completed</T></span>
             </div>
           </div>
         );
@@ -433,7 +434,7 @@ export function ToolingHandleTrigger({
                 </svg>
               </div>
             </div>
-            <span>Pending...</span>
+            <span><T keyName="chat.pending">Pending...</T></span>
           </div>
         );
     }

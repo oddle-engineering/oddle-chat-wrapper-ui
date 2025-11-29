@@ -1,12 +1,12 @@
 import { useState, useCallback, memo } from "react";
 import ReactMarkdown from "react-markdown";
+import { T } from "@tolgee/react";
 import { Message } from "../types";
 import { Reasoning, ReasoningTrigger, ReasoningContent } from "./Reasoning";
 import { ToolingHandle, ToolingHandleTrigger } from "./ToolingHandle";
 import { Loader } from "./Loader";
 import { CopyIcon } from "./icons";
 import { SystemMessageCollapsible } from "./SystemMessageCollapsible";
-import { REASONING_CONSTANTS } from "../client/constants/reasoning";
 import { useChatContext } from "../contexts";
 
 interface MessageItemProps {
@@ -103,7 +103,7 @@ export const MessageItem = memo<MessageItemProps>(
     const renderStreamingPlaceholder = () => (
       <div className="chat-wrapper__streaming-placeholder">
         <Loader size={16} variant="dots" />
-        <span>{REASONING_CONSTANTS.UI_TEXT.THINKING}</span>
+        <span><T keyName="chat.thinking">Thinking...</T></span>
       </div>
     );
 
@@ -114,7 +114,7 @@ export const MessageItem = memo<MessageItemProps>(
           className="chat-wrapper__retry-button"
           onClick={handleRetry}
         >
-          Retry
+          <T keyName="chat.retry">Retry</T>
         </button>
       )
     );
@@ -131,7 +131,9 @@ export const MessageItem = memo<MessageItemProps>(
           </button>
         </div>
         {copied && (
-          <div className="chat-wrapper__copied-notification">Copied!</div>
+          <div className="chat-wrapper__copied-notification">
+            <T keyName="chat.copied">Copied!</T>
+          </div>
         )}
       </>
     );

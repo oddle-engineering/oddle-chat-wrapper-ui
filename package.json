@@ -47,9 +47,17 @@
     "release:prepare": "node scripts/release-helper.js prepare",
     "release:clean": "node scripts/release-helper.js clean",
     "release:info": "node scripts/release-helper.js info",
-    "showcase": "cd showcase && npm run dev",
+    "showcase": "node sync-translations.js && cd showcase && npm run dev",
     "showcase:install": "cd showcase && npm install",
-    "showcase:build": "cd showcase && npm run build"
+    "showcase:build": "cd showcase && npm run build",
+    "i18n:extract": "tolgee extract print --patterns 'src/**/*.{ts,tsx}'",
+    "i18n:push": "tolgee push",
+    "i18n:pull": "tolgee pull && node sync-translations.js", 
+    "i18n:sync": "tolgee sync && node sync-translations.js",
+    "i18n:update": "npm run i18n:pull",
+    "i18n:status": "tolgee compare",
+    "i18n:check": "tolgee extract check",
+    "i18n:init": "tolgee extract print --patterns 'src/**/*.{ts,tsx}'"
   },
   "keywords": [
     "chat",
@@ -66,6 +74,7 @@
     "react-dom": "^18.0.0 || ^19.0.0"
   },
   "devDependencies": {
+    "@tolgee/cli": "^2.14.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "typescript": "^5.0.0",
@@ -73,6 +82,7 @@
     "vite-plugin-dts": "^3.0.0"
   },
   "dependencies": {
+    "@tolgee/react": "^6.2.7",
     "dompurify": "^3.3.0",
     "react-markdown": "^10.1.0",
     "zustand": "^5.0.8"

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { T } from "@tolgee/react";
 import { Message } from "../types";
 
 interface SystemMessageCollapsibleProps {
@@ -43,7 +44,7 @@ export const SystemMessageCollapsible: React.FC<SystemMessageCollapsibleProps> =
         </div>
       );
     }
-    return <span>System Message</span>;
+    return <span><T keyName="chat.systemMessage">System Message</T></span>;
   };
 
   return (

@@ -1,0 +1,19 @@
+{
+  "chat.loading": "Loading...",
+  "chat.retry": "Retry",
+  "chat.thinking": "Thinking...",
+  "chat.copy": "Copy message",
+  "chat.copied": "Copied!",
+  "chat.settings": "Developer Settings",
+  "chat.close": "Close",
+  "chat.disconnect": "Disconnect",
+  "chat.stop": "Stop",
+  "chat.send": "Send",
+  "chat.placeholder": "Type your message...",
+  "chat.suggestedPrompts": "Suggested Prompts",
+  "chat.systemMessage": "System Message",
+  "chat.executingTool": "Executing tool...",
+  "chat.running": "Running...",
+  "chat.completed": "Completed",
+  "chat.pending": "Pending..."
+}

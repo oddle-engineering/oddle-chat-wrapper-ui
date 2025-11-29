@@ -1,3 +1,4 @@
+import { T } from "@tolgee/react";
 import { useChatContext } from "../contexts";
 
 interface SuggestedPrompt {
@@ -26,7 +27,9 @@ export const SuggestedPrompts: React.FC = () => {
 
   return (
     <div className="chat-wrapper__suggested-prompts">
-      <h3 className="chat-wrapper__suggested-prompts-title">Suggested Prompts</h3>
+      <h3 className="chat-wrapper__suggested-prompts-title">
+        <T keyName="chat.suggestedPrompts">Suggested Prompts</T>
+      </h3>
       <div className="chat-wrapper__suggested-prompts-grid">
         {suggestedPrompts.map((prompt, index) => (
           <button

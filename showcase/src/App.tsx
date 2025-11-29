@@ -14,6 +14,7 @@ import {
 import { TodoPanel } from "./components/TodoPanel";
 import { ReservationPanel } from "./components/ReservationPanel";
 import { ThreadAttachmentModal } from "./components/ThreadAttachmentModal";
+import TolgeeTest from "./components/TolgeeTest";
 import "./components/panels.css";
 import "./App.css";
 
@@ -120,10 +121,17 @@ async function fetchMenuItems() {
   }
 }
 
+// ChatWrapper automatically detects Tolgee configuration from window globals
+// To enable remote translations, set these global variables in your app initialization:
+// window.__VITE_APP_TOLGEE_API_URL__ = import.meta.env.VITE_APP_TOLGEE_API_URL;
+// window.__VITE_APP_TOLGEE_API_KEY__ = import.meta.env.VITE_APP_TOLGEE_API_KEY;
+// window.__VITE_APP_TOLGEE_PROJECT_ID__ = import.meta.env.VITE_APP_TOLGEE_PROJECT_ID;
+
 // Showcase App demonstrating ChatWrapper with new required authentication props
 // Updated to use: userMpAuthToken, chatServerUrl, chatServerKey (all required)
 // Plus optional: entityId, entityType, providerResId for conversation generation
 function App() {
+  const [activeTab, setActiveTab] = useState<'demo' | 'tolgee-test'>('demo');
   const [customConfig] = useState({
     mode: "sidebar" as ChatMode,
     theme: "light" as ChatTheme,
@@ -1163,6 +1171,9 @@ function App() {
       // Conversation metadata (now dynamic for testing auto-sync!)
       metadata: dynamicMetadata,
 
+      // Localization configuration  
+      locale: "en_SG", // Default Singapore English
+
       config: {
         ...customConfig,
         onMessage: (message) => {
@@ -1192,8 +1203,52 @@ function App() {
 
   return (
     <div className="showcase-container">
-      {/* Toggle button for sidebar */}
-      <button
+      {/* Tab Navigation */}
+      <div style={{
+        position: "fixed",
+        top: "20px", 
+        right: "20px",
+        zIndex: 1001,
+        display: "flex",
+        gap: "8px"
+      }}>
+        <button
+          onClick={() => setActiveTab('demo')}
+          style={{
+            padding: "8px 16px",
+            backgroundColor: activeTab === 'demo' ? "#1890ff" : "#f0f0f0",
+            color: activeTab === 'demo' ? "white" : "#333",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "12px"
+          }}
+        >
+          🏠 Demo
+        </button>
+        <button
+          onClick={() => setActiveTab('tolgee-test')}
+          style={{
+            padding: "8px 16px",
+            backgroundColor: activeTab === 'tolgee-test' ? "#1890ff" : "#f0f0f0",
+            color: activeTab === 'tolgee-test' ? "white" : "#333",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "12px"
+          }}
+        >
+          🧪 Tolgee Test
+        </button>
+      </div>
+
+      {/* Render active tab content */}
+      {activeTab === 'tolgee-test' ? (
+        <TolgeeTest />
+      ) : (
+        <>
+          {/* Toggle button for sidebar */}
+          <button
         onClick={() => setIsSidebarVisible(!isSidebarVisible)}
         style={{
           position: "fixed",
@@ -1299,6 +1354,8 @@ function App() {
           />
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }

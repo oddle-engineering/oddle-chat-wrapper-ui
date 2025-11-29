@@ -158,6 +158,9 @@ export interface ChatWrapperProps {
   // Conversation configuration
   metadata?: any; // Additional metadata for business context (orderId, tableId, etc.)
 
+  // Localization configuration
+  locale?: string; // Language locale for translations (e.g., 'en_SG', 'zh_CN'), defaults to 'en_SG'
+
   // Existing props
   config: Omit<ChatConfig, "apiEndpoint">;
   tools?: Tools; // Unified tools with execution functions
