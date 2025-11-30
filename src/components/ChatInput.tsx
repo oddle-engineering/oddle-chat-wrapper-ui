@@ -42,9 +42,9 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
   } = useChatContext();
 
   // Helper to check if input should be disabled based on connection state
-  const isInputDisabled = 
-    isStreaming || 
-    isLoadingConversation || 
+  const isInputDisabled =
+    isStreaming ||
+    isLoadingConversation ||
     connectionState !== ConnectionState.CONNECTED;
 
   // Helper to check if placeholder should be shown
@@ -53,6 +53,8 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
   const hasMessages = messages.length > 0;
   const [input, setInput] = useState("");
   const [uploadedMedia, setUploadedMedia] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Determine which placeholders to use
@@ -124,58 +126,73 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
   );
 
   const handleFileUploadClick = useCallback(async () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.multiple = false;
-    input.onchange = async (e) => {
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = "image/*";
+    fileInput.multiple = false;
+    fileInput.onchange = async (e) => {
       const files = (e.target as HTMLInputElement).files;
       if (files) {
-        // Validate and sanitize file names for security
-        const validFiles = Array.from(files).filter((file) => {
-          const sanitizedName = sanitizeFileName(file.name);
-          if (sanitizedName !== file.name) {
-            console.warn(
-              `File name sanitized: ${file.name} -> ${sanitizedName}`
-            );
+        try {
+          setIsUploading(true);
+          setUploadError(null);
+
+          // Validate and sanitize file names for security
+          const validFiles = Array.from(files).filter((file) => {
+            const sanitizedName = sanitizeFileName(file.name);
+            if (sanitizedName !== file.name) {
+              console.warn(
+                `File name sanitized: ${file.name} -> ${sanitizedName}`
+              );
+            }
+
+            // Check file size (limit to 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+              console.warn(`File too large: ${file.name} (${file.size} bytes)`);
+              return false;
+            }
+
+            // Basic file type validation - only images
+            const allowedTypes = [
+              "image/jpeg",
+              "image/png",
+              "image/gif",
+              "image/webp",
+            ];
+
+            if (!allowedTypes.includes(file.type)) {
+              console.warn(
+                `File type not allowed: ${file.name} (${file.type})`
+              );
+              return false;
+            }
+
+            return true;
+          });
+
+          if (validFiles.length > 0) {
+            const newMedia = await onFileUpload(validFiles);
+            // For now, only support 1 image - replace existing media
+            // TODO: In future, support multiple images by appending: [...prev, ...newMedia]
+            setUploadedMedia(newMedia);
+            setUploadError(null); // Clear any previous errors on successful upload
           }
-
-          // Check file size (limit to 10MB)
-          if (file.size > 10 * 1024 * 1024) {
-            console.warn(`File too large: ${file.name} (${file.size} bytes)`);
-            return false;
-          }
-
-          // Basic file type validation - only images
-          const allowedTypes = [
-            "image/jpeg",
-            "image/png",
-            "image/gif",
-            "image/webp",
-          ];
-
-          if (!allowedTypes.includes(file.type)) {
-            console.warn(`File type not allowed: ${file.name} (${file.type})`);
-            return false;
-          }
-
-          return true;
-        });
-
-        if (validFiles.length > 0) {
-          const newMedia = await onFileUpload(validFiles);
-          // For now, only support 1 image - replace existing media
-          // TODO: In future, support multiple images by appending: [...prev, ...newMedia]
-          setUploadedMedia(newMedia);
+        } catch (error) {
+          console.error("File upload error:", error);
+          setUploadError(
+            error instanceof Error ? error.message : "Upload failed"
+          );
+        } finally {
+          setIsUploading(false);
         }
       }
     };
-    input.click();
+    fileInput.click();
   }, [onFileUpload]);
 
   return (
-    <PromptInput 
-      onSubmit={handleSubmit} 
+    <PromptInput
+      onSubmit={handleSubmit}
       style={{ position: "relative" }}
       className={isInputDisabled ? "chat-wrapper__prompt-input--disabled" : ""}
     >
@@ -194,6 +211,69 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
           placeholderTexts={activePlaceholderTexts}
           shouldAnimate={shouldAnimate}
         />
+      )}
+
+      {/* Upload loading placeholder */}
+      {isUploading && (
+        <div
+          style={{
+            padding: "8px 16px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            backgroundColor: "#f8fafc",
+            border: "1px dashed #cbd5e1",
+            borderRadius: "8px",
+            margin: "8px 0",
+          }}
+        >
+          <div
+            style={{
+              width: "20px",
+              height: "20px",
+              border: "2px solid #e2e8f0",
+              borderTop: "2px solid #3b82f6",
+              borderRadius: "50%",
+              animation: "spin 1s linear infinite",
+            }}
+          />
+          <span style={{ color: "#64748b", fontSize: "14px" }}>
+            Uploading image...
+          </span>
+        </div>
+      )}
+
+      {/* Upload error message */}
+      {uploadError && (
+        <div
+          style={{
+            padding: "8px 16px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            backgroundColor: "#fef2f2",
+            border: "1px solid #fecaca",
+            borderRadius: "8px",
+            margin: "8px 0",
+          }}
+        >
+          <span style={{ color: "#ef4444", fontSize: "14px" }}>
+            ❌ {uploadError}
+          </span>
+          <button
+            onClick={() => setUploadError(null)}
+            style={{
+              marginLeft: "auto",
+              background: "none",
+              border: "none",
+              color: "#ef4444",
+              cursor: "pointer",
+              fontSize: "16px",
+            }}
+          >
+            ×
+          </button>
+        </div>
       )}
 
       {/* Media preview section - above the textarea */}
@@ -394,6 +474,10 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                     setUploadedMedia((prev) =>
                       prev.filter((_, i) => i !== index)
                     );
+                    // Clear upload error when removing media
+                    if (uploadError) {
+                      setUploadError(null);
+                    }
                   }}
                   style={{
                     position: "absolute",
@@ -439,11 +523,13 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                 size="icon"
                 onClick={handleFileUploadClick}
                 title={
-                  uploadedMedia.length > 0
+                  isUploading
+                    ? "Uploading..."
+                    : uploadedMedia.length > 0
                     ? `${uploadedMedia.length} image(s) attached`
                     : "Attach image"
                 }
-                disabled={isInputDisabled}
+                disabled={isInputDisabled || isUploading}
                 style={{
                   position: "relative",
                 }}
@@ -481,15 +567,15 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                 </svg>
               </PromptInputButton>
               <span
-                onClick={handleFileUploadClick}
+                onClick={isUploading ? undefined : handleFileUploadClick}
                 style={{
                   fontSize: "12px",
-                  color: "#919EAB",
+                  color: isUploading ? "#94a3b8" : "#919EAB",
                   marginLeft: "4px",
-                  cursor: "pointer",
+                  cursor: isUploading ? "not-allowed" : "pointer",
                 }}
               >
-                Attach
+                {isUploading ? "Uploading..." : "Attach"}
               </span>
             </div>
           )}
@@ -505,9 +591,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                   className="chat-wrapper__restaurant-logo"
                 />
               )}
-              <span className="chat-wrapper__restaurant-name">
-                {chipName}
-              </span>
+              <span className="chat-wrapper__restaurant-name">{chipName}</span>
             </div>
           )}
         </PromptInputTools>
