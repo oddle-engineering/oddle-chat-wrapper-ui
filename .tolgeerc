@@ -1,22 +1,16 @@
 {
   "projectId": 19,
   "apiUrl": "https://tolgee-translation.oddleapp.com",
-  "format": "JSON",
+  "format": "JSON_TOLGEE",
   "push": {
     "files": [
       {
         "path": "./i18n/en_SG.json",
-        "language": "en_SG"
+        "language": "en"
       }
     ]
   },
   "pull": {
     "path": "./i18n"
-  },
-  "extract": {
-    "patterns": [
-      "./src/**/*.{tsx,ts}",
-      "./showcase/src/**/*.{tsx,ts}"
-    ]
   }
 }
