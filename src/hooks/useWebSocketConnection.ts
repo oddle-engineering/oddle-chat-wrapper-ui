@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { WebSocketChatClient, SystemEvent } from "../client";
-import { ContextHelpers, EntityType, Tools } from "../types";
+import { ContextHelpers, EntityType, Tools, ConnectionState } from "../types";
 import { logClassifiedError } from "../utils/errorClassification";
 
 interface UseWebSocketConnectionProps {
@@ -56,9 +56,9 @@ export function useWebSocketConnection({
   const [chatClient, setChatClient] = useState<WebSocketChatClient | null>(
     null
   );
-  const [isConnected, setIsConnected] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [connectionReconnecting, setConnectionReconnecting] = useState(false);
+  const [connectionState, setConnectionState] = useState<ConnectionState>(
+    ConnectionState.DISCONNECTED
+  );
   const [connectionAttempts, setConnectionAttempts] = useState(0);
   const chatClientRef = useRef<WebSocketChatClient | null>(null);
 
@@ -105,7 +105,7 @@ export function useWebSocketConnection({
 
   const connectChatClient = useCallback(async () => {
     try {
-      setIsConnecting(true);
+      setConnectionState(ConnectionState.CONNECTING);
       // Validate required props
       if (!userMpAuthToken) {
         throw new Error("userMpAuthToken is required");
@@ -142,10 +142,10 @@ export function useWebSocketConnection({
         onThreadCreated: onThreadCreatedRef.current,
       });
 
-      setIsConnected(true);
+      setConnectionState(ConnectionState.CONNECTED);
     } catch (error) {
       const classification = logClassifiedError(error, "WebSocketConnection");
-      setIsConnected(false);
+      setConnectionState(ConnectionState.DISCONNECTED);
 
       // Only retry for retryable errors (network issues, server errors)
       // Skip retrying for CORS, authentication, and permission errors
@@ -162,8 +162,6 @@ export function useWebSocketConnection({
       } else {
         console.warn(`[WebSocketConnection] Will not retry: ${classification.reason}`);
       }
-    } finally {
-      setIsConnecting(false);
     }
   }, [
     userMpAuthToken,
@@ -183,7 +181,7 @@ export function useWebSocketConnection({
       chatClientRef.current = null;
     }
     setChatClient(null);
-    setIsConnected(false);
+    setConnectionState(ConnectionState.DISCONNECTED);
   }, []);
 
   // Set up retry function ref
@@ -203,8 +201,16 @@ export function useWebSocketConnection({
     const interval = setInterval(() => {
       if (chatClientRef.current) {
         const status = chatClientRef.current.getConnectionStatus();
-        setIsConnected(status.connected);
-        setConnectionReconnecting(status.isReconnecting);
+        
+        // Update connection state based on client status
+        if (status.connected) {
+          setConnectionState(ConnectionState.CONNECTED);
+        } else if (status.isReconnecting) {
+          setConnectionState(ConnectionState.RECONNECTING);
+        } else {
+          setConnectionState(ConnectionState.DISCONNECTED);
+        }
+        
         setConnectionAttempts(status.reconnectAttempts);
       }
     }, 1000);
@@ -214,9 +220,7 @@ export function useWebSocketConnection({
 
   return {
     chatClient,
-    isConnected,
-    isConnecting,
-    isReconnecting: connectionReconnecting,
+    connectionState,
     reconnectAttempts: connectionAttempts,
     connectChatClient,
     disconnectChatClient,

@@ -17,6 +17,7 @@ import { isChatActive } from "../constants/chatStatus";
 import { AnimatedPlaceholder } from "./AnimatedPlaceholder";
 import { sanitizeMessage, sanitizeFileName } from "../utils/security";
 import { useChatContext } from "../contexts";
+import { ConnectionState } from "../types";
 
 export interface ChatInputRef {
   focus: () => void;
@@ -37,7 +38,17 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
     onSubmit,
     onFileUpload,
     onStopGeneration,
+    connectionState,
   } = useChatContext();
+
+  // Helper to check if input should be disabled based on connection state
+  const isInputDisabled = 
+    isStreaming || 
+    isLoadingConversation || 
+    connectionState !== ConnectionState.CONNECTED;
+
+  // Helper to check if placeholder should be shown
+  const shouldShowPlaceholder = connectionState === ConnectionState.CONNECTED;
 
   const hasMessages = messages.length > 0;
   const [input, setInput] = useState("");
@@ -166,7 +177,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
     <PromptInput 
       onSubmit={handleSubmit} 
       style={{ position: "relative" }}
-      className={isStreaming || isLoadingConversation ? "chat-wrapper__prompt-input--disabled" : ""}
+      className={isInputDisabled ? "chat-wrapper__prompt-input--disabled" : ""}
     >
       <PromptInputTextarea
         ref={textareaRef}
@@ -174,11 +185,11 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
         value={input}
         onChange={handleInputChange}
         placeholder="" // Empty placeholder since we'll use our custom animated one
-        disabled={isStreaming || isLoadingConversation}
+        disabled={isInputDisabled}
       />
 
       {/* Animated placeholder component */}
-      {!input.trim() && (
+      {!input.trim() && shouldShowPlaceholder && (
         <AnimatedPlaceholder
           placeholderTexts={activePlaceholderTexts}
           shouldAnimate={shouldAnimate}
@@ -432,7 +443,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                     ? `${uploadedMedia.length} image(s) attached`
                     : "Attach image"
                 }
-                disabled={isStreaming || isLoadingConversation}
+                disabled={isInputDisabled}
                 style={{
                   position: "relative",
                 }}
@@ -505,7 +516,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
           disabled={
             isChatActive(chatStatus)
               ? false // Never disable stop button when chat is active
-              : !input.trim() || isLoadingConversation // Normal disabled logic when idle
+              : !input.trim() || isInputDisabled // Normal disabled logic when idle
           }
           onClick={
             isChatActive(chatStatus) && onStopGeneration

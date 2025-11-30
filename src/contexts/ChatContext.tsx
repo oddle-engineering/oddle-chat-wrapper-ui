@@ -1,5 +1,5 @@
 import { createContext, useContext, ReactNode, RefObject } from 'react';
-import { Message, ClientTools } from '../types';
+import { Message, ClientTools, ConnectionState } from '../types';
 import { ChatStatus } from '../constants/chatStatus';
 import { ChatInputRef } from '../components/ChatInput';
 
@@ -28,6 +28,9 @@ export interface ChatContextValue {
   chatStatus: ChatStatus;
   conversationError?: string | null;
   isOffline?: boolean;
+  
+  // ===== Connection State =====
+  connectionState: ConnectionState;
   
   // ===== Configuration =====
   headerName: string;

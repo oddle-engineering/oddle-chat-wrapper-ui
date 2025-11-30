@@ -7,7 +7,12 @@ import {
   useImperativeHandle,
   forwardRef,
 } from "react";
-import { ChatWrapperProps, ChatMode, ChatWrapperRef } from "../types";
+import {
+  ChatWrapperProps,
+  ChatMode,
+  ChatWrapperRef,
+  ConnectionState,
+} from "../types";
 import { ChatInputRef } from "./ChatInput";
 import { DevSettings } from "./DevSettings";
 import { SystemEvent, SystemEventType } from "../client";
@@ -97,7 +102,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
     // Initialize custom hooks for state management
     const messageHandling = useMessageHandling();
     const { isOnline, wasOffline } = useNetworkStatus();
-    
+
     // Track whether last connection error was retryable
     const lastConnectionRetryableRef = useRef(true);
 
@@ -285,9 +290,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
     // Initialize WebSocket connection
     const {
       chatClient,
-      isConnected,
-      // isConnecting,
-      isReconnecting,
+      connectionState,
       // reconnectAttempts: reconnectAttempt,
       connectChatClient,
     } = useWebSocketConnection({
@@ -330,17 +333,30 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
     // Handle network reconnection
     useEffect(() => {
       if (wasOffline && isOnline && lastConnectionRetryableRef.current) {
-        console.log('[ChatWrapper] Network restored, attempting reconnection...');
+        console.log(
+          "[ChatWrapper] Network restored, attempting reconnection..."
+        );
         connectChatClient().catch((error) => {
-          const classification = logClassifiedError(error, 'NetworkReconnection');
+          const classification = logClassifiedError(
+            error,
+            "NetworkReconnection"
+          );
           lastConnectionRetryableRef.current = classification.isRetryable;
-          
+
           if (!classification.isRetryable) {
-            console.warn(`[ChatWrapper] Network reconnection failed with non-retryable error: ${classification.reason}`);
+            console.warn(
+              `[ChatWrapper] Network reconnection failed with non-retryable error: ${classification.reason}`
+            );
           }
         });
-      } else if (wasOffline && isOnline && !lastConnectionRetryableRef.current) {
-        console.warn('[ChatWrapper] Network restored but last error was non-retryable (CORS/auth), skipping reconnection');
+      } else if (
+        wasOffline &&
+        isOnline &&
+        !lastConnectionRetryableRef.current
+      ) {
+        console.warn(
+          "[ChatWrapper] Network restored but last error was non-retryable (CORS/auth), skipping reconnection"
+        );
       }
     }, [isOnline, wasOffline, connectChatClient]);
 
@@ -348,19 +364,30 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
     const stopGeneration = useCallback(() => {
       // First, handle UI state changes
       originalStopGeneration();
-      
+
       // Reset chat status to IDLE so button switches back to send
       setChatStatus(CHAT_STATUS.IDLE);
       setStreamingStatus(STREAMING_STATUS.IDLE);
-      
+
       // Then send WebSocket stop_run message if we have a conversation
       if (chatClient && currentProviderResId) {
-        console.log('[ChatWrapper] Sending stop_run message for conversation:', currentProviderResId);
+        console.log(
+          "[ChatWrapper] Sending stop_run message for conversation:",
+          currentProviderResId
+        );
         chatClient.stopRun(currentProviderResId);
       } else {
-        console.warn('[ChatWrapper] Cannot send stop_run: missing chatClient or currentProviderResId');
+        console.warn(
+          "[ChatWrapper] Cannot send stop_run: missing chatClient or currentProviderResId"
+        );
       }
-    }, [originalStopGeneration, chatClient, currentProviderResId, setChatStatus, setStreamingStatus]);
+    }, [
+      originalStopGeneration,
+      chatClient,
+      currentProviderResId,
+      setChatStatus,
+      setStreamingStatus,
+    ]);
 
     // Expose imperative handle for parent components
     useImperativeHandle(
@@ -531,11 +558,12 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
                 ? {
                     ...msg,
                     hasError: true,
-                    errorMessage: !isConnected
-                      ? "Failed to send message."
-                      : error instanceof Error
-                      ? error.message
-                      : "Failed to send message",
+                    errorMessage:
+                      connectionState !== ConnectionState.CONNECTED
+                        ? "Failed to send message."
+                        : error instanceof Error
+                        ? error.message
+                        : "Failed to send message",
                   }
                 : msg
             )
@@ -551,7 +579,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         chatSubmissionService,
         chatClient,
         isStreaming,
-        isConnected,
+        connectionState,
         setMessages,
         setIsStreaming,
         setIsThinking,
@@ -632,8 +660,15 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         chatStatus,
         conversationError,
         isOffline: !isOnline,
+        connectionState,
       }),
-      [isLoadingConversation, chatStatus, conversationError, isOnline]
+      [
+        isLoadingConversation,
+        chatStatus,
+        conversationError,
+        isOnline,
+        connectionState,
+      ]
     );
 
     const configState = useMemo(
@@ -826,9 +861,9 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
           }}
         >
           <div className={containerClasses} style={config.customStyles}>
-            <NetworkStatusBanner 
-              isVisible={!isOnline} 
-              isReconnecting={isReconnecting}
+            <NetworkStatusBanner
+              isVisible={!isOnline}
+              isReconnecting={connectionState === ConnectionState.RECONNECTING}
             />
             {/* Connection Status Notification */}
             {/* <ConnectionNotification

@@ -22,6 +22,21 @@ export enum AuthTokenType {
 }
 
 /**
+ * Connection state for WebSocket chat client
+ * Represents the current status of the connection in a type-safe way
+ */
+export enum ConnectionState {
+  /** Not connected and not attempting to connect */
+  DISCONNECTED = "disconnected",
+  /** Currently attempting initial connection */
+  CONNECTING = "connecting", 
+  /** Successfully connected and ready to use */
+  CONNECTED = "connected",
+  /** Lost connection and attempting to reconnect */
+  RECONNECTING = "reconnecting",
+}
+
+/**
  * Authentication and entity context configuration
  * Groups authentication credentials and entity association into a single object
  */
