@@ -197,7 +197,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       handleReasoningUpdate,
       handleChatFinished,
       handleChatError,
-      stopGeneration: originalStopGeneration,
+      // stopGeneration: originalStopGeneration, // DISABLED: Stop functionality
     } = messageHandling;
 
     // Refs for managing UI
@@ -360,34 +360,21 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       }
     }, [isOnline, wasOffline, connectChatClient]);
 
+    // DISABLED: Stop generation functionality is not yet implemented on the server
     // Custom stop generation that sends WebSocket stop_run message
     const stopGeneration = useCallback(() => {
-      // First, handle UI state changes
-      originalStopGeneration();
-
-      // Reset chat status to IDLE so button switches back to send
-      setChatStatus(CHAT_STATUS.IDLE);
-      setStreamingStatus(STREAMING_STATUS.IDLE);
-
-      // Then send WebSocket stop_run message if we have a conversation
-      if (chatClient && currentProviderResId) {
-        console.log(
-          "[ChatWrapper] Sending stop_run message for conversation:",
-          currentProviderResId
-        );
-        chatClient.stopRun(currentProviderResId);
-      } else {
-        console.warn(
-          "[ChatWrapper] Cannot send stop_run: missing chatClient or currentProviderResId"
-        );
-      }
-    }, [
-      originalStopGeneration,
-      chatClient,
-      currentProviderResId,
-      setChatStatus,
-      setStreamingStatus,
-    ]);
+      console.log("[ChatWrapper] Stop generation disabled - server implementation pending");
+      // Stop functionality disabled until server implementation is ready
+      // TODO: Re-enable when server supports stop functionality
+      // 
+      // Original implementation:
+      // originalStopGeneration();
+      // setChatStatus(CHAT_STATUS.IDLE);
+      // setStreamingStatus(STREAMING_STATUS.IDLE);
+      // if (chatClient && currentProviderResId) {
+      //   chatClient.stopRun(currentProviderResId);
+      // }
+    }, []);
 
     // Expose imperative handle for parent components
     useImperativeHandle(
