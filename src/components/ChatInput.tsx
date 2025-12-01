@@ -5,6 +5,7 @@ import {
   useImperativeHandle,
   forwardRef,
 } from "react";
+import { ImagePreviewModal } from "./ImagePreviewModal";
 import {
   PromptInput,
   PromptInputTextarea,
@@ -55,7 +56,48 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
   const [uploadedMedia, setUploadedMedia] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Utility functions to parse media URLs
+  const parseImageMediaUrl = useCallback((media: string) => {
+    if (media.startsWith("data:image/") && media.includes("thumbnailUrl=")) {
+      // Parse the encoded URL format from upload service
+      // const thumbnailMatch = media.match(/thumbnailUrl=([^;]+)/);
+      const cdnUrlMatch = media.match(/cdnUrl=([^;]+)/);
+      const filenameMatch = media.match(/filename=([^;]+)/);
+
+      // const thumbnailUrl = thumbnailMatch ? decodeURIComponent(thumbnailMatch[1]) : media;
+      const cdnUrl = cdnUrlMatch ? decodeURIComponent(cdnUrlMatch[1]) : media;
+
+      return {
+        // TODO: Switch back to thumbnailUrl when backend provides proper thumbnail URLs
+        // Currently using cdnUrl for both thumbnail and full image display
+        thumbnailUrl: cdnUrl, // Using cdnUrl temporarily instead of thumbnailUrl
+        cdnUrl: cdnUrl,
+        filename: filenameMatch
+          ? decodeURIComponent(filenameMatch[1])
+          : "image",
+      };
+    }
+
+    // Fallback for base64 or other formats
+    return {
+      thumbnailUrl: media,
+      cdnUrl: media,
+      filename: "image",
+    };
+  }, []);
+
+  const handleImagePreview = useCallback(
+    (media: string) => {
+      const { cdnUrl } = parseImageMediaUrl(media);
+      setPreviewImageUrl(cdnUrl);
+      setIsPreviewModalOpen(true);
+    },
+    [parseImageMediaUrl]
+  );
 
   // Determine which placeholders to use
   const activePlaceholderTexts =
@@ -123,6 +165,88 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
       setInput(sanitizedValue);
     },
     []
+  );
+
+  const handlePaste = useCallback(
+    async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+      const items = Array.from(e.clipboardData?.items || []);
+      const imageItems = items.filter((item) => item.type.startsWith("image/"));
+
+      if (imageItems.length > 0) {
+        e.preventDefault();
+
+        try {
+          setIsUploading(true);
+          setUploadError(null);
+
+          const files = await Promise.all(
+            imageItems.map((item) => {
+              const file = item.getAsFile();
+              if (file) {
+                // Create a proper File object with a name
+                return new File(
+                  [file],
+                  `clipboard-image-${Date.now()}.${file.type.split("/")[1]}`,
+                  {
+                    type: file.type,
+                  }
+                );
+              }
+              return null;
+            })
+          ).then((files) => files.filter(Boolean) as File[]);
+
+          if (files.length > 0) {
+            // Validate file size and type before upload
+            const validFiles = files.filter((file) => {
+              // Check file size (limit to 10MB)
+              if (file.size > 10 * 1024 * 1024) {
+                console.warn(
+                  `File too large: ${file.name} (${file.size} bytes)`
+                );
+                setUploadError(`Image too large. Maximum size is 10MB.`);
+                return false;
+              }
+
+              // Basic file type validation - only images
+              const allowedTypes = [
+                "image/jpeg",
+                "image/png",
+                "image/gif",
+                "image/webp",
+              ];
+
+              if (!allowedTypes.includes(file.type)) {
+                console.warn(
+                  `File type not allowed: ${file.name} (${file.type})`
+                );
+                setUploadError(
+                  `Image type not supported. Please use JPEG, PNG, GIF, or WebP.`
+                );
+                return false;
+              }
+
+              return true;
+            });
+
+            if (validFiles.length > 0) {
+              const newMedia = await onFileUpload(validFiles);
+              // For now, only support 1 image - replace existing media
+              setUploadedMedia(newMedia);
+              setUploadError(null);
+            }
+          }
+        } catch (error) {
+          console.error("Clipboard paste error:", error);
+          setUploadError(
+            error instanceof Error ? error.message : "Failed to paste image"
+          );
+        } finally {
+          setIsUploading(false);
+        }
+      }
+    },
+    [onFileUpload]
   );
 
   const handleFileUploadClick = useCallback(async () => {
@@ -201,6 +325,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
         name="message"
         value={input}
         onChange={handleInputChange}
+        onPaste={handlePaste}
         placeholder="" // Empty placeholder since we'll use our custom animated one
         disabled={isInputDisabled}
       />
@@ -294,6 +419,9 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
               media.startsWith("http://") || media.startsWith("https://");
             const isImage = isImageBase64 || isImageUrl;
 
+            // Parse image URLs if it's an uploaded image
+            const imageData = isImage ? parseImageMediaUrl(media) : null;
+
             return (
               <div
                 key={index}
@@ -311,11 +439,14 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                       borderRadius: "8px",
                       overflow: "hidden",
                       border: "1px solid #e2e8f0",
+                      cursor: "pointer",
                     }}
+                    onClick={() => handleImagePreview(media)}
+                    title="Click to view full image"
                   >
-                    {/* Main image */}
+                    {/* Main image - use thumbnail URL */}
                     <img
-                      src={media}
+                      src={imageData?.thumbnailUrl || media}
                       alt={`Attachment ${index + 1}`}
                       style={{
                         width: "100%",
@@ -335,6 +466,20 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                         zIndex: 1,
                       }}
                     />
+                    {/* Zoom icon overlay */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        color: "white",
+                        fontSize: "16px",
+                        zIndex: 2,
+                        opacity: 0.8,
+                        pointerEvents: "none",
+                      }}
+                    ></div>
                   </div>
                 ) : (
                   <div
@@ -611,6 +756,17 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
           }
         />
       </PromptInputToolbar>
+
+      {/* Image Preview Modal */}
+      <ImagePreviewModal
+        imageUrl={previewImageUrl}
+        isOpen={isPreviewModalOpen}
+        onClose={() => {
+          setIsPreviewModalOpen(false);
+          setPreviewImageUrl(null);
+        }}
+        alt="Image preview"
+      />
     </PromptInput>
   );
 });

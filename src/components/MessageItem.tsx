@@ -6,6 +6,7 @@ import { ToolingHandle, ToolingHandleTrigger } from "./ToolingHandle";
 import { Loader } from "./Loader";
 import { CopyIcon } from "./icons";
 import { SystemMessageCollapsible } from "./SystemMessageCollapsible";
+import { ImagePreviewModal } from "./ImagePreviewModal";
 import { REASONING_CONSTANTS } from "../client/constants/reasoning";
 import { useChatContext } from "../contexts";
 
@@ -83,6 +84,7 @@ export const MessageItem = memo<MessageItemProps>(
     
     const [copied, setCopied] = useState(false);
     const [showCopyButton, setShowCopyButton] = useState(false);
+    const [previewImage, setPreviewImage] = useState<string | null>(null);
 
     const handleCopy = useCallback(async () => {
       try {
@@ -99,6 +101,42 @@ export const MessageItem = memo<MessageItemProps>(
         onRetryMessage(message.id);
       }
     }, [onRetryMessage, message.id]);
+
+    const handleImageClick = useCallback((imageUrl: string) => {
+      setPreviewImage(imageUrl);
+    }, []);
+
+    // Utility function to parse media URLs (same as in ChatInput)
+    const parseImageMediaUrl = useCallback((media: string) => {
+      if (media.startsWith("data:image/") && media.includes("thumbnailUrl=")) {
+        // Parse the encoded URL format from upload service
+        // const thumbnailMatch = media.match(/thumbnailUrl=([^;]+)/);
+        const cdnUrlMatch = media.match(/cdnUrl=([^;]+)/);
+        const filenameMatch = media.match(/filename=([^;]+)/);
+        
+        // const thumbnailUrl = thumbnailMatch ? decodeURIComponent(thumbnailMatch[1]) : media;
+        const cdnUrl = cdnUrlMatch ? decodeURIComponent(cdnUrlMatch[1]) : media;
+        
+        return {
+          // TODO: Switch back to thumbnailUrl when backend provides proper thumbnail URLs
+          // Currently using cdnUrl for both thumbnail and full image display
+          thumbnailUrl: cdnUrl, // Using cdnUrl temporarily instead of thumbnailUrl
+          cdnUrl: cdnUrl,
+          filename: filenameMatch ? decodeURIComponent(filenameMatch[1]) : "image"
+        };
+      }
+      
+      // Fallback for base64 or other formats
+      return {
+        thumbnailUrl: media,
+        cdnUrl: media,
+        filename: "image"
+      };
+    }, []);
+
+    const handleClosePreview = useCallback(() => {
+      setPreviewImage(null);
+    }, []);
 
     const renderStreamingPlaceholder = () => (
       <div className="chat-wrapper__streaming-placeholder">
@@ -158,14 +196,32 @@ export const MessageItem = memo<MessageItemProps>(
         </div>
         {message.media && message.media.length > 0 && (
           <div className="chat-wrapper__media">
-            {message.media.map((mediaUrl, index) => (
-              <img
-                key={index}
-                src={mediaUrl}
-                alt={`Uploaded content ${index + 1}`}
-                className="chat-wrapper__media-image"
-              />
-            ))}
+            {message.media.map((mediaUrl, index) => {
+              // Parse the media URL to extract cdnUrl for display
+              const imageData = parseImageMediaUrl(mediaUrl);
+              return (
+                <img
+                  key={index}
+                  src={imageData.cdnUrl} // Use cdnUrl for display instead of raw mediaUrl
+                  alt={`Uploaded content ${index + 1}`}
+                  className="chat-wrapper__media-image chat-wrapper__media-image--clickable"
+                  onClick={() => handleImageClick(imageData.cdnUrl)} // Use cdnUrl for full-size view
+                  style={{ 
+                    cursor: 'zoom-in',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.02)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.boxShadow = '';
+                  }}
+                  title="Click to view full size"
+                />
+              );
+            })}
           </div>
         )}
       </div>
@@ -222,36 +278,46 @@ export const MessageItem = memo<MessageItemProps>(
     );
 
     return (
-      <div
-        className={`chat-wrapper__message chat-wrapper__message--${
-          message.role === "system"
-            ? "assistant"
-            : message.role === "reasoning"
-            ? "reasoning"
-            : message.role === "tooling"
-            ? "tooling"
-            : message.role
-        }`}
-        onMouseEnter={() =>
-          message.role === "assistant" && setShowCopyButton(true)
-        }
-        onMouseLeave={() =>
-          message.role === "assistant" && setShowCopyButton(false)
-        }
-      >
-        {message.role === "reasoning" ? (
-          renderReasoningMessage()
-        ) : message.role === "tooling" ? (
-          renderToolingMessage()
-        ) : (
-          <>
-            <div className="chat-wrapper__message-content">
-              {renderMessageContent()}
-            </div>
-            {message.role === "user" && message.hasError && !message.isRetrying && renderRetryButton()}
-          </>
-        )}
-      </div>
+      <>
+        <div
+          className={`chat-wrapper__message chat-wrapper__message--${
+            message.role === "system"
+              ? "assistant"
+              : message.role === "reasoning"
+              ? "reasoning"
+              : message.role === "tooling"
+              ? "tooling"
+              : message.role
+          }`}
+          onMouseEnter={() =>
+            message.role === "assistant" && setShowCopyButton(true)
+          }
+          onMouseLeave={() =>
+            message.role === "assistant" && setShowCopyButton(false)
+          }
+        >
+          {message.role === "reasoning" ? (
+            renderReasoningMessage()
+          ) : message.role === "tooling" ? (
+            renderToolingMessage()
+          ) : (
+            <>
+              <div className="chat-wrapper__message-content">
+                {renderMessageContent()}
+              </div>
+              {message.role === "user" && message.hasError && !message.isRetrying && renderRetryButton()}
+            </>
+          )}
+        </div>
+        
+        {/* Image Preview Modal */}
+        <ImagePreviewModal
+          imageUrl={previewImage}
+          isOpen={!!previewImage}
+          onClose={handleClosePreview}
+          alt="Message image"
+        />
+      </>
     );
   }
 );

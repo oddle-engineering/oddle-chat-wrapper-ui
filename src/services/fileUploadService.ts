@@ -9,6 +9,8 @@ export interface UploadResult {
   fileName?: string;
   type: string;
   success: boolean;
+  thumbnailUrl?: string;
+  cdnUrl?: string;
 }
 
 export interface UploadError {
@@ -155,11 +157,21 @@ export class FileUploadService {
   }
 
   /**
-   * Process the upload result and return appropriate media URL
+   * Process the upload result and return appropriate media URL with metadata
    */
   private processUploadResult(file: File, result: any): string {
     if (file.type.startsWith("image/")) {
-      return result.url;
+      // For images, encode both thumbnail and full URLs for later use
+      const thumbnailUrl = result.thumbnailUrl || result.url;
+      const cdnUrl = result.cdnUrl || result.url;
+      
+      return `data:${file.type};thumbnailUrl=${encodeURIComponent(
+        thumbnailUrl
+      )};cdnUrl=${encodeURIComponent(
+        cdnUrl
+      )};filename=${encodeURIComponent(
+        result.filename || file.name
+      )}`;
     } else {
       // For non-image files, create a data URL format with metadata
       return `data:${file.type};name=${encodeURIComponent(
