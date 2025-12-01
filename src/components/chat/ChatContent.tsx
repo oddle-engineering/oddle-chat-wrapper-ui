@@ -1,5 +1,5 @@
-import React from "react";
-import { MessagesList } from "../MessagesList";
+import React, { useMemo } from "react";
+import { VirtualizedMessagesList } from "../VirtualizedMessagesList";
 import { ChatInput } from "../ChatInput";
 import { SuggestedPrompts } from "../SuggestedPrompts";
 import { InlineLoader } from "../InlineLoader";
@@ -29,6 +29,12 @@ export const ChatContent: React.FC = () => {
     isOffline,
     // conversationError,
   } = useChatContext();
+
+  // Calculate height for virtualized list (approximate height minus headers, inputs, etc)
+  const virtualizedHeight = useMemo(() => {
+    // Base container height minus estimated space for header, input, etc.
+    return 400; // This could be made dynamic based on container size
+  }, []);
   const shouldShowMainHeader = chatUtils.state.shouldShowMainHeader(
     messages.length,
     isStreaming,
@@ -71,7 +77,11 @@ export const ChatContent: React.FC = () => {
             <InlineLoader fullHeight={true} />
           </div>
         ) : (
-          <MessagesList ref={messagesEndRef} />
+          <VirtualizedMessagesList
+            height={virtualizedHeight}
+            className="chat-wrapper__messages"
+            ref={messagesEndRef}
+          />
         )}
 
         {/* Chat Input - flexible sizing */}

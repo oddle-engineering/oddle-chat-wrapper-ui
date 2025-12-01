@@ -1,7 +1,7 @@
 import { Thread, Message } from "../types";
 
 /**
- * Fetch messages for a thread with flexible query parameters (V2)
+ * Fetch messages for a thread with flexible query parameters and pagination (V3)
  *
  * This version allows querying by entityId or custom metadata
  * instead of requiring a specific threadId or userId. The server will match threads
@@ -9,23 +9,24 @@ import { Thread, Message } from "../types";
  * userMpAuthToken on the server side.
  *
  * @param apiBaseUrl - Base URL of the API
- * @param queryParams - Flexible query parameters
+ * @param queryParams - Flexible query parameters with pagination support
  * @param authOptions - Authentication options
- * @returns Messages and optional providerResId
+ * @returns Messages, pagination info, and optional providerResId
  *
  * @example
- * // Query by entityId
+ * // Query by entityId with pagination
  * const result = await fetchThreadMessages(apiUrl, {
  *   entityId: 'brand_123',
+ *   limit: 20,
+ *   offset: 0
  * }, authOptions);
  *
  * @example
- * // Query with custom metadata
+ * // Load older messages
  * const result = await fetchThreadMessages(apiUrl, {
- *   metadata: {
- *     orderId: 'order_789',
- *     sessionId: 'session_abc'
- *   }
+ *   entityId: 'brand_123',
+ *   limit: 20,
+ *   before: 'message_id_123'
  * }, authOptions);
  */
 export async function fetchThreadMessages(
@@ -34,12 +35,28 @@ export async function fetchThreadMessages(
     entityId?: string;
     entityType?: string;
     metadata?: Record<string, any>;
+    // Pagination parameters
+    limit?: number;
+    offset?: number;
+    before?: string; // Message ID to fetch messages before (for loading older messages)
+    after?: string;  // Message ID to fetch messages after (for loading newer messages)
   },
   authOptions?: {
     userMpAuthToken?: string;
     chatServerKey?: string;
   }
-): Promise<{ messages: Message[]; providerResId?: string; threadId?: string }> {
+): Promise<{ 
+  messages: Message[]; 
+  providerResId?: string; 
+  threadId?: string;
+  // Pagination metadata
+  pagination?: {
+    total: number;
+    hasMore: boolean;
+    nextOffset?: number;
+    prevOffset?: number;
+  };
+}> {
   // Build query string from parameters
   const params = new URLSearchParams();
 
@@ -57,6 +74,20 @@ export async function fetchThreadMessages(
   // Add metadata as JSON string if provided
   if (queryParams.metadata && Object.keys(queryParams.metadata).length > 0) {
     params.append("metadata", JSON.stringify(queryParams.metadata));
+  }
+
+  // Add pagination parameters
+  if (queryParams.limit !== undefined) {
+    params.append("limit", queryParams.limit.toString());
+  }
+  if (queryParams.offset !== undefined) {
+    params.append("offset", queryParams.offset.toString());
+  }
+  if (queryParams.before) {
+    params.append("before", queryParams.before);
+  }
+  if (queryParams.after) {
+    params.append("after", queryParams.after);
   }
 
   const url = `${apiBaseUrl}/api/v1/messages/query?${params.toString()}`;
@@ -88,6 +119,10 @@ export async function fetchThreadMessages(
     messages: data.messages || [],
     providerResId: data.providerResId,
     threadId: data.threadId,
+    pagination: data.pagination || {
+      total: data.messages?.length || 0,
+      hasMore: false,
+    },
   };
 }
 

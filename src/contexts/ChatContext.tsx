@@ -3,6 +3,7 @@ import { Message, ClientTools, ConnectionState } from '../types';
 import { ChatStatus } from '../constants/chatStatus';
 import { ChatInputRef } from '../components/ChatInput';
 
+
 /**
  * ChatContext - Provides chat state and actions to child components
  * 

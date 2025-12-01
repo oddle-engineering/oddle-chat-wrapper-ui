@@ -700,6 +700,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       ]
     );
 
+
     // Handle retry message: mark message for retry and reconnect
     const handleRetryMessage = useCallback(
       async (messageId: string) => {

@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { Message } from "../types";
 import { fetchThreadMessages } from "../utils/threadApi";
 import { logClassifiedError } from "../utils/errorClassification";
+import { usePagination } from "./usePagination";
 
 interface UseConversationLoaderProps {
   entityId?: string;
@@ -16,6 +17,8 @@ interface UseConversationLoaderProps {
   setCurrentThreadId: (threadId: string | null) => void;
   setProviderResId: (providerResId: string | null) => void;
   metadata?: any;
+  enablePagination?: boolean;
+  initialPageSize?: number;
 }
 
 export function useConversationLoader({
@@ -30,9 +33,22 @@ export function useConversationLoader({
   setConversationError,
   setCurrentThreadId,
   setProviderResId,
-  metadata
+  metadata,
+  enablePagination = false,
+  initialPageSize = 10
 }: UseConversationLoaderProps) {
   const hasLoadedConversationRef = useRef<boolean>(false);
+
+  // Initialize pagination hook
+  const pagination = usePagination({
+    entityId,
+    entityType,
+    httpApiUrl,
+    userMpAuthToken,
+    chatServerKey,
+    metadata,
+    pageSize: initialPageSize,
+  });
 
   const loadConversation = async () => {
     // Skip if entityId is not provided - no history to load
@@ -77,14 +93,17 @@ export function useConversationLoader({
 
       console.log("useConversationLoader: Fetching messages for entityId:", entityId, "entityType:", entityType);
 
-      // Fetch messages using entityId
+      // Fetch messages using entityId with optional pagination
+      const queryParams = {
+        entityId,
+        entityType,
+        metadata,
+        ...(enablePagination && { limit: initialPageSize })
+      };
+
       const response = await fetchThreadMessages(
         httpApiUrl,
-        {
-          entityId,
-          entityType,
-          metadata
-        },
+        queryParams,
         {
           userMpAuthToken,
           chatServerKey,
@@ -93,6 +112,11 @@ export function useConversationLoader({
       
       console.log(`useConversationLoader: Loaded ${response.messages.length} messages`);
       setMessages(response.messages);
+
+      // Initialize pagination state if enabled
+      if (enablePagination) {
+        pagination.initializeWithMessages(response.messages);
+      }
 
       // Set threadId from the API response if server returned it
       if (response.threadId) {
@@ -143,15 +167,44 @@ export function useConversationLoader({
     metadata,
   ]);
 
+  // Function to load more older messages (for pagination)
+  const loadMoreMessages = async () => {
+    if (!enablePagination) {
+      return { messages: [], shouldPrepend: false };
+    }
+
+    const result = await pagination.loadMoreMessages(messages);
+    
+    if (result.messages.length > 0) {
+      // Prepend older messages to the beginning of the current messages array
+      setMessages([...result.messages, ...messages]);
+    }
+    
+    return result;
+  };
+
   // Reset function to allow reloading conversation
   const resetConversationLoader = () => {
     console.log("useConversationLoader: Resetting loader state");
     hasLoadedConversationRef.current = false;
+    if (enablePagination) {
+      pagination.reset();
+    }
   };
 
   return {
     hasLoadedConversationRef,
     resetConversationLoader,
     reloadConversation: loadConversation,
+    // Pagination-related returns
+    ...(enablePagination && {
+      pagination: {
+        loading: pagination.loading,
+        hasMore: pagination.hasMore,
+        error: pagination.error,
+        total: pagination.total,
+        loadMoreMessages,
+      },
+    }),
   };
 }
