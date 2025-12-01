@@ -14872,8 +14872,9 @@ function ds({
             style: {
               position: "absolute",
               bottom: "20px",
-              left: "50%",
-              transform: "translateX(-50%)",
+              left: "0",
+              right: "0",
+              width: "100%",
               color: "rgba(255, 255, 255, 0.7)",
               fontSize: "14px",
               textAlign: "center",
