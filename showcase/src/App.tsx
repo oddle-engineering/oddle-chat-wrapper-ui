@@ -219,7 +219,7 @@ function App() {
   // State for dynamic metadata (for testing metadata prop sync)
   // Start with empty to test the "metadata starts empty then gets populated" scenario
   const [dynamicMetadata, setDynamicMetadata] = useState<any>({
-    order_id: "order_0009",
+    order_id: "order_0010",
   });
 
   // Ref to ChatWrapper for imperative API access

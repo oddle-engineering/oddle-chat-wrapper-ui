@@ -14,7 +14,7 @@ import {
   PromptInputButton,
   PromptInputSubmit,
 } from "./PromptInput";
-// import { isChatActive } from "../constants/chatStatus"; // DISABLED: Stop functionality
+import { isChatActive } from "../constants/chatStatus";
 import { AnimatedPlaceholder } from "./AnimatedPlaceholder";
 import { sanitizeMessage, sanitizeFileName } from "../utils/security";
 import { useChatContext } from "../contexts";
@@ -38,7 +38,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
     messages,
     onSubmit,
     onFileUpload,
-    // onStopGeneration, // DISABLED: Stop functionality
+    onStopGeneration,
     connectionState,
   } = useChatContext();
 
@@ -712,20 +712,16 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
         <PromptInputSubmit
           status={chatStatus}
           disabled={
-            // DISABLED: Stop functionality not implemented on server
-            // isChatActive(chatStatus)
-            //   ? false // Never disable stop button when chat is active
-            //   : !input.trim() || isInputDisabled // Normal disabled logic when idle
-            !input.trim() || isInputDisabled // Always use normal disabled logic since stop is disabled
+            isChatActive(chatStatus)
+              ? false // Never disable stop button when chat is active
+              : !input.trim() || isInputDisabled // Normal disabled logic when idle
           }
           onClick={
-            // DISABLED: Stop functionality not implemented on server
-            // isChatActive(chatStatus) && onStopGeneration
-            //   ? () => {
-            //       onStopGeneration();
-            //     }
-            //   : undefined
-            undefined // Never call stop generation
+            isChatActive(chatStatus) && onStopGeneration
+              ? () => {
+                  onStopGeneration();
+                }
+              : undefined
           }
         />
       </PromptInputToolbar>

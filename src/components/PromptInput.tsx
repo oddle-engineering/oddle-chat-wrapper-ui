@@ -1,6 +1,6 @@
 import React, { ReactNode, KeyboardEventHandler, forwardRef } from "react";
 import { ChatStatus, CHAT_STATUS } from "../constants/chatStatus";
-// import { isChatActive } from "../constants/chatStatus"; // DISABLED: Stop functionality
+import { isChatActive } from "../constants/chatStatus";
 
 // Base utility function for class names (simplified version of cn)
 const cn = (...classes: (string | undefined | false | null)[]): string => {
@@ -317,10 +317,8 @@ export const PromptInputSubmit = ({
   disabled,
   ...props
 }: PromptInputSubmitProps) => {
-  // DISABLED: Stop functionality not yet implemented on server
   // Show stop icon when chat is active (submitted or streaming)
-  // const showStopButton = isChatActive(status);
-  const showStopButton = false; // Always false to disable stop button
+  const showStopButton = isChatActive(status);
   let Icon: ReactNode = showStopButton ? <StopIcon /> : <SendIcon />;
 
   return (
