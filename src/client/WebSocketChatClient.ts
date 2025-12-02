@@ -102,13 +102,6 @@ export class WebSocketChatClient {
       }
     }
 
-    // Capture sessionId for session-based reconnection
-    if (data?.type === InboundMessageType.SESSION_ESTABLISHED) {
-      const sessionId = (data as any)?.sessionId;
-      if (sessionId) {
-        this.wsManager.updateSession(sessionId);
-      }
-    }
   }
 
   private handleConnectionOpen(): void {

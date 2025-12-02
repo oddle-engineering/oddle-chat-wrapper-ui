@@ -60,43 +60,13 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Utility functions to parse media URLs
-  const parseImageMediaUrl = useCallback((media: string) => {
-    if (media.startsWith("data:image/") && media.includes("thumbnailUrl=")) {
-      // Parse the encoded URL format from upload service
-      // const thumbnailMatch = media.match(/thumbnailUrl=([^;]+)/);
-      const cdnUrlMatch = media.match(/cdnUrl=([^;]+)/);
-      const filenameMatch = media.match(/filename=([^;]+)/);
-
-      // const thumbnailUrl = thumbnailMatch ? decodeURIComponent(thumbnailMatch[1]) : media;
-      const cdnUrl = cdnUrlMatch ? decodeURIComponent(cdnUrlMatch[1]) : media;
-
-      return {
-        // TODO: Switch back to thumbnailUrl when backend provides proper thumbnail URLs
-        // Currently using cdnUrl for both thumbnail and full image display
-        thumbnailUrl: cdnUrl, // Using cdnUrl temporarily instead of thumbnailUrl
-        cdnUrl: cdnUrl,
-        filename: filenameMatch
-          ? decodeURIComponent(filenameMatch[1])
-          : "image",
-      };
-    }
-
-    // Fallback for base64 or other formats
-    return {
-      thumbnailUrl: media,
-      cdnUrl: media,
-      filename: "image",
-    };
-  }, []);
 
   const handleImagePreview = useCallback(
     (media: string) => {
-      const { cdnUrl } = parseImageMediaUrl(media);
-      setPreviewImageUrl(cdnUrl);
+      setPreviewImageUrl(media);
       setIsPreviewModalOpen(true);
     },
-    [parseImageMediaUrl]
+    []
   );
 
   // Determine which placeholders to use
@@ -419,8 +389,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
               media.startsWith("http://") || media.startsWith("https://");
             const isImage = isImageBase64 || isImageUrl;
 
-            // Parse image URLs if it's an uploaded image
-            const imageData = isImage ? parseImageMediaUrl(media) : null;
+            // Media is now a direct CDN URL for images
 
             return (
               <div
@@ -444,9 +413,9 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                     onClick={() => handleImagePreview(media)}
                     title="Click to view full image"
                   >
-                    {/* Main image - use thumbnail URL */}
+                    {/* Main image - use CDN URL directly */}
                     <img
-                      src={imageData?.thumbnailUrl || media}
+                      src={media}
                       alt={`Attachment ${index + 1}`}
                       style={{
                         width: "100%",

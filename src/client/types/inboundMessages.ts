@@ -60,7 +60,6 @@ export interface BaseInboundMessage {
 // Session management messages
 export interface SessionEstablishedMessage extends BaseInboundMessage {
   type: InboundMessageType.SESSION_ESTABLISHED;
-  sessionId?: string;
 }
 
 // Tool configuration messages

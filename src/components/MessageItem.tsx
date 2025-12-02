@@ -106,33 +106,6 @@ export const MessageItem = memo<MessageItemProps>(
       setPreviewImage(imageUrl);
     }, []);
 
-    // Utility function to parse media URLs (same as in ChatInput)
-    const parseImageMediaUrl = useCallback((media: string) => {
-      if (media.startsWith("data:image/") && media.includes("thumbnailUrl=")) {
-        // Parse the encoded URL format from upload service
-        // const thumbnailMatch = media.match(/thumbnailUrl=([^;]+)/);
-        const cdnUrlMatch = media.match(/cdnUrl=([^;]+)/);
-        const filenameMatch = media.match(/filename=([^;]+)/);
-        
-        // const thumbnailUrl = thumbnailMatch ? decodeURIComponent(thumbnailMatch[1]) : media;
-        const cdnUrl = cdnUrlMatch ? decodeURIComponent(cdnUrlMatch[1]) : media;
-        
-        return {
-          // TODO: Switch back to thumbnailUrl when backend provides proper thumbnail URLs
-          // Currently using cdnUrl for both thumbnail and full image display
-          thumbnailUrl: cdnUrl, // Using cdnUrl temporarily instead of thumbnailUrl
-          cdnUrl: cdnUrl,
-          filename: filenameMatch ? decodeURIComponent(filenameMatch[1]) : "image"
-        };
-      }
-      
-      // Fallback for base64 or other formats
-      return {
-        thumbnailUrl: media,
-        cdnUrl: media,
-        filename: "image"
-      };
-    }, []);
 
     const handleClosePreview = useCallback(() => {
       setPreviewImage(null);
@@ -197,15 +170,14 @@ export const MessageItem = memo<MessageItemProps>(
         {message.media && message.media.length > 0 && (
           <div className="chat-wrapper__media">
             {message.media.map((mediaUrl, index) => {
-              // Parse the media URL to extract cdnUrl for display
-              const imageData = parseImageMediaUrl(mediaUrl);
+              // Media URL is now a direct CDN URL
               return (
                 <img
                   key={index}
-                  src={imageData.cdnUrl} // Use cdnUrl for display instead of raw mediaUrl
+                  src={mediaUrl} // Use mediaUrl directly (it's now a clean CDN URL)
                   alt={`Uploaded content ${index + 1}`}
                   className="chat-wrapper__media-image chat-wrapper__media-image--clickable"
-                  onClick={() => handleImageClick(imageData.cdnUrl)} // Use cdnUrl for full-size view
+                  onClick={() => handleImageClick(mediaUrl)} // Use mediaUrl directly for full-size view
                   style={{ 
                     cursor: 'zoom-in',
                     transition: 'transform 0.2s, box-shadow 0.2s',

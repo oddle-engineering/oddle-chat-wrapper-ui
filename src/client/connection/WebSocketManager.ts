@@ -15,7 +15,6 @@ export class WebSocketManager {
   private heartbeatInterval: number | null = null;
   private visibilityChangeHandler: () => void;
   private currentTicket: string | null = null;
-  private currentSessionId: string | null = null;
   private intentionalDisconnect: boolean = false; // Track intentional disconnects
 
   private onOpen?: () => void;
@@ -65,15 +64,7 @@ export class WebSocketManager {
     // Add the /ws path if it's not already there
     url = url.endsWith('/ws') ? url : url + '/ws';
     
-    // Prefer sessionId for reconnection if available (session-based resume)
-    // Otherwise fallback to single-use ticket for initial auth
-    if (this.currentSessionId) {
-      const separator = url.includes('?') ? '&' : '?';
-      url = `${url}${separator}sessionId=${this.currentSessionId}`;
-      return url;
-    }
-
-    // Add ticket to URL if available (used only for initial authentication)
+    // Add ticket to URL if available
     if (this.currentTicket) {
       const separator = url.includes('?') ? '&' : '?';
       url = `${url}${separator}ticket=${this.currentTicket}`;
@@ -264,14 +255,6 @@ export class WebSocketManager {
     this.currentTicket = ticket;
   }
 
-  /**
-   * Update the sessionId to be used for reconnections.
-   * The server issues a sessionId in the `session_established` message which
-   * should be used for subsequent reconnect attempts (tickets can be single-use).
-   */
-  updateSession(sessionId: string): void {
-    this.currentSessionId = sessionId;
-  }
 
   private setupReconnectHandlers(): void {
     if (!this.ws) return;

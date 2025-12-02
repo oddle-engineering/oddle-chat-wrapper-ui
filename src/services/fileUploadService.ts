@@ -157,27 +157,11 @@ export class FileUploadService {
   }
 
   /**
-   * Process the upload result and return appropriate media URL with metadata
+   * Process the upload result and return the CDN URL directly
    */
-  private processUploadResult(file: File, result: any): string {
-    if (file.type.startsWith("image/")) {
-      // For images, encode both thumbnail and full URLs for later use
-      const thumbnailUrl = result.thumbnailUrl || result.url;
-      const cdnUrl = result.cdnUrl || result.url;
-      
-      return `data:${file.type};thumbnailUrl=${encodeURIComponent(
-        thumbnailUrl
-      )};cdnUrl=${encodeURIComponent(
-        cdnUrl
-      )};filename=${encodeURIComponent(
-        result.filename || file.name
-      )}`;
-    } else {
-      // For non-image files, create a data URL format with metadata
-      return `data:${file.type};name=${encodeURIComponent(
-        result.fileName || file.name
-      )};url=${encodeURIComponent(result.url)}`;
-    }
+  private processUploadResult(_file: File, result: any): string {
+    // Return the CDN URL directly for all file types
+    return result.cdnUrl || result.url;
   }
 
   /**
@@ -193,10 +177,8 @@ export class FileUploadService {
         return null;
       }
     } else {
-      // For other files, store metadata with filename
-      return `data:${file.type};name=${encodeURIComponent(
-        file.name
-      )};base64,placeholder`;
+      // For other files, return null since we can't handle them without proper upload
+      return null;
     }
   }
 

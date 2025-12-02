@@ -24,7 +24,7 @@ import { Thread, Message } from "../types";
  * const result = await fetchThreadMessages(apiUrl, {
  *   metadata: {
  *     orderId: 'order_789',
- *     sessionId: 'session_abc'
+ *     tableId: 'table_5'
  *   }
  * }, authOptions);
  */
