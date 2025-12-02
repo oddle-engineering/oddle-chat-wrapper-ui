@@ -25,6 +25,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.6] - 2025-12-02
+
+### Added
+- re-enable stop generation functionality in Chat components
+- Disable stop generation functionality
+- Update ImagePreviewModal styles for footer alignment and responsiveness
+- add image preview functionality in chat input and message item
+- Enhance file upload handling with loading state and error management
+- Implement connection state management for WebSocket client
+- Add marketing tools functionality and improve chat components
+- Remove WebSocket connection management from DevSettings component
+- Add menu item fetching and stop run functionality
+- Enhance error handling and network status management
+- Implement dynamic metadata handling and synchronization in ChatWrapper
+- Implement message retry functionality and enhance error handling
+- Update authentication token and server configurations
+- Enhance WebSocket connection management and conversation loading in ChatWrapper and DevSettings
+- Refactor ChatWrapper and ThreadAttachmentModal for improved API integration
+- Enhance thread management with metadata updates
+- Add Thread Attachment Modal and functionality
+- Add thread attachment functionality to DevSettings component
+
+### Changed
+- chore: Refactor WebSocket session management and media URL handling
+- chore: Remove outdated documentation files
+- refactor: remove userId from authentication and configuration
+- chore: Refactor chat input and styles for improved user experience
+- chore: Refactor App entity configuration and update ChatInput behavior
+- doc: add comprehensive guide
+- refactor: Remove unused fetchUserThreads and fetchThreadByConvUuid functions from threadApi
+- refactor: Replace fetchThreadMessagesV2 with fetchThreadMessages and clean up unused code
+- chore: Improve thread management functionalities
+
 ## [1.0.5] - 2025-11-07
 
 ### Added
