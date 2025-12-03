@@ -97,6 +97,21 @@ export interface ToolResult {
   [key: string]: any;
 }
 
+/**
+ * Props passed to custom header render function
+ */
+export interface CustomHeaderProps {
+  mode: ChatMode;
+  isCollapsed: boolean;
+  isModalOpen?: boolean;
+  devMode?: boolean;
+  onClose?: () => void;
+  onToggleFullscreen?: () => void;
+  onToggleCollapse?: () => void;
+  onOpenSettings?: () => void;
+}
+
+
 export interface ChatConfig {
   mode: ChatMode;
   position?: ChatPosition;
@@ -129,6 +144,61 @@ export interface ChatConfig {
   onToolResult?: (tool: string, result: any) => void;
   onStreamingStatusChange?: (status: string) => void;
   customStyles?: React.CSSProperties;
+  
+  /**
+   * Custom header component for full UI control
+   * When provided, this takes precedence over headerName, headerDescription, and headerVisible
+   * The function receives control handlers and state for integration
+   * 
+   * @example
+   * ```tsx
+   * customHeader: ({ onClose, onToggleFullscreen }) => (
+   *   <div className="my-header">
+   *     <img src="logo.png" />
+   *     <h1>My Chat</h1>
+   *     <button onClick={onToggleFullscreen}>Fullscreen</button>
+   *   </div>
+   * )
+   * ```
+   */
+  customHeader?: (props: CustomHeaderProps) => React.ReactNode;
+  
+  /**
+   * Custom chip component for the input area
+   * When provided, this takes precedence over chipName and chipLogo
+   * Useful for displaying dynamic context (restaurant, order, etc.)
+   * 
+   * @example
+   * ```tsx
+   * customChip: () => (
+   *   <div className="my-chip">
+   *     <img src="restaurant-logo.png" />
+   *     <span>McDonald's - Table 5</span>
+   *   </div>
+   * )
+   * ```
+   */
+  customChip?: () => React.ReactNode;
+  
+  /**
+   * Custom welcome header component for the header area
+   * When provided, this takes precedence over headerName and headerDescription
+   * Useful for fully custom header layouts and branding
+   * 
+   * @example
+   * ```tsx
+   * welcomeHeader: () => (
+   *   <div className="my-welcome">
+   *     <img src="logo.png" />
+   *     <div>
+   *       <h1>Demo Chat</h1>
+   *       <p>An AI assistant to help with restaurant management tasks.</p>
+   *     </div>
+   *   </div>
+   * )
+   * ```
+   */
+  welcomeHeader?: () => React.ReactNode;
 }
 
 export interface ChatWrapperRef {

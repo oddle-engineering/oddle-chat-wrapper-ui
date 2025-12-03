@@ -1,21 +1,15 @@
 import React from 'react';
 import { CloseIcon, FullscreenIcon, CollapseIcon, SettingsIcon } from '../icons';
-import { ChatMode } from '../../types';
+import { CustomHeaderProps } from '../../types';
 
-interface ChatHeaderProps {
-  headerName: string;
-  mode: ChatMode;
-  isCollapsed: boolean;
-  isModalOpen?: boolean;
-  devMode?: boolean;
-  onClose?: () => void;
-  onToggleFullscreen?: () => void;
-  onToggleCollapse?: () => void;
-  onOpenSettings?: () => void;
+interface ChatHeaderProps extends CustomHeaderProps {
+  headerName?: string;
+  customHeader?: (props: CustomHeaderProps) => React.ReactNode;
 }
 
 export const ChatHeader: React.FC<ChatHeaderProps> = ({
   headerName,
+  customHeader,
   mode,
   isCollapsed,
   isModalOpen,
@@ -25,6 +19,25 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
   onToggleCollapse,
   onOpenSettings,
 }) => {
+  // If custom header is provided, render it with all control props
+  if (customHeader) {
+    return (
+      <div className="chat-wrapper__header chat-wrapper__header--custom">
+        {customHeader({
+          mode,
+          isCollapsed,
+          isModalOpen,
+          devMode,
+          onClose,
+          onToggleFullscreen,
+          onToggleCollapse,
+          onOpenSettings,
+        })}
+      </div>
+    );
+  }
+
+  // Default header implementation
   const renderCloseButton = () => {
     if (mode === "modal" && isModalOpen && onClose) {
       return (

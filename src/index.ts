@@ -55,7 +55,8 @@ export type {
   ClientTools,
   Thread,
   ThreadsResponse,
-  MessagesResponse
+  MessagesResponse,
+  CustomHeaderProps
 } from './types';
 export { EntityType } from './types';
 export type { ChatStatus, StreamingStatus, ProcessingStatus } from './constants/chatStatus';

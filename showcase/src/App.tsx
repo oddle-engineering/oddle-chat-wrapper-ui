@@ -34,44 +34,44 @@ interface Reservation {
 
 interface MarketingToolsFunctions {
   createCampaign: (
-    params: CreateCampaignParams,
-  ) => Promise<CreateCampaignResponse>
-  getBrandItems: () => Promise<unknown>
+    params: CreateCampaignParams
+  ) => Promise<CreateCampaignResponse>;
+  getBrandItems: () => Promise<unknown>;
   searchMediaLibrary: (params: {
-    queries: string
-    maxResults: number
-  }) => Promise<unknown>
-  getReservationTickets: () => Promise<unknown>
+    queries: string;
+    maxResults: number;
+  }) => Promise<unknown>;
+  getReservationTickets: () => Promise<unknown>;
 }
 
 export interface CreateCampaignParams {
-  emailType: 'broadcast'
+  emailType: "broadcast";
   campaignJson: {
-    campaignName: string
-    campaignDesc: string
-    reminder: boolean
+    campaignName: string;
+    campaignDesc: string;
+    reminder: boolean;
     scheduling: {
-      date?: string
-      time?: string
-      option: 'now' | 'scheduled'
-    }
-  }
+      date?: string;
+      time?: string;
+      option: "now" | "scheduled";
+    };
+  };
   emailJson: {
-    subject: string
-    preHeader: string
-    reminderSubject?: string
-    reminderPreHeader?: string
+    subject: string;
+    preHeader: string;
+    reminderSubject?: string;
+    reminderPreHeader?: string;
     content: Array<{
-      type: string
-      props: Record<string, unknown>
-    }>
-  }
+      type: string;
+      props: Record<string, unknown>;
+    }>;
+  };
 }
 
 export interface CreateCampaignResponse {
-  success: boolean
-  campaignJson: CreateCampaignParams['campaignJson']
-  emailJson: CreateCampaignParams['emailJson']
+  success: boolean;
+  campaignJson: CreateCampaignParams["campaignJson"];
+  emailJson: CreateCampaignParams["emailJson"];
 }
 
 async function fetchTodos() {
@@ -124,6 +124,108 @@ async function fetchMenuItems() {
 // Updated to use: userMpAuthToken, chatServerUrl, chatServerKey (all required)
 // Plus optional: entityId, entityType, providerResId for conversation generation
 function App() {
+  // ==========================================
+  // 🎨 CUSTOM UI EXAMPLES (Commented Out)
+  // ==========================================
+  // Uncomment these to see customHeader and customChip in action!
+  // See showcase/CUSTOM_UI_EXAMPLES.md for more examples
+
+  // Example 1: Custom Header with Order Status
+  const customHeaderExample = ({ onClose, onToggleFullscreen, mode }: any) => (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: "12px 16px",
+        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        color: "white",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <img
+          src="https://lounge.beta.oddle.me/_next/image?url=https%3A%2F%2Fs3-ap-southeast-1.amazonaws.com%2Fv3-beta.image.oddle.me%2Flogo%2Fmenu_logo_Nomnom5a565b.jpg&w=96&q=75"
+          alt="Logo"
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: "50%",
+            border: "2px solid white",
+          }}
+        />
+        <div>
+          <h2 style={{ margin: 0, fontSize: "16px", fontWeight: 600 }}>
+            McDonald's Assistant
+          </h2>
+          <p style={{ margin: 0, fontSize: "12px", opacity: 0.9 }}>
+            Table 5 • Order #0010
+          </p>
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: "8px" }}>
+        <button
+          onClick={onToggleFullscreen}
+          style={{
+            padding: "8px 12px",
+            background: "rgba(255,255,255,0.2)",
+            border: "none",
+            borderRadius: "6px",
+            color: "white",
+            cursor: "pointer",
+          }}
+        >
+          {mode === "fullscreen" ? "📐" : "⛶"}
+        </button>
+        <button
+          onClick={onClose}
+          style={{
+            padding: "8px 12px",
+            background: "rgba(255,255,255,0.2)",
+            border: "none",
+            borderRadius: "6px",
+            color: "white",
+            cursor: "pointer",
+          }}
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+  );
+
+  // Example 2: Custom Chip with Dynamic Order Info
+  const customChipExample = () => (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "12px",
+        padding: "6px 12px",
+        background: "#f8f9fa",
+        borderRadius: "20px",
+        border: "1px solid #e9ecef",
+        fontSize: "14px",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <img
+          src="https://lounge.beta.oddle.me/_next/image?url=https%3A%2F%2Fs3-ap-southeast-1.amazonaws.com%2Fv3-beta.image.oddle.me%2Flogo%2Fmenu_logo_Nomnom5a565b.jpg&w=96&q=75"
+          alt="Restaurant"
+          style={{ width: 24, height: 24, borderRadius: "50%" }}
+        />
+        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+          <span style={{ fontWeight: 600, fontSize: "13px" }}>McDonald's</span>
+          <span style={{ color: "#6c757d", fontSize: "11px" }}>
+            Table 5 • $45.99
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+
+  // To use these examples, add them to customConfig:
+  // customHeader: customHeaderExample,
+  // customChip: customChipExample,
   const [customConfig] = useState({
     mode: "sidebar" as ChatMode,
     theme: "light" as ChatTheme,
@@ -170,6 +272,18 @@ function App() {
         icon: <span>⚡</span>,
       },
     ],
+    customHeader: customHeaderExample,
+    customChip: customChipExample,
+    // TODO: test the style with external UI
+    welcomeHeader: () => (
+      <div className="my-welcome">
+        <img src="logo.png" />
+        <div>
+          <h1>Demo Chat</h1>
+          <p>An AI assistant to help with restaurant management tasks.</p>
+        </div>
+      </div>
+    ),
   });
 
   const [todos, setTodos] = useState<any[]>([
@@ -219,7 +333,7 @@ function App() {
   // State for dynamic metadata (for testing metadata prop sync)
   // Start with empty to test the "metadata starts empty then gets populated" scenario
   const [dynamicMetadata, setDynamicMetadata] = useState<any>({
-    order_id: "order_0010",
+    order_id: "order_0011",
   });
 
   // Ref to ChatWrapper for imperative API access
@@ -640,29 +754,32 @@ function App() {
     };
   }, []);
 
-  const searchMediaLibrary = useCallback(async (params: { queries: string; maxResults: number }) => {
-    console.log("Searching media library:", params);
-    // Mock media search
-    return {
-      success: true,
-      results: [
-        {
-          id: "1",
-          url: "https://example.com/image1.jpg",
-          title: "Sample Image 1",
-          tags: params.queries.split(',').map(q => q.trim())
-        },
-        {
-          id: "2", 
-          url: "https://example.com/image2.jpg",
-          title: "Sample Image 2",
-          tags: params.queries.split(',').map(q => q.trim())
-        }
-      ],
-      total: 2,
-      message: `Found 2 media items for queries: ${params.queries}`
-    };
-  }, []);
+  const searchMediaLibrary = useCallback(
+    async (params: { queries: string; maxResults: number }) => {
+      console.log("Searching media library:", params);
+      // Mock media search
+      return {
+        success: true,
+        results: [
+          {
+            id: "1",
+            url: "https://example.com/image1.jpg",
+            title: "Sample Image 1",
+            tags: params.queries.split(",").map((q) => q.trim()),
+          },
+          {
+            id: "2",
+            url: "https://example.com/image2.jpg",
+            title: "Sample Image 2",
+            tags: params.queries.split(",").map((q) => q.trim()),
+          },
+        ],
+        total: 2,
+        message: `Found 2 media items for queries: ${params.queries}`,
+      };
+    },
+    []
+  );
 
   const getReservationTickets = useCallback(async () => {
     console.log("Getting reservation tickets");
@@ -674,177 +791,180 @@ function App() {
           id: "1",
           name: "Dinner Reservation",
           url: "https://booking.restaurant.com/dinner",
-          type: "dinner"
+          type: "dinner",
         },
         {
-          id: "2", 
+          id: "2",
           name: "Lunch Reservation",
           url: "https://booking.restaurant.com/lunch",
-          type: "lunch"
-        }
+          type: "lunch",
+        },
       ],
-      message: "Retrieved reservation ticket types"
+      message: "Retrieved reservation ticket types",
     };
   }, []);
 
   // Marketing tools factory
-  const MARKETING_TOOLS: (functions: MarketingToolsFunctions) => Tools = (fn) => [
+  const MARKETING_TOOLS: (functions: MarketingToolsFunctions) => Tools = (
+    fn
+  ) => [
     // media_library
     {
-      name: 'search_media_library',
-      description: "Search a merchant's media library for media based on queries",
+      name: "search_media_library",
+      description:
+        "Search a merchant's media library for media based on queries",
       parameters: [
         {
-          name: 'queries',
-          type: 'string',
-          description: 'Comma separated keywords to search for',
+          name: "queries",
+          type: "string",
+          description: "Comma separated keywords to search for",
           isRequired: true,
-          schema: { type: 'string' },
+          schema: { type: "string" },
         },
         {
-          name: 'maxResults',
-          type: 'number',
-          description: 'Maximum number of results to return',
+          name: "maxResults",
+          type: "number",
+          description: "Maximum number of results to return",
           isRequired: true,
-          schema: { type: 'integer' },
+          schema: { type: "integer" },
         },
       ],
       execute: fn.searchMediaLibrary,
     },
     // reservation
     {
-      name: 'get_reservation_tickets',
+      name: "get_reservation_tickets",
       description:
-        'Read all reservation related tickets / booking types and their links from a brand.',
+        "Read all reservation related tickets / booking types and their links from a brand.",
       parameters: [],
       execute: fn.getReservationTickets,
     },
     {
-      name: 'get_brand_items',
-      description: 'Get a list of full items in the brand',
+      name: "get_brand_items",
+      description: "Get a list of full items in the brand",
       parameters: [],
       execute: fn.getBrandItems,
     },
     {
-      name: 'create_campaign',
+      name: "create_campaign",
       description:
         "Creates an email marketing campaign in Oddle's email marketing module.",
       parameters: [
         {
-          name: 'emailType',
-          type: 'string',
+          name: "emailType",
+          type: "string",
           description: 'Only "broadcast" is supported at this moment.',
           isRequired: true,
           schema: {
-            type: 'string',
-            enum: ['broadcast'],
+            type: "string",
+            enum: ["broadcast"],
           },
         },
         {
-          name: 'campaignJson',
-          type: 'object',
+          name: "campaignJson",
+          type: "object",
           description:
-            'Details of the campaign settings including, name description, scheduling and reminder options.',
+            "Details of the campaign settings including, name description, scheduling and reminder options.",
           isRequired: true,
           schema: {
-            type: 'object',
+            type: "object",
             properties: {
               campaignName: {
-                type: 'string',
-                description: 'Name of the campaign for internal use.',
+                type: "string",
+                description: "Name of the campaign for internal use.",
               },
               campaignDesc: {
-                type: 'string',
-                description: 'Description of the campaign for internal use.',
+                type: "string",
+                description: "Description of the campaign for internal use.",
               },
               reminder: {
-                type: 'boolean',
+                type: "boolean",
                 description:
-                  'Enabling this sends a follow up email with a different email address to customers who did not open the initial email after 8 days. Default is true.',
+                  "Enabling this sends a follow up email with a different email address to customers who did not open the initial email after 8 days. Default is true.",
               },
               scheduling: {
-                type: 'object',
+                type: "object",
                 description:
                   'when to send the email. Either "now" or a scheduled date in future.',
                 properties: {
                   date: {
-                    type: 'string',
+                    type: "string",
                     description:
-                      'Date to send the email in DD-MM-YYYY format. Must be a future date.',
+                      "Date to send the email in DD-MM-YYYY format. Must be a future date.",
                   },
                   time: {
-                    type: 'string',
+                    type: "string",
                     description:
-                      'Time of day to send the email in 24-hour HH:MM format. Only in 15 minute increments (e.g 00, 15, 30, 45).',
+                      "Time of day to send the email in 24-hour HH:MM format. Only in 15 minute increments (e.g 00, 15, 30, 45).",
                   },
                   option: {
-                    type: 'string',
+                    type: "string",
                     description:
                       'One of "now" or "scheduled". If "schedule", both date and time must be present and valid.',
-                    enum: ['now', 'scheduled'],
+                    enum: ["now", "scheduled"],
                   },
                 },
               },
             },
-            required: ['campaignName', 'campaignDesc', 'reminder'],
+            required: ["campaignName", "campaignDesc", "reminder"],
           },
         },
         {
-          name: 'emailJson',
-          type: 'object',
+          name: "emailJson",
+          type: "object",
           description:
-            'Details of the email content including subject, preheader, and email layout',
+            "Details of the email content including subject, preheader, and email layout",
           isRequired: true,
           schema: {
-            type: 'object',
+            type: "object",
             properties: {
               subject: {
-                type: 'string',
-                description: 'The email subject title.',
+                type: "string",
+                description: "The email subject title.",
               },
               preHeader: {
-                type: 'string',
-                description: 'The email preview text shown in inboxes',
+                type: "string",
+                description: "The email preview text shown in inboxes",
               },
               reminderSubject: {
-                type: 'string',
+                type: "string",
                 description:
-                  'The subject title for the follow up email sent to non-openers after 8 days',
+                  "The subject title for the follow up email sent to non-openers after 8 days",
               },
               reminderPreHeader: {
-                type: 'string',
+                type: "string",
                 description:
-                  'The email preview text for the follow up email to non-openers after 8 days',
+                  "The email preview text for the follow up email to non-openers after 8 days",
               },
               content: {
-                type: 'array',
+                type: "array",
                 items: {
-                  type: 'object',
+                  type: "object",
                   properties: {
                     type: {
-                      type: 'string',
+                      type: "string",
                       enum: [
-                        'Header',
-                        'Title',
-                        'Text',
-                        'Button',
-                        'Image',
-                        'ImageWithText',
-                        'Divider',
-                        'Spacer',
-                        'MenuItem',
-                        'ReserveTicket',
-                        'Redeemable',
-                        'Promo',
-                        'PersonalSignOff',
-                        'Footer',
+                        "Header",
+                        "Title",
+                        "Text",
+                        "Button",
+                        "Image",
+                        "ImageWithText",
+                        "Divider",
+                        "Spacer",
+                        "MenuItem",
+                        "ReserveTicket",
+                        "Redeemable",
+                        "Promo",
+                        "PersonalSignOff",
+                        "Footer",
                       ],
                     },
                     props: {
-                      type: 'object',
+                      type: "object",
                     },
                   },
-                  required: ['type', 'props'],
+                  required: ["type", "props"],
                 },
               },
             },
@@ -855,7 +975,7 @@ function App() {
     },
   ];
 
-  // Create marketing tools instance  
+  // Create marketing tools instance
   const marketingToolsInstance = useMemo(() => {
     const marketingFunctions: MarketingToolsFunctions = {
       createCampaign,
@@ -864,14 +984,19 @@ function App() {
       getReservationTickets,
     };
     return MARKETING_TOOLS(marketingFunctions);
-  }, [createCampaign, getBrandItems, searchMediaLibrary, getReservationTickets]);
+  }, [
+    createCampaign,
+    getBrandItems,
+    searchMediaLibrary,
+    getReservationTickets,
+  ]);
 
   // New unified tools with execution functions
   const tools: Tools = useMemo(
     () => [
       // Marketing tools
       ...marketingToolsInstance,
-      
+
       // To-do management tools
       {
         name: "create_to_do",

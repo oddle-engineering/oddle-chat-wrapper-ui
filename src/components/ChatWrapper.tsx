@@ -664,6 +664,8 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         placeholderTexts: config.placeholderTexts,
         chipName: config.chipName,
         chipLogo: config.chipLogo,
+        customChip: config.customChip,
+        welcomeHeader: config.welcomeHeader,
         suggestedPrompts: config.suggestedPrompts,
         clientTools: uiClientTools,
         fileUploadEnabled: config.features?.fileUpload,
@@ -674,6 +676,8 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         config.placeholderTexts,
         config.chipName,
         config.chipLogo,
+        config.customChip,
+        config.welcomeHeader,
         config.suggestedPrompts,
         config.features?.fileUpload,
         uiClientTools,
@@ -876,6 +880,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
             {chatUtils.state.shouldShowHeader(config.headerVisible) && (
               <ChatHeader
                 headerName={config.headerName}
+                customHeader={config.customHeader}
                 mode={currentMode as ChatMode}
                 isCollapsed={isCollapsed}
                 isModalOpen={isModalOpen}

@@ -35,6 +35,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
     fileUploadEnabled,
     chipName,
     chipLogo,
+    customChip,
     messages,
     onSubmit,
     onFileUpload,
@@ -693,10 +694,12 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
               </span>
             </div>
           )}
-          {fileUploadEnabled && chipName && (
+          {fileUploadEnabled && (chipName || customChip) && (
             <div className="chat-wrapper__divider"></div>
           )}
-          {chipName && (
+          {customChip ? (
+            customChip()
+          ) : chipName ? (
             <div className="chat-wrapper__restaurant-chip">
               {chipLogo && (
                 <img
@@ -707,7 +710,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
               )}
               <span className="chat-wrapper__restaurant-name">{chipName}</span>
             </div>
-          )}
+          ) : null}
         </PromptInputTools>
         <PromptInputSubmit
           status={chatStatus}

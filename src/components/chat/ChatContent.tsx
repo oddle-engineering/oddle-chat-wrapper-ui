@@ -23,6 +23,7 @@ export const ChatContent: React.FC = () => {
     isStreaming,
     headerName,
     headerDescription,
+    welcomeHeader,
     suggestedPrompts,
     messagesEndRef,
     chatInputRef,
@@ -56,6 +57,7 @@ export const ChatContent: React.FC = () => {
           <ChatMainHeader
             headerName={headerName}
             headerDescription={headerDescription}
+            welcomeHeader={welcomeHeader}
           />
         </div>
       )}

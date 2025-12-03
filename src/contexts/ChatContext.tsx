@@ -38,6 +38,8 @@ export interface ChatContextValue {
   placeholderTexts?: string[];
   chipName?: string;
   chipLogo?: string;
+  customChip?: () => ReactNode;
+  welcomeHeader?: () => ReactNode;
   suggestedPrompts?: Array<{
     title: string;
     description: string;

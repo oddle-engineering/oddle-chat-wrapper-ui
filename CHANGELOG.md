@@ -28,6 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.6] - 2025-12-02
 
 ### Added
+- **Custom UI Components**: New `customHeader` and `customChip` render props for unlimited header and chip customization
+- Export `CustomHeaderProps` and `CustomChipProps` types for TypeScript users
+- Comprehensive examples and documentation in `showcase/CUSTOM_UI_EXAMPLES.md`
 - re-enable stop generation functionality in Chat components
 - Disable stop generation functionality
 - Update ImagePreviewModal styles for footer alignment and responsiveness
