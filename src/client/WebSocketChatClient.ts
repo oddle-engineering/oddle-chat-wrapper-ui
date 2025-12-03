@@ -58,6 +58,14 @@ export class WebSocketChatClient {
         const handlers = this.messageHandler as any;
         handlers.handlers?.onSystemEvent?.(event);
       },
+      onTicketRefresh: async () => {
+        // Always get fresh ticket for reconnection
+        console.log('[WebSocketChatClient] Providing fresh ticket for reconnection...');
+        if (!this.ticketManager) {
+          throw new Error('TicketManager not available for ticket refresh');
+        }
+        return await this.ticketManager.getValidTicket();
+      },
     });
 
     this.messageHandler.setSendMessageHandler((data) =>

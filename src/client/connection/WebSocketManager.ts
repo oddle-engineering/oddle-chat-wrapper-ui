@@ -22,6 +22,7 @@ export class WebSocketManager {
   private onError?: (error: Event) => void;
   private onClose?: (event: CloseEvent) => void;
   private onSystemEvent?: SystemEventHandler;
+  private onTicketRefresh?: () => Promise<string>;
 
   constructor(config: ConnectionConfig, connectionState: ConnectionState) {
     this.config = config;
@@ -236,9 +237,22 @@ export class WebSocketManager {
     }, delayWithJitter);
   }
 
-  private reconnect(): void {
+  private async reconnect(): Promise<void> {
     try {
       this.closeConnection();
+
+      // Get fresh ticket before reconnecting (if callback available)
+      if (this.onTicketRefresh) {
+        console.log('[WebSocketManager] Requesting fresh ticket for reconnection...');
+        try {
+          const freshTicket = await this.onTicketRefresh();
+          this.currentTicket = freshTicket;
+          console.log('[WebSocketManager] Fresh ticket obtained for reconnection');
+        } catch (error) {
+          console.error('[WebSocketManager] Failed to get fresh ticket:', error);
+          // Continue with existing ticket as fallback
+        }
+      }
 
       const wsUrl = this.buildWebSocketUrl();
       this.ws = new WebSocket(wsUrl);
@@ -395,11 +409,13 @@ export class WebSocketManager {
     onError?: (error: Event) => void;
     onClose?: (event: CloseEvent) => void;
     onSystemEvent?: SystemEventHandler;
+    onTicketRefresh?: () => Promise<string>;
   }): void {
     this.onOpen = handlers.onOpen;
     this.onMessage = handlers.onMessage;
     this.onError = handlers.onError;
     this.onClose = handlers.onClose;
     this.onSystemEvent = handlers.onSystemEvent;
+    this.onTicketRefresh = handlers.onTicketRefresh;
   }
 }

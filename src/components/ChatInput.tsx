@@ -33,6 +33,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
     isLoadingConversation,
     chatStatus,
     fileUploadEnabled,
+    fileUploadConfig,
     chipName,
     chipLogo,
     messages,
@@ -169,19 +170,20 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
           if (files.length > 0) {
             // Validate file size and type before upload
             const validFiles = files.filter((file) => {
-              // Check file size (limit to 10MB)
-              if (file.size > 10 * 1024 * 1024) {
+              // Check file size using configurable limit
+              const maxSize = fileUploadConfig?.maxFileSize ?? (15 * 1024 * 1024);
+              if (file.size > maxSize) {
                 console.warn(
                   `File too large: ${file.name} (${file.size} bytes)`
                 );
-                setUploadError(`Image too large. Maximum size is 10MB.`);
+                setUploadError(`File too large. Maximum size is ${Math.round(maxSize / (1024 * 1024))}MB.`);
                 return false;
               }
 
-              // Basic file type validation - only images
-              const allowedTypes = [
+              // File type validation using configurable types
+              const allowedTypes = fileUploadConfig?.allowedTypes ?? [
                 "image/jpeg",
-                "image/png",
+                "image/png", 
                 "image/gif",
                 "image/webp",
               ];
@@ -191,7 +193,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                   `File type not allowed: ${file.name} (${file.type})`
                 );
                 setUploadError(
-                  `Image type not supported. Please use JPEG, PNG, GIF, or WebP.`
+                  `File type not supported. Allowed types: ${allowedTypes.join(", ")}`
                 );
                 return false;
               }
@@ -200,9 +202,17 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
             });
 
             if (validFiles.length > 0) {
+              // Check total file limit using configurable limit
+              const maxFiles = fileUploadConfig?.maxFiles ?? 5;
+              const totalFiles = uploadedMedia.length + validFiles.length;
+              if (totalFiles > maxFiles) {
+                setUploadError(`Maximum ${maxFiles} files allowed. Currently ${uploadedMedia.length} files, trying to add ${validFiles.length} more.`);
+                return;
+              }
+
               const newMedia = await onFileUpload(validFiles);
-              // For now, only support 1 image - replace existing media
-              setUploadedMedia(newMedia);
+              // Support multiple files - append to existing media
+              setUploadedMedia([...uploadedMedia, ...newMedia]);
               setUploadError(null);
             }
           }
@@ -216,14 +226,14 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
         }
       }
     },
-    [onFileUpload]
+    [onFileUpload, fileUploadConfig, uploadedMedia]
   );
 
   const handleFileUploadClick = useCallback(async () => {
     const fileInput = document.createElement("input");
     fileInput.type = "file";
     fileInput.accept = "image/*";
-    fileInput.multiple = false;
+    fileInput.multiple = true; // Allow multiple file selection
     fileInput.onchange = async (e) => {
       const files = (e.target as HTMLInputElement).files;
       if (files) {
@@ -240,14 +250,16 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
               );
             }
 
-            // Check file size (limit to 10MB)
-            if (file.size > 10 * 1024 * 1024) {
+            // Check file size using configurable limit
+            const maxSize = fileUploadConfig?.maxFileSize ?? (15 * 1024 * 1024);
+            if (file.size > maxSize) {
               console.warn(`File too large: ${file.name} (${file.size} bytes)`);
+              setUploadError(`File too large. Maximum size is ${Math.round(maxSize / (1024 * 1024))}MB.`);
               return false;
             }
 
-            // Basic file type validation - only images
-            const allowedTypes = [
+            // File type validation using configurable types
+            const allowedTypes = fileUploadConfig?.allowedTypes ?? [
               "image/jpeg",
               "image/png",
               "image/gif",
@@ -258,6 +270,9 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
               console.warn(
                 `File type not allowed: ${file.name} (${file.type})`
               );
+              setUploadError(
+                `File type not supported. Allowed types: ${allowedTypes.join(", ")}`
+              );
               return false;
             }
 
@@ -265,10 +280,17 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
           });
 
           if (validFiles.length > 0) {
+            // Check total file limit using configurable limit
+            const maxFiles = fileUploadConfig?.maxFiles ?? 5;
+            const totalFiles = uploadedMedia.length + validFiles.length;
+            if (totalFiles > maxFiles) {
+              setUploadError(`Maximum ${maxFiles} files allowed. Currently ${uploadedMedia.length} files, trying to add ${validFiles.length} more.`);
+              return;
+            }
+
             const newMedia = await onFileUpload(validFiles);
-            // For now, only support 1 image - replace existing media
-            // TODO: In future, support multiple images by appending: [...prev, ...newMedia]
-            setUploadedMedia(newMedia);
+            // Support multiple files - append to existing media
+            setUploadedMedia([...uploadedMedia, ...newMedia]);
             setUploadError(null); // Clear any previous errors on successful upload
           }
         } catch (error) {
@@ -282,7 +304,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
       }
     };
     fileInput.click();
-  }, [onFileUpload]);
+  }, [onFileUpload, fileUploadConfig, uploadedMedia]);
 
   return (
     <PromptInput
@@ -640,8 +662,8 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                   isUploading
                     ? "Uploading..."
                     : uploadedMedia.length > 0
-                    ? `${uploadedMedia.length} image(s) attached`
-                    : "Attach image"
+                    ? `${uploadedMedia.length}/${fileUploadConfig?.maxFiles ?? 5} image(s) attached`
+                    : `Attach images (max ${fileUploadConfig?.maxFiles ?? 5} files, ${Math.round((fileUploadConfig?.maxFileSize ?? (15 * 1024 * 1024)) / (1024 * 1024))}MB each)`
                 }
                 disabled={isInputDisabled || isUploading}
                 style={{
@@ -689,7 +711,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                   cursor: isUploading ? "not-allowed" : "pointer",
                 }}
               >
-                {isUploading ? "Uploading..." : "Attach"}
+                {isUploading ? "Uploading..." : `Attach ${uploadedMedia.length > 0 ? `(${uploadedMedia.length}/${fileUploadConfig?.maxFiles ?? 5})` : ""}`}
               </span>
             </div>
           )}
