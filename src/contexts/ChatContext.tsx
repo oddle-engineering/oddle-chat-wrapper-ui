@@ -47,6 +47,11 @@ export interface ChatContextValue {
   // ===== Tools & Features =====
   clientTools?: ClientTools;
   fileUploadEnabled?: boolean;
+  fileUploadConfig?: {
+    maxFiles: number;
+    maxFileSize: number;
+    allowedTypes: string[];
+  };
   
   // ===== Reasoning Helpers =====
   getReasoningTitle: (content: string, isStreaming?: boolean) => string;

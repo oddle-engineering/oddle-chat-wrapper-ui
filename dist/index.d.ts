@@ -74,6 +74,11 @@ export declare interface ChatConfig {
         showToolResults?: boolean;
         showBubbleText?: boolean;
     };
+    fileUploadConfig?: {
+        maxFiles?: number;
+        maxFileSize?: number;
+        allowedTypes?: string[];
+    };
     onMessage?: (message: Message) => void;
     onError?: (error: Error) => void;
     onToolResult?: (tool: string, result: any) => void;

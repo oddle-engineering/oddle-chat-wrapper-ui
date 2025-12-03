@@ -34,44 +34,46 @@ interface Reservation {
 
 interface MarketingToolsFunctions {
   createCampaign: (
-    params: CreateCampaignParams,
-  ) => Promise<CreateCampaignResponse>
-  getBrandItems: () => Promise<unknown>
+    params: CreateCampaignParams
+  ) => Promise<CreateCampaignResponse>;
+  getBrandItems: () => Promise<unknown>;
   searchMediaLibrary: (params: {
-    queries: string
-    maxResults: number
-  }) => Promise<unknown>
-  getReservationTickets: () => Promise<unknown>
+    queries: string;
+    maxResults: number;
+  }) => Promise<unknown>;
+  getReservationTickets: () => Promise<unknown>;
+  getPromos: () => Promise<unknown>;
+  getRedeemables: () => Promise<unknown>;
 }
 
 export interface CreateCampaignParams {
-  emailType: 'broadcast'
+  emailType: "broadcast";
   campaignJson: {
-    campaignName: string
-    campaignDesc: string
-    reminder: boolean
+    campaignName: string;
+    campaignDesc: string;
+    reminder: boolean;
     scheduling: {
-      date?: string
-      time?: string
-      option: 'now' | 'scheduled'
-    }
-  }
+      date?: string;
+      time?: string;
+      option: "now" | "scheduled";
+    };
+  };
   emailJson: {
-    subject: string
-    preHeader: string
-    reminderSubject?: string
-    reminderPreHeader?: string
+    subject: string;
+    preHeader: string;
+    reminderSubject?: string;
+    reminderPreHeader?: string;
     content: Array<{
-      type: string
-      props: Record<string, unknown>
-    }>
-  }
+      type: string;
+      props: Record<string, unknown>;
+    }>;
+  };
 }
 
 export interface CreateCampaignResponse {
-  success: boolean
-  campaignJson: CreateCampaignParams['campaignJson']
-  emailJson: CreateCampaignParams['emailJson']
+  success: boolean;
+  campaignJson: CreateCampaignParams["campaignJson"];
+  emailJson: CreateCampaignParams["emailJson"];
 }
 
 async function fetchTodos() {
@@ -219,7 +221,7 @@ function App() {
   // State for dynamic metadata (for testing metadata prop sync)
   // Start with empty to test the "metadata starts empty then gets populated" scenario
   const [dynamicMetadata, setDynamicMetadata] = useState<any>({
-    order_id: "order_0010",
+    order_id: "order_0009",
   });
 
   // Ref to ChatWrapper for imperative API access
@@ -640,29 +642,32 @@ function App() {
     };
   }, []);
 
-  const searchMediaLibrary = useCallback(async (params: { queries: string; maxResults: number }) => {
-    console.log("Searching media library:", params);
-    // Mock media search
-    return {
-      success: true,
-      results: [
-        {
-          id: "1",
-          url: "https://example.com/image1.jpg",
-          title: "Sample Image 1",
-          tags: params.queries.split(',').map(q => q.trim())
-        },
-        {
-          id: "2", 
-          url: "https://example.com/image2.jpg",
-          title: "Sample Image 2",
-          tags: params.queries.split(',').map(q => q.trim())
-        }
-      ],
-      total: 2,
-      message: `Found 2 media items for queries: ${params.queries}`
-    };
-  }, []);
+  const searchMediaLibrary = useCallback(
+    async (params: { queries: string; maxResults: number }) => {
+      console.log("Searching media library:", params);
+      // Mock media search
+      return {
+        success: true,
+        results: [
+          {
+            id: "1",
+            url: "https://example.com/image1.jpg",
+            title: "Sample Image 1",
+            tags: params.queries.split(",").map((q) => q.trim()),
+          },
+          {
+            id: "2",
+            url: "https://example.com/image2.jpg",
+            title: "Sample Image 2",
+            tags: params.queries.split(",").map((q) => q.trim()),
+          },
+        ],
+        total: 2,
+        message: `Found 2 media items for queries: ${params.queries}`,
+      };
+    },
+    []
+  );
 
   const getReservationTickets = useCallback(async () => {
     console.log("Getting reservation tickets");
@@ -674,177 +679,290 @@ function App() {
           id: "1",
           name: "Dinner Reservation",
           url: "https://booking.restaurant.com/dinner",
-          type: "dinner"
+          type: "dinner",
         },
         {
-          id: "2", 
+          id: "2",
           name: "Lunch Reservation",
           url: "https://booking.restaurant.com/lunch",
-          type: "lunch"
-        }
+          type: "lunch",
+        },
       ],
-      message: "Retrieved reservation ticket types"
+      message: "Retrieved reservation ticket types",
+    };
+  }, []);
+
+  const getPromos = useCallback(async () => {
+    console.log("Getting promotions");
+    // Mock promotions data
+    return {
+      success: true,
+      promos: [
+        {
+          id: "promo_1",
+          name: "20% Off Weekend Special",
+          code: "WEEKEND20",
+          description: "Get 20% off on all orders during weekends",
+          discount_type: "percentage",
+          discount_value: 20,
+          min_order_amount: 50,
+          valid_from: "2025-12-01",
+          valid_until: "2025-12-31",
+          applicable_to: ["delivery", "takeaway"],
+          status: "active",
+        },
+        {
+          id: "promo_2",
+          name: "Free Delivery",
+          code: "FREEDEL",
+          description: "Free delivery on orders above $30",
+          discount_type: "free_delivery",
+          discount_value: 0,
+          min_order_amount: 30,
+          valid_from: "2025-12-01",
+          valid_until: "2025-12-31",
+          applicable_to: ["delivery"],
+          status: "active",
+        },
+        {
+          id: "promo_3",
+          name: "First Order Discount",
+          code: "FIRST15",
+          description: "15% off for first-time customers",
+          discount_type: "percentage",
+          discount_value: 15,
+          min_order_amount: 25,
+          valid_from: "2025-12-01",
+          valid_until: "2025-12-31",
+          applicable_to: ["delivery", "takeaway"],
+          status: "active",
+        },
+      ],
+      total: 3,
+      message: "Retrieved 3 active promotions",
+    };
+  }, []);
+
+  const getRedeemables = useCallback(async () => {
+    console.log("Getting redeemables");
+    // Mock redeemables data
+    return {
+      success: true,
+      redeemables: [
+        {
+          id: "redeem_1",
+          name: "Free Burger Voucher",
+          description: "Redeem a free classic burger with any order",
+          points_required: 500,
+          valid_from: "2025-12-01",
+          valid_until: "2025-12-31",
+          applicable_to: ["delivery", "takeaway"],
+          stock_available: 100,
+          status: "active",
+        },
+        {
+          id: "redeem_2",
+          name: "$10 Off Voucher",
+          description: "Get $10 off on orders above $50",
+          points_required: 1000,
+          valid_from: "2025-12-01",
+          valid_until: "2025-12-31",
+          applicable_to: ["delivery", "takeaway"],
+          stock_available: 50,
+          status: "active",
+        },
+        {
+          id: "redeem_3",
+          name: "Free Dessert",
+          description: "Redeem any dessert item for free",
+          points_required: 300,
+          valid_from: "2025-12-01",
+          valid_until: "2025-12-31",
+          applicable_to: ["delivery", "takeaway"],
+          stock_available: 200,
+          status: "active",
+        },
+      ],
+      total: 3,
+      message: "Retrieved 3 active redeemables",
     };
   }, []);
 
   // Marketing tools factory
-  const MARKETING_TOOLS: (functions: MarketingToolsFunctions) => Tools = (fn) => [
+  const MARKETING_TOOLS: (functions: MarketingToolsFunctions) => Tools = (
+    fn
+  ) => [
     // media_library
     {
-      name: 'search_media_library',
-      description: "Search a merchant's media library for media based on queries",
+      name: "search_media_library",
+      description:
+        "Search a merchant's media library for media based on queries",
       parameters: [
         {
-          name: 'queries',
-          type: 'string',
-          description: 'Comma separated keywords to search for',
+          name: "queries",
+          type: "string",
+          description: "Comma separated keywords to search for",
           isRequired: true,
-          schema: { type: 'string' },
+          schema: { type: "string" },
         },
         {
-          name: 'maxResults',
-          type: 'number',
-          description: 'Maximum number of results to return',
+          name: "maxResults",
+          type: "number",
+          description: "Maximum number of results to return",
           isRequired: true,
-          schema: { type: 'integer' },
+          schema: { type: "integer" },
         },
       ],
       execute: fn.searchMediaLibrary,
     },
     // reservation
     {
-      name: 'get_reservation_tickets',
+      name: "get_reservation_tickets",
       description:
-        'Read all reservation related tickets / booking types and their links from a brand.',
+        "Read all reservation related tickets / booking types and their links from a brand.",
       parameters: [],
       execute: fn.getReservationTickets,
     },
     {
-      name: 'get_brand_items',
-      description: 'Get a list of full items in the brand',
+      name: "get_promos",
+      description:
+        "Retrieves all promotions available for use for the brand's online shop for delivery or takeaway",
+      parameters: [],
+      execute: fn.getPromos,
+    },
+    {
+      name: "get_redeemables",
+      description:
+        "Retrieves all redeemables available for use for the brand's online shop for delivery or takeaway",
+      parameters: [],
+      execute: fn.getRedeemables,
+    },
+    {
+      name: "get_brand_items",
+      description: "Get a list of full items in the brand",
       parameters: [],
       execute: fn.getBrandItems,
     },
     {
-      name: 'create_campaign',
+      name: "create_campaign",
       description:
         "Creates an email marketing campaign in Oddle's email marketing module.",
       parameters: [
         {
-          name: 'emailType',
-          type: 'string',
+          name: "emailType",
+          type: "string",
           description: 'Only "broadcast" is supported at this moment.',
           isRequired: true,
           schema: {
-            type: 'string',
-            enum: ['broadcast'],
+            type: "string",
+            enum: ["broadcast"],
           },
         },
         {
-          name: 'campaignJson',
-          type: 'object',
+          name: "campaignJson",
+          type: "object",
           description:
-            'Details of the campaign settings including, name description, scheduling and reminder options.',
+            "Details of the campaign settings including, name description, scheduling and reminder options.",
           isRequired: true,
           schema: {
-            type: 'object',
+            type: "object",
             properties: {
               campaignName: {
-                type: 'string',
-                description: 'Name of the campaign for internal use.',
+                type: "string",
+                description: "Name of the campaign for internal use.",
               },
               campaignDesc: {
-                type: 'string',
-                description: 'Description of the campaign for internal use.',
+                type: "string",
+                description: "Description of the campaign for internal use.",
               },
               reminder: {
-                type: 'boolean',
+                type: "boolean",
                 description:
-                  'Enabling this sends a follow up email with a different email address to customers who did not open the initial email after 8 days. Default is true.',
+                  "Enabling this sends a follow up email with a different email address to customers who did not open the initial email after 8 days. Default is true.",
               },
               scheduling: {
-                type: 'object',
+                type: "object",
                 description:
                   'when to send the email. Either "now" or a scheduled date in future.',
                 properties: {
                   date: {
-                    type: 'string',
+                    type: "string",
                     description:
-                      'Date to send the email in DD-MM-YYYY format. Must be a future date.',
+                      "Date to send the email in DD-MM-YYYY format. Must be a future date.",
                   },
                   time: {
-                    type: 'string',
+                    type: "string",
                     description:
-                      'Time of day to send the email in 24-hour HH:MM format. Only in 15 minute increments (e.g 00, 15, 30, 45).',
+                      "Time of day to send the email in 24-hour HH:MM format. Only in 15 minute increments (e.g 00, 15, 30, 45).",
                   },
                   option: {
-                    type: 'string',
+                    type: "string",
                     description:
                       'One of "now" or "scheduled". If "schedule", both date and time must be present and valid.',
-                    enum: ['now', 'scheduled'],
+                    enum: ["now", "scheduled"],
                   },
                 },
               },
             },
-            required: ['campaignName', 'campaignDesc', 'reminder'],
+            required: ["campaignName", "campaignDesc", "reminder"],
           },
         },
         {
-          name: 'emailJson',
-          type: 'object',
+          name: "emailJson",
+          type: "object",
           description:
-            'Details of the email content including subject, preheader, and email layout',
+            "Details of the email content including subject, preheader, and email layout",
           isRequired: true,
           schema: {
-            type: 'object',
+            type: "object",
             properties: {
               subject: {
-                type: 'string',
-                description: 'The email subject title.',
+                type: "string",
+                description: "The email subject title.",
               },
               preHeader: {
-                type: 'string',
-                description: 'The email preview text shown in inboxes',
+                type: "string",
+                description: "The email preview text shown in inboxes",
               },
               reminderSubject: {
-                type: 'string',
+                type: "string",
                 description:
-                  'The subject title for the follow up email sent to non-openers after 8 days',
+                  "The subject title for the follow up email sent to non-openers after 8 days",
               },
               reminderPreHeader: {
-                type: 'string',
+                type: "string",
                 description:
-                  'The email preview text for the follow up email to non-openers after 8 days',
+                  "The email preview text for the follow up email to non-openers after 8 days",
               },
               content: {
-                type: 'array',
+                type: "array",
                 items: {
-                  type: 'object',
+                  type: "object",
                   properties: {
                     type: {
-                      type: 'string',
+                      type: "string",
                       enum: [
-                        'Header',
-                        'Title',
-                        'Text',
-                        'Button',
-                        'Image',
-                        'ImageWithText',
-                        'Divider',
-                        'Spacer',
-                        'MenuItem',
-                        'ReserveTicket',
-                        'Redeemable',
-                        'Promo',
-                        'PersonalSignOff',
-                        'Footer',
+                        "Header",
+                        "Title",
+                        "Text",
+                        "Button",
+                        "Image",
+                        "ImageWithText",
+                        "Divider",
+                        "Spacer",
+                        "MenuItem",
+                        "ReserveTicket",
+                        "Redeemable",
+                        "Promo",
+                        "PersonalSignOff",
+                        "Footer",
                       ],
                     },
                     props: {
-                      type: 'object',
+                      type: "object",
                     },
                   },
-                  required: ['type', 'props'],
+                  required: ["type", "props"],
                 },
               },
             },
@@ -855,23 +973,32 @@ function App() {
     },
   ];
 
-  // Create marketing tools instance  
+  // Create marketing tools instance
   const marketingToolsInstance = useMemo(() => {
     const marketingFunctions: MarketingToolsFunctions = {
       createCampaign,
       getBrandItems,
       searchMediaLibrary,
       getReservationTickets,
+      getPromos,
+      getRedeemables,
     };
     return MARKETING_TOOLS(marketingFunctions);
-  }, [createCampaign, getBrandItems, searchMediaLibrary, getReservationTickets]);
+  }, [
+    createCampaign,
+    getBrandItems,
+    searchMediaLibrary,
+    getReservationTickets,
+    getPromos,
+    getRedeemables,
+  ]);
 
   // New unified tools with execution functions
   const tools: Tools = useMemo(
     () => [
       // Marketing tools
       ...marketingToolsInstance,
-      
+
       // To-do management tools
       {
         name: "create_to_do",
@@ -1148,7 +1275,7 @@ function App() {
       // Authentication and entity context
       auth: {
         token:
-          "d9a899a70af14c0826b719fb30674840b591961db1fca7f4985c7511b55bb356afaebe05dfa0dd9f75ffa150b9caf7e61a438718a9fd1becbea570091a0b82c9",
+          "65cee4e793c6615edabd4638c0089846f2154895e69c70f653356b2147cc6dadc63b5b0988a26cdcdf2adca412a1a404da618e66445bd687e4c27d6fec148cd1",
         entityId: "8a8197e78054904a01805a25a4bb25be1",
         entityType: EntityType.BRAND,
       },

@@ -86,8 +86,10 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
           apiUrl: httpApiUrl,
           userMpAuthToken: userMpAuthToken,
           chatServerKey: chatServerKey,
+          maxFileSize: config.fileUploadConfig?.maxFileSize,
+          allowedTypes: config.fileUploadConfig?.allowedTypes,
         }),
-      [httpApiUrl, userMpAuthToken, chatServerKey]
+      [httpApiUrl, userMpAuthToken, chatServerKey, config.fileUploadConfig]
     );
 
     // Extract client tools for UI display
@@ -667,6 +669,11 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         suggestedPrompts: config.suggestedPrompts,
         clientTools: uiClientTools,
         fileUploadEnabled: config.features?.fileUpload,
+        fileUploadConfig: {
+          maxFiles: config.fileUploadConfig?.maxFiles ?? 5,
+          maxFileSize: config.fileUploadConfig?.maxFileSize ?? (15 * 1024 * 1024), // 15MB default
+          allowedTypes: config.fileUploadConfig?.allowedTypes ?? ["image/jpeg", "image/png", "image/gif", "image/webp"],
+        },
       }),
       [
         config.headerName,
@@ -676,6 +683,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         config.chipLogo,
         config.suggestedPrompts,
         config.features?.fileUpload,
+        config.fileUploadConfig,
         uiClientTools,
       ]
     );

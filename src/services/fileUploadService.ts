@@ -37,7 +37,7 @@ export interface UploadProgress {
 export class FileUploadService {
   private config: FileUploadConfig;
   private defaultFolder = "chat-uploads";
-  private defaultMaxFileSize = 10 * 1024 * 1024; // 10MB
+  private defaultMaxFileSize = 15 * 1024 * 1024; // 15MB
 
   constructor(config: FileUploadConfig) {
     this.config = {
@@ -48,59 +48,140 @@ export class FileUploadService {
   }
 
   /**
-   * Upload multiple files with authentication and error handling
+   * Upload files with authentication and error handling
+   * Single file: uses "file" field name
+   * Multiple files: uses "files" field name in single request
    */
   async uploadFiles(
     files: File[],
     onProgress?: (progress: UploadProgress[]) => void
   ): Promise<string[]> {
-    const results: string[] = [];
+    // Validate all files before upload
+    files.forEach(file => this.validateFile(file));
+
+    if (files.length === 1) {
+      // Single file upload - use "file" field name
+      return [await this.uploadSingleFile(files[0], onProgress ? (progress) => {
+        const progressTracker: UploadProgress[] = [{
+          file: files[0],
+          progress,
+          status: progress === 100 ? "completed" : "uploading"
+        }];
+        onProgress(progressTracker);
+      } : undefined)];
+    } else {
+      // Multiple files in single request - use "files" field name
+      return this.uploadMultipleFiles(files, onProgress);
+    }
+  }
+
+  /**
+   * Upload multiple files in a single request using "files" field name
+   */
+  private async uploadMultipleFiles(
+    files: File[],
+    onProgress?: (progress: UploadProgress[]) => void
+  ): Promise<string[]> {
+    const formData = new FormData();
+    
+    // Append all files with "files" field name (supports multiple)
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
+    formData.append("folder", this.config.folder || this.defaultFolder);
+
+    const headers = this.buildAuthHeaders();
     const progressTracker: UploadProgress[] = files.map((file) => ({
       file,
       progress: 0,
-      status: "uploading",
+      status: "uploading" as const,
     }));
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
 
-      try {
-        // Validate file before upload
-        this.validateFile(file);
-
-        // Update progress
-        if (onProgress) {
-          progressTracker[i].progress = 0;
+      xhr.upload.addEventListener("progress", (event) => {
+        if (event.lengthComputable && onProgress) {
+          const progress = (event.loaded / event.total) * 100;
+          // Update progress for all files equally since it's a batch upload
+          progressTracker.forEach((tracker) => {
+            tracker.progress = progress;
+          });
           onProgress([...progressTracker]);
         }
+      });
 
-        const result = await this.uploadSingleFile(file, (progress) => {
+      xhr.addEventListener("load", async () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const result = JSON.parse(xhr.responseText);
+            
+            // Handle response structure for multiple files
+            // API returns: { success: true, data: [...] } for multiple files
+            // API returns: { success: true, url: "...", cdnUrl: "..." } for single file
+            let urls: string[];
+            if (result.data && Array.isArray(result.data)) {
+              // Multiple files: extract URLs from data array
+              urls = result.data.map((item: any, index: number) => this.processUploadResult(files[index], item));
+            } else if (Array.isArray(result)) {
+              // Fallback: direct array response
+              urls = result.map((item: any, index: number) => this.processUploadResult(files[index], item));
+            } else {
+              // Single file: process directly
+              urls = [this.processUploadResult(files[0], result)];
+            }
+            
+            // Mark all as completed
+            progressTracker.forEach((tracker) => {
+              tracker.status = "completed";
+              tracker.progress = 100;
+            });
+            if (onProgress) {
+              onProgress([...progressTracker]);
+            }
+            
+            resolve(urls);
+          } catch (error) {
+            // Mark all as failed
+            progressTracker.forEach((tracker) => {
+              tracker.status = "error";
+            });
+            if (onProgress) {
+              onProgress([...progressTracker]);
+            }
+            reject(new Error("Invalid response format"));
+          }
+        } else {
+          // Mark all as failed
+          progressTracker.forEach((tracker) => {
+            tracker.status = "error";
+          });
           if (onProgress) {
-            progressTracker[i].progress = progress;
             onProgress([...progressTracker]);
           }
-        });
-
-        results.push(result);
-        progressTracker[i].status = "completed";
-        progressTracker[i].progress = 100;
-      } catch (error) {
-        console.error(`❌ Upload failed for ${file.name}:`, error);
-        progressTracker[i].status = "error";
-
-        // Attempt fallback for images
-        const fallbackResult = await this.handleUploadFallback(file);
-        if (fallbackResult) {
-          results.push(fallbackResult);
+          reject(new Error(`Upload failed with status ${xhr.status}`));
         }
-      }
+      });
 
-      if (onProgress) {
-        onProgress([...progressTracker]);
-      }
-    }
+      xhr.addEventListener("error", () => {
+        progressTracker.forEach((tracker) => {
+          tracker.status = "error";
+        });
+        if (onProgress) {
+          onProgress([...progressTracker]);
+        }
+        reject(new Error("Network error during upload"));
+      });
 
-    return results;
+      xhr.open("POST", `${this.config.apiUrl}/api/v1/upload`);
+
+      // Set headers
+      Object.entries(headers).forEach(([key, value]) => {
+        xhr.setRequestHeader(key, value);
+      });
+
+      xhr.send(formData);
+    });
   }
 
   /**
@@ -162,36 +243,6 @@ export class FileUploadService {
   private processUploadResult(_file: File, result: any): string {
     // Return the CDN URL directly for all file types
     return result.cdnUrl || result.url;
-  }
-
-  /**
-   * Handle upload failure with fallback strategies
-   */
-  private async handleUploadFallback(file: File): Promise<string | null> {
-    if (file.type.startsWith("image/")) {
-      // Fallback to base64 encoding for images
-      try {
-        return await this.convertToBase64(file);
-      } catch (error) {
-        console.error("Base64 conversion failed:", error);
-        return null;
-      }
-    } else {
-      // For other files, return null since we can't handle them without proper upload
-      return null;
-    }
-  }
-
-  /**
-   * Convert file to base64 data URL
-   */
-  private convertToBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
   }
 
   /**

@@ -124,6 +124,11 @@ export interface ChatConfig {
     showToolResults?: boolean;
     showBubbleText?: boolean;
   };
+  fileUploadConfig?: {
+    maxFiles?: number; // Maximum number of files per message (default: 5)
+    maxFileSize?: number; // Maximum file size in bytes (default: 15MB)
+    allowedTypes?: string[]; // Allowed file types (default: images only)
+  };
   onMessage?: (message: Message) => void;
   onError?: (error: Error) => void;
   onToolResult?: (tool: string, result: any) => void;
