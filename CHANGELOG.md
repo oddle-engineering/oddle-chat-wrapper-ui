@@ -25,6 +25,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.8] - 2025-12-03
+
+### Added
+- add cleanup logic on unmount to reset state and close connections
+- Enhance marketing tools and file upload capabilities
+
+### Changed
+- Merge pull request #2 from oddle-engineering/hotfix/close-ws-connection
+
 ## [1.0.7] - 2025-12-03
 
 ### Changed
