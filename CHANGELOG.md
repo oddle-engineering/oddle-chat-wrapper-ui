@@ -25,6 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.7] - 2025-12-03
+
+### Changed
+- Merge pull request #1 from oddle-engineering/hotfix/trace-error
+- chore: update Vite configuration for production environment and JSX settings
+
 ## [1.0.6] - 2025-12-02
 
 ### Added
