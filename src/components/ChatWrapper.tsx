@@ -154,7 +154,9 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
     const isThinking = useUIStore((state) => state.isThinking);
     const setIsThinking = useUIStore((state) => state.setIsThinking);
     const streamingContent = useUIStore((state) => state.streamingContent);
+    const setStreamingContent = useUIStore((state) => state.setStreamingContent);
     const isHandlingTool = useUIStore((state) => state.isHandlingTool);
+    const setIsHandlingTool = useUIStore((state) => state.setIsHandlingTool);
 
     // Set initial mode from config
     useEffect(() => {
@@ -494,6 +496,48 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         }
       };
     }, []);
+
+    // Cleanup on unmount: Close WebSocket and clear all state
+    useEffect(() => {
+      return () => {
+        console.log("[ChatWrapper] Unmounting - cleaning up state and connections");
+        
+        // Clear all messages
+        setMessages([]);
+        
+        // Reset streaming state
+        setIsStreaming(false);
+        setIsThinking(false);
+        setStreamingContent("");
+        setIsHandlingTool(false);
+        
+        // Reset chat status
+        setChatStatus(CHAT_STATUS.IDLE);
+        setStreamingStatus(STREAMING_STATUS.IDLE);
+        
+        // Clear conversation state
+        setIsLoadingConversation(false);
+        setConversationError(null);
+        
+        // Clear thread data
+        setCurrentThreadId(null);
+        setProviderResId(null);
+        
+        // WebSocket cleanup is already handled by useWebSocketConnection hook
+      };
+    }, [
+      setMessages,
+      setIsStreaming,
+      setIsThinking,
+      setStreamingContent,
+      setIsHandlingTool,
+      setChatStatus,
+      setStreamingStatus,
+      setIsLoadingConversation,
+      setConversationError,
+      setCurrentThreadId,
+      setProviderResId,
+    ]);
 
     // Handle message submission via WebSocketChatClient
     const handleSubmit = useCallback(
