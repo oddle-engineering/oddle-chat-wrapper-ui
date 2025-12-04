@@ -25,6 +25,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.10] - 2025-12-04
+
+### Added
+- stabilize authentication and entity props to prevent unnecessary reconnections
+- enhance tools and contextHelpers stabilization to prevent unnecessary reconnections
+- format code and improve readability in DevSettings component
+- disable stop button during file uploads in ChatInput component
+
+### Changed
+- Merge pull request #3 from oddle-engineering/fix/enhance-tools-with-memo
+- Add debug log for connecting chat client in useWebSocketConnection hook
+
 ## [1.0.9] - 2025-12-04
 
 ### Added
