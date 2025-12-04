@@ -25,6 +25,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.9] - 2025-12-04
+
+### Added
+- update built files
+- Add retry logic and timeout handling for WebSocket ticket requests
+- Enhance WebSocket ticket management with server validation
+- enhance file upload handling with preview and progress indicators
+
 ## [1.0.8] - 2025-12-03
 
 ### Added
