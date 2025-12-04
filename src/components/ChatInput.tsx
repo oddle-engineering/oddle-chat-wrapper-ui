@@ -55,7 +55,12 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
   const hasMessages = messages.length > 0;
   const [input, setInput] = useState("");
   const [uploadedMedia, setUploadedMedia] = useState<string[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
+  const [uploadingFiles, setUploadingFiles] = useState<Array<{
+    file: File;
+    preview: string;
+    isUploading: boolean;
+    progress: number;
+  }>>([]);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
@@ -69,6 +74,16 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
     },
     []
   );
+
+  // Helper function to create preview URL for file
+  const createFilePreview = useCallback((file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }, []);
 
   // Determine which placeholders to use
   const activePlaceholderTexts =
@@ -145,11 +160,9 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
 
       if (imageItems.length > 0) {
         e.preventDefault();
+        setUploadError(null);
 
         try {
-          setIsUploading(true);
-          setUploadError(null);
-
           const files = await Promise.all(
             imageItems.map((item) => {
               const file = item.getAsFile();
@@ -204,15 +217,29 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
             if (validFiles.length > 0) {
               // Check total file limit using configurable limit
               const maxFiles = fileUploadConfig?.maxFiles ?? 5;
-              const totalFiles = uploadedMedia.length + validFiles.length;
+              const totalFiles = uploadedMedia.length + uploadingFiles.length + validFiles.length;
               if (totalFiles > maxFiles) {
-                setUploadError(`Maximum ${maxFiles} files allowed. Currently ${uploadedMedia.length} files, trying to add ${validFiles.length} more.`);
+                setUploadError(`Maximum ${maxFiles} files allowed. Currently ${uploadedMedia.length + uploadingFiles.length} files, trying to add ${validFiles.length} more.`);
                 return;
               }
 
+              // Create preview URLs and add to uploading state
+              const filePreviewPromises = validFiles.map(async (file) => ({
+                file,
+                preview: await createFilePreview(file),
+                isUploading: true,
+                progress: 0,
+              }));
+
+              const filePreviews = await Promise.all(filePreviewPromises);
+              setUploadingFiles(prev => [...prev, ...filePreviews]);
+
+              // Start upload
               const newMedia = await onFileUpload(validFiles);
-              // Support multiple files - append to existing media
-              setUploadedMedia([...uploadedMedia, ...newMedia]);
+              
+              // Move from uploading to uploaded
+              setUploadingFiles(prev => prev.filter(item => !validFiles.includes(item.file)));
+              setUploadedMedia(prev => [...prev, ...newMedia]);
               setUploadError(null);
             }
           }
@@ -221,12 +248,12 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
           setUploadError(
             error instanceof Error ? error.message : "Failed to paste image"
           );
-        } finally {
-          setIsUploading(false);
+          // Clear uploading files on error
+          setUploadingFiles([]);
         }
       }
     },
-    [onFileUpload, fileUploadConfig, uploadedMedia]
+    [onFileUpload, fileUploadConfig, uploadedMedia, uploadingFiles, createFilePreview]
   );
 
   const handleFileUploadClick = useCallback(async () => {
@@ -238,7 +265,6 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
       const files = (e.target as HTMLInputElement).files;
       if (files) {
         try {
-          setIsUploading(true);
           setUploadError(null);
 
           // Validate and sanitize file names for security
@@ -282,15 +308,29 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
           if (validFiles.length > 0) {
             // Check total file limit using configurable limit
             const maxFiles = fileUploadConfig?.maxFiles ?? 5;
-            const totalFiles = uploadedMedia.length + validFiles.length;
+            const totalFiles = uploadedMedia.length + uploadingFiles.length + validFiles.length;
             if (totalFiles > maxFiles) {
-              setUploadError(`Maximum ${maxFiles} files allowed. Currently ${uploadedMedia.length} files, trying to add ${validFiles.length} more.`);
+              setUploadError(`Maximum ${maxFiles} files allowed. Currently ${uploadedMedia.length + uploadingFiles.length} files, trying to add ${validFiles.length} more.`);
               return;
             }
 
+            // Create preview URLs and add to uploading state
+            const filePreviewPromises = validFiles.map(async (file) => ({
+              file,
+              preview: await createFilePreview(file),
+              isUploading: true,
+              progress: 0,
+            }));
+
+            const filePreviews = await Promise.all(filePreviewPromises);
+            setUploadingFiles(prev => [...prev, ...filePreviews]);
+
+            // Start upload
             const newMedia = await onFileUpload(validFiles);
-            // Support multiple files - append to existing media
-            setUploadedMedia([...uploadedMedia, ...newMedia]);
+            
+            // Move from uploading to uploaded
+            setUploadingFiles(prev => prev.filter(item => !validFiles.includes(item.file)));
+            setUploadedMedia(prev => [...prev, ...newMedia]);
             setUploadError(null); // Clear any previous errors on successful upload
           }
         } catch (error) {
@@ -298,13 +338,13 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
           setUploadError(
             error instanceof Error ? error.message : "Upload failed"
           );
-        } finally {
-          setIsUploading(false);
+          // Clear uploading files on error
+          setUploadingFiles([]);
         }
       }
     };
     fileInput.click();
-  }, [onFileUpload, fileUploadConfig, uploadedMedia]);
+  }, [onFileUpload, fileUploadConfig, uploadedMedia, uploadingFiles, createFilePreview]);
 
   return (
     <PromptInput
@@ -330,35 +370,6 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
         />
       )}
 
-      {/* Upload loading placeholder */}
-      {isUploading && (
-        <div
-          style={{
-            padding: "8px 16px",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            backgroundColor: "#f8fafc",
-            border: "1px dashed #cbd5e1",
-            borderRadius: "8px",
-            margin: "8px 0",
-          }}
-        >
-          <div
-            style={{
-              width: "20px",
-              height: "20px",
-              border: "2px solid #e2e8f0",
-              borderTop: "2px solid #3b82f6",
-              borderRadius: "50%",
-              animation: "spin 1s linear infinite",
-            }}
-          />
-          <span style={{ color: "#64748b", fontSize: "14px" }}>
-            Uploading image...
-          </span>
-        </div>
-      )}
 
       {/* Upload error message */}
       {uploadError && (
@@ -394,7 +405,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
       )}
 
       {/* Media preview section - above the textarea */}
-      {uploadedMedia.length > 0 && (
+      {(uploadedMedia.length > 0 || uploadingFiles.length > 0) && (
         <div
           style={{
             padding: "8px 16px",
@@ -404,6 +415,96 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
             alignItems: "center",
           }}
         >
+          {/* Render uploading files with loading indicators */}
+          {uploadingFiles.map((uploadingFile, index) => (
+            <div
+              key={`uploading-${index}`}
+              style={{
+                position: "relative",
+                display: "inline-block",
+              }}
+            >
+              <div
+                style={{
+                  position: "relative",
+                  width: "56px",
+                  height: "56px",
+                  borderRadius: "8px",
+                  overflow: "hidden",
+                  border: "1px solid #e2e8f0",
+                }}
+              >
+                {/* Image preview */}
+                <img
+                  src={uploadingFile.preview}
+                  alt={`Uploading ${index + 1}`}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  }}
+                />
+                {/* Loading overlay */}
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 2,
+                  }}
+                >
+                  {/* Spinning loading indicator */}
+                  <div
+                    style={{
+                      width: "20px",
+                      height: "20px",
+                      border: "2px solid rgba(255, 255, 255, 0.3)",
+                      borderTop: "2px solid white",
+                      borderRadius: "50%",
+                      animation: "spin 1s linear infinite",
+                    }}
+                  />
+                </div>
+              </div>
+              {/* Remove button */}
+              <button
+                onClick={() => {
+                  setUploadingFiles(prev => prev.filter((_, i) => i !== index));
+                }}
+                style={{
+                  position: "absolute",
+                  top: "6px",
+                  right: "6px",
+                  width: "20px",
+                  height: "20px",
+                  borderRadius: "50%",
+                  backgroundColor: "transparent",
+                  border: "2px solid white",
+                  color: "white",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 3,
+                  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.3)",
+                  fontWeight: "bold",
+                  transition: "all 0.2s",
+                }}
+                title="Cancel upload"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+
+          {/* Render uploaded media */}
           {uploadedMedia.map((media, index) => {
             // Check if it's an image (either base64 or URL)
             const isImageBase64 = media.startsWith("data:image/");
@@ -415,7 +516,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
 
             return (
               <div
-                key={index}
+                key={`uploaded-${index}`}
                 style={{
                   position: "relative",
                   display: "inline-block",
@@ -659,13 +760,13 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                 size="icon"
                 onClick={handleFileUploadClick}
                 title={
-                  isUploading
-                    ? "Uploading..."
+                  uploadingFiles.length > 0
+                    ? `Uploading ${uploadingFiles.length} file(s)...`
                     : uploadedMedia.length > 0
                     ? `${uploadedMedia.length}/${fileUploadConfig?.maxFiles ?? 5} image(s) attached`
                     : `Attach images (max ${fileUploadConfig?.maxFiles ?? 5} files, ${Math.round((fileUploadConfig?.maxFileSize ?? (15 * 1024 * 1024)) / (1024 * 1024))}MB each)`
                 }
-                disabled={isInputDisabled || isUploading}
+                disabled={isInputDisabled || uploadingFiles.length > 0}
                 style={{
                   position: "relative",
                 }}
@@ -702,17 +803,17 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                   </defs>
                 </svg>
               </PromptInputButton>
-              <span
-                onClick={isUploading ? undefined : handleFileUploadClick}
+              {/* <span
+                onClick={uploadingFiles.length > 0 ? undefined : handleFileUploadClick}
                 style={{
                   fontSize: "12px",
-                  color: isUploading ? "#94a3b8" : "#919EAB",
+                  color: uploadingFiles.length > 0 ? "#94a3b8" : "#919EAB",
                   marginLeft: "4px",
-                  cursor: isUploading ? "not-allowed" : "pointer",
+                  cursor: uploadingFiles.length > 0 ? "not-allowed" : "pointer",
                 }}
               >
-                {isUploading ? "Uploading..." : `Attach ${uploadedMedia.length > 0 ? `(${uploadedMedia.length}/${fileUploadConfig?.maxFiles ?? 5})` : ""}`}
-              </span>
+                {uploadingFiles.length > 0 ? `Uploading ${uploadingFiles.length}...` : `Attach ${uploadedMedia.length > 0 ? `(${uploadedMedia.length}/${fileUploadConfig?.maxFiles ?? 5})` : ""}`}
+              </span> */}
             </div>
           )}
           {fileUploadEnabled && chipName && (
