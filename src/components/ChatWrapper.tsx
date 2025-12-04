@@ -58,7 +58,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
 
       // Existing props
       config,
-      tools,
+      tools, // Note: Tools are stabilized internally to prevent reconnections on re-renders
       devMode = false,
       contextHelpers,
     },
