@@ -14,6 +14,7 @@ import {
 import { TodoPanel } from "./components/TodoPanel";
 import { ReservationPanel } from "./components/ReservationPanel";
 import { ThreadAttachmentModal } from "./components/ThreadAttachmentModal";
+import { ChatModal } from "./components/ChatModal";
 import "./components/panels.css";
 import "./App.css";
 
@@ -1268,6 +1269,260 @@ function App() {
     ]
   );
 
+  const tools2: Tools = [
+    // Marketing tools
+    ...marketingToolsInstance,
+
+    // To-do management tools
+    {
+      name: "create_to_do",
+      description: "Create a new to-do task",
+      parameters: [
+        {
+          name: "task_description",
+          type: "string",
+          description: "Description of the task to be created",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+      ],
+      execute: createTodo,
+    },
+    {
+      name: "read_to_dos",
+      description: "Read all existing to-do items",
+      parameters: [],
+      execute: readTodos,
+    },
+
+    // Reservation management tools
+    {
+      name: "create_reservation",
+      description: "Create a new reservation",
+      parameters: [
+        {
+          name: "customerName",
+          type: "string",
+          description: "Customer's full name",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "email",
+          type: "string",
+          description: "Customer's email address",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "phone",
+          type: "string",
+          description: "Customer's phone number",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+        {
+          name: "date",
+          type: "string",
+          description: "Reservation date (YYYY-MM-DD)",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "time",
+          type: "string",
+          description: "Reservation time (HH:MM)",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "partySize",
+          type: "number",
+          description: "Number of people",
+          isRequired: true,
+          schema: { type: "number" },
+        },
+        {
+          name: "specialRequests",
+          type: "string",
+          description: "Special requests or notes",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+      ],
+      execute: createReservation,
+    },
+    {
+      name: "update_reservation",
+      description: "Update an existing reservation",
+      parameters: [
+        {
+          name: "reservation_id",
+          type: "string",
+          description: "ID of the reservation to update",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "new_time",
+          type: "string",
+          description: "New reservation time (HH:MM)",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+        {
+          name: "new_date",
+          type: "string",
+          description: "New reservation date (YYYY-MM-DD)",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+        {
+          name: "party_size",
+          type: "number",
+          description: "Updated party size",
+          isRequired: false,
+          schema: { type: "number" },
+        },
+        {
+          name: "special_requests",
+          type: "string",
+          description: "Updated special requests",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+      ],
+      execute: updateReservation,
+    },
+    {
+      name: "cancel_reservation",
+      description: "Cancel a reservation",
+      parameters: [
+        {
+          name: "id",
+          type: "string",
+          description: "ID of the reservation to cancel",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "reason",
+          type: "string",
+          description: "Reason for cancellation",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+      ],
+      execute: cancelReservation,
+    },
+    {
+      name: "confirm_reservation",
+      description: "Confirm a reservation",
+      parameters: [
+        {
+          name: "id",
+          type: "string",
+          description: "ID of the reservation to confirm",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "table",
+          type: "string",
+          description: "Table number to assign",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+      ],
+      execute: confirmReservation,
+    },
+    {
+      name: "mark_no_show",
+      description: "Mark a reservation as no-show",
+      parameters: [
+        {
+          name: "id",
+          type: "string",
+          description: "ID of the reservation to mark as no-show",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+      ],
+      execute: markNoShow,
+    },
+    {
+      name: "complete_reservation",
+      description: "Mark a reservation as completed",
+      parameters: [
+        {
+          name: "id",
+          type: "string",
+          description: "ID of the reservation to complete",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+      ],
+      execute: completeReservation,
+    },
+    {
+      name: "list_reservations",
+      description: "List reservations with optional filters",
+      parameters: [
+        {
+          name: "status",
+          type: "string",
+          description: "Filter by reservation status",
+          isRequired: false,
+          schema: {
+            type: "string",
+            enum: ["pending", "confirmed", "cancelled", "no_show", "completed"],
+          },
+        },
+        {
+          name: "date",
+          type: "string",
+          description: "Filter by date (YYYY-MM-DD)",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+      ],
+      execute: listReservations,
+    },
+    {
+      name: "get_availability",
+      description: "Check table availability for a date and time",
+      parameters: [
+        {
+          name: "date",
+          type: "string",
+          description: "Date to check (YYYY-MM-DD)",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "time",
+          type: "string",
+          description: "Time to check (HH:MM)",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+      ],
+      execute: getAvailability,
+    },
+    {
+      name: "get_reservation_status",
+      description: "Get reservation statistics and summary",
+      parameters: [],
+      execute: getReservationStats,
+    },
+    {
+      name: "get_brand_items",
+      description: "Retrieve a list of menu items for specified brand",
+      parameters: [],
+      execute: getBrandItems,
+    },
+  ];
+
   const sidebarChatProps: ChatWrapperProps = useMemo(
     () => ({
       // Authentication and entity context
@@ -1303,7 +1558,7 @@ function App() {
           exportChat: true,
         },
       },
-      tools: tools,
+      tools: tools2,
       contextHelpers: {
         brandInfo: {
           id: "ud21_123",
@@ -1317,72 +1572,6 @@ function App() {
 
   return (
     <div className="showcase-container">
-      {/* Toggle button for sidebar */}
-      <button
-        onClick={() => setIsSidebarVisible(!isSidebarVisible)}
-        style={{
-          position: "fixed",
-          top: "20px",
-          left: isSidebarVisible ? "420px" : "20px",
-          zIndex: 1000,
-          padding: "12px",
-          background: "#3d0099",
-          color: "white",
-          border: "none",
-          borderRadius: "8px",
-          cursor: "pointer",
-          transition: "left 0.3s ease",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-        }}
-      >
-        {isSidebarVisible ? "Hide Chat" : "Show Chat"}
-      </button>
-
-      {/* Metadata test buttons */}
-      {/* <button
-        onClick={() =>
-          setDynamicMetadata({ order_id: `order_${new Date().toISOString()}` })
-        }
-        style={{
-          position: "fixed",
-          top: "70px",
-          left: isSidebarVisible ? "420px" : "20px",
-          zIndex: 1000,
-          padding: "12px",
-          background: "#059669",
-          color: "white",
-          border: "none",
-          borderRadius: "8px",
-          cursor: "pointer",
-          transition: "left 0.3s ease",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-          fontSize: "12px",
-        }}
-      >
-        🧪 Set random order id
-      </button>
-
-      <button
-        onClick={() => setDynamicMetadata(undefined)}
-        style={{
-          position: "fixed",
-          top: "120px",
-          left: isSidebarVisible ? "420px" : "20px",
-          zIndex: 1000,
-          padding: "12px",
-          background: "#dc2626",
-          color: "white",
-          border: "none",
-          borderRadius: "8px",
-          cursor: "pointer",
-          transition: "left 0.3s ease",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-          fontSize: "12px",
-        }}
-      >
-        🗑️ Clear metadata
-      </button> */}
-
       {/* Thread attachment modal */}
       <ThreadAttachmentModal
         isOpen={isThreadModalOpen}
@@ -1391,26 +1580,34 @@ function App() {
         onAttach={handleThreadAttachment}
       />
 
-      <div className="main-content">
-        <div
-          className="chat-sidebar-container"
-          style={{
-            display: isSidebarVisible ? "block" : "none",
-          }}
-        >
+      {/* Chat Modal */}
+      <ChatModal
+        isOpen={isSidebarVisible}
+        onClose={() => setIsSidebarVisible(false)}
+        title={customConfig.headerName}
+      >
+        <div style={{ width: "100%", height: "100%", display: "flex" }}>
           <ChatWrapper
             ref={chatWrapperRef}
             {...sidebarChatProps}
             devMode={true}
           />
         </div>
-        <div
-          className="panels-container"
-          style={{
-            marginLeft: isSidebarVisible ? "420px" : "20px",
-            transition: "margin-left 0.3s ease",
-          }}
+      </ChatModal>
+
+      {/* Floating button to open chat */}
+      {!isSidebarVisible && (
+        <button
+          className="open-chat-button"
+          onClick={() => setIsSidebarVisible(true)}
+          aria-label="Open chat"
         >
+          💬
+        </button>
+      )}
+
+      <div className="main-content">
+        <div className="panels-container">
           <TodoPanel
             todos={todos}
             onAddTodo={handleAddTodo}
