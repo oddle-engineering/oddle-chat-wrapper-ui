@@ -837,7 +837,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
           disabled={
             isChatActive(chatStatus)
               ? false // Never disable stop button when chat is active
-              : !input.trim() || isInputDisabled // Normal disabled logic when idle
+              : !input.trim() || isInputDisabled || uploadingFiles.length > 0 // Disable when idle, no input, disconnected, or uploading
           }
           onClick={
             isChatActive(chatStatus) && onStopGeneration
