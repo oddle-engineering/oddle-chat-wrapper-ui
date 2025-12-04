@@ -68,6 +68,13 @@ export function useWebSocketConnection({
   const onReasoningUpdateRef = useRef(onReasoningUpdate);
   const onThreadCreatedRef = useRef(onThreadCreated);
 
+  // Use refs to store authentication and entity props to prevent reconnections
+  const userMpAuthTokenRef = useRef(userMpAuthToken);
+  const chatServerUrlRef = useRef(chatServerUrl);
+  const chatServerKeyRef = useRef(chatServerKey);
+  const entityIdRef = useRef(entityId);
+  const entityTypeRef = useRef(entityType);
+
   // Stabilize tools reference to prevent unnecessary reconnections
   // Only update when tools structure actually changes (deep comparison)
   const toolsRef = useRef<Tools | undefined>(tools);
@@ -75,7 +82,8 @@ export function useWebSocketConnection({
 
   useEffect(() => {
     // Deep comparison: only update if tools structure changed
-    const toolsChanged = JSON.stringify(tools) !== JSON.stringify(toolsRef.current);
+    const toolsChanged =
+      JSON.stringify(tools) !== JSON.stringify(toolsRef.current);
     if (toolsChanged) {
       toolsRef.current = tools;
       toolsStableRef.current = tools;
@@ -85,12 +93,17 @@ export function useWebSocketConnection({
   // Stabilize contextHelpers reference to prevent unnecessary reconnections
   // Only update when contextHelpers structure actually changes (deep comparison)
   const contextHelpersRef = useRef<ContextHelpers | undefined>(contextHelpers);
-  const contextHelpersStableRef = useRef<ContextHelpers | undefined>(contextHelpers);
+  const contextHelpersStableRef = useRef<ContextHelpers | undefined>(
+    contextHelpers
+  );
 
   useEffect(() => {
     // Deep comparison: only update if contextHelpers structure changed
-    const contextHelpersChanged = JSON.stringify(contextHelpers) !== JSON.stringify(contextHelpersRef.current);
+    const contextHelpersChanged =
+      JSON.stringify(contextHelpers) !==
+      JSON.stringify(contextHelpersRef.current);
     if (contextHelpersChanged) {
+      console.log("clog ...TEST contextHelpers changed:", contextHelpers);
       contextHelpersRef.current = contextHelpers;
       contextHelpersStableRef.current = contextHelpers;
     }
@@ -102,12 +115,28 @@ export function useWebSocketConnection({
     onSystemEventRef.current = onSystemEvent;
     onReasoningUpdateRef.current = onReasoningUpdate;
     onThreadCreatedRef.current = onThreadCreated;
-  }, [onSetMessage, onSystemEvent, onReasoningUpdate, onThreadCreated]);
+    userMpAuthTokenRef.current = userMpAuthToken;
+    chatServerUrlRef.current = chatServerUrl;
+    chatServerKeyRef.current = chatServerKey;
+    entityIdRef.current = entityId;
+    entityTypeRef.current = entityType;
+  }, [
+    onSetMessage,
+    onSystemEvent,
+    onReasoningUpdate,
+    onThreadCreated,
+    userMpAuthToken,
+    chatServerUrl,
+    chatServerKey,
+    entityId,
+    entityType,
+  ]);
 
   // Process tools and extract schemas for server
   const { toolSchemas, clientToolExecutors } = useMemo(() => {
     const stableTools = toolsStableRef.current;
     if (stableTools && stableTools.length > 0) {
+      console.log("clog ...TEST tools changed:", stableTools);
       // Extract schemas (without execute functions) for server
       const schemas = stableTools.map(({ execute, ...schema }) => schema);
       const executors: Record<string, (...args: any[]) => any> = {};
@@ -135,14 +164,14 @@ export function useWebSocketConnection({
   const connectChatClient = useCallback(async () => {
     try {
       setConnectionState(ConnectionState.CONNECTING);
-      // Validate required props
-      if (!userMpAuthToken) {
+      // Validate required props using refs
+      if (!userMpAuthTokenRef.current) {
         throw new Error("userMpAuthToken is required");
       }
-      if (!chatServerUrl) {
+      if (!chatServerUrlRef.current) {
         throw new Error("chatServerUrl is required");
       }
-      if (!chatServerKey) {
+      if (!chatServerKeyRef.current) {
         throw new Error("chatServerKey is required");
       }
 
@@ -150,16 +179,17 @@ export function useWebSocketConnection({
       chatClientRef.current = client;
       setChatClient(client);
 
-      const contextHelpersToUse: ContextHelpers = contextHelpersStableRef.current || {};
+      const contextHelpersToUse: ContextHelpers =
+        contextHelpersStableRef.current || {};
 
       await client.onInit({
-        // Authentication and server properties
-        userMpAuthToken,
-        chatServerUrl,
-        chatServerKey,
+        // Authentication and server properties (from refs)
+        userMpAuthToken: userMpAuthTokenRef.current,
+        chatServerUrl: chatServerUrlRef.current,
+        chatServerKey: chatServerKeyRef.current,
 
-        entityId,
-        entityType: entityType?.toString(),
+        entityId: entityIdRef.current,
+        entityType: entityTypeRef.current?.toString(),
 
         // Tools configuration
         toolSchemas: toolSchemas,
@@ -179,7 +209,9 @@ export function useWebSocketConnection({
       // Only retry for retryable errors (network issues, server errors)
       // Skip retrying for CORS, authentication, and permission errors
       if (classification.isRetryable) {
-        console.log(`[WebSocketConnection] Will retry in 2s: ${classification.reason}`);
+        console.log(
+          `[WebSocketConnection] Will retry in 2s: ${classification.reason}`
+        );
         setTimeout(() => {
           if (
             chatClientRef.current === null ||
@@ -189,18 +221,16 @@ export function useWebSocketConnection({
           }
         }, 2000);
       } else {
-        console.warn(`[WebSocketConnection] Will not retry: ${classification.reason}`);
+        console.warn(
+          `[WebSocketConnection] Will not retry: ${classification.reason}`
+        );
       }
     }
   }, [
-    userMpAuthToken,
-    chatServerUrl,
-    chatServerKey,
-    entityId,
-    entityType,
     toolSchemas,
     clientToolExecutors,
-    // Removed contextHelpers, onSetMessage, onSystemEvent, onReasoningUpdate to prevent reconnections
+    // All other props use refs to prevent reconnections
+    // connectChatClient only recreates when tools change
   ]);
 
   const disconnectChatClient = useCallback(() => {
@@ -215,21 +245,27 @@ export function useWebSocketConnection({
   // Set up retry function ref
   retryConnectionRef.current = connectChatClient;
 
-  // Auto-connect on mount and setup connection monitoring
+  // Auto-connect ONLY on mount (not when props change)
+  // This prevents multiple ticket fetches when parent re-renders
+  const hasMountedRef = useRef(false);
   useEffect(() => {
-    connectChatClient();
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      connectChatClient();
+    }
 
     return () => {
       disconnectChatClient();
     };
-  }, [connectChatClient, disconnectChatClient]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - only run on mount/unmount
 
   // Monitor connection status
   useEffect(() => {
     const interval = setInterval(() => {
       if (chatClientRef.current) {
         const status = chatClientRef.current.getConnectionStatus();
-        
+
         // Update connection state based on client status
         if (status.connected) {
           setConnectionState(ConnectionState.CONNECTED);
@@ -238,7 +274,7 @@ export function useWebSocketConnection({
         } else {
           setConnectionState(ConnectionState.DISCONNECTED);
         }
-        
+
         setConnectionAttempts(status.reconnectAttempts);
       }
     }, 1000);
