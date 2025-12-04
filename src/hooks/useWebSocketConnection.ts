@@ -68,6 +68,34 @@ export function useWebSocketConnection({
   const onReasoningUpdateRef = useRef(onReasoningUpdate);
   const onThreadCreatedRef = useRef(onThreadCreated);
 
+  // Stabilize tools reference to prevent unnecessary reconnections
+  // Only update when tools structure actually changes (deep comparison)
+  const toolsRef = useRef<Tools | undefined>(tools);
+  const toolsStableRef = useRef<Tools | undefined>(tools);
+
+  useEffect(() => {
+    // Deep comparison: only update if tools structure changed
+    const toolsChanged = JSON.stringify(tools) !== JSON.stringify(toolsRef.current);
+    if (toolsChanged) {
+      toolsRef.current = tools;
+      toolsStableRef.current = tools;
+    }
+  }, [tools]);
+
+  // Stabilize contextHelpers reference to prevent unnecessary reconnections
+  // Only update when contextHelpers structure actually changes (deep comparison)
+  const contextHelpersRef = useRef<ContextHelpers | undefined>(contextHelpers);
+  const contextHelpersStableRef = useRef<ContextHelpers | undefined>(contextHelpers);
+
+  useEffect(() => {
+    // Deep comparison: only update if contextHelpers structure changed
+    const contextHelpersChanged = JSON.stringify(contextHelpers) !== JSON.stringify(contextHelpersRef.current);
+    if (contextHelpersChanged) {
+      contextHelpersRef.current = contextHelpers;
+      contextHelpersStableRef.current = contextHelpers;
+    }
+  }, [contextHelpers]);
+
   // Keep refs up to date
   useEffect(() => {
     onSetMessageRef.current = onSetMessage;
@@ -78,13 +106,14 @@ export function useWebSocketConnection({
 
   // Process tools and extract schemas for server
   const { toolSchemas, clientToolExecutors } = useMemo(() => {
-    if (tools && tools.length > 0) {
+    const stableTools = toolsStableRef.current;
+    if (stableTools && stableTools.length > 0) {
       // Extract schemas (without execute functions) for server
-      const schemas = tools.map(({ execute, ...schema }) => schema);
+      const schemas = stableTools.map(({ execute, ...schema }) => schema);
       const executors: Record<string, (...args: any[]) => any> = {};
 
       // Extract execution functions for client-side use
-      tools.forEach((tool) => {
+      stableTools.forEach((tool) => {
         executors[tool.name] = tool.execute;
       });
 
@@ -98,7 +127,7 @@ export function useWebSocketConnection({
       toolSchemas: [],
       clientToolExecutors: {},
     };
-  }, [tools]);
+  }, [toolsStableRef.current]);
 
   // Retry function that doesn't depend on connectChatClient
   const retryConnectionRef = useRef<() => void>();
@@ -121,7 +150,7 @@ export function useWebSocketConnection({
       chatClientRef.current = client;
       setChatClient(client);
 
-      const contextHelpersToUse: ContextHelpers = contextHelpers || {};
+      const contextHelpersToUse: ContextHelpers = contextHelpersStableRef.current || {};
 
       await client.onInit({
         // Authentication and server properties
@@ -171,8 +200,7 @@ export function useWebSocketConnection({
     entityType,
     toolSchemas,
     clientToolExecutors,
-    contextHelpers,
-    // Removed onSetMessage, onSystemEvent, onReasoningUpdate to prevent reconnections
+    // Removed contextHelpers, onSetMessage, onSystemEvent, onReasoningUpdate to prevent reconnections
   ]);
 
   const disconnectChatClient = useCallback(() => {
