@@ -1,7 +1,14 @@
 import { useState, useCallback, useEffect } from "react";
-import { getAgentConfiguration, updateAgentConfiguration, AgentConfiguration } from '../utils/agentConfigApi';
-import { updateThread, updateThreadMetadata } from '../utils/threadApi';
-import { useUIStore } from '../store';
+import {
+  getAgentConfiguration,
+  updateAgentConfiguration,
+  AgentConfiguration,
+} from "../utils/agentConfigApi";
+import { updateThread, updateThreadMetadata } from "../utils/threadApi";
+import { useUIStore } from "../store";
+
+// Import package version
+const PACKAGE_VERSION = "1.0.10"; // Update this when version changes
 
 interface DevSettingsProps {
   isOpen: boolean;
@@ -24,14 +31,16 @@ export const DevSettings = ({
   const [config, setConfig] = useState<AgentConfiguration | null>(null);
   const [tempPromptPath, setTempPromptPath] = useState("");
   const [tempVersionUuid, setTempVersionUuid] = useState("");
-  
+
   // Thread attachment state
   const providerResId = useUIStore((state) => state.providerResId);
   const [tempEntityId, setTempEntityId] = useState("");
-  const [tempEntityType, setTempEntityType] = useState<"BRAND" | "ACCOUNT" | "">("BRAND");
+  const [tempEntityType, setTempEntityType] = useState<
+    "BRAND" | "ACCOUNT" | ""
+  >("BRAND");
   const [tempTag, setTempTag] = useState("");
   const [tempMetadata, setTempMetadata] = useState("");
-  
+
   // UI state
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -53,17 +62,19 @@ export const DevSettings = ({
         userMpAuthToken,
         chatServerKey,
       });
-      
+
       if (!configuration) {
         throw new Error(`No configuration found for app: ${app}`);
       }
-      
+
       setConfig(configuration);
       setTempPromptPath(configuration.promptPath);
       setTempVersionUuid(configuration.versionUuid);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch configuration');
-      console.error('Error fetching agent configuration:', err);
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch configuration"
+      );
+      console.error("Error fetching agent configuration:", err);
     } finally {
       setLoading(false);
     }
@@ -71,31 +82,45 @@ export const DevSettings = ({
 
   const handleSave = useCallback(async () => {
     if (!config) return;
-    
+
     setLoading(true);
     setError(null);
     try {
-      const updatedConfig = await updateAgentConfiguration(apiUrl, {
-        app: config.app,
-        promptPath: tempPromptPath,
-        versionUuid: tempVersionUuid,
-        isDefault: config.isDefault,
-      }, {
-        userMpAuthToken,
-        chatServerKey,
-      });
+      const updatedConfig = await updateAgentConfiguration(
+        apiUrl,
+        {
+          app: config.app,
+          promptPath: tempPromptPath,
+          versionUuid: tempVersionUuid,
+          isDefault: config.isDefault,
+        },
+        {
+          userMpAuthToken,
+          chatServerKey,
+        }
+      );
       setConfig(updatedConfig);
       onClose();
-      
+
       // Reload the page to reinitialize with new configuration
       window.location.reload();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update configuration');
-      console.error('Error updating agent configuration:', err);
+      setError(
+        err instanceof Error ? err.message : "Failed to update configuration"
+      );
+      console.error("Error updating agent configuration:", err);
     } finally {
       setLoading(false);
     }
-  }, [apiUrl, tempPromptPath, tempVersionUuid, config, onClose, userMpAuthToken, chatServerKey]);
+  }, [
+    apiUrl,
+    tempPromptPath,
+    tempVersionUuid,
+    config,
+    onClose,
+    userMpAuthToken,
+    chatServerKey,
+  ]);
 
   const handleThreadAttachment = useCallback(async () => {
     if (!providerResId) {
@@ -160,7 +185,7 @@ export const DevSettings = ({
       }
 
       setSuccessMessage("Thread updated successfully!");
-      
+
       // Clear form after successful update
       setTimeout(() => {
         setTempEntityId("");
@@ -169,15 +194,22 @@ export const DevSettings = ({
         setTempMetadata("");
         setSuccessMessage(null);
       }, 2000);
-
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update thread');
-      console.error('Error updating thread:', err);
+      setError(err instanceof Error ? err.message : "Failed to update thread");
+      console.error("Error updating thread:", err);
     } finally {
       setLoading(false);
     }
-  }, [providerResId, apiUrl, tempEntityId, tempEntityType, tempTag, tempMetadata, userMpAuthToken, chatServerKey]);
-
+  }, [
+    providerResId,
+    apiUrl,
+    tempEntityId,
+    tempEntityType,
+    tempTag,
+    tempMetadata,
+    userMpAuthToken,
+    chatServerKey,
+  ]);
 
   const handleCancel = useCallback(() => {
     if (config) {
@@ -194,7 +226,14 @@ export const DevSettings = ({
     <div className="chat-wrapper__dev-settings-overlay">
       <div className="chat-wrapper__dev-settings-popup">
         <div className="chat-wrapper__dev-settings-header">
-          <h3>Developer Settings</h3>
+          <div>
+            <h3>Developer Settings</h3>
+            <span
+              style={{ fontSize: "12px", color: "#888", marginLeft: "8px" }}
+            >
+              v{PACKAGE_VERSION}
+            </span>
+          </div>
           <button
             className="chat-wrapper__dev-settings-close"
             onClick={handleCancel}
@@ -214,23 +253,27 @@ export const DevSettings = ({
             </svg>
           </button>
         </div>
-        
+
         {/* Tabs */}
         <div className="chat-wrapper__dev-settings-tabs">
           <button
-            className={`chat-wrapper__dev-settings-tab ${activeTab === "agent" ? "active" : ""}`}
+            className={`chat-wrapper__dev-settings-tab ${
+              activeTab === "agent" ? "active" : ""
+            }`}
             onClick={() => setActiveTab("agent")}
           >
             Agent Config
           </button>
           <button
-            className={`chat-wrapper__dev-settings-tab ${activeTab === "thread" ? "active" : ""}`}
+            className={`chat-wrapper__dev-settings-tab ${
+              activeTab === "thread" ? "active" : ""
+            }`}
             onClick={() => setActiveTab("thread")}
           >
             Thread Attachment
           </button>
         </div>
-        
+
         <div className="chat-wrapper__dev-settings-content">
           {successMessage && (
             <div className="chat-wrapper__dev-settings-success">
@@ -243,11 +286,11 @@ export const DevSettings = ({
               Loading configuration...
             </div>
           )}
-          
+
           {error && (
             <div className="chat-wrapper__dev-settings-error">
               <p>Error: {error}</p>
-              <button 
+              <button
                 onClick={activeTab === "agent" ? fetchConfiguration : undefined}
                 className="chat-wrapper__dev-settings-retry"
               >
@@ -255,7 +298,7 @@ export const DevSettings = ({
               </button>
             </div>
           )}
-          
+
           {/* Agent Config Tab */}
           {activeTab === "agent" && config && !loading && (
             <>
@@ -274,7 +317,7 @@ export const DevSettings = ({
                   Path to the agent prompt file.
                 </p>
               </div>
-              
+
               <div className="chat-wrapper__dev-settings-field">
                 <label htmlFor="version-uuid">Version UUID:</label>
                 <input
@@ -290,7 +333,7 @@ export const DevSettings = ({
                   Version UUID for the agent configuration.
                 </p>
               </div>
-              
+
               <div className="chat-wrapper__dev-settings-field">
                 <label htmlFor="app-name">App:</label>
                 <input
@@ -305,7 +348,6 @@ export const DevSettings = ({
                   Application name for this agent configuration.
                 </p>
               </div>
-              
             </>
           )}
 
@@ -313,17 +355,38 @@ export const DevSettings = ({
           {activeTab === "thread" && !loading && (
             <>
               <div className="chat-wrapper__dev-settings-info">
-                <p><strong>Provider Resource ID:</strong> {providerResId || "No active conversation"}</p>
-                <p style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
-                  Note: Entity ownership is typically set at initialization. Use this to update business context.
+                <p>
+                  <strong>Provider Resource ID:</strong>{" "}
+                  {providerResId || "No active conversation"}
+                </p>
+                <p
+                  style={{ fontSize: "12px", color: "#666", marginTop: "8px" }}
+                >
+                  Note: Entity ownership is typically set at initialization. Use
+                  this to update business context.
                 </p>
               </div>
 
               {/* Business Context Section - Primary Use */}
               <div className="chat-wrapper__dev-settings-section">
-                <h4 style={{ marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>Update Business Context</h4>
-                <p style={{ marginBottom: '12px', fontSize: '12px', color: '#666' }}>
-                  Update dynamic metadata like order IDs, table IDs, status, etc.
+                <h4
+                  style={{
+                    marginBottom: "8px",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                  }}
+                >
+                  Update Business Context
+                </h4>
+                <p
+                  style={{
+                    marginBottom: "12px",
+                    fontSize: "12px",
+                    color: "#666",
+                  }}
+                >
+                  Update dynamic metadata like order IDs, table IDs, status,
+                  etc.
                 </p>
 
                 <div className="chat-wrapper__dev-settings-field">
@@ -354,22 +417,46 @@ export const DevSettings = ({
                     disabled={loading || !providerResId}
                   />
                   <p className="chat-wrapper__dev-settings-help">
-                    App-specific business data (orderId, tableId, campaignId, etc.).
+                    App-specific business data (orderId, tableId, campaignId,
+                    etc.).
                   </p>
                 </div>
               </div>
 
               {/* Separator */}
-              <div style={{ borderTop: '1px solid #e0e0e0', margin: '20px 0' }}></div>
+              <div
+                style={{ borderTop: "1px solid #e0e0e0", margin: "20px 0" }}
+              ></div>
 
               {/* Entity Ownership Section - Advanced/Rare */}
-              <details style={{ marginTop: '16px' }}>
-                <summary style={{ cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: '#666' }}>
+              <details style={{ marginTop: "16px" }}>
+                <summary
+                  style={{
+                    cursor: "pointer",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                    color: "#666",
+                  }}
+                >
                   Advanced: Change Entity Ownership (Rare)
                 </summary>
-                <div style={{ marginTop: '12px', padding: '12px', backgroundColor: '#f9f9f9', borderRadius: '4px' }}>
-                  <p style={{ fontSize: '12px', color: '#666', marginBottom: '12px' }}>
-                    ⚠️ Entity is typically set at initialization. Only change this if transferring conversation ownership.
+                <div
+                  style={{
+                    marginTop: "12px",
+                    padding: "12px",
+                    backgroundColor: "#f9f9f9",
+                    borderRadius: "4px",
+                  }}
+                >
+                  <p
+                    style={{
+                      fontSize: "12px",
+                      color: "#666",
+                      marginBottom: "12px",
+                    }}
+                  >
+                    ⚠️ Entity is typically set at initialization. Only change
+                    this if transferring conversation ownership.
                   </p>
 
                   <div className="chat-wrapper__dev-settings-field">
@@ -393,7 +480,11 @@ export const DevSettings = ({
                     <select
                       id="entity-type"
                       value={tempEntityType}
-                      onChange={(e) => setTempEntityType(e.target.value as "BRAND" | "ACCOUNT" | "")}
+                      onChange={(e) =>
+                        setTempEntityType(
+                          e.target.value as "BRAND" | "ACCOUNT" | ""
+                        )
+                      }
                       className="chat-wrapper__dev-settings-input"
                       disabled={loading || !providerResId}
                     >
@@ -409,9 +500,8 @@ export const DevSettings = ({
               </details>
             </>
           )}
-
         </div>
-        
+
         <div className="chat-wrapper__dev-settings-footer">
           <button
             className="chat-wrapper__dev-settings-btn chat-wrapper__dev-settings-btn--cancel"
@@ -426,7 +516,7 @@ export const DevSettings = ({
               onClick={handleSave}
               disabled={loading || !config}
             >
-              {loading ? 'Saving...' : 'Save & Reload'}
+              {loading ? "Saving..." : "Save & Reload"}
             </button>
           )}
           {activeTab === "thread" && (
@@ -435,7 +525,7 @@ export const DevSettings = ({
               onClick={handleThreadAttachment}
               disabled={loading || !providerResId}
             >
-              {loading ? 'Updating...' : 'Update Thread'}
+              {loading ? "Updating..." : "Update Thread"}
             </button>
           )}
         </div>
