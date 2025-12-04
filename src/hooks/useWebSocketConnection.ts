@@ -163,6 +163,7 @@ export function useWebSocketConnection({
 
   const connectChatClient = useCallback(async () => {
     try {
+      console.log('clog TEST connect Chat Client')
       setConnectionState(ConnectionState.CONNECTING);
       // Validate required props using refs
       if (!userMpAuthTokenRef.current) {
