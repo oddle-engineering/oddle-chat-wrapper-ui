@@ -1,8 +1,10 @@
-import { 
-  requestWebSocketTicket, 
-  isTicketValid, 
+import {
+  requestWebSocketTicket,
+  isTicketValid,
   getTicketInfo,
-  WebSocketTicketResponse 
+  validateTicketWithServer,
+  WebSocketTicketResponse,
+  TicketValidationResponse,
 } from "../../utils/websocketTicketApi";
 import { logClassifiedError } from "../../utils/errorClassification";
 
@@ -20,7 +22,7 @@ export interface TicketManagerConfig {
    * Default: 60000 (1 minute)
    */
   checkInterval?: number;
-  
+
   /**
    * Renew ticket when this many seconds remain
    * Default: 300 (5 minutes)
@@ -30,13 +32,13 @@ export interface TicketManagerConfig {
 
 /**
  * TicketManager - Centralized WebSocket ticket lifecycle management
- * 
+ *
  * Responsibilities:
  * - Request new tickets
  * - Validate ticket expiration
  * - Proactive renewal before expiration
  * - Prevent duplicate refresh requests
- * 
+ *
  * Benefits:
  * - Single source of truth for ticket state
  * - No race conditions via promise deduplication
@@ -70,45 +72,43 @@ export class TicketManager {
    * Also handles http:// and https:// (keeps them as-is)
    */
   private convertToHttpUrl(url: string): string {
-    return url
-      .replace(/^wss:\/\//, 'https://')
-      .replace(/^ws:\/\//, 'http://');
+    return url.replace(/^wss:\/\//, "https://").replace(/^ws:\/\//, "http://");
   }
 
   /**
    * Get a valid ticket, refreshing if necessary
    * This is the main entry point for getting tickets
-   * 
+   *
    * @returns Valid ticket string
    * @throws Error if ticket refresh fails
    */
   async getValidTicket(): Promise<string> {
     // If we have a valid ticket, return it
     if (this.ticket && isTicketValid(this.ticket)) {
-      console.log('TicketManager: Using existing valid ticket');
+      console.log("TicketManager: Using existing valid ticket");
       return this.ticket.ticket;
     }
 
     // Otherwise, refresh
-    console.log('TicketManager: No valid ticket, refreshing...');
+    console.log("TicketManager: No valid ticket, refreshing...");
     return this.refreshTicket();
   }
 
   /**
    * Refresh the ticket, preventing duplicate refreshes
    * Multiple concurrent calls will wait for the same refresh
-   * 
+   *
    * This prevents race conditions by:
    * 1. Checking if refresh is in progress
    * 2. If yes, returning the same promise (all callers wait together)
    * 3. If no, starting new refresh and storing the promise
-   * 
+   *
    * @returns Promise that resolves to new ticket string
    */
   async refreshTicket(): Promise<string> {
     // If refresh is already in progress, wait for it
     if (this.refreshPromise) {
-      console.log('TicketManager: Refresh already in progress, waiting...');
+      console.log("TicketManager: Refresh already in progress, waiting...");
       return this.refreshPromise;
     }
 
@@ -129,29 +129,33 @@ export class TicketManager {
    * @private
    */
   private async _doRefresh(): Promise<string> {
-    console.log('TicketManager: Requesting new ticket...', {
+    console.log("TicketManager: Requesting new ticket...", {
       apiUrl: this.apiUrl,
     });
 
     try {
       this.ticket = await requestWebSocketTicket(this.apiUrl, this.authData);
-      
-      console.log('TicketManager: Ticket received successfully', {
+
+      console.log("TicketManager: Ticket received successfully", {
         hasTicket: !!this.ticket.ticket,
         expiresAt: this.ticket.expiresAt,
       });
 
       return this.ticket.ticket;
     } catch (error) {
-      const classification = logClassifiedError(error, 'TicketManager');
-      
+      const classification = logClassifiedError(error, "TicketManager");
+
       if (classification.isRetryable) {
         throw new Error(
-          `Ticket refresh failed (retryable): ${error instanceof Error ? error.message : 'Unknown error'}`
+          `Ticket refresh failed (retryable): ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
         );
       } else {
         throw new Error(
-          `Ticket refresh failed (non-retryable - ${classification.reason}): ${error instanceof Error ? error.message : 'Unknown error'}`
+          `Ticket refresh failed (non-retryable - ${classification.reason}): ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
         );
       }
     }
@@ -160,13 +164,13 @@ export class TicketManager {
   /**
    * Start proactive ticket renewal before expiration
    * Checks ticket validity at regular intervals and renews if needed
-   * 
+   *
    * @param onRenewed - Optional callback when ticket is renewed
    */
   startProactiveRenewal(onRenewed?: () => void): void {
     this.stopProactiveRenewal();
 
-    console.log('TicketManager: Starting proactive renewal', {
+    console.log("TicketManager: Starting proactive renewal", {
       checkInterval: this.config.checkInterval,
       renewalThreshold: this.config.renewalThreshold,
     });
@@ -182,7 +186,7 @@ export class TicketManager {
    */
   private async checkAndRenew(onRenewed?: () => void): Promise<void> {
     if (!this.ticket) {
-      console.warn('TicketManager: No ticket to validate');
+      console.warn("TicketManager: No ticket to validate");
       return;
     }
 
@@ -193,19 +197,26 @@ export class TicketManager {
       // Renew if expiring soon
       if (expiresInSeconds < this.config.renewalThreshold) {
         console.log(
-          `TicketManager: Ticket expires in ${expiresInSeconds.toFixed(0)}s, renewing...`
+          `TicketManager: Ticket expires in ${expiresInSeconds.toFixed(
+            0
+          )}s, renewing...`
         );
-        
+
         await this.refreshTicket();
-        
-        console.log('TicketManager: Ticket renewed proactively');
+
+        console.log("TicketManager: Ticket renewed proactively");
         onRenewed?.();
       }
     } catch (error) {
-      const classification = logClassifiedError(error, 'TicketManager:ProactiveRenewal');
-      
+      const classification = logClassifiedError(
+        error,
+        "TicketManager:ProactiveRenewal"
+      );
+
       if (!classification.isRetryable) {
-        console.warn(`TicketManager: Stopping proactive renewal due to non-retryable error: ${classification.reason}`);
+        console.warn(
+          `TicketManager: Stopping proactive renewal due to non-retryable error: ${classification.reason}`
+        );
         this.stopProactiveRenewal();
       }
     }
@@ -218,15 +229,89 @@ export class TicketManager {
     if (this.validationInterval) {
       clearInterval(this.validationInterval);
       this.validationInterval = null;
-      console.log('TicketManager: Stopped proactive renewal');
+      console.log("TicketManager: Stopped proactive renewal");
     }
   }
 
   /**
-   * Check if current ticket is valid
+   * Check if current ticket is valid (local expiration check)
    */
   isValid(): boolean {
     return this.ticket ? isTicketValid(this.ticket) : false;
+  }
+
+  /**
+   * Validate current ticket with server API
+   * This provides authoritative server-side validation
+   */
+  async validateWithServer(): Promise<TicketValidationResponse> {
+    if (!this.ticket) {
+      return {
+        valid: false,
+        error: "No ticket available to validate",
+        code: "NO_TICKET",
+      };
+    }
+
+    try {
+      console.log("[TicketManager] Validating ticket with server API...");
+
+      const result = await validateTicketWithServer(
+        this.apiUrl,
+        this.ticket.ticket,
+        {
+          userMpAuthToken: this.authData.userMpAuthToken,
+          chatServerKey: this.authData.chatServerKey,
+        },
+        {
+          entityId: this.authData.entityId,
+          entityType: this.authData.entityType,
+        }
+      );
+
+      console.log("[TicketManager] Server validation result:", {
+        valid: result.valid,
+        error: result.error,
+        code: result.code,
+        retryable: result.retryable,
+      });
+
+      // Log specific guidance based on validation result
+      if (!result.valid) {
+        if (result.retryable) {
+          // Connectivity issue - validation API failed
+          console.log(
+            "[TicketManager] Validation API failed (connectivity issue) - will get fresh ticket and retry"
+          );
+        } else {
+          // Server definitively says ticket is invalid - clear it immediately
+          console.log(
+            "[TicketManager] Ticket is definitively invalid - clearing and will get fresh ticket"
+          );
+          this.ticket = null; // Clear invalid ticket so next call triggers refresh
+        }
+      }
+
+      return result;
+    } catch (error) {
+      console.error(
+        "[TicketManager] Server validation failed unexpectedly:",
+        error
+      );
+      return {
+        valid: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Server validation failed unexpectedly",
+        code: "VALIDATION_ERROR",
+        details: {
+          reason:
+            "Unexpected error during validation - will retry with fresh ticket",
+          retryable: true,
+        },
+      };
+    }
   }
 
   /**
@@ -234,12 +319,12 @@ export class TicketManager {
    */
   getExpiresIn(): number | undefined {
     if (!this.ticket) return undefined;
-    
+
     try {
       const info = getTicketInfo(this.ticket);
       return info.expiresIn;
     } catch (error) {
-      console.warn('TicketManager: Error getting ticket info', error);
+      console.warn("TicketManager: Error getting ticket info", error);
       return undefined;
     }
   }
@@ -256,7 +341,7 @@ export class TicketManager {
    */
   updateAuthData(authData: Partial<AuthData>): void {
     this.authData = { ...this.authData, ...authData };
-    console.log('TicketManager: Auth data updated');
+    console.log("TicketManager: Auth data updated");
   }
 
   /**
@@ -265,7 +350,7 @@ export class TicketManager {
   clear(): void {
     this.ticket = null;
     this.stopProactiveRenewal();
-    console.log('TicketManager: Ticket cleared');
+    console.log("TicketManager: Ticket cleared");
   }
 
   /**

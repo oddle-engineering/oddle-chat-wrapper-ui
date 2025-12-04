@@ -131,3 +131,131 @@ export function getTicketInfo(ticket: WebSocketTicketResponse): {
     expired: currentTime >= expirationTime,
   };
 }
+
+/**
+ * Ticket validation request payload
+ */
+export interface TicketValidationRequest {
+  ticket: string;
+  // Optional context for validation
+  entityId?: string;
+  entityType?: string;
+}
+
+/**
+ * Ticket validation response from server
+ */
+export interface TicketValidationResponse {
+  valid: boolean;
+  error?: string;
+  code?: string;
+  retryable?: boolean; // True if this is a temporary API failure, false if ticket is definitively invalid
+  details?: {
+    expired?: boolean;
+    revoked?: boolean;
+    invalid?: boolean;
+    reason?: string;
+    retryable?: boolean; // Deprecated: use top-level retryable instead
+  };
+}
+
+/**
+ * Validate a ticket against the server API
+ * This provides authoritative server-side validation, checking for:
+ * - Ticket expiration
+ * - Ticket revocation
+ * - Server-side blacklisting
+ * - Other security concerns the server may have
+ */
+export async function validateTicketWithServer(
+  apiUrl: string,
+  ticket: string,
+  authHeaders: {
+    userMpAuthToken: string;
+    chatServerKey: string;
+  },
+  context?: {
+    entityId?: string;
+    entityType?: string;
+  }
+): Promise<TicketValidationResponse> {
+  try {
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+      "x-oddle-mp-auth-token": authHeaders.userMpAuthToken,
+      "x-oddle-chat-server-key": authHeaders.chatServerKey,
+    };
+
+    const requestBody: TicketValidationRequest = {
+      ticket,
+      ...context,
+    };
+
+    console.log('[TicketAPI] Validating ticket with server:', {
+      url: `${apiUrl}/api/v1/tickets/validate`,
+      ticket: ticket.substring(0, 8) + '...',
+      context
+    });
+
+    const response = await fetch(`${apiUrl}/api/v1/tickets/validate`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Ticket validation failed: ${response.status} ${response.statusText}`);
+    }
+
+    const validationResult: TicketValidationResponse = await response.json();
+
+    console.log(`[TicketAPI] Server validation result:`, {
+      valid: validationResult.valid,
+      error: validationResult.error,
+      details: validationResult.details,
+    });
+
+    // If server successfully responded, this is a DEFINITIVE answer (not a connectivity issue)
+    // Set retryable=false to indicate the client should get a fresh ticket, not retry validation
+    if (!validationResult.valid) {
+      validationResult.retryable = false; // Server definitively says ticket is invalid
+    }
+
+    return validationResult;
+  } catch (error) {
+    console.error('[TicketAPI] Ticket validation error:', error);
+    
+    // Distinguish between network errors and server errors for better handling
+    let errorCode = "VALIDATION_ERROR";
+    let errorMessage = "Validation request failed";
+    
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      // Classify common error types
+      if (error.message.includes('fetch')) {
+        errorCode = "NETWORK_ERROR";
+        errorMessage = "Network error during ticket validation - server may be temporarily unavailable";
+      } else if (error.message.includes('500') || error.message.includes('502') || error.message.includes('503')) {
+        errorCode = "SERVER_ERROR"; 
+        errorMessage = "Server error during ticket validation - validation service may be temporarily down";
+      } else if (error.message.includes('timeout')) {
+        errorCode = "TIMEOUT_ERROR";
+        errorMessage = "Timeout during ticket validation - validation service may be slow or overloaded";
+      }
+    }
+    
+    console.log(`[TicketAPI] Validation failed with error type: ${errorCode}`);
+    
+    // Return detailed error information
+    return {
+      valid: false,
+      error: errorMessage,
+      code: errorCode,
+      retryable: true, // API failure = temporary issue, should retry
+      details: {
+        reason: "Validation API request failed - will retry with fresh ticket",
+        retryable: true, // Indicate this error is retryable
+      }
+    };
+  }
+}

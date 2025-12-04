@@ -66,6 +66,27 @@ export class WebSocketChatClient {
         }
         return await this.ticketManager.getValidTicket();
       },
+      onTicketValidate: async () => {
+        // Validate current ticket with server API before reconnection
+        console.log('[WebSocketChatClient] Validating current ticket with server API...');
+        if (!this.ticketManager) {
+          console.warn('[WebSocketChatClient] TicketManager not available for validation');
+          return false;
+        }
+        
+        try {
+          const validation = await this.ticketManager.validateWithServer();
+          console.log(`[WebSocketChatClient] Server validation result: ${validation.valid ? 'valid' : 'invalid'}`, {
+            error: validation.error,
+            code: validation.code,
+            retryable: validation.retryable,
+          });
+          return validation.valid;
+        } catch (error) {
+          console.error('[WebSocketChatClient] Server validation failed:', error);
+          return false;
+        }
+      },
     });
 
     this.messageHandler.setSendMessageHandler((data) =>

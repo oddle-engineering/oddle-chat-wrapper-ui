@@ -16,6 +16,7 @@ export class WebSocketManager {
   private visibilityChangeHandler: () => void;
   private currentTicket: string | null = null;
   private intentionalDisconnect: boolean = false; // Track intentional disconnects
+  private justRefreshedTicket: boolean = false; // Track if ticket was just refreshed to skip duplicate validation
 
   private onOpen?: () => void;
   private onMessage?: (event: MessageEvent) => void;
@@ -23,6 +24,7 @@ export class WebSocketManager {
   private onClose?: (event: CloseEvent) => void;
   private onSystemEvent?: SystemEventHandler;
   private onTicketRefresh?: () => Promise<string>;
+  private onTicketValidate?: () => Promise<boolean>;
 
   constructor(config: ConnectionConfig, connectionState: ConnectionState) {
     this.config = config;
@@ -35,7 +37,7 @@ export class WebSocketManager {
     return new Promise((resolve, reject) => {
       try {
         this.intentionalDisconnect = false; // Reset flag when connecting
-        
+
         if (ticket) {
           this.currentTicket = ticket;
         }
@@ -59,18 +61,18 @@ export class WebSocketManager {
     // Convert HTTP URL to WebSocket URL if needed
     // https:// -> wss://, http:// -> ws://
     let url = this.config.apiUrl
-      .replace(/^https:\/\//, 'wss://')
-      .replace(/^http:\/\//, 'ws://');
-    
+      .replace(/^https:\/\//, "wss://")
+      .replace(/^http:\/\//, "ws://");
+
     // Add the /ws path if it's not already there
-    url = url.endsWith('/ws') ? url : url + '/ws';
-    
+    url = url.endsWith("/ws") ? url : url + "/ws";
+
     // Add ticket to URL if available
     if (this.currentTicket) {
-      const separator = url.includes('?') ? '&' : '?';
+      const separator = url.includes("?") ? "&" : "?";
       url = `${url}${separator}ticket=${this.currentTicket}`;
     }
-    
+
     return url;
   }
 
@@ -81,7 +83,8 @@ export class WebSocketManager {
     if (!this.ws) return;
 
     this.ws.onopen = () => this.handleConnectionOpened(resolve);
-    this.ws.onerror = (error) => this.handleConnectionError(error, resolve, reject);
+    this.ws.onerror = (error) =>
+      this.handleConnectionError(error, resolve, reject);
     this.ws.onmessage = (event) => this.onMessage?.(event);
     this.ws.onclose = (event) => this.handleConnectionClosed(event);
   }
@@ -106,7 +109,7 @@ export class WebSocketManager {
       reject(error);
       return;
     }
-    
+
     // Only schedule reconnection for established connections that fail
     // (not initial connection failures)
     if (!this.intentionalDisconnect) {
@@ -115,23 +118,28 @@ export class WebSocketManager {
   }
 
   private handleConnectionClosed(event: CloseEvent): void {
-    console.log('[WebSocketManager] Connection closed', { 
-      code: event.code, 
+    console.log("[WebSocketManager] Connection closed", {
+      code: event.code,
       reason: event.reason,
-      intentionalDisconnect: this.intentionalDisconnect 
+      intentionalDisconnect: this.intentionalDisconnect,
     });
     this.processConnectionClosure(event);
     this.onClose?.(event);
 
     if (this.shouldReconnectAfterClose(event.code)) {
-      console.log('[WebSocketManager] Should reconnect, calling attemptReconnect');
+      console.log(
+        "[WebSocketManager] Should reconnect, calling attemptReconnect"
+      );
       this.attemptReconnect();
     } else {
-      console.log('[WebSocketManager] Should NOT reconnect');
+      console.log("[WebSocketManager] Should NOT reconnect");
     }
   }
 
-  private updateConnectionState(connected: boolean, reconnecting: boolean): void {
+  private updateConnectionState(
+    connected: boolean,
+    reconnecting: boolean
+  ): void {
     this.connectionState.setConnected(connected);
     this.connectionState.setReconnecting(reconnecting);
     this.connectionState.resetReconnectAttempts();
@@ -144,7 +152,7 @@ export class WebSocketManager {
   }
 
   private shouldReconnectAfterClose(closeCode: number): boolean {
-    console.log('[WebSocketManager] shouldReconnectAfterClose check', {
+    console.log("[WebSocketManager] shouldReconnectAfterClose check", {
       closeCode,
       intentionalDisconnect: this.intentionalDisconnect,
       NORMAL: WEBSOCKET_CLOSE_CODES.NORMAL,
@@ -153,23 +161,23 @@ export class WebSocketManager {
 
     // Don't reconnect if it was an intentional disconnect
     if (this.intentionalDisconnect) {
-      console.log('[WebSocketManager] Intentional disconnect - no reconnect');
+      console.log("[WebSocketManager] Intentional disconnect - no reconnect");
       return false;
     }
-    
+
     // For chat apps, reconnect on ANY abnormal closure
     // Close code 1000 = Normal closure (user initiated)
     // Close code 1001 = Going away (browser closing)
     // Close code 1006 = Abnormal closure (server crash, no close frame)
     // Any other code = server error or network issue
-    
+
     const { NORMAL } = WEBSOCKET_CLOSE_CODES;
-    
+
     // Only skip reconnection for normal, user-initiated closures
     // Reconnect for everything else including server crashes (1006), errors (1011), etc.
     const shouldReconnect = closeCode !== NORMAL;
-    
-    console.log('[WebSocketManager] Should reconnect?', shouldReconnect);
+
+    console.log("[WebSocketManager] Should reconnect?", shouldReconnect);
     return shouldReconnect;
   }
 
@@ -193,7 +201,7 @@ export class WebSocketManager {
   }
 
   private attemptReconnect(): void {
-    console.log('[WebSocketManager] attemptReconnect called', {
+    console.log("[WebSocketManager] attemptReconnect called", {
       reconnectAttempts: this.connectionState.reconnectAttempts,
       maxReconnectAttempts: this.config.maxReconnectAttempts,
       isReconnecting: this.connectionState.isReconnecting,
@@ -201,8 +209,10 @@ export class WebSocketManager {
     });
 
     // Check if we've hit max reconnection attempts
-    if (this.connectionState.reconnectAttempts >= this.config.maxReconnectAttempts) {
-      console.log('[WebSocketManager] Max reconnection attempts reached');
+    if (
+      this.connectionState.reconnectAttempts >= this.config.maxReconnectAttempts
+    ) {
+      console.log("[WebSocketManager] Max reconnection attempts reached");
       this.onSystemEvent?.(
         SystemEventFactory.connectionLost("Max reconnection attempts reached")
       );
@@ -212,7 +222,9 @@ export class WebSocketManager {
 
     // Check if a reconnection is already in progress (timer is set)
     if (this.reconnectTimer !== null) {
-      console.log('[WebSocketManager] Reconnection already in progress, skipping');
+      console.log(
+        "[WebSocketManager] Reconnection already in progress, skipping"
+      );
       // Already scheduled, don't create duplicate timers
       return;
     }
@@ -222,13 +234,16 @@ export class WebSocketManager {
 
     const attempt = this.connectionState.reconnectAttempts;
     const maxAttempts = this.config.maxReconnectAttempts;
-    console.log('[WebSocketManager] Firing RECONNECTING event', { attempt, maxAttempts });
+    console.log("[WebSocketManager] Firing RECONNECTING event", {
+      attempt,
+      maxAttempts,
+    });
     this.onSystemEvent?.(SystemEventFactory.reconnecting(attempt, maxAttempts));
 
     const baseDelay = this.config.reconnectDelay;
     const jitter = Math.random() * 90 + 10; // 10-100ms jitter
     const delayWithJitter = baseDelay + jitter;
-    
+
     this.reconnectTimer = window.setTimeout(() => {
       this.reconnectTimer = null; // Clear the timer reference
       if (!this.connectionState.isConnected) {
@@ -239,25 +254,88 @@ export class WebSocketManager {
 
   private async reconnect(): Promise<void> {
     try {
+      console.log("[WebSocketManager] ====== RECONNECT ATTEMPT START ======", {
+        hasCurrentTicket: !!this.currentTicket,
+        justRefreshedTicket: this.justRefreshedTicket,
+        reconnectAttempt: this.connectionState.reconnectAttempts,
+      });
+      
       this.closeConnection();
 
-      // Get fresh ticket before reconnecting (if callback available)
-      if (this.onTicketRefresh) {
-        console.log('[WebSocketManager] Requesting fresh ticket for reconnection...');
+      // Step 1: Validate current ticket if validation callback is available
+      let needsNewTicket = true;
+      
+      // Skip validation if we just refreshed the ticket in the previous attempt
+      // This prevents duplicate validation calls when reconnection fails after refresh
+      if (this.justRefreshedTicket) {
+        console.log(
+          "[WebSocketManager] Skipping validation - ticket was just refreshed in previous attempt"
+        );
+        needsNewTicket = false;
+        this.justRefreshedTicket = false; // Reset flag
+      } else if (this.onTicketValidate && this.currentTicket) {
+        console.log(
+          "[WebSocketManager] Validating current ticket before reconnection..."
+        );
+        try {
+          const isValid = await this.onTicketValidate();
+          if (isValid) {
+            console.log(
+              "[WebSocketManager] Current ticket is still valid, proceeding with reconnection"
+            );
+            needsNewTicket = false;
+          } else {
+            console.log(
+              "[WebSocketManager] Current ticket is invalid according to server, need to get fresh ticket"
+            );
+          }
+        } catch (error) {
+          console.error("[WebSocketManager] Failed to validate ticket with server API:", error);
+          console.log("[WebSocketManager] Validation API failed - server might be down, will retry with fresh ticket");
+          // If validation API fails (server down, network issues), get fresh ticket
+          // This ensures we retry the connection even if validation server is temporarily unavailable
+        }
+      } else if (!this.currentTicket) {
+        console.log(
+          "[WebSocketManager] No current ticket, need to get fresh ticket"
+        );
+      }
+
+      // Step 2: Get fresh ticket if needed
+      if (needsNewTicket && this.onTicketRefresh) {
+        console.log(
+          "[WebSocketManager] Requesting fresh ticket for reconnection..."
+        );
         try {
           const freshTicket = await this.onTicketRefresh();
           this.currentTicket = freshTicket;
-          console.log('[WebSocketManager] Fresh ticket obtained for reconnection');
+          this.justRefreshedTicket = true; // Mark that we just refreshed
+          console.log(
+            "[WebSocketManager] Fresh ticket obtained for reconnection"
+          );
         } catch (error) {
-          console.error('[WebSocketManager] Failed to get fresh ticket:', error);
-          // Continue with existing ticket as fallback
+          console.error(
+            "[WebSocketManager] Failed to get fresh ticket:",
+            error
+          );
+          throw error; // Don't proceed with reconnection if we can't get a valid ticket
         }
+      } else if (needsNewTicket && !this.onTicketRefresh) {
+        console.warn(
+          "[WebSocketManager] Need fresh ticket but no ticket refresh callback available"
+        );
+        throw new Error(
+          "Cannot refresh expired ticket - no refresh callback available"
+        );
       }
 
+      console.log("[WebSocketManager] Creating WebSocket connection...");
       const wsUrl = this.buildWebSocketUrl();
       this.ws = new WebSocket(wsUrl);
       this.setupReconnectHandlers();
+      console.log("[WebSocketManager] ====== RECONNECT ATTEMPT END (connection initiated) ======");
     } catch (error) {
+      console.log("[WebSocketManager] ====== RECONNECT ATTEMPT FAILED ======", error);
       this.scheduleReconnectAfterError();
     }
   }
@@ -268,7 +346,6 @@ export class WebSocketManager {
   updateTicket(ticket: string): void {
     this.currentTicket = ticket;
   }
-
 
   private setupReconnectHandlers(): void {
     if (!this.ws) return;
@@ -281,6 +358,7 @@ export class WebSocketManager {
 
   private handleReconnectionOpened(): void {
     this.updateConnectionState(true, false);
+    this.justRefreshedTicket = false; // Reset flag on successful connection
     this.startHeartbeat();
     this.onSystemEvent?.(SystemEventFactory.connectionRestored());
     this.onOpen?.();
@@ -296,17 +374,14 @@ export class WebSocketManager {
     const baseDelay = this.config.reconnectDelay;
     const jitter = Math.random() * 90 + 10; // 10-100ms jitter
     const delayWithJitter = baseDelay + jitter;
-    
+
     // Clear any existing timer first
     if (this.reconnectTimer !== null) {
       window.clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
     }
-    
-    setTimeout(
-      () => this.attemptReconnect(),
-      delayWithJitter
-    );
+
+    setTimeout(() => this.attemptReconnect(), delayWithJitter);
   }
 
   private handleReconnectionClosed(event: CloseEvent): void {
@@ -410,6 +485,7 @@ export class WebSocketManager {
     onClose?: (event: CloseEvent) => void;
     onSystemEvent?: SystemEventHandler;
     onTicketRefresh?: () => Promise<string>;
+    onTicketValidate?: () => Promise<boolean>;
   }): void {
     this.onOpen = handlers.onOpen;
     this.onMessage = handlers.onMessage;
@@ -417,5 +493,6 @@ export class WebSocketManager {
     this.onClose = handlers.onClose;
     this.onSystemEvent = handlers.onSystemEvent;
     this.onTicketRefresh = handlers.onTicketRefresh;
+    this.onTicketValidate = handlers.onTicketValidate;
   }
 }
