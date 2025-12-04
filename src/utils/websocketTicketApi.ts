@@ -45,7 +45,8 @@ export interface WebSocketTicketError {
  */
 export async function requestWebSocketTicket(
   apiUrl: string,
-  ticketRequest: WebSocketTicketRequest
+  ticketRequest: WebSocketTicketRequest,
+  timeoutMs: number = 10000 // 10 second timeout by default
 ): Promise<WebSocketTicketResponse> {
   const headers: HeadersInit = {
     "Content-Type": "application/json",
@@ -57,37 +58,56 @@ export async function requestWebSocketTicket(
   if (ticketRequest?.chatServerKey) {
     headers["x-oddle-chat-server-key"] = ticketRequest.chatServerKey;
   }
+  
   try {
-    const response = await fetch(`${apiUrl}/api/v1/tickets`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        entityId: ticketRequest.entityId,
-        entityType: ticketRequest.entityType,
-        providerResId: ticketRequest.providerResId,
-        clientInfo: {
-          userAgent: navigator.userAgent,
-          timestamp: new Date().toISOString(),
-          ...ticketRequest.clientInfo,
-        },
-      }),
-    });
+    // Create an AbortController for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.error ||
-          `Failed to get WebSocket ticket: ${response.statusText}`
-      );
+    try {
+      const response = await fetch(`${apiUrl}/api/v1/tickets`, {
+        method: "POST",
+        headers,
+        signal: controller.signal,
+        body: JSON.stringify({
+          entityId: ticketRequest.entityId,
+          entityType: ticketRequest.entityType,
+          providerResId: ticketRequest.providerResId,
+          clientInfo: {
+            userAgent: navigator.userAgent,
+            timestamp: new Date().toISOString(),
+            ...ticketRequest.clientInfo,
+          },
+        }),
+      });
+      
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.error ||
+            `Failed to get WebSocket ticket: ${response.statusText}`
+        );
+      }
+
+      const data: WebSocketTicketResponse = await response.json();
+
+      if (!data.success || !data.ticket) {
+        throw new Error(data.error || "Invalid ticket response from server");
+      }
+
+      return data;
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      
+      // Check if it was an abort (timeout)
+      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+        throw new Error(`Ticket request timed out after ${timeoutMs}ms`);
+      }
+      
+      throw fetchError;
     }
-
-    const data: WebSocketTicketResponse = await response.json();
-
-    if (!data.success || !data.ticket) {
-      throw new Error(data.error || "Invalid ticket response from server");
-    }
-
-    return data;
   } catch (error) {
     console.error("Error requesting WebSocket ticket:", error);
     throw error;

@@ -437,6 +437,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         setCurrentThreadId,
         setProviderResId,
         metadata,
+        isConnected: connectionState === ConnectionState.CONNECTED, // Only load after connection established
       });
 
     // Handle retry: reconnect WebSocket and reload conversation

@@ -16,6 +16,7 @@ interface UseConversationLoaderProps {
   setCurrentThreadId: (threadId: string | null) => void;
   setProviderResId: (providerResId: string | null) => void;
   metadata?: any;
+  isConnected?: boolean; // Wait for connection before loading
 }
 
 export function useConversationLoader({
@@ -30,11 +31,18 @@ export function useConversationLoader({
   setConversationError,
   setCurrentThreadId,
   setProviderResId,
-  metadata
+  metadata,
+  isConnected = true, // Default to true for backward compatibility
 }: UseConversationLoaderProps) {
   const hasLoadedConversationRef = useRef<boolean>(false);
 
   const loadConversation = async () => {
+    // Wait for connection to be established (ticket fetched successfully)
+    if (!isConnected) {
+      console.log("useConversationLoader: Waiting for connection to be established before loading messages");
+      return;
+    }
+
     // Skip if entityId is not provided - no history to load
     if (!entityId) {
       console.log("useConversationLoader: No entityId provided, skipping history fetch");
@@ -129,6 +137,7 @@ export function useConversationLoader({
   useEffect(() => {
     loadConversation();
   }, [
+    isConnected, // Load when connection is established
     entityId,
     entityType,
     httpApiUrl,

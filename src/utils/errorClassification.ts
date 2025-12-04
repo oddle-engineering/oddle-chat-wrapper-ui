@@ -16,12 +16,52 @@ export function classifyError(error: any): ErrorClassification {
   const errorMessage = error?.message?.toLowerCase() || '';
   const errorName = error?.name?.toLowerCase() || '';
 
-  // CORS errors - should NOT retry
+  // Check for connection refused / server unreachable first
+  // These are network errors that should be retried
+  if (
+    errorMessage.includes('connection refused') ||
+    errorMessage.includes('econnrefused') ||
+    errorMessage.includes('err_connection_refused') ||
+    errorMessage.includes('network request failed') ||
+    errorMessage.includes('failed to connect')
+  ) {
+    return {
+      isRetryable: true,
+      reason: 'Server unreachable or connection refused',
+      errorType: 'network'
+    };
+  }
+
+  // Generic "Failed to fetch" needs more context
+  // If it's truly a CORS error, there would be other indicators
+  // Otherwise, it's likely a network/connection issue
+  if (errorName === 'typeerror' && errorMessage.includes('failed to fetch')) {
+    // Check if there are CORS-specific indicators
+    if (
+      errorMessage.includes('cors') ||
+      errorMessage.includes('cross-origin') ||
+      errorMessage.includes('blocked by cors')
+    ) {
+      return {
+        isRetryable: false,
+        reason: 'CORS policy blocking request',
+        errorType: 'cors'
+      };
+    }
+    
+    // Otherwise, treat as network/connection issue (server might be down)
+    return {
+      isRetryable: true,
+      reason: 'Network error - server may be unreachable',
+      errorType: 'network'
+    };
+  }
+
+  // Explicit CORS errors - should NOT retry
   if (
     errorMessage.includes('cors') ||
     errorMessage.includes('cross-origin') ||
-    errorMessage.includes('blocked by cors') ||
-    errorName === 'typeerror' && errorMessage.includes('fetch')
+    errorMessage.includes('blocked by cors')
   ) {
     return {
       isRetryable: false,

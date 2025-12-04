@@ -28,6 +28,24 @@ export interface TicketManagerConfig {
    * Default: 300 (5 minutes)
    */
   renewalThreshold?: number;
+
+  /**
+   * Maximum retry attempts for ticket requests
+   * Default: 3
+   */
+  maxRetries?: number;
+
+  /**
+   * Base delay for retry backoff (ms)
+   * Default: 1000 (1 second)
+   */
+  retryBaseDelay?: number;
+
+  /**
+   * Timeout for ticket requests (ms)
+   * Default: 10000 (10 seconds)
+   */
+  requestTimeout?: number;
 }
 
 /**
@@ -63,6 +81,9 @@ export class TicketManager {
     this.config = {
       checkInterval: config.checkInterval ?? 60000,
       renewalThreshold: config.renewalThreshold ?? 300,
+      maxRetries: config.maxRetries ?? 3,
+      retryBaseDelay: config.retryBaseDelay ?? 1000,
+      requestTimeout: config.requestTimeout ?? 10000,
     };
   }
 
@@ -126,39 +147,66 @@ export class TicketManager {
 
   /**
    * Internal method to actually perform the refresh
+   * Includes automatic retry logic for transient failures
    * @private
    */
   private async _doRefresh(): Promise<string> {
-    console.log("TicketManager: Requesting new ticket...", {
-      apiUrl: this.apiUrl,
-    });
+    const maxRetries = this.config.maxRetries;
+    const baseDelay = this.config.retryBaseDelay;
 
-    try {
-      this.ticket = await requestWebSocketTicket(this.apiUrl, this.authData);
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      console.log(
+        `TicketManager: Requesting new ticket (attempt ${attempt}/${maxRetries})...`,
+        {
+          apiUrl: this.apiUrl,
+        }
+      );
 
-      console.log("TicketManager: Ticket received successfully", {
-        hasTicket: !!this.ticket.ticket,
-        expiresAt: this.ticket.expiresAt,
-      });
-
-      return this.ticket.ticket;
-    } catch (error) {
-      const classification = logClassifiedError(error, "TicketManager");
-
-      if (classification.isRetryable) {
-        throw new Error(
-          `Ticket refresh failed (retryable): ${
-            error instanceof Error ? error.message : "Unknown error"
-          }`
+      try {
+        this.ticket = await requestWebSocketTicket(
+          this.apiUrl,
+          this.authData,
+          this.config.requestTimeout
         );
-      } else {
-        throw new Error(
-          `Ticket refresh failed (non-retryable - ${classification.reason}): ${
-            error instanceof Error ? error.message : "Unknown error"
-          }`
+
+        console.log("TicketManager: Ticket received successfully", {
+          hasTicket: !!this.ticket.ticket,
+          expiresAt: this.ticket.expiresAt,
+        });
+
+        return this.ticket.ticket;
+      } catch (error) {
+        const classification = logClassifiedError(error, "TicketManager");
+
+        // If this is a non-retryable error (CORS, auth, etc.), fail immediately
+        if (!classification.isRetryable) {
+          throw new Error(
+            `Ticket refresh failed (non-retryable - ${
+              classification.reason
+            }): ${error instanceof Error ? error.message : "Unknown error"}`
+          );
+        }
+
+        // If this is the last attempt, throw the error
+        if (attempt === maxRetries) {
+          throw new Error(
+            `Ticket refresh failed after ${maxRetries} attempts (${
+              classification.reason
+            }): ${error instanceof Error ? error.message : "Unknown error"}`
+          );
+        }
+
+        // Otherwise, log and retry with exponential backoff
+        const delay = baseDelay * Math.pow(2, attempt - 1); // Exponential backoff: 1s, 2s, 4s
+        console.log(
+          `TicketManager: Ticket request failed (${classification.reason}), retrying in ${delay}ms...`
         );
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
+
+    // This should never be reached, but TypeScript needs it
+    throw new Error("Ticket refresh failed unexpectedly");
   }
 
   /**
