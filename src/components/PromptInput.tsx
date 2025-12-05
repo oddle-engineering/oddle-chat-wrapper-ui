@@ -104,17 +104,20 @@ const StopIcon = () => (
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <g filter="url(#filter0_dd_121_23927)">
+    <g filter="url(#filter0_dd_stop_121_23927)">
       <path
         d="M3 26.3541C3 13.0993 13.7452 2.35413 27 2.35413C40.2548 2.35413 51 13.0993 51 26.3541C51 39.609 40.2548 50.3541 27 50.3541C13.7452 50.3541 3 39.609 3 26.3541Z"
-        fill="inherit"
+        fill="#3D0099"
         shapeRendering="crispEdges"
       />
-      <rect x="19" y="19.3541" width="16" height="16" rx="2" fill="white" />
+      {/* Stop icon using provided SVG */}
+      <g transform="translate(11, 11.3541)">
+        <path d="M21.3333 10.6667V21.3333H10.6667V10.6667H21.3333ZM24 8H8V24H24V8Z" fill="white"/>
+      </g>
     </g>
     <defs>
       <filter
-        id="filter0_dd_121_23927"
+        id="filter0_dd_stop_121_23927"
         x="0"
         y="0.354126"
         width="54"
@@ -139,7 +142,7 @@ const StopIcon = () => (
         <feBlend
           mode="normal"
           in2="BackgroundImageFix"
-          result="effect1_dropShadow_121_23927"
+          result="effect1_dropShadow_stop_121_23927"
         />
         <feColorMatrix
           in="SourceAlpha"
@@ -156,13 +159,13 @@ const StopIcon = () => (
         />
         <feBlend
           mode="normal"
-          in2="effect1_dropShadow_121_23927"
-          result="effect2_dropShadow_121_23927"
+          in2="effect1_dropShadow_stop_121_23927"
+          result="effect2_dropShadow_stop_121_23927"
         />
         <feBlend
           mode="normal"
           in="SourceGraphic"
-          in2="effect2_dropShadow_121_23927"
+          in2="effect2_dropShadow_stop_121_23927"
           result="shape"
         />
       </filter>
