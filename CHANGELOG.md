@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.11] - 2025-12-05
+
+### Added
+- improve file upload error handling and user feedback in ChatInput component
+
 ## [1.0.10] - 2025-12-04
 
 ### Added

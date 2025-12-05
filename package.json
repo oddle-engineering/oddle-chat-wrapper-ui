@@ -1,6 +1,6 @@
 {
   "name": "@oddle/chat-wrapper-ui",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Reusable chat UI wrapper for company projects",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
