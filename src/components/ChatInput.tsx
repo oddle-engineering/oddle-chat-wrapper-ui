@@ -149,8 +149,13 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
         .replace(/on\w+\s*=/gi, ""); // Remove event handlers
 
       setInput(sanitizedValue);
+      
+      // Clear upload error when user starts typing
+      if (uploadError && sanitizedValue.trim()) {
+        setUploadError(null);
+      }
     },
-    []
+    [uploadError]
   );
 
   const handlePaste = useCallback(
@@ -234,13 +239,21 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
               const filePreviews = await Promise.all(filePreviewPromises);
               setUploadingFiles(prev => [...prev, ...filePreviews]);
 
-              // Start upload
-              const newMedia = await onFileUpload(validFiles);
-              
-              // Move from uploading to uploaded
-              setUploadingFiles(prev => prev.filter(item => !validFiles.includes(item.file)));
-              setUploadedMedia(prev => [...prev, ...newMedia]);
-              setUploadError(null);
+              try {
+                // Start upload
+                const newMedia = await onFileUpload(validFiles);
+                
+                // Move from uploading to uploaded
+                setUploadingFiles(prev => prev.filter(item => !validFiles.includes(item.file)));
+                setUploadedMedia(prev => [...prev, ...newMedia]);
+                setUploadError(null);
+              } catch (uploadError) {
+                console.error("File upload failed:", uploadError);
+                // Remove failed files from uploading state (don't show thumbnails)
+                setUploadingFiles(prev => prev.filter(item => !validFiles.includes(item.file)));
+                
+                setUploadError("File upload failed. Ensure a stable connection and try again.");
+              }
             }
           }
         } catch (error) {
@@ -325,13 +338,21 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
             const filePreviews = await Promise.all(filePreviewPromises);
             setUploadingFiles(prev => [...prev, ...filePreviews]);
 
-            // Start upload
-            const newMedia = await onFileUpload(validFiles);
-            
-            // Move from uploading to uploaded
-            setUploadingFiles(prev => prev.filter(item => !validFiles.includes(item.file)));
-            setUploadedMedia(prev => [...prev, ...newMedia]);
-            setUploadError(null); // Clear any previous errors on successful upload
+            try {
+              // Start upload
+              const newMedia = await onFileUpload(validFiles);
+              
+              // Move from uploading to uploaded
+              setUploadingFiles(prev => prev.filter(item => !validFiles.includes(item.file)));
+              setUploadedMedia(prev => [...prev, ...newMedia]);
+              setUploadError(null); // Clear any previous errors on successful upload
+            } catch (uploadError) {
+              console.error("File upload failed:", uploadError);
+              // Remove failed files from uploading state (don't show thumbnails)
+              setUploadingFiles(prev => prev.filter(item => !validFiles.includes(item.file)));
+              
+              setUploadError("File upload failed. Ensure a stable connection and try again.");
+            }
           }
         } catch (error) {
           console.error("File upload error:", error);
@@ -375,29 +396,75 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
       {uploadError && (
         <div
           style={{
-            padding: "8px 16px",
+            padding: "12px 16px",
             display: "flex",
             alignItems: "center",
-            gap: "8px",
-            backgroundColor: "#fef2f2",
-            border: "1px solid #fecaca",
-            borderRadius: "8px",
+            gap: "12px",
+            backgroundColor: "#FDE1D3",
             margin: "8px 0",
           }}
         >
-          <span style={{ color: "#ef4444", fontSize: "14px" }}>
-            ❌ {uploadError}
+          {/* Red circle with white exclamation mark */}
+          <div
+            style={{
+              width: "24px",
+              height: "24px",
+              borderRadius: "50%",
+              backgroundColor: "#dc2626",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <span
+              style={{
+                color: "white",
+                fontSize: "14px",
+                fontWeight: "bold",
+                lineHeight: 1,
+              }}
+            >
+              !
+            </span>
+          </div>
+          
+          <span style={{ 
+            color: "#9D132B", 
+            fontSize: "14px",
+            flex: 1,
+            fontWeight: "400"
+          }}>
+            {uploadError}
           </span>
+          
           <button
             onClick={() => setUploadError(null)}
             style={{
-              marginLeft: "auto",
+              width: "24px",
+              height: "24px",
+              borderRadius: "50%",
               background: "none",
-              border: "none",
-              color: "#ef4444",
+              border: "2px solid #9D132B",
+              color: "#9D132B",
               cursor: "pointer",
               fontSize: "16px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              transition: "all 0.2s",
+              fontWeight: "bold",
             }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#9D132B";
+              e.currentTarget.style.color = "white";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.color = "#9D132B";
+            }}
+            title="Dismiss"
           >
             ×
           </button>

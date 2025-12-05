@@ -1275,7 +1275,7 @@ function App() {
       // Authentication and entity context
       auth: {
         token:
-          "65cee4e793c6615edabd4638c0089846f2154895e69c70f653356b2147cc6dadc63b5b0988a26cdcdf2adca412a1a404da618e66445bd687e4c27d6fec148cd1",
+          "5820fcd8450f8e4bee013be8f8a394df4ff63fd33a5c06e07d3128bfd94a7caa9531e2fa0364dcf27418bf78772ce556c2b2006331c9aa00001cb20580c029ce",
         entityId: "8a8197e78054904a01805a25a4bb25be1",
         entityType: EntityType.BRAND,
       },
