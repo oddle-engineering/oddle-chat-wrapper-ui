@@ -28,6 +28,7 @@ export interface WebSocketChatClientProps {
     canUpdateMetadata: boolean;
     updateEndpoint: string;
   }) => void;
+  onError?: (error: Error, classification?: { reason: string; errorType: string }) => void;
 }
 
 export interface ChatEventHandlers {

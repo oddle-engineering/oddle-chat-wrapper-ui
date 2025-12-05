@@ -31,6 +31,7 @@ interface UseWebSocketConnectionProps {
     canUpdateMetadata: boolean;
     updateEndpoint: string;
   }) => void;
+  onError?: (error: Error, classification?: { reason: string; errorType: string }) => void;
 }
 
 export function useWebSocketConnection({
@@ -52,6 +53,7 @@ export function useWebSocketConnection({
   onSystemEvent,
   onReasoningUpdate,
   onThreadCreated,
+  onError,
 }: UseWebSocketConnectionProps) {
   const [chatClient, setChatClient] = useState<WebSocketChatClient | null>(
     null
@@ -136,7 +138,6 @@ export function useWebSocketConnection({
   const { toolSchemas, clientToolExecutors } = useMemo(() => {
     const stableTools = toolsStableRef.current;
     if (stableTools && stableTools.length > 0) {
-      console.log("clog ...TEST tools changed:", stableTools);
       // Extract schemas (without execute functions) for server
       const schemas = stableTools.map(({ execute, ...schema }) => schema);
       const executors: Record<string, (...args: any[]) => any> = {};
@@ -163,7 +164,6 @@ export function useWebSocketConnection({
 
   const connectChatClient = useCallback(async () => {
     try {
-      console.log('clog TEST connect Chat Client')
       setConnectionState(ConnectionState.CONNECTING);
       // Validate required props using refs
       if (!userMpAuthTokenRef.current) {
@@ -200,6 +200,7 @@ export function useWebSocketConnection({
         onSystemEvent: onSystemEventRef.current,
         onReasoningUpdate: onReasoningUpdateRef.current,
         onThreadCreated: onThreadCreatedRef.current,
+        onError: onError,
       });
 
       setConnectionState(ConnectionState.CONNECTED);

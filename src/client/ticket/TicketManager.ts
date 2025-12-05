@@ -46,6 +46,15 @@ export interface TicketManagerConfig {
    * Default: 10000 (10 seconds)
    */
   requestTimeout?: number;
+
+  /**
+   * Callback for non-retryable errors (auth failures, permissions, etc.)
+   * When called, the TicketManager stops retrying and the error is bubbled up to the application
+   */
+  onError?: (
+    error: Error,
+    classification: { reason: string; errorType: string }
+  ) => void;
 }
 
 /**
@@ -69,7 +78,9 @@ export class TicketManager {
   private validationInterval: number | null = null;
   private authData: AuthData;
   private apiUrl: string;
-  private config: Required<TicketManagerConfig>;
+  private config: Required<Omit<TicketManagerConfig, "onError">> & {
+    onError?: TicketManagerConfig["onError"];
+  };
 
   constructor(
     authData: AuthData,
@@ -84,6 +95,7 @@ export class TicketManager {
       maxRetries: config.maxRetries ?? 3,
       retryBaseDelay: config.retryBaseDelay ?? 1000,
       requestTimeout: config.requestTimeout ?? 10000,
+      onError: config.onError,
     };
   }
 
@@ -176,15 +188,39 @@ export class TicketManager {
 
         return this.ticket.ticket;
       } catch (error) {
+        console.log(`[TicketManager] Caught error during ticket request:`, {
+          error: error instanceof Error ? error.message : error,
+          attempt,
+          maxRetries,
+          hasOnErrorCallback: !!this.config.onError,
+        });
+
         const classification = logClassifiedError(error, "TicketManager");
 
-        // If this is a non-retryable error (CORS, auth, etc.), fail immediately
+        // If this is a non-retryable error (CORS, auth, etc.), call onError if provided
         if (!classification.isRetryable) {
-          throw new Error(
-            `Ticket refresh failed (non-retryable - ${
-              classification.reason
-            }): ${error instanceof Error ? error.message : "Unknown error"}`
-          );
+          const errorMessage = `Ticket refresh failed (non-retryable - ${
+            classification.reason
+          }): ${error instanceof Error ? error.message : "Unknown error"}`;
+
+          const ticketError = new Error(errorMessage);
+
+          // If onError callback is provided, call it and let the app handle the error
+          if (this.config.onError) {
+            this.config.onError(ticketError, {
+              reason: classification.reason,
+              errorType: classification.errorType,
+            });
+            // Don't throw - let the application handle the error through the callback
+            // Return a rejected promise to maintain the async contract
+            throw ticketError;
+          } else {
+            console.warn(
+              `[TicketManager] No onError callback configured, throwing error`
+            );
+            // No callback provided, throw as before
+            throw ticketError;
+          }
         }
 
         // If this is the last attempt, throw the error
@@ -266,6 +302,19 @@ export class TicketManager {
           `TicketManager: Stopping proactive renewal due to non-retryable error: ${classification.reason}`
         );
         this.stopProactiveRenewal();
+
+        // Call onError callback if provided for non-retryable errors during proactive renewal
+        if (this.config.onError) {
+          const ticketError = new Error(
+            `Proactive ticket renewal failed (non-retryable - ${
+              classification.reason
+            }): ${error instanceof Error ? error.message : "Unknown error"}`
+          );
+          this.config.onError(ticketError, {
+            reason: classification.reason,
+            errorType: classification.errorType,
+          });
+        }
       }
     }
   }

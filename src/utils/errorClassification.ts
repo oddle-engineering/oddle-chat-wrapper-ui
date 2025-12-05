@@ -76,7 +76,17 @@ export function classifyError(error: any): ErrorClassification {
     errorMessage.includes('forbidden') ||
     errorMessage.includes('authentication') ||
     errorMessage.includes('invalid token') ||
-    errorMessage.includes('access denied')
+    errorMessage.includes('expired token') ||
+    errorMessage.includes('expired authentication') ||
+    errorMessage.includes('access denied') ||
+    errorMessage.includes('ticket expired') ||
+    errorMessage.includes('invalid ticket') ||
+    errorMessage.includes('ticket revoked') ||
+    errorMessage.includes('ticket not found') ||
+    errorMessage.includes('user not found') ||
+    errorMessage.includes('entity not found') ||
+    errorMessage.includes('permission denied') ||
+    errorMessage.includes('invalid credentials')
   ) {
     return {
       isRetryable: false,

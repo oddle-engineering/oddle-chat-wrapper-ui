@@ -202,7 +202,10 @@ export class WebSocketChatClient {
         entityId: props.entityId,
         entityType: props.entityType,
       },
-      this.config.apiUrl
+      this.config.apiUrl,
+      {
+        onError: props.onError,
+      }
     );
 
     return new Promise(async (resolve, reject) => {

@@ -316,6 +316,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       onSystemEvent: handleSystemEvent,
       onReasoningUpdate: handleReasoningUpdate,
       onThreadCreated: handleThreadCreated,
+      onError: config.onError,
     });
 
     // Update the chatClient ref when it changes

@@ -221,7 +221,7 @@ function App() {
   // State for dynamic metadata (for testing metadata prop sync)
   // Start with empty to test the "metadata starts empty then gets populated" scenario
   const [dynamicMetadata, setDynamicMetadata] = useState<any>({
-    order_id: "order_0020",
+    order_id: "order_0023",
   });
 
   // Ref to ChatWrapper for imperative API access
@@ -1275,7 +1275,7 @@ function App() {
       // Authentication and entity context
       auth: {
         token:
-          "5820fcd8450f8e4bee013be8f8a394df4ff63fd33a5c06e07d3128bfd94a7caa9531e2fa0364dcf27418bf78772ce556c2b2006331c9aa00001cb20580c029ce",
+          "d46aa87f25d738a7c054a41b1974b4b0f49df50aa5313fbb057033e0515bdd104dcce1e5ec7fdcb5e9e306a45cdd7ca7f182995f3added82daafbf2588ea08bd",
         entityId: "8a8197e78054904a01805a25a4bb25be1",
         entityType: EntityType.BRAND,
       },
