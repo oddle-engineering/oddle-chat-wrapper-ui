@@ -25,6 +25,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.13] - 2025-12-09
+
+### Added
+- Add onConversationInitialized callback to ChatWrapper and related components
+
+### Changed
+- style(chat-wrapper): update empty state layout and improve responsiveness
+
 ## [1.0.12] - 2025-12-09
 
 ### Added
