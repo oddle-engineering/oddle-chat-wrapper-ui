@@ -25,6 +25,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.12] - 2025-12-09
+
+### Added
+- Update chat application styles and functionality
+- Integrate onError handling in useWebSocketConnection hook
+
+### Fixed
+- update retry button text to include a question mark
+- increase max-width of chat message for better visibility
+- update StopIcon SVG filter IDs and improve icon rendering
+
 ## [1.0.11] - 2025-12-05
 
 ### Added
