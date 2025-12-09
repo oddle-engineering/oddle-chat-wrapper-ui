@@ -3,25 +3,48 @@
   top: 0;
   left: 0;
   right: 0;
-  background: #dc2626;
-  color: white;
+  background: #fde1d3;
+  color: #7c2d12;
   z-index: 1000;
-  padding: 8px 12px;
-  font-size: 12px;
-  border-radius: 4px 4px 0 0;
+  padding: 16px 20px;
+  font-size: 15px;
+  border-radius: 8px;
+  margin: 8px 24px;
 }
 
 .network-status-banner__content {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 12px;
-  font-weight: 500;
+  justify-content: flex-start;
+  gap: 16px;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.4;
 }
 
 .network-status-banner__icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.network-status-banner__icon-text {
+  color: white;
   font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.network-status-banner__message {
+  color: #7c2d12;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.4;
 }
 
 .network-status-banner__spinner {

@@ -13936,7 +13936,7 @@ const qd = ({
     {
       onSubmit: ke,
       style: { position: "relative" },
-      className: S ? "chat-wrapper__prompt-input--disabled" : "",
+      className: `${S ? "chat-wrapper__prompt-input--disabled" : ""} ${F.length > 0 || T.length > 0 || K ? "chat-wrapper__prompt-input--with-media" : ""}`,
       children: [
         /* @__PURE__ */ u(
           ho,
@@ -13957,84 +13957,19 @@ const qd = ({
             shouldAnimate: Ce
           }
         ),
-        K && /* @__PURE__ */ R(
-          "div",
-          {
-            style: {
-              padding: "12px 16px",
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              backgroundColor: "#FDE1D3",
-              margin: "8px 0"
-            },
-            children: [
-              /* @__PURE__ */ u(
-                "div",
-                {
-                  style: {
-                    width: "24px",
-                    height: "24px",
-                    borderRadius: "50%",
-                    backgroundColor: "#dc2626",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0
-                  },
-                  children: /* @__PURE__ */ u(
-                    "span",
-                    {
-                      style: {
-                        color: "white",
-                        fontSize: "14px",
-                        fontWeight: "bold",
-                        lineHeight: 1
-                      },
-                      children: "!"
-                    }
-                  )
-                }
-              ),
-              /* @__PURE__ */ u("span", { style: {
-                color: "#9D132B",
-                fontSize: "14px",
-                flex: 1,
-                fontWeight: "400"
-              }, children: K }),
-              /* @__PURE__ */ u(
-                "button",
-                {
-                  onClick: () => W(null),
-                  style: {
-                    width: "24px",
-                    height: "24px",
-                    borderRadius: "50%",
-                    background: "none",
-                    border: "2px solid #9D132B",
-                    color: "#9D132B",
-                    cursor: "pointer",
-                    fontSize: "16px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                    transition: "all 0.2s",
-                    fontWeight: "bold"
-                  },
-                  onMouseEnter: (C) => {
-                    C.currentTarget.style.backgroundColor = "#9D132B", C.currentTarget.style.color = "white";
-                  },
-                  onMouseLeave: (C) => {
-                    C.currentTarget.style.backgroundColor = "transparent", C.currentTarget.style.color = "#9D132B";
-                  },
-                  title: "Dismiss",
-                  children: "×"
-                }
-              )
-            ]
-          }
-        ),
+        K && /* @__PURE__ */ R("div", { className: "chat-wrapper__upload-error", children: [
+          /* @__PURE__ */ u("div", { className: "chat-wrapper__upload-error-icon", children: /* @__PURE__ */ u("span", { className: "chat-wrapper__upload-error-icon-text", children: "!" }) }),
+          /* @__PURE__ */ u("span", { className: "chat-wrapper__upload-error-message", children: K }),
+          /* @__PURE__ */ u(
+            "button",
+            {
+              className: "chat-wrapper__upload-error-dismiss",
+              onClick: () => W(null),
+              title: "Dismiss",
+              children: "×"
+            }
+          )
+        ] }),
         (F.length > 0 || T.length > 0) && /* @__PURE__ */ R(
           "div",
           {
@@ -14559,7 +14494,7 @@ const qd = ({
     t
   );
   return /* @__PURE__ */ R(bt, { children: [
-    d && /* @__PURE__ */ u("div", { style: c ? { paddingTop: "32px" } : void 0, children: /* @__PURE__ */ u(
+    d && /* @__PURE__ */ u("div", { style: c ? { paddingTop: "48px" } : void 0, children: /* @__PURE__ */ u(
       th,
       {
         headerName: r,
@@ -14570,7 +14505,7 @@ const qd = ({
       "div",
       {
         className: f,
-        style: c ? { paddingTop: "32px" } : void 0,
+        style: c ? { paddingTop: "48px" } : void 0,
         children: [
           t && e.length === 0 ? /* @__PURE__ */ u("div", { className: "chat-wrapper__messages", children: /* @__PURE__ */ u(eh, { fullHeight: !0 }) }) : /* @__PURE__ */ u(uo, { ref: o }),
           /* @__PURE__ */ u("div", { className: "chat-wrapper__input-container", children: /* @__PURE__ */ u(Jd, { ref: s }) }),
@@ -14588,8 +14523,8 @@ function rh({
     /* @__PURE__ */ u("div", { className: "network-status-banner__spinner" }),
     /* @__PURE__ */ u("span", { children: "Reconnecting..." })
   ] }) : /* @__PURE__ */ R(bt, { children: [
-    /* @__PURE__ */ u("div", { className: "network-status-banner__icon", children: "⚠️" }),
-    /* @__PURE__ */ u("span", { children: "No internet connection" })
+    /* @__PURE__ */ u("div", { className: "network-status-banner__icon", children: /* @__PURE__ */ u("span", { className: "network-status-banner__icon-text", children: "!" }) }),
+    /* @__PURE__ */ u("span", { className: "network-status-banner__message", children: "No internet connection — please check your network settings and try again" })
   ] }) }) }) : null;
 }
 const po = Bn(

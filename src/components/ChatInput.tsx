@@ -371,7 +371,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
     <PromptInput
       onSubmit={handleSubmit}
       style={{ position: "relative" }}
-      className={isInputDisabled ? "chat-wrapper__prompt-input--disabled" : ""}
+      className={`${isInputDisabled ? "chat-wrapper__prompt-input--disabled" : ""} ${(uploadedMedia.length > 0 || uploadingFiles.length > 0 || uploadError) ? "chat-wrapper__prompt-input--with-media" : ""}`}
     >
       <PromptInputTextarea
         ref={textareaRef}
@@ -394,76 +394,18 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
 
       {/* Upload error message */}
       {uploadError && (
-        <div
-          style={{
-            padding: "12px 16px",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            backgroundColor: "#FDE1D3",
-            margin: "8px 0",
-          }}
-        >
-          {/* Red circle with white exclamation mark */}
-          <div
-            style={{
-              width: "24px",
-              height: "24px",
-              borderRadius: "50%",
-              backgroundColor: "#dc2626",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-            }}
-          >
-            <span
-              style={{
-                color: "white",
-                fontSize: "14px",
-                fontWeight: "bold",
-                lineHeight: 1,
-              }}
-            >
-              !
-            </span>
+        <div className="chat-wrapper__upload-error">
+          <div className="chat-wrapper__upload-error-icon">
+            <span className="chat-wrapper__upload-error-icon-text">!</span>
           </div>
           
-          <span style={{ 
-            color: "#9D132B", 
-            fontSize: "14px",
-            flex: 1,
-            fontWeight: "400"
-          }}>
+          <span className="chat-wrapper__upload-error-message">
             {uploadError}
           </span>
           
           <button
+            className="chat-wrapper__upload-error-dismiss"
             onClick={() => setUploadError(null)}
-            style={{
-              width: "24px",
-              height: "24px",
-              borderRadius: "50%",
-              background: "none",
-              border: "2px solid #9D132B",
-              color: "#9D132B",
-              cursor: "pointer",
-              fontSize: "16px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-              transition: "all 0.2s",
-              fontWeight: "bold",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#9D132B";
-              e.currentTarget.style.color = "white";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-              e.currentTarget.style.color = "#9D132B";
-            }}
             title="Dismiss"
           >
             ×

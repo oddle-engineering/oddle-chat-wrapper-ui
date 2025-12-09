@@ -23,8 +23,12 @@ export function NetworkStatusBanner({
           </>
         ) : (
           <>
-            <div className="network-status-banner__icon">⚠️</div>
-            <span>No internet connection</span>
+            <div className="network-status-banner__icon">
+              <span className="network-status-banner__icon-text">!</span>
+            </div>
+            <span className="network-status-banner__message">
+              No internet connection — please check your network settings and try again
+            </span>
           </>
         )}
       </div>

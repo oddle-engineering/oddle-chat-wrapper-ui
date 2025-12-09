@@ -130,9 +130,9 @@ function App() {
     mode: "sidebar" as ChatMode,
     theme: "light" as ChatTheme,
     position: "left" as ChatPosition,
-    headerName: "Demo Chat",
+    headerName: "Create Emails in Seconds",
     headerDescription:
-      "An AI assistant to help with restaurant management tasks.",
+      "Describe your idea in chat. Go from conversation to a launched campaign instantly",
 
     placeholderTexts: [
       "Ask Oddle AI to write email for a promo or menu update…",
@@ -221,7 +221,7 @@ function App() {
   // State for dynamic metadata (for testing metadata prop sync)
   // Start with empty to test the "metadata starts empty then gets populated" scenario
   const [dynamicMetadata, setDynamicMetadata] = useState<any>({
-    order_id: "order_0023",
+    order_id: "order_0031",
   });
 
   // Ref to ChatWrapper for imperative API access
@@ -1275,7 +1275,7 @@ function App() {
       // Authentication and entity context
       auth: {
         token:
-          "d46aa87f25d738a7c054a41b1974b4b0f49df50aa5313fbb057033e0515bdd104dcce1e5ec7fdcb5e9e306a45cdd7ca7f182995f3added82daafbf2588ea08bd",
+          "608d94c50f74c79de8fd8a60a5266e78ae9aca536e73c22e479a112df6f580ed90ced933b67b936a3c4b91de3870e0df9b7d7324057ccefce5db6934a663c530",
         entityId: "8a8197e78054904a01805a25a4bb25be1",
         entityType: EntityType.BRAND,
       },
@@ -1400,11 +1400,13 @@ function App() {
             display: isSidebarVisible ? "block" : "none",
           }}
         >
-          <ChatWrapper
-            ref={chatWrapperRef}
-            {...sidebarChatProps}
-            devMode={true}
-          />
+          <div style={{ marginTop: "48px", marginBottom: "48px" }}>
+            <ChatWrapper
+              ref={chatWrapperRef}
+              {...sidebarChatProps}
+              devMode={true}
+            />
+          </div>
         </div>
         <div
           className="panels-container"

@@ -106,7 +106,7 @@
 .chat-wrapper--sidebar {
   width: 400px;
   height: 600px;
-  max-width: 400px;
+  /* max-width: 400px; */
   max-height: 600px;
   overflow: hidden; /* Prevent external scrollbars */
 }
@@ -357,6 +357,76 @@
   max-height: none !important;
   height: auto !important;
   flex: 1;
+}
+
+/* Adjust textarea height when media is uploaded */
+.chat-wrapper__prompt-input--with-media .chat-wrapper__prompt-textarea {
+  min-height: 80px !important;
+  max-height: 112px !important;
+}
+
+/* Upload Error Message Styles */
+.chat-wrapper__upload-error {
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: #fde1d3;
+  margin: 8px 16px;
+  border-radius: 8px;
+}
+
+.chat-wrapper__upload-error-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.chat-wrapper__upload-error-icon-text {
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.chat-wrapper__upload-error-message {
+  color: #9d132b;
+  font-size: 14px;
+  flex: 1;
+  font-weight: 400;
+}
+
+.chat-wrapper__upload-error-dismiss {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: none;
+  border: 2px solid #9d132b;
+  color: #9d132b;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  font-weight: bold;
+}
+
+.chat-wrapper__upload-error-dismiss:hover {
+  background-color: #9d132b;
+  color: white;
+}
+
+.chat-wrapper__upload-error-dismiss:focus {
+  outline: none;
+  background-color: #9d132b;
+  color: white;
 }
 
 /* With messages - normal layout */
@@ -3187,12 +3257,12 @@ select.chat-wrapper__dev-settings-input {
 .chat-wrapper__retry-button {
   align-self: flex-end;
   background: none;
-  color: #dc2626;
+  color: #DB2727;
   border: none;
   padding: 0;
   border-radius: 0;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 400;
   cursor: pointer;
   transition: color 0.2s;
   display: inline-flex;
