@@ -1351,7 +1351,7 @@
   font-style: normal;
   font-weight: 400;
   line-height: 18px; /* 150% */
-  max-width: 60%;
+  max-width: 80%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
