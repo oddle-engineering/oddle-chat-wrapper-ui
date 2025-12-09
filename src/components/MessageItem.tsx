@@ -125,7 +125,7 @@ export const MessageItem = memo<MessageItemProps>(
           className="chat-wrapper__retry-button"
           onClick={handleRetry}
         >
-          Retry
+          Retry?
         </button>
       )
     );

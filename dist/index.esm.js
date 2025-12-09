@@ -13245,7 +13245,7 @@ const lo = {
       {
         className: "chat-wrapper__retry-button",
         onClick: b,
-        children: "Retry"
+        children: "Retry?"
       }
     ), T = () => /* @__PURE__ */ R(bt, { children: [
       /* @__PURE__ */ u("div", { className: "chat-wrapper__copy-button-container", children: /* @__PURE__ */ u(
