@@ -17,6 +17,7 @@ interface UseConversationLoaderProps {
   setProviderResId: (providerResId: string | null) => void;
   metadata?: any;
   isConnected?: boolean; // Wait for connection before loading
+  onConversationInitialized?: () => void;
 }
 
 export function useConversationLoader({
@@ -33,6 +34,7 @@ export function useConversationLoader({
   setProviderResId,
   metadata,
   isConnected = true, // Default to true for backward compatibility
+  onConversationInitialized,
 }: UseConversationLoaderProps) {
   const hasLoadedConversationRef = useRef<boolean>(false);
 
@@ -112,6 +114,12 @@ export function useConversationLoader({
       if (response.providerResId) {
         console.log("useConversationLoader: Setting providerResId:", response.providerResId);
         setProviderResId(response.providerResId);
+      }
+
+      // Trigger conversation initialized callback if messages were loaded
+      if (response.messages.length > 0 && onConversationInitialized) {
+        console.log("useConversationLoader: Triggering onConversationInitialized (previous messages loaded)");
+        onConversationInitialized();
       }
 
       hasLoadedConversationRef.current = true;

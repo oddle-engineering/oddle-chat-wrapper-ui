@@ -133,6 +133,7 @@ export interface ChatConfig {
   onError?: (error: Error) => void;
   onToolResult?: (tool: string, result: any) => void;
   onStreamingStatusChange?: (status: string) => void;
+  onConversationInitialized?: () => void;
   customStyles?: React.CSSProperties;
 }
 

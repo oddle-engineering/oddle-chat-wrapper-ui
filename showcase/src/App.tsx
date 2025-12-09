@@ -221,7 +221,7 @@ function App() {
   // State for dynamic metadata (for testing metadata prop sync)
   // Start with empty to test the "metadata starts empty then gets populated" scenario
   const [dynamicMetadata, setDynamicMetadata] = useState<any>({
-    order_id: "order_0031",
+    order_id: "order_0033",
   });
 
   // Ref to ChatWrapper for imperative API access
@@ -1275,7 +1275,7 @@ function App() {
       // Authentication and entity context
       auth: {
         token:
-          "608d94c50f74c79de8fd8a60a5266e78ae9aca536e73c22e479a112df6f580ed90ced933b67b936a3c4b91de3870e0df9b7d7324057ccefce5db6934a663c530",
+          "88efa6a40c78297876811ba4bac85b5b3f4a1d1b990174935ffd38fece20e90b6b56b2f87db997edaa5a66850317b994f9df35e5806803253e43b6803b964085",
         entityId: "8a8197e78054904a01805a25a4bb25be1",
         entityType: EntityType.BRAND,
       },
@@ -1297,6 +1297,10 @@ function App() {
         },
         onError: (error) => {
           console.error("Custom demo error:", error);
+        },
+        onConversationInitialized: () => {
+          console.log("clog Conversation has been initialized!");
+          // Notify external systems that chat conversation is active
         },
 
         features: {

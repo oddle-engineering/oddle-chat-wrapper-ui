@@ -207,6 +207,9 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
     // Refs for managing UI
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const chatInputRef = useRef<ChatInputRef>(null);
+    
+    // Track if conversation initialized callback has been triggered
+    const hasTriggeredConversationInitRef = useRef<boolean>(false);
 
     // Create a ref to store chatClient so we can access it in handleSystemEvent
     const chatClientRef = useRef<any>(null);
@@ -439,6 +442,10 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         setProviderResId,
         metadata,
         isConnected: connectionState === ConnectionState.CONNECTED, // Only load after connection established
+        onConversationInitialized: config.onConversationInitialized ? () => {
+          hasTriggeredConversationInitRef.current = true;
+          config.onConversationInitialized?.();
+        } : undefined,
       });
 
     // Handle retry: reconnect WebSocket and reload conversation
@@ -568,6 +575,13 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
 
         // Add user message to state
         setMessages((prev) => [...prev, userMessage]);
+
+        // Trigger conversation initialized callback when user sends first message
+        if (config.onConversationInitialized && !hasTriggeredConversationInitRef.current) {
+          console.log("ChatWrapper: Triggering onConversationInitialized (user sent first message)");
+          hasTriggeredConversationInitRef.current = true;
+          config.onConversationInitialized();
+        }
 
         try {
           // Business logic: Submit message via service

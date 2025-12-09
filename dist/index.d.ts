@@ -83,6 +83,7 @@ export declare interface ChatConfig {
     onError?: (error: Error) => void;
     onToolResult?: (tool: string, result: any) => void;
     onStreamingStatusChange?: (status: string) => void;
+    onConversationInitialized?: () => void;
     customStyles?: default_2.CSSProperties;
 }
 
