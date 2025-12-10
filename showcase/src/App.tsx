@@ -106,7 +106,7 @@ async function fetchMenuItems() {
         headers: {
           "Content-Type": "application/json",
           "x-oddle-mp-auth-token":
-            "6ac46bfaa45e594ed5957aa1de49d51bb0d92aeacdc28574fe8ae644c3b17d05d0da4bc121c4b693727472cdc2c83fcd9f14a7c26a006a6a913d21fa1e244380",
+            "46370126a336e40d73c73e5c83e5b19cfbbe53fa8324aa1220e4a7afd6c7b86883e2436e9ce2288a0b1d2c11efcf3c9ccc49ccda3e89f79ee81410061b77cb1e",
           "x-oddle-chat-server-key": "mock-api-key",
         },
       }
@@ -221,7 +221,7 @@ function App() {
   // State for dynamic metadata (for testing metadata prop sync)
   // Start with empty to test the "metadata starts empty then gets populated" scenario
   const [dynamicMetadata, setDynamicMetadata] = useState<any>({
-    order_id: "order_0033",
+    order_id: "order_0035",
   });
 
   // Ref to ChatWrapper for imperative API access

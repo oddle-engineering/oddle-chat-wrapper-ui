@@ -442,7 +442,7 @@ const _o = (e) => {
   isDevSettingsOpen: e.isDevSettingsOpen,
   setIsDevSettingsOpen: e.setIsDevSettingsOpen,
   toggleDevSettings: e.toggleDevSettings
-})), zo = "1.0.12", Uo = {
+})), zo = "1.0.13", Uo = {
   version: zo
 }, Bo = ({
   isOpen: e,
