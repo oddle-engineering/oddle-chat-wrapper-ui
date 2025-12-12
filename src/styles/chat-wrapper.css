@@ -318,24 +318,22 @@
   /* padding-top: 24px; Ensure spacing from header */
 }
 
-/* Add vertical scrollbar for empty page on small heights */
-@media (max-height: 600px) {
-  .chat-wrapper {
-    overflow-y: auto;
-    max-height: 100vh;
-  }
+/* Dynamic scrollbar based on content overflow */
+.chat-wrapper {
+  overflow-y: auto;
+  max-height: 100vh;
+}
 
-  .chat-wrapper__content--empty {
-    justify-content: flex-start;
-    overflow: visible;
-  }
+.chat-wrapper__content--empty {
+  justify-content: flex-start;
+  overflow: visible;
+}
 
-  .chat-wrapper__content--empty::after {
-    content: "";
-    display: block;
-    height: 40px;
-    flex-shrink: 0;
-  }
+.chat-wrapper__content--empty::after {
+  content: "";
+  display: block;
+  height: 40px;
+  flex-shrink: 0;
 }
 
 .chat-wrapper__content--empty .chat-wrapper__messages {
@@ -1541,6 +1539,8 @@
   overflow-x: auto;
   overflow-y: visible;
   padding-bottom: 8px;
+  margin-right: -16px;
+  padding-right: 16px;
 }
 
 .chat-wrapper__suggested-prompt-card {
