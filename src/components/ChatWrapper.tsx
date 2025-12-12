@@ -727,6 +727,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         chipName: config.chipName,
         chipLogo: config.chipLogo,
         suggestedPrompts: config.suggestedPrompts,
+        footer: config.footer,
         clientTools: uiClientTools,
         fileUploadEnabled: config.features?.fileUpload,
         fileUploadConfig: {

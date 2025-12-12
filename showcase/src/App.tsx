@@ -172,6 +172,14 @@ function App() {
         icon: <span>⚡</span>,
       },
     ],
+    footer: (
+      <div style={{ textAlign: 'center', padding: '16px', fontSize: '14px', color: '#637381' }}>
+        <p style={{ margin: '0 0 8px 0' }}>🤖 Powered by Oddle AI</p>
+        <p style={{ margin: '0', fontSize: '12px' }}>
+          Need help? Contact <a href="mailto:support@oddle.me" style={{ color: '#6f767b' }}>support@oddle.me</a>
+        </p>
+      </div>
+    ),
   });
 
   const [todos, setTodos] = useState<any[]>([
@@ -221,7 +229,7 @@ function App() {
   // State for dynamic metadata (for testing metadata prop sync)
   // Start with empty to test the "metadata starts empty then gets populated" scenario
   const [dynamicMetadata, setDynamicMetadata] = useState<any>({
-    order_id: "order_0035",
+    order_id: "order_0037",
   });
 
   // Ref to ChatWrapper for imperative API access
@@ -242,7 +250,7 @@ function App() {
         throw new Error("No active conversation to attach");
       }
 
-      const { entityId, entityType, tag, metadata } = data;
+      const { entityId, tag, metadata } = data;
 
       // Entity update functionality removed - use metadata for business context instead
       // if (entityId && entityType && chatWrapperRef.current) {

@@ -43,6 +43,7 @@ export interface ChatContextValue {
     description: string;
     icon?: ReactNode;
   }>;
+  footer?: ReactNode;
   
   // ===== Tools & Features =====
   clientTools?: ClientTools;
