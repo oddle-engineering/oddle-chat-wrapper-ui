@@ -579,7 +579,8 @@ const _o = (e) => {
             style: { fontSize: "12px", color: "#888", marginLeft: "8px" },
             children: [
               "v",
-              Uo.version
+              Uo.version,
+              " - testing only"
             ]
           }
         )

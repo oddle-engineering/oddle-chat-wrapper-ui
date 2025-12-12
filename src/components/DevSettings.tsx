@@ -8,7 +8,7 @@ import { updateThread, updateThreadMetadata } from "../utils/threadApi";
 import { useUIStore } from "../store";
 
 // Import package version automatically from package.json
-import packageInfo from '../../package.json';
+import packageInfo from "../../package.json";
 
 interface DevSettingsProps {
   isOpen: boolean;
@@ -231,7 +231,7 @@ export const DevSettings = ({
             <span
               style={{ fontSize: "12px", color: "#888", marginLeft: "8px" }}
             >
-              v{packageInfo.version}
+              v{packageInfo.version} - testing only
             </span>
           </div>
           <button
