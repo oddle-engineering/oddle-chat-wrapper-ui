@@ -183,7 +183,6 @@ export interface ChatWrapperProps {
   // Existing props
   config: Omit<ChatConfig, "apiEndpoint">;
   tools?: Tools; // Unified tools with execution functions
-  devMode?: boolean;
   contextHelpers?: ContextHelpers;
 }
 

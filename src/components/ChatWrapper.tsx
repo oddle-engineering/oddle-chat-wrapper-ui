@@ -14,7 +14,6 @@ import {
   ConnectionState,
 } from "../types";
 import { ChatInputRef } from "./ChatInput";
-import { DevSettings } from "./DevSettings";
 import { SystemEvent, SystemEventType } from "../client";
 import {
   useWebSocketConnection,
@@ -38,7 +37,6 @@ import {
 import { ChatBubbleButton } from "./chat/ChatBubbleButton";
 import { ChatHeader } from "./chat/ChatHeader";
 import { ChatContent } from "./chat/ChatContent";
-import { SettingsIcon } from "./icons";
 import { ChatProvider } from "../contexts";
 import { NetworkStatusBanner } from "./NetworkStatusBanner";
 import "../styles/chat-wrapper.css";
@@ -59,7 +57,6 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       // Existing props
       config,
       tools, // Note: Tools are stabilized internally to prevent reconnections on re-renders
-      devMode = false,
       contextHelpers,
     },
     ref
@@ -142,19 +139,15 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
     const currentProviderResId = useUIStore((state) => state.providerResId);
     const setProviderResId = useUIStore((state) => state.setProviderResId);
 
-    // Dev state
-    const isDevSettingsOpen = useUIStore((state) => state.isDevSettingsOpen);
-    const setIsDevSettingsOpen = useUIStore(
-      (state) => state.setIsDevSettingsOpen
-    );
-
     // Streaming state (now using Zustand instead of messageHandling hook)
     const isStreaming = useUIStore((state) => state.isStreaming);
     const setIsStreaming = useUIStore((state) => state.setIsStreaming);
     const isThinking = useUIStore((state) => state.isThinking);
     const setIsThinking = useUIStore((state) => state.setIsThinking);
     const streamingContent = useUIStore((state) => state.streamingContent);
-    const setStreamingContent = useUIStore((state) => state.setStreamingContent);
+    const setStreamingContent = useUIStore(
+      (state) => state.setStreamingContent
+    );
     const isHandlingTool = useUIStore((state) => state.isHandlingTool);
     const setIsHandlingTool = useUIStore((state) => state.setIsHandlingTool);
 
@@ -207,7 +200,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
     // Refs for managing UI
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const chatInputRef = useRef<ChatInputRef>(null);
-    
+
     // Track if conversation initialized callback has been triggered
     const hasTriggeredConversationInitRef = useRef<boolean>(false);
 
@@ -235,9 +228,6 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         ) {
           chatClientRef.current
             .updateMetadata(data.providerResId, { metadata })
-            .then(() => {
-              console.log("[ChatWrapper] ✅ Metadata update successful");
-            })
             .catch((error: any) => {
               console.error(
                 "[ChatWrapper] ❌ Failed to update metadata:",
@@ -252,7 +242,6 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
     // Handle system events
     const handleSystemEvent = useCallback(
       (event: SystemEvent) => {
-        console.log("[ChatWrapper] System event received:", event);
         switch (event.type) {
           case SystemEventType.CHAT_COMPLETED:
             // Capture provider resource ID from conversation completion
@@ -341,9 +330,6 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
     // Handle network reconnection
     useEffect(() => {
       if (wasOffline && isOnline && lastConnectionRetryableRef.current) {
-        console.log(
-          "[ChatWrapper] Network restored, attempting reconnection..."
-        );
         connectChatClient().catch((error) => {
           const classification = logClassifiedError(
             error,
@@ -370,18 +356,23 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
 
     // Custom stop generation that sends WebSocket stop_run message
     const stopGeneration = useCallback(() => {
-      console.log("[ChatWrapper] Stopping generation...");
-      
+
       // Stop the streaming state
       originalStopGeneration();
       setChatStatus(CHAT_STATUS.IDLE);
       setStreamingStatus(STREAMING_STATUS.IDLE);
-      
+
       // Send stop_run message to server
       if (chatClient && currentProviderResId) {
         chatClient.stopRun(currentProviderResId);
       }
-    }, [originalStopGeneration, setChatStatus, setStreamingStatus, chatClient, currentProviderResId]);
+    }, [
+      originalStopGeneration,
+      setChatStatus,
+      setStreamingStatus,
+      chatClient,
+      currentProviderResId,
+    ]);
 
     // Expose imperative handle for parent components
     useImperativeHandle(
@@ -442,10 +433,12 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         setProviderResId,
         metadata,
         isConnected: connectionState === ConnectionState.CONNECTED, // Only load after connection established
-        onConversationInitialized: config.onConversationInitialized ? () => {
-          hasTriggeredConversationInitRef.current = true;
-          config.onConversationInitialized?.();
-        } : undefined,
+        onConversationInitialized: config.onConversationInitialized
+          ? () => {
+              hasTriggeredConversationInitRef.current = true;
+              config.onConversationInitialized?.();
+            }
+          : undefined,
       });
 
     // Handle retry: reconnect WebSocket and reload conversation
@@ -509,29 +502,28 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
     // Cleanup on unmount: Close WebSocket and clear all state
     useEffect(() => {
       return () => {
-        console.log("[ChatWrapper] Unmounting - cleaning up state and connections");
-        
+
         // Clear all messages
         setMessages([]);
-        
+
         // Reset streaming state
         setIsStreaming(false);
         setIsThinking(false);
         setStreamingContent("");
         setIsHandlingTool(false);
-        
+
         // Reset chat status
         setChatStatus(CHAT_STATUS.IDLE);
         setStreamingStatus(STREAMING_STATUS.IDLE);
-        
+
         // Clear conversation state
         setIsLoadingConversation(false);
         setConversationError(null);
-        
+
         // Clear thread data
         setCurrentThreadId(null);
         setProviderResId(null);
-        
+
         // WebSocket cleanup is already handled by useWebSocketConnection hook
       };
     }, [
@@ -577,8 +569,11 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         setMessages((prev) => [...prev, userMessage]);
 
         // Trigger conversation initialized callback when user sends first message
-        if (config.onConversationInitialized && !hasTriggeredConversationInitRef.current) {
-          console.log("ChatWrapper: Triggering onConversationInitialized (user sent first message)");
+        if (
+          config.onConversationInitialized &&
+          !hasTriggeredConversationInitRef.current
+        ) {
+        
           hasTriggeredConversationInitRef.current = true;
           config.onConversationInitialized();
         }
@@ -674,11 +669,6 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       }
     }, [currentMode, openModal, toggleCollapse]);
 
-    // Handle settings button click
-    const handleOpenSettings = useCallback(() => {
-      setIsDevSettingsOpen(true);
-    }, [setIsDevSettingsOpen]);
-
     // Handle suggested prompt selection
     const handlePromptSelect = useCallback(
       (prompt: { description: string }) => {
@@ -732,8 +722,13 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         fileUploadEnabled: config.features?.fileUpload,
         fileUploadConfig: {
           maxFiles: config.fileUploadConfig?.maxFiles ?? 5,
-          maxFileSize: config.fileUploadConfig?.maxFileSize ?? (15 * 1024 * 1024), // 15MB default
-          allowedTypes: config.fileUploadConfig?.allowedTypes ?? ["image/jpeg", "image/png", "image/gif", "image/webp"],
+          maxFileSize: config.fileUploadConfig?.maxFileSize ?? 15 * 1024 * 1024, // 15MB default
+          allowedTypes: config.fileUploadConfig?.allowedTypes ?? [
+            "image/jpeg",
+            "image/png",
+            "image/gif",
+            "image/webp",
+          ],
         },
       }),
       [
@@ -930,17 +925,6 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
               onRetry={handleRetryConnection}
             /> */}
 
-            {/* Floating settings button for when header is not visible */}
-            {devMode && config.headerVisible === false && (
-              <button
-                className="chat-wrapper__settings-button chat-wrapper__settings-button--floating"
-                onClick={handleOpenSettings}
-                title="Developer Settings"
-              >
-                <SettingsIcon size={16} />
-              </button>
-            )}
-
             {/* Header */}
             {chatUtils.state.shouldShowHeader(config.headerVisible) && (
               <ChatHeader
@@ -948,11 +932,9 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
                 mode={currentMode as ChatMode}
                 isCollapsed={isCollapsed}
                 isModalOpen={isModalOpen}
-                devMode={devMode}
                 onClose={closeModal}
                 onToggleFullscreen={toggleFullscreen}
                 onToggleCollapse={toggleCollapse}
-                onOpenSettings={handleOpenSettings}
               />
             )}
 
@@ -971,15 +953,6 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
                 </ChatProvider>
               </FileUploadErrorBoundary>
             )}
-
-            {/* Dev Settings Popup */}
-            <DevSettings
-              isOpen={isDevSettingsOpen}
-              onClose={() => setIsDevSettingsOpen(false)}
-              apiUrl={httpApiUrl}
-              userMpAuthToken={userMpAuthToken}
-              chatServerKey={chatServerKey}
-            />
           </div>
         </WebSocketErrorBoundary>
       </ChatErrorBoundary>

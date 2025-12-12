@@ -4,11 +4,10 @@ import { createLayoutSlice, LayoutSlice } from "./slices/layoutSlice";
 import { createChatSlice, ChatSlice } from "./slices/chatSlice";
 import { createConversationSlice, ConversationSlice } from "./slices/conversationSlice";
 import { createThreadSlice, ThreadSlice } from "./slices/threadSlice";
-import { createDevSlice, DevSlice } from "./slices/devSlice";
 import { createMessagesSlice, MessagesSlice } from "./slices/messagesSlice";
 
 // Combined store type
-export type UIStore = LayoutSlice & ChatSlice & ConversationSlice & ThreadSlice & DevSlice & MessagesSlice;
+export type UIStore = LayoutSlice & ChatSlice & ConversationSlice & ThreadSlice & MessagesSlice;
 
 // Create the store with all slices combined
 export const useUIStore = create<UIStore>()(
@@ -18,7 +17,6 @@ export const useUIStore = create<UIStore>()(
       ...createChatSlice(...a),
       ...createConversationSlice(...a),
       ...createThreadSlice(...a),
-      ...createDevSlice(...a),
       ...createMessagesSlice(...a),
     }),
     {
@@ -66,12 +64,6 @@ export const useThreadState = () =>
     clearThreadData: state.clearThreadData,
   }));
 
-export const useDevState = () =>
-  useUIStore((state) => ({
-    isDevSettingsOpen: state.isDevSettingsOpen,
-    setIsDevSettingsOpen: state.setIsDevSettingsOpen,
-    toggleDevSettings: state.toggleDevSettings,
-  }));
 
 export const useMessagesState = () =>
   useUIStore((state) => ({

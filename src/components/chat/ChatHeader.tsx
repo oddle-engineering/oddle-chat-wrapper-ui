@@ -1,17 +1,15 @@
-import React from 'react';
-import { CloseIcon, FullscreenIcon, CollapseIcon, SettingsIcon } from '../icons';
-import { ChatMode } from '../../types';
+import React from "react";
+import { CloseIcon, FullscreenIcon, CollapseIcon } from "../icons";
+import { ChatMode } from "../../types";
 
 interface ChatHeaderProps {
   headerName: string;
   mode: ChatMode;
   isCollapsed: boolean;
   isModalOpen?: boolean;
-  devMode?: boolean;
   onClose?: () => void;
   onToggleFullscreen?: () => void;
   onToggleCollapse?: () => void;
-  onOpenSettings?: () => void;
 }
 
 export const ChatHeader: React.FC<ChatHeaderProps> = ({
@@ -19,11 +17,9 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
   mode,
   isCollapsed,
   isModalOpen,
-  devMode = false,
   onClose,
   onToggleFullscreen,
   onToggleCollapse,
-  onOpenSettings,
 }) => {
   const renderCloseButton = () => {
     if (mode === "modal" && isModalOpen && onClose) {
@@ -85,27 +81,12 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
     return null;
   };
 
-  const renderSettingsButton = () => {
-    if (!devMode || !onOpenSettings) return null;
-
-    return (
-      <button
-        className="chat-wrapper__settings-button"
-        onClick={onOpenSettings}
-        title="Developer Settings"
-      >
-        <SettingsIcon size={16} />
-      </button>
-    );
-  };
-
   return (
     <div className="chat-wrapper__header">
       <div className="chat-wrapper__title-area">
         <h2 className="chat-wrapper__title">{headerName}</h2>
       </div>
       <div className="chat-wrapper__header-controls">
-        {renderSettingsButton()}
         {renderModeToggleButton()}
         {renderCollapseButton()}
         {renderCloseButton()}

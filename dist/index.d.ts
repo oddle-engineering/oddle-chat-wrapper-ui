@@ -115,7 +115,6 @@ export declare interface ChatWrapperProps {
     metadata?: any;
     config: Omit<ChatConfig, "apiEndpoint">;
     tools?: Tools;
-    devMode?: boolean;
     contextHelpers?: ContextHelpers;
 }
 
@@ -219,23 +218,6 @@ export declare interface ConversationSlice {
 }
 
 export declare const CopyIcon: default_2.FC<IconProps>;
-
-export declare const DevSettings: ({ isOpen, onClose, apiUrl, userMpAuthToken, chatServerKey, app, }: DevSettingsProps) => JSX_2.Element | null;
-
-declare interface DevSettingsProps {
-    isOpen: boolean;
-    onClose: () => void;
-    apiUrl: string;
-    userMpAuthToken?: string;
-    chatServerKey?: string;
-    app?: string;
-}
-
-export declare interface DevSlice {
-    isDevSettingsOpen: boolean;
-    setIsDevSettingsOpen: (isOpen: boolean) => void;
-    toggleDevSettings: () => void;
-}
 
 export declare enum EntityType {
     BRAND = "BRAND",
@@ -583,7 +565,7 @@ export declare interface ToolSchema {
     parameters: ToolParameter[];
 }
 
-export declare type UIStore = LayoutSlice & ChatSlice & ConversationSlice & ThreadSlice & DevSlice & MessagesSlice;
+export declare type UIStore = LayoutSlice & ChatSlice & ConversationSlice & ThreadSlice & MessagesSlice;
 
 /**
  * Update a thread by providerResId (PATCH)
@@ -690,12 +672,6 @@ export declare const useConversationState: () => {
     clearConversationError: () => void;
 };
 
-export declare const useDevState: () => {
-    isDevSettingsOpen: boolean;
-    setIsDevSettingsOpen: (isOpen: boolean) => void;
-    toggleDevSettings: () => void;
-};
-
 export declare const useLayoutState: () => {
     isModalOpen: boolean;
     isCollapsed: boolean;
@@ -737,8 +713,6 @@ export declare function useUIState({ initialMode }: UseUIStateProps): {
     setCurrentThreadId: (threadId: string | null) => void;
     providerResId: string | null;
     setProviderResId: (providerResId: string | null) => void;
-    isDevSettingsOpen: boolean;
-    setIsDevSettingsOpen: (isOpen: boolean) => void;
     openModal: () => void;
     closeModal: () => void;
     toggleCollapse: () => void;

@@ -66,9 +66,6 @@ export function useUIState({ initialMode = "sidebar" }: UseUIStateProps) {
     providerResId: store.providerResId,
     setProviderResId: store.setProviderResId,
 
-    // Dev mode state
-    isDevSettingsOpen: store.isDevSettingsOpen,
-    setIsDevSettingsOpen: store.setIsDevSettingsOpen,
 
     // Actions
     openModal: store.openModal,

@@ -9,7 +9,6 @@ export { Loader } from './components/Loader';
 export { InlineLoader } from './components/InlineLoader';
 export { SuggestedPrompts } from './components/SuggestedPrompts';
 export { AnimatedPlaceholder } from './components/AnimatedPlaceholder';
-export { DevSettings } from './components/DevSettings';
 export { 
   ChatIcon, 
   CloseIcon, 
@@ -79,7 +78,6 @@ export {
   useChatState,
   useConversationState,
   useThreadState,
-  useDevState
 } from './store';
 export type {
   UIStore,
@@ -87,7 +85,6 @@ export type {
   ChatSlice,
   ConversationSlice,
   ThreadSlice,
-  DevSlice
 } from './store';
 
 // Legacy hook export (for backward compatibility)
