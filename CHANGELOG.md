@@ -25,6 +25,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.16] - 2025-12-12
+
+### Added
+- add custom footer to chat interface
+- Update dynamic metadata and enhance chat wrapper styles
+
+### Changed
+- refactor: remove developer settings and related functionality
+- Merge pull request #4 from oddle-engineering/feature/enhance-tablet-view
+- Refactor chat-wrapper styles: remove fixed height from empty content and add custom scrollbar styles for suggested prompts
+- Refactor chat-wrapper styles for improved scrollbar behavior and layout consistency
+- Update DevSettings to include testing label in version display
+
 ## [1.0.15] - 2025-12-10
 
 ### Added
