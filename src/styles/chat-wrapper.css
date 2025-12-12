@@ -324,13 +324,12 @@
     overflow-y: auto;
     max-height: 100vh;
   }
-  
+
   .chat-wrapper__content--empty {
     justify-content: flex-start;
-    padding-right: 16px;
     overflow: visible;
   }
-  
+
   .chat-wrapper__content--empty::after {
     content: "";
     display: block;
@@ -1517,7 +1516,7 @@
 
 /* Suggested Prompts */
 .chat-wrapper__suggested-prompts {
-  padding: 40px 0px 24px; /* Normal padding */
+  padding: 40px 0px 0px; /* Normal padding */
   flex: 0 0 auto; /* Prevent shrinking in flex layout */
   background-color: transparent; /* Ensure visibility */
   z-index: 1; /* Ensure it appears above other content */
@@ -1543,7 +1542,6 @@
   overflow-y: visible;
   padding-bottom: 8px;
 }
-
 
 .chat-wrapper__suggested-prompt-card {
   display: flex;
@@ -1588,8 +1586,6 @@
   margin: 0;
   line-height: 1.5;
 }
-
-
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
@@ -3308,7 +3304,7 @@ select.chat-wrapper__dev-settings-input {
 .chat-wrapper__retry-button {
   align-self: flex-end;
   background: none;
-  color: #DB2727;
+  color: #db2727;
   border: none;
   padding: 0;
   border-radius: 0;
@@ -3390,7 +3386,7 @@ select.chat-wrapper__dev-settings-input {
 }
 
 .chat-wrapper__media-image--clickable::after {
-  content: '🔍';
+  content: "🔍";
   position: absolute;
   top: 8px;
   right: 8px;

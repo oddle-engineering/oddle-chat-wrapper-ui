@@ -14476,26 +14476,27 @@ const qd = ({
     headerName: r,
     headerDescription: i,
     suggestedPrompts: a,
-    messagesEndRef: o,
-    chatInputRef: s,
-    isOffline: c
+    footer: o,
+    messagesEndRef: s,
+    chatInputRef: c,
+    isOffline: d
     // conversationError,
-  } = Sn(), d = Tt.state.shouldShowMainHeader(
+  } = Sn(), l = Tt.state.shouldShowMainHeader(
     e.length,
     n,
     t
-  ), l = Tt.state.shouldShowSuggestedPrompts(
+  ), f = Tt.state.shouldShowSuggestedPrompts(
     e.length,
     n,
     t,
     a
-  ), f = Tt.state.getContentAreaClass(
+  ), m = Tt.state.getContentAreaClass(
     e.length,
     n,
     t
   );
   return /* @__PURE__ */ I(Et, { children: [
-    d && /* @__PURE__ */ u("div", { style: c ? { paddingTop: "48px" } : void 0, children: /* @__PURE__ */ u(
+    l && /* @__PURE__ */ u("div", { style: d ? { paddingTop: "48px" } : void 0, children: /* @__PURE__ */ u(
       th,
       {
         headerName: r,
@@ -14505,12 +14506,13 @@ const qd = ({
     /* @__PURE__ */ I(
       "div",
       {
-        className: f,
-        style: c ? { paddingTop: "48px" } : void 0,
+        className: m,
+        style: d ? { paddingTop: "48px" } : void 0,
         children: [
-          t && e.length === 0 ? /* @__PURE__ */ u("div", { className: "chat-wrapper__messages", children: /* @__PURE__ */ u(eh, { fullHeight: !0 }) }) : /* @__PURE__ */ u(uo, { ref: o }),
-          /* @__PURE__ */ u("div", { className: "chat-wrapper__input-container", children: /* @__PURE__ */ u(Jd, { ref: s }) }),
-          l && /* @__PURE__ */ u(Qd, {})
+          t && e.length === 0 ? /* @__PURE__ */ u("div", { className: "chat-wrapper__messages", children: /* @__PURE__ */ u(eh, { fullHeight: !0 }) }) : /* @__PURE__ */ u(uo, { ref: s }),
+          /* @__PURE__ */ u("div", { className: "chat-wrapper__input-container", children: /* @__PURE__ */ u(Jd, { ref: c }) }),
+          f && /* @__PURE__ */ u(Qd, {}),
+          f && o && /* @__PURE__ */ u("div", { children: o })
         ]
       }
     )
@@ -14873,6 +14875,7 @@ const po = Wn(
           chipName: i.chipName,
           chipLogo: i.chipLogo,
           suggestedPrompts: i.suggestedPrompts,
+          footer: i.footer,
           clientTools: T,
           fileUploadEnabled: (R = i.features) == null ? void 0 : R.fileUpload,
           fileUploadConfig: {

@@ -24,6 +24,7 @@ export const ChatContent: React.FC = () => {
     headerName,
     headerDescription,
     suggestedPrompts,
+    footer,
     messagesEndRef,
     chatInputRef,
     isOffline,
@@ -52,7 +53,7 @@ export const ChatContent: React.FC = () => {
     <>
       {/* Main Header Section - only show when no messages and not loading */}
       {shouldShowMainHeader && (
-        <div style={isOffline ? { paddingTop: '48px' } : undefined}>
+        <div style={isOffline ? { paddingTop: "48px" } : undefined}>
           <ChatMainHeader
             headerName={headerName}
             headerDescription={headerDescription}
@@ -61,9 +62,9 @@ export const ChatContent: React.FC = () => {
       )}
 
       {/* Chat Content Area - flexible layout based on message state */}
-      <div 
-        className={contentAreaClass} 
-        style={isOffline ? { paddingTop: '48px' } : undefined}
+      <div
+        className={contentAreaClass}
+        style={isOffline ? { paddingTop: "48px" } : undefined}
       >
         {/* Messages Area */}
         {isLoadingConversation && messages.length === 0 ? (
@@ -81,6 +82,9 @@ export const ChatContent: React.FC = () => {
 
         {/* Suggested Prompts - only show when no messages and not loading */}
         {shouldShowSuggestedPrompts && <SuggestedPrompts />}
+
+        {/* Custom Footer - only show when no messages and not loading */}
+        {shouldShowSuggestedPrompts && footer && <div>{footer}</div>}
       </div>
     </>
   );

@@ -172,6 +172,14 @@ function App() {
         icon: <span>⚡</span>,
       },
     ],
+    footer: (
+      <div style={{ textAlign: 'center', padding: '16px', fontSize: '14px', color: '#637381' }}>
+        <p style={{ margin: '0 0 8px 0' }}>🤖 Powered by Oddle AI</p>
+        <p style={{ margin: '0', fontSize: '12px' }}>
+          Need help? Contact <a href="mailto:support@oddle.me" style={{ color: '#6f767b' }}>support@oddle.me</a>
+        </p>
+      </div>
+    ),
   });
 
   const [todos, setTodos] = useState<any[]>([
