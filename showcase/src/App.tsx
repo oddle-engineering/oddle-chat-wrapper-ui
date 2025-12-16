@@ -1300,6 +1300,7 @@ function App() {
 
       config: {
         ...customConfig,
+        enableSuggestedPromptsAnimation: true,
         onMessage: (message) => {
           console.log("Custom demo message:", message);
         },

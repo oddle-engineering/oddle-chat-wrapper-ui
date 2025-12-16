@@ -77,9 +77,14 @@ export const SuggestedPrompts: React.FC = () => {
     isTypingRef.current = true;
     let isCancelled = false;
 
+    // Immediately set first character in React state to hide placeholder
+    if (prompt.description.length > 0) {
+      chatInputRef.current.setText(prompt.description[0]);
+    }
+
     // Start typing animation after a brief delay
     timeoutRef.current = setTimeout(() => {
-      let currentIndex = 0;
+      let currentIndex = 1; // Start from second character since first is already set
       const typeSpeed = 30; // milliseconds per character (increased for stability)
       
       const typeNextCharacter = () => {
