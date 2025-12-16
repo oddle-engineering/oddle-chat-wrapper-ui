@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.18] - 2025-12-16
+
+### Added
+- update order_id in dynamic metadata and remove devMode from ChatWrapper
+
 ## [1.0.17] - 2025-12-16
 
 ### Changed
