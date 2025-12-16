@@ -55,40 +55,74 @@ export const SuggestedPrompts: React.FC = () => {
       timeoutRef.current = null;
     }
 
-    // Clear the input and focus
+    // Get textarea ref for direct manipulation during animation
+    const textareaElement = chatInputRef.current.textareaRef?.current;
+    if (!textareaElement) {
+      console.warn('Textarea ref not available, using fallback');
+      chatInputRef.current.setText(prompt.description);
+      return;
+    }
+
+    // Clear the input and focus once
     chatInputRef.current.setText("");
-    chatInputRef.current.focus();
+    textareaElement.focus();
     
     isTypingRef.current = true;
+    let isCancelled = false;
 
     // Start typing animation after a brief delay
     timeoutRef.current = setTimeout(() => {
       let currentIndex = 0;
-      const typeSpeed = 10; // milliseconds per character
+      const typeSpeed = 30; // milliseconds per character (increased for stability)
       
       const typeNextCharacter = () => {
+        // Safety check: stop if cancelled or component might be unmounted
+        if (isCancelled || !chatInputRef.current) {
+          isTypingRef.current = false;
+          timeoutRef.current = null;
+          return;
+        }
+
         if (currentIndex < prompt.description.length) {
           const textSoFar = prompt.description.substring(0, currentIndex + 1);
           
-          // Update React state with the text typed so far
-          if (chatInputRef.current) {
-            chatInputRef.current.setText(textSoFar);
-          }
+          // Directly update textarea value to avoid excessive setText calls
+          // This prevents creating 100+ setTimeout calls for focus/cursor
+          textareaElement.value = textSoFar;
+          
+          // Manually trigger input event so React knows about the change
+          const event = new Event('input', { bubbles: true });
+          textareaElement.dispatchEvent(event);
           
           currentIndex++;
           
           // Schedule next character
           timeoutRef.current = setTimeout(typeNextCharacter, typeSpeed);
         } else {
-          // Animation complete
+          // Animation complete - now sync with React state properly
           isTypingRef.current = false;
           timeoutRef.current = null;
+          
+          // Final state sync and focus
+          if (chatInputRef.current) {
+            chatInputRef.current.setText(prompt.description);
+          }
         }
       };
       
       // Start typing
       typeNextCharacter();
     }, 10);
+
+    // Cleanup function that can be called if needed
+    return () => {
+      isCancelled = true;
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      isTypingRef.current = false;
+    };
   }, [chatInputRef]);
 
   return (
