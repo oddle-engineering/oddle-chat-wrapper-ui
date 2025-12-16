@@ -25,6 +25,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.17] - 2025-12-16
+
+### Changed
+- chore: update build files
+- chore: clear error state for user messages on response receipt in useMessageHandlers
+- chore: Improve error logging for message copy and metadata synchronization
+- chore: Refactor logging and error handling across components
+- chore: Enhance error handling and network connectivity checks in chat components
+
 ## [1.0.16] - 2025-12-12
 
 ### Added
