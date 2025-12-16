@@ -578,18 +578,97 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
           config.onConversationInitialized();
         }
 
-        try {
-          // Business logic: Submit message via service
-          // Use currentProviderResId (from loaded thread) for conversation continuity
-          await chatClient.onTriggerMessage({
-            message: userMessage.content,
-            media,
-            providerResId: currentProviderResId || undefined,
-          });
+        // Check network connectivity immediately
+        const isOnline = navigator.onLine;
+        console.log("ChatWrapper: About to call onTriggerMessage", {
+          messageId: userMessage.id,
+          connectionState,
+          hasClient: !!chatClient,
+          isOnline
+        });
 
+        // If offline, immediately mark as failed - no timeout needed
+        if (!isOnline) {
+          console.log("ChatWrapper: No internet connection detected, marking message as failed immediately");
+          setIsThinking(false);
+          setChatStatus(CHAT_STATUS.ERROR);
+
+          // Mark the user message with error state
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === userMessage.id
+                ? {
+                    ...msg,
+                    hasError: true,
+                    isRetrying: false,
+                    errorMessage: "No internet connection. Please check your network and try again.",
+                  }
+                : msg
+            )
+          );
+
+          // State updates: Reset to idle
+          setIsStreaming(false);
+          setChatStatus(CHAT_STATUS.IDLE);
+          setStreamingStatus(STREAMING_STATUS.IDLE);
+          return; // Exit early - don't try to send
+        }
+
+        try {
+          // Business logic: Submit message via service with timeout
+          // Use currentProviderResId (from loaded thread) for conversation continuity
+          
+          // Create a timeout promise that rejects after 5 seconds
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error("Message send timeout - connection may be lost")), 5000);
+          });
+          
+          // Race the message send against the timeout
+          await Promise.race([
+            chatClient.onTriggerMessage({
+              message: userMessage.content,
+              media,
+              providerResId: currentProviderResId || undefined,
+            }),
+            timeoutPromise
+          ]);
+
+          console.log("ChatWrapper: onTriggerMessage succeeded - waiting for response");
           // State updates: Transition to streaming
           setChatStatus(CHAT_STATUS.STREAMING);
+          
+          // Set up a timeout to check if we get a response within 8 seconds
+          // This handles cases where connection appears online but is actually broken
+          const responseTimeoutId = setTimeout(() => {
+            console.log("ChatWrapper: No response received within timeout, marking message as failed");
+            setIsThinking(false);
+            setChatStatus(CHAT_STATUS.ERROR);
+            
+            // Mark the user message with error state due to no response
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === userMessage.id
+                  ? {
+                      ...msg,
+                      hasError: true,
+                      isRetrying: false,
+                      errorMessage: "No response received. Connection may be lost.",
+                    }
+                  : msg
+              )
+            );
+            
+            // Reset streaming state
+            setIsStreaming(false);
+            setChatStatus(CHAT_STATUS.IDLE);
+            setStreamingStatus(STREAMING_STATUS.IDLE);
+          }, 8000);
+          
+          // Store the timeout ID so we can clear it if we get a response
+          // (You'd need to clear this when the first message comes in)
+          (window as any).responseTimeoutId = responseTimeoutId;
         } catch (error) {
+          console.log("ChatWrapper: onTriggerMessage failed", error);
           // State updates: Handle error state
           setIsThinking(false);
           setChatStatus(CHAT_STATUS.ERROR);
@@ -601,18 +680,19 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
                 ? {
                     ...msg,
                     hasError: true,
+                    isRetrying: false, // Explicitly ensure not in retrying state
                     errorMessage:
                       connectionState !== ConnectionState.CONNECTED
-                        ? "Failed to send message."
+                        ? "Connection lost. Message not sent."
                         : error instanceof Error
                         ? error.message
-                        : "Failed to send message",
+                        : "Failed to send message. Please try again.",
                   }
                 : msg
             )
           );
 
-          // State updates: Reset to idle
+          // State updates: Reset to idle immediately
           setIsStreaming(false);
           setChatStatus(CHAT_STATUS.IDLE);
           setStreamingStatus(STREAMING_STATUS.IDLE);
@@ -772,7 +852,11 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
           return;
         }
 
-        // Mark message as retrying
+        // Mark message as retrying and set global loading state
+        setIsStreaming(true);
+        setIsThinking(true);
+        setChatStatus(CHAT_STATUS.SUBMITTED);
+        setStreamingStatus(STREAMING_STATUS.STARTING);
 
         setMessages((prevMessages) => {
           return prevMessages.map((msg) =>
@@ -787,6 +871,34 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
           );
         });
 
+        console.log("ChatWrapper: Retrying message", { messageId, messageContent: messageToRetry.content });
+
+        // Check network connectivity for retry
+        const isOnline = navigator.onLine;
+        if (!isOnline) {
+          console.log("ChatWrapper: Still offline during retry");
+          setIsThinking(false);
+          setIsStreaming(false);
+          setChatStatus(CHAT_STATUS.ERROR);
+
+          setMessages((prevMessages) =>
+            prevMessages.map((msg) =>
+              msg.id === messageId
+                ? {
+                    ...msg,
+                    isRetrying: false,
+                    hasError: true,
+                    errorMessage: "Still no internet connection. Please check your network and try again.",
+                  }
+                : msg
+            )
+          );
+          
+          setChatStatus(CHAT_STATUS.IDLE);
+          setStreamingStatus(STREAMING_STATUS.IDLE);
+          return; // Exit early if still offline
+        }
+
         try {
           // Reset conversation loader and reconnect
           resetConversationLoader();
@@ -799,14 +911,50 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
             providerResId: currentProviderResId || undefined,
           });
 
+          console.log("ChatWrapper: Retry message sent successfully - waiting for response");
+          
+          // Transition to streaming state (keep loading indicators)
+          setChatStatus(CHAT_STATUS.STREAMING);
+          
           // Clear the retrying state on the original message (it will show as a normal sent message)
           setMessages((prevMessages) =>
             prevMessages.map((msg) =>
               msg.id === messageId ? { ...msg, isRetrying: false } : msg
             )
           );
+          
+          // Set up the same response timeout for retry as for new messages
+          const responseTimeoutId = setTimeout(() => {
+            console.log("ChatWrapper: No response received for retry, marking as failed");
+            setIsThinking(false);
+            setChatStatus(CHAT_STATUS.ERROR);
+            
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === messageId
+                  ? {
+                      ...msg,
+                      hasError: true,
+                      isRetrying: false,
+                      errorMessage: "No response received. Connection may be lost.",
+                    }
+                  : msg
+              )
+            );
+            
+            setIsStreaming(false);
+            setChatStatus(CHAT_STATUS.IDLE);
+            setStreamingStatus(STREAMING_STATUS.IDLE);
+          }, 8000);
+          
+          (window as any).responseTimeoutId = responseTimeoutId;
         } catch (error) {
-          // Retry failed - show error state again
+          console.log("ChatWrapper: Retry failed", error);
+          // Retry failed - show error state again and reset loading states
+          setIsThinking(false);
+          setIsStreaming(false);
+          setChatStatus(CHAT_STATUS.ERROR);
+          setStreamingStatus(STREAMING_STATUS.IDLE);
 
           setMessages((prevMessages) =>
             prevMessages.map((msg) =>
@@ -816,11 +964,14 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
                     isRetrying: false,
                     hasError: true,
                     errorMessage:
-                      error instanceof Error ? error.message : "Retry failed",
+                      error instanceof Error ? error.message : "Retry failed. Please try again.",
                   }
                 : msg
             )
           );
+          
+          // Reset to idle
+          setChatStatus(CHAT_STATUS.IDLE);
         }
       },
       [

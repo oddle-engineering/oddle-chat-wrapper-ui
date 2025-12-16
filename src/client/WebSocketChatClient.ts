@@ -264,8 +264,19 @@ export class WebSocketChatClient {
   }
 
   async onTriggerMessage(params: TriggerMessageParams): Promise<void> {
-    if (!this.connectionState.isConnected) {
-      throw new Error("Client not connected");
+    const wsState = this.wsManager.getWebSocketState();
+    const isConnected = this.connectionState.isConnected;
+    
+    console.log("WebSocketChatClient: onTriggerMessage called", {
+      isConnected,
+      wsState,
+      willThrowError: !isConnected || wsState !== "OPEN"
+    });
+    
+    if (!isConnected || wsState !== "OPEN") {
+      const errorMsg = "Connection lost. Please check your internet connection and try again.";
+      console.log("WebSocketChatClient: Throwing connection error:", errorMsg);
+      throw new Error(errorMsg);
     }
 
     const { message, media, providerResId } = params;
@@ -280,6 +291,11 @@ export class WebSocketChatClient {
       });
       this.wsManager.send(chatMessage);
     } catch (error) {
+      // Re-check connection state in case it changed during send attempt
+      const wsState = this.wsManager.getWebSocketState();
+      if (wsState !== "OPEN") {
+        throw new Error("Connection lost during message send. Please try again.");
+      }
       throw error;
     }
   }

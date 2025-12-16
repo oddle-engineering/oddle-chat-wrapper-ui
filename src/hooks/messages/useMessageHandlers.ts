@@ -81,6 +81,13 @@ export function useMessageHandlers({
   // Handle streaming message character by character
   const handleSetMessage = useCallback(
     (char: string) => {
+      // Clear response timeout since we got a response
+      if ((window as any).responseTimeoutId) {
+        console.log("ChatWrapper: Response received, clearing timeout");
+        clearTimeout((window as any).responseTimeoutId);
+        (window as any).responseTimeoutId = null;
+      }
+      
       const sanitizedChar = sanitizeMessage(char, true);
 
       if (currentAssistantMessageIdRef.current) {

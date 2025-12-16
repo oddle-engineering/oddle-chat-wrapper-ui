@@ -277,6 +277,7 @@ export const MessageItem = memo<MessageItemProps>(
               <div className="chat-wrapper__message-content">
                 {renderMessageContent()}
               </div>
+              {/* Show retry button for user messages with errors */}
               {message.role === "user" && message.hasError && !message.isRetrying && renderRetryButton()}
             </>
           )}

@@ -55,6 +55,9 @@ export class ChatSubmissionService {
       content: message.trim(),
       timestamp: new Date(),
       media,
+      hasError: false,
+      isRetrying: false,
+      isStreaming: false,
     };
   }
 
