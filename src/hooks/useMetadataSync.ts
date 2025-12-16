@@ -96,11 +96,8 @@ export function useMetadataSync({
         .then(() => {
           lastMetadataRef.current = metadata;
         })
-        .catch((error: any) => {
-          console.error(
-            "[useMetadataSync] ❌ Failed to update existing thread metadata:",
-            error
-          );
+        .catch(() => {
+          // Silent failure - metadata sync is not critical
         });
     }
   }, [

@@ -35,7 +35,6 @@ export class WebSocketErrorBoundary extends Component<WebSocketErrorBoundaryProp
   }
 
   componentDidCatch(error: Error) {
-    console.error('WebSocketErrorBoundary caught an error:', error);
     
     if (this.props.onError) {
       this.props.onError(error);
@@ -52,7 +51,6 @@ export class WebSocketErrorBoundary extends Component<WebSocketErrorBoundaryProp
     const { maxRetries = 3, retryDelay = 1000, onRetry } = this.props;
 
     if (this.retryCount >= maxRetries) {
-      console.warn('Max retry attempts reached for WebSocket connection');
       return;
     }
 

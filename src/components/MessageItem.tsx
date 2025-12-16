@@ -92,7 +92,7 @@ export const MessageItem = memo<MessageItemProps>(
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       } catch (err) {
-        console.error("Failed to copy message:", err);
+        // Silent failure for copy
       }
     }, [message.content]);
 

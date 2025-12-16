@@ -105,7 +105,6 @@ export function useWebSocketConnection({
       JSON.stringify(contextHelpers) !==
       JSON.stringify(contextHelpersRef.current);
     if (contextHelpersChanged) {
-      console.log("clog ...TEST contextHelpers changed:", contextHelpers);
       contextHelpersRef.current = contextHelpers;
       contextHelpersStableRef.current = contextHelpers;
     }
@@ -211,9 +210,6 @@ export function useWebSocketConnection({
       // Only retry for retryable errors (network issues, server errors)
       // Skip retrying for CORS, authentication, and permission errors
       if (classification.isRetryable) {
-        console.log(
-          `[WebSocketConnection] Will retry in 2s: ${classification.reason}`
-        );
         setTimeout(() => {
           if (
             chatClientRef.current === null ||
@@ -222,10 +218,6 @@ export function useWebSocketConnection({
             retryConnectionRef.current?.();
           }
         }, 2000);
-      } else {
-        console.warn(
-          `[WebSocketConnection] Will not retry: ${classification.reason}`
-        );
       }
     }
   }, [

@@ -27,7 +27,6 @@ export class FileUploadErrorBoundary extends Component<FileUploadErrorBoundaryPr
   }
 
   componentDidCatch(error: Error) {
-    console.error('FileUploadErrorBoundary caught an error:', error);
     
     // Extract failed file information from error if available
     const failedFiles = this.extractFailedFiles(error);

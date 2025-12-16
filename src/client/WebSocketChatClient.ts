@@ -60,7 +60,6 @@ export class WebSocketChatClient {
       },
       onTicketRefresh: async () => {
         // Always get fresh ticket for reconnection
-        console.log('[WebSocketChatClient] Providing fresh ticket for reconnection...');
         if (!this.ticketManager) {
           throw new Error('TicketManager not available for ticket refresh');
         }
@@ -68,22 +67,14 @@ export class WebSocketChatClient {
       },
       onTicketValidate: async () => {
         // Validate current ticket with server API before reconnection
-        console.log('[WebSocketChatClient] Validating current ticket with server API...');
         if (!this.ticketManager) {
-          console.warn('[WebSocketChatClient] TicketManager not available for validation');
           return false;
         }
         
         try {
           const validation = await this.ticketManager.validateWithServer();
-          console.log(`[WebSocketChatClient] Server validation result: ${validation.valid ? 'valid' : 'invalid'}`, {
-            error: validation.error,
-            code: validation.code,
-            retryable: validation.retryable,
-          });
           return validation.valid;
         } catch (error) {
-          console.error('[WebSocketChatClient] Server validation failed:', error);
           return false;
         }
       },
@@ -99,11 +90,6 @@ export class WebSocketChatClient {
 
     // Handle authentication errors (if ticket was invalid)
     if (data?.type === "authentication_error") {
-      console.error(
-        "WebSocket authentication failed:",
-        data?.error,
-        (data as any)?.code
-      );
       this.handleAuthenticationFailure(data);
     }
 
@@ -134,7 +120,6 @@ export class WebSocketChatClient {
   }
 
   private handleConnectionOpen(): void {
-    console.log("WebSocket connection opened with ticket authentication");
     // Connection is already authenticated via URL ticket
     // Ticket renewal is handled by TicketManager (started in onInit)
 
@@ -144,24 +129,17 @@ export class WebSocketChatClient {
 
   private handleAuthenticationFailure(data: any): void {
     const errorData = data as any;
-    console.error("Authentication failure details:", {
-      error: errorData?.error,
-      code: errorData?.code,
-      hasTicket: this.ticketManager?.isValid() ?? false,
-    });
 
     // Auto-retry with new ticket if authentication fails due to expired tickets
     if (
       errorData?.code === "TICKET_INVALID" ||
       errorData?.code === "TICKET_EXPIRED"
     ) {
-      console.log("Attempting to refresh ticket and reconnect...");
       this.refreshTicketAndReconnect().catch((err) => {
         const classification = logClassifiedError(err, "TicketRefresh");
         
         // Only retry if the ticket refresh failure is retryable (e.g., network issues)
         if (!classification.isRetryable) {
-          console.warn(`[WebSocketClient] Ticket refresh failed, will not retry: ${classification.reason}`);
         }
         
         // Reject initialization if we can't recover from auth failure
@@ -232,7 +210,6 @@ export class WebSocketChatClient {
         // - tools_configured is received (if tools exist)
         // - session_established is received (if no tools)
       } catch (error) {
-        console.error("WebSocketChatClient: Initialization failed", error);
         reject(error);
       }
     });
@@ -267,15 +244,8 @@ export class WebSocketChatClient {
     const wsState = this.wsManager.getWebSocketState();
     const isConnected = this.connectionState.isConnected;
     
-    console.log("WebSocketChatClient: onTriggerMessage called", {
-      isConnected,
-      wsState,
-      willThrowError: !isConnected || wsState !== "OPEN"
-    });
-    
     if (!isConnected || wsState !== "OPEN") {
       const errorMsg = "Connection lost. Please check your internet connection and try again.";
-      console.log("WebSocketChatClient: Throwing connection error:", errorMsg);
       throw new Error(errorMsg);
     }
 
@@ -347,7 +317,6 @@ export class WebSocketChatClient {
    * Useful when authentication fails or ticket expires
    */
   async refreshTicketAndReconnect(): Promise<void> {
-    console.log("WebSocketChatClient: Refreshing ticket and reconnecting...");
 
     try {
       if (!this.ticketManager) {
@@ -364,14 +333,7 @@ export class WebSocketChatClient {
       this.wsManager.updateTicket(newTicket);
       await this.wsManager.connect();
 
-      console.log(
-        "WebSocketChatClient: Successfully refreshed ticket and reconnected"
-      );
     } catch (error) {
-      console.error(
-        "WebSocketChatClient: Failed to refresh ticket and reconnect:",
-        error
-      );
       throw error;
     }
   }
@@ -388,7 +350,6 @@ export class WebSocketChatClient {
    * Useful for "Reconnect" buttons or retry logic
    */
   async reconnect(): Promise<void> {
-    console.log("WebSocketChatClient: Manual reconnection requested");
     await this.refreshTicketAndReconnect();
   }
 
@@ -398,11 +359,9 @@ export class WebSocketChatClient {
    */
   stopRun(conversationUuid: string): void {
     if (!this.connectionState.isConnected) {
-      console.warn("WebSocketChatClient: Cannot stop run - client not connected");
       return;
     }
 
-    console.log("WebSocketChatClient: Stopping conversation run:", conversationUuid);
     
     const message = MessageFactory.serializeStopRun(conversationUuid);
     this.wsManager.send(message);
@@ -439,9 +398,6 @@ export class WebSocketChatClient {
       );
     }
 
-    console.log(
-      `WebSocketChatClient: Updating entity attachment - providerResId: ${providerResId}, entityId: ${entityId}, entityType: ${entityType}`
-    );
 
     try {
       // Use the updateThread utility function to make the HTTP PATCH request
@@ -459,10 +415,6 @@ export class WebSocketChatClient {
       const updateData: Partial<AuthData> = { entityId, entityType };
       this.ticketManager.updateAuthData(updateData);
     } catch (error) {
-      console.error(
-        "WebSocketChatClient: Failed to update entity attachment:",
-        error
-      );
       throw error;
     }
   }
@@ -509,12 +461,7 @@ export class WebSocketChatClient {
         this.authCredentials
       );
 
-      console.log("WebSocketChatClient: Thread metadata updated successfully");
     } catch (error) {
-      console.error(
-        "WebSocketChatClient: Failed to update thread metadata:",
-        error
-      );
       throw error;
     }
   }

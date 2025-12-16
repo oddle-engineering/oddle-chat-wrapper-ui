@@ -42,7 +42,6 @@ export class ChatErrorBoundary extends Component<ChatErrorBoundaryProps, ChatErr
     }
 
     // Log error for debugging
-    console.error('ChatErrorBoundary caught an error:', error, errorInfo);
   }
 
   componentDidUpdate(prevProps: ChatErrorBoundaryProps) {

@@ -228,11 +228,8 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         ) {
           chatClientRef.current
             .updateMetadata(data.providerResId, { metadata })
-            .catch((error: any) => {
-              console.error(
-                "[ChatWrapper] ❌ Failed to update metadata:",
-                error
-              );
+            .catch((_error: any) => {
+              // Silent failure for metadata update
             });
         }
       },
@@ -380,16 +377,12 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       () => ({
         updateMetadata: (updates: { tag?: string | null; metadata?: any }) => {
           if (!chatClient) {
-            console.warn(
-              "ChatWrapper: Cannot update metadata - chat client not initialized"
-            );
+            // Cannot update metadata without chat client
             return;
           }
 
           if (!currentProviderResId) {
-            console.warn(
-              "ChatWrapper: Cannot update metadata - no active conversation (providerResId not set)"
-            );
+            // Cannot update metadata without active conversation
             return;
           }
 
@@ -443,7 +436,6 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
 
     // Handle retry: reconnect WebSocket and reload conversation
     // const handleRetryConnection = useCallback(async () => {
-    //   console.log("ChatWrapper: Retrying connection and reloading conversation...");
     //
     //   // Reset conversation loader to allow reloading
     //   resetConversationLoader();
@@ -580,16 +572,9 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
 
         // Check network connectivity immediately
         const isOnline = navigator.onLine;
-        console.log("ChatWrapper: About to call onTriggerMessage", {
-          messageId: userMessage.id,
-          connectionState,
-          hasClient: !!chatClient,
-          isOnline
-        });
 
         // If offline, immediately mark as failed - no timeout needed
         if (!isOnline) {
-          console.log("ChatWrapper: No internet connection detected, marking message as failed immediately");
           setIsThinking(false);
           setChatStatus(CHAT_STATUS.ERROR);
 
@@ -633,14 +618,12 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
             timeoutPromise
           ]);
 
-          console.log("ChatWrapper: onTriggerMessage succeeded - waiting for response");
           // State updates: Transition to streaming
           setChatStatus(CHAT_STATUS.STREAMING);
           
           // Set up a timeout to check if we get a response within 8 seconds
           // This handles cases where connection appears online but is actually broken
           const responseTimeoutId = setTimeout(() => {
-            console.log("ChatWrapper: No response received within timeout, marking message as failed");
             setIsThinking(false);
             setChatStatus(CHAT_STATUS.ERROR);
             
@@ -668,7 +651,6 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
           // (You'd need to clear this when the first message comes in)
           (window as any).responseTimeoutId = responseTimeoutId;
         } catch (error) {
-          console.log("ChatWrapper: onTriggerMessage failed", error);
           // State updates: Handle error state
           setIsThinking(false);
           setChatStatus(CHAT_STATUS.ERROR);
@@ -871,12 +853,9 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
           );
         });
 
-        console.log("ChatWrapper: Retrying message", { messageId, messageContent: messageToRetry.content });
-
         // Check network connectivity for retry
         const isOnline = navigator.onLine;
         if (!isOnline) {
-          console.log("ChatWrapper: Still offline during retry");
           setIsThinking(false);
           setIsStreaming(false);
           setChatStatus(CHAT_STATUS.ERROR);
@@ -910,8 +889,6 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
             media: messageToRetry.media,
             providerResId: currentProviderResId || undefined,
           });
-
-          console.log("ChatWrapper: Retry message sent successfully - waiting for response");
           
           // Transition to streaming state (keep loading indicators)
           setChatStatus(CHAT_STATUS.STREAMING);
@@ -925,7 +902,6 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
           
           // Set up the same response timeout for retry as for new messages
           const responseTimeoutId = setTimeout(() => {
-            console.log("ChatWrapper: No response received for retry, marking as failed");
             setIsThinking(false);
             setChatStatus(CHAT_STATUS.ERROR);
             
@@ -949,7 +925,6 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
           
           (window as any).responseTimeoutId = responseTimeoutId;
         } catch (error) {
-          console.log("ChatWrapper: Retry failed", error);
           // Retry failed - show error state again and reset loading states
           setIsThinking(false);
           setIsStreaming(false);
@@ -1055,7 +1030,6 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       <ChatErrorBoundary>
         <WebSocketErrorBoundary
           onError={(error) => {
-            console.error("WebSocket error in ChatWrapper:", error);
             if (config.onError) {
               config.onError(error);
             }
@@ -1093,7 +1067,6 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
             {!isCollapsed && (
               <FileUploadErrorBoundary
                 onError={(error) => {
-                  console.error("File upload error:", error);
                   if (config.onError) {
                     config.onError(error);
                   }

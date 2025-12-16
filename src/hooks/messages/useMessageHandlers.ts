@@ -83,7 +83,6 @@ export function useMessageHandlers({
     (char: string) => {
       // Clear response timeout since we got a response
       if ((window as any).responseTimeoutId) {
-        console.log("ChatWrapper: Response received, clearing timeout");
         clearTimeout((window as any).responseTimeoutId);
         (window as any).responseTimeoutId = null;
       }
@@ -266,7 +265,6 @@ export function useMessageHandlers({
   // Handle chat error event
   const handleChatError = useCallback(
     (error: string) => {
-      console.error("Chat error:", error);
       setIsStreaming(false);
       setIsThinking(false);
       finalizeCurrentStreamingMessage();

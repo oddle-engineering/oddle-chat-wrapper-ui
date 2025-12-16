@@ -50,14 +50,6 @@ export function ConnectionNotification({
   const [wasDisconnected, setWasDisconnected] = useState(false);
 
   useEffect(() => {
-    console.log('[ConnectionNotification] State update:', {
-      isConnected,
-      isConnecting,
-      isReconnecting,
-      reconnectAttempt,
-      wasDisconnected,
-      currentState: notificationState
-    });
 
     // Track connection state changes
     if (isConnecting) {
@@ -76,7 +68,6 @@ export function ConnectionNotification({
       }
     } else if (isReconnecting) {
       // Reconnecting - show subtle banner
-      console.log('[ConnectionNotification] Setting state to RECONNECTING');
       setNotificationState('reconnecting');
     } else if (isConnected && wasDisconnected) {
       // Reconnected - hide banner
@@ -146,7 +137,6 @@ export function ConnectionNotification({
 
   // For reconnecting state, show subtle top banner (non-blocking)
   if (notificationState === 'reconnecting') {
-    console.log('[ConnectionNotification] RENDERING RECONNECTING BANNER', { reconnectAttempt });
     return (
       <div className={`connection-notification connection-notification--banner connection-notification--${notificationState}`}>
         <div className="connection-notification__banner-content">

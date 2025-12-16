@@ -125,7 +125,6 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
 
         // Check if sanitization removed everything
         if (!sanitizedMessage.trim()) {
-          console.warn("Message was blocked due to security concerns");
           // Optionally show user feedback
           return;
         }
@@ -191,9 +190,6 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
               // Check file size using configurable limit
               const maxSize = fileUploadConfig?.maxFileSize ?? (15 * 1024 * 1024);
               if (file.size > maxSize) {
-                console.warn(
-                  `File too large: ${file.name} (${file.size} bytes)`
-                );
                 setUploadError(`File too large. Maximum size is ${Math.round(maxSize / (1024 * 1024))}MB.`);
                 return false;
               }
@@ -207,9 +203,6 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
               ];
 
               if (!allowedTypes.includes(file.type)) {
-                console.warn(
-                  `File type not allowed: ${file.name} (${file.type})`
-                );
                 setUploadError(
                   `File type not supported. Allowed types: ${allowedTypes.join(", ")}`
                 );
@@ -248,7 +241,6 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                 setUploadedMedia(prev => [...prev, ...newMedia]);
                 setUploadError(null);
               } catch (uploadError) {
-                console.error("File upload failed:", uploadError);
                 // Remove failed files from uploading state (don't show thumbnails)
                 setUploadingFiles(prev => prev.filter(item => !validFiles.includes(item.file)));
                 
@@ -257,7 +249,6 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
             }
           }
         } catch (error) {
-          console.error("Clipboard paste error:", error);
           setUploadError(
             error instanceof Error ? error.message : "Failed to paste image"
           );
@@ -284,15 +275,12 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
           const validFiles = Array.from(files).filter((file) => {
             const sanitizedName = sanitizeFileName(file.name);
             if (sanitizedName !== file.name) {
-              console.warn(
-                `File name sanitized: ${file.name} -> ${sanitizedName}`
-              );
+              // File name was sanitized for security
             }
 
             // Check file size using configurable limit
             const maxSize = fileUploadConfig?.maxFileSize ?? (15 * 1024 * 1024);
             if (file.size > maxSize) {
-              console.warn(`File too large: ${file.name} (${file.size} bytes)`);
               setUploadError(`File too large. Maximum size is ${Math.round(maxSize / (1024 * 1024))}MB.`);
               return false;
             }
@@ -306,9 +294,6 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
             ];
 
             if (!allowedTypes.includes(file.type)) {
-              console.warn(
-                `File type not allowed: ${file.name} (${file.type})`
-              );
               setUploadError(
                 `File type not supported. Allowed types: ${allowedTypes.join(", ")}`
               );
@@ -347,7 +332,6 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
               setUploadedMedia(prev => [...prev, ...newMedia]);
               setUploadError(null); // Clear any previous errors on successful upload
             } catch (uploadError) {
-              console.error("File upload failed:", uploadError);
               // Remove failed files from uploading state (don't show thumbnails)
               setUploadingFiles(prev => prev.filter(item => !validFiles.includes(item.file)));
               
@@ -355,7 +339,6 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
             }
           }
         } catch (error) {
-          console.error("File upload error:", error);
           setUploadError(
             error instanceof Error ? error.message : "Upload failed"
           );
