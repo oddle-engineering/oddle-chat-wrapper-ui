@@ -388,11 +388,8 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
 
           chatClient
             .updateMetadata(currentProviderResId, updates)
-            .catch((error) => {
-              console.error(
-                "ChatWrapper: Failed to update thread metadata:",
-                error
-              );
+            .catch((_error) => {
+              // Silent failure for metadata update
             });
         },
       }),
