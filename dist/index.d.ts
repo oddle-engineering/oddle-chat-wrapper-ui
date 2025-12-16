@@ -493,6 +493,7 @@ export declare type StreamingStatus = typeof STREAMING_STATUS[keyof typeof STREA
  * SuggestedPrompts - Displays suggested prompt buttons
  *
  * Uses ChatContext to access prompts and selection handler.
+ * Implements custom typing animation that works with React's controlled inputs.
  */
 export declare const SuggestedPrompts: React.FC;
 

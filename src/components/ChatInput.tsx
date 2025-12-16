@@ -23,6 +23,7 @@ import { ConnectionState } from "../types";
 export interface ChatInputRef {
   focus: () => void;
   setText: (text: string) => void;
+  textareaRef?: React.RefObject<HTMLTextAreaElement>;
 }
 
 // TODO: Review onFileUpload security implications
@@ -111,7 +112,8 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
         }
       }, 0);
     },
-  }));
+    textareaRef,
+  }), []);
 
   const handleSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
