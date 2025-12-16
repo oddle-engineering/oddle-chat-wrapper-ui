@@ -43,6 +43,7 @@ export interface ChatContextValue {
     description: string;
     icon?: ReactNode;
   }>;
+  enableSuggestedPromptsAnimation?: boolean;
   footer?: ReactNode;
   
   // ===== Tools & Features =====

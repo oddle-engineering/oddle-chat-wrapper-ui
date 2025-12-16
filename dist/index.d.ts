@@ -66,6 +66,7 @@ export declare interface ChatConfig {
         description: string;
         icon?: default_2.ReactNode;
     }>;
+    enableSuggestedPromptsAnimation?: boolean;
     footer?: default_2.ReactNode;
     features?: {
         fileUpload?: boolean;
