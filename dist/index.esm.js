@@ -13908,7 +13908,7 @@ const Ud = ({
     let d = !1;
     return s.description.length > 0 && t.current.setText(s.description[0]), a.current = setTimeout(() => {
       let p = 1;
-      const m = 30, g = () => {
+      const m = 10, g = () => {
         if (d || !t.current) {
           r.current = !1, a.current = null;
           return;

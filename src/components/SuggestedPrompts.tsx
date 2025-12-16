@@ -85,7 +85,7 @@ export const SuggestedPrompts: React.FC = () => {
     // Start typing animation after a brief delay
     timeoutRef.current = setTimeout(() => {
       let currentIndex = 1; // Start from second character since first is already set
-      const typeSpeed = 30; // milliseconds per character (increased for stability)
+      const typeSpeed = 10; // milliseconds per character (increased for stability)
       
       const typeNextCharacter = () => {
         // Safety check: stop if cancelled or component might be unmounted
