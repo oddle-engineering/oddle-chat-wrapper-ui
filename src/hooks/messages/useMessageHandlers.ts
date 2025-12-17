@@ -96,8 +96,8 @@ export function useMessageHandlers({
             
             if (lastUserMessageIndex !== undefined) {
               return prev.map((msg, index) =>
-                index === lastUserMessageIndex && msg.hasError
-                  ? { ...msg, hasError: false, errorMessage: undefined }
+                index === lastUserMessageIndex && (msg.hasError || msg.isRetrying)
+                  ? { ...msg, hasError: false, errorMessage: undefined, isRetrying: false }
                   : msg
               );
             }

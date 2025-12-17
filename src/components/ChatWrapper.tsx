@@ -894,12 +894,8 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
           // Transition to streaming state (keep loading indicators)
           setChatStatus(CHAT_STATUS.STREAMING);
           
-          // Clear the retrying state on the original message (it will show as a normal sent message)
-          setMessages((prevMessages) =>
-            prevMessages.map((msg) =>
-              msg.id === messageId ? { ...msg, isRetrying: false } : msg
-            )
-          );
+          // Keep isRetrying: true until response actually starts
+          // The retry state will be cleared when handleSetMessage is called (response starts)
           
           // Set up the same response timeout for retry as for new messages
           const responseTimeoutId = setTimeout(() => {
