@@ -1,5 +1,10 @@
 {
     "cSpell.words": [
         "conv"
-    ]
+    ],
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#093428",
+        "titleBar.activeBackground": "#0D4938",
+        "titleBar.activeForeground": "#F0FCF9"
+    }
 }
