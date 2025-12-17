@@ -25,6 +25,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.19] - 2025-12-17
+
+### Added
+- enable suggested prompts animation and improve typing experience
+- update order_id and add suggested prompts animation
+- enhance typing animation stability and textarea handling in SuggestedPrompts
+
+### Changed
+- chore: Refactor chat reconnection logic and error state handling
+- chore: Remove margin from network status banner styles for improved layout consistency
+- chore: adjust chat content padding for offline state
+- chore: Decrease typing speed in SuggestedPrompts component for improved animation fluidity
+
 ## [1.0.18] - 2025-12-16
 
 ### Added
