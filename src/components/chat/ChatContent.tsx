@@ -64,7 +64,7 @@ export const ChatContent: React.FC = () => {
       {/* Chat Content Area - flexible layout based on message state */}
       <div
         className={contentAreaClass}
-        style={isOffline ? { paddingTop: "48px" } : undefined}
+        style={isOffline && messages.length > 0 ? { paddingTop: "72px" } : undefined}
       >
         {/* Messages Area */}
         {isLoadingConversation && messages.length === 0 ? (

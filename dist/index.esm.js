@@ -13995,7 +13995,7 @@ const Ud = ({
       "div",
       {
         className: m,
-        style: d ? { paddingTop: "48px" } : void 0,
+        style: d && e.length > 0 ? { paddingTop: "72px" } : void 0,
         children: [
           t && e.length === 0 ? /* @__PURE__ */ f("div", { className: "chat-wrapper__messages", children: /* @__PURE__ */ f(qd, { fullHeight: !0 }) }) : /* @__PURE__ */ f(so, { ref: s }),
           /* @__PURE__ */ f("div", { className: "chat-wrapper__input-container", children: /* @__PURE__ */ f(jd, { ref: c }) }),

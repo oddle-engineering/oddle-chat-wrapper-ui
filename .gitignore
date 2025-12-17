@@ -143,3 +143,5 @@ logs
 
 # Turbo
 .turbo
+
+.vscode/settings.json
