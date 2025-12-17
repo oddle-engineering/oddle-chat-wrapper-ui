@@ -25,6 +25,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.20] - 2025-12-17
+
+### Changed
+- chore: update retry handling in ChatWrapper, and improve message error state management
+
+### Fixed
+- enable suggested prompts animation by default
+- Increase response timeout to 60 seconds for improved LLM processing and tool execution
+
 ## [1.0.19] - 2025-12-17
 
 ### Added
