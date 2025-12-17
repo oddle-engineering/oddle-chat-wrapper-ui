@@ -878,11 +878,13 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         }
 
         try {
-          // Reset conversation loader and reconnect
-          resetConversationLoader();
-          await connectChatClient();
+          // Only reconnect if actually disconnected or connection is unstable
+          if (connectionState !== ConnectionState.CONNECTED) {
+            await connectChatClient();
+          }
 
           // Submit the message directly without creating a new user message
+          // No need to reset conversation loader - ticket should still be valid
           await chatClient?.onTriggerMessage({
             message: messageToRetry.content,
             media: messageToRetry.media,

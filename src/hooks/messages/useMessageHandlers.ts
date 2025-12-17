@@ -86,22 +86,24 @@ export function useMessageHandlers({
         clearTimeout((window as any).responseTimeoutId);
         (window as any).responseTimeoutId = null;
         
-        // Clear error state from the most recent user message since we got a response
-        // TODO: review the operation of this block
-        setMessages((prev) => {
-          const lastUserMessageIndex = prev.map((msg, index) => ({ msg, index }))
-            .filter(({ msg }) => msg.role === "user")
-            .pop()?.index;
-          
-          if (lastUserMessageIndex !== undefined) {
-            return prev.map((msg, index) =>
-              index === lastUserMessageIndex && msg.hasError
-                ? { ...msg, hasError: false, errorMessage: undefined }
-                : msg
-            );
-          }
-          return prev;
-        });
+        // Only clear error state from the most recent user message if we're starting a new assistant response
+        // (not during tool/reasoning updates)
+        if (!currentAssistantMessageIdRef.current) {
+          setMessages((prev) => {
+            const lastUserMessageIndex = prev.map((msg, index) => ({ msg, index }))
+              .filter(({ msg }) => msg.role === "user")
+              .pop()?.index;
+            
+            if (lastUserMessageIndex !== undefined) {
+              return prev.map((msg, index) =>
+                index === lastUserMessageIndex && msg.hasError
+                  ? { ...msg, hasError: false, errorMessage: undefined }
+                  : msg
+              );
+            }
+            return prev;
+          });
+        }
       }
       
       const sanitizedChar = sanitizeMessage(char, true);
