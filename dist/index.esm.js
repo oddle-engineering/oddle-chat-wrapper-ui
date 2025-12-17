@@ -14289,7 +14289,7 @@ const co = Un(
                 } : Pt
               )
             ), ue(!1), G(Se.IDLE), I(st.IDLE);
-          }, 8e3);
+          }, 6e4);
           window.responseTimeoutId = Ue;
         } catch (Ae) {
           Y(!1), G(Se.ERROR), ae(
@@ -14463,7 +14463,7 @@ const co = Un(
                 } : Ue
               )
             ), ue(!1), G(Se.IDLE), I(st.IDLE);
-          }, 8e3);
+          }, 6e4);
           window.responseTimeoutId = _e;
         } catch (_e) {
           Y(!1), ue(!1), G(Se.ERROR), I(st.IDLE), ae(
