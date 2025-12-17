@@ -13881,7 +13881,7 @@ const Ud = ({
     }
   );
 }), $d = () => {
-  const { suggestedPrompts: e, chatInputRef: t, enableSuggestedPromptsAnimation: n = !1 } = kn(), r = ge(!1), i = ge(null), a = ge(null);
+  const { suggestedPrompts: e, chatInputRef: t, enableSuggestedPromptsAnimation: n = !0 } = kn(), r = ge(!1), i = ge(null), a = ge(null);
   if (Re(() => () => {
     i.current && cancelAnimationFrame(i.current), a.current && clearTimeout(a.current);
   }, []), !e || e.length === 0)

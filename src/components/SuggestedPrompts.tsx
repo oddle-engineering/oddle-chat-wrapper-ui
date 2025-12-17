@@ -13,7 +13,7 @@ interface SuggestedPrompt {
  * Implements custom typing animation that works with React's controlled inputs.
  */
 export const SuggestedPrompts: React.FC = () => {
-  const { suggestedPrompts, chatInputRef, enableSuggestedPromptsAnimation = false } = useChatContext();
+  const { suggestedPrompts, chatInputRef, enableSuggestedPromptsAnimation = true } = useChatContext();
   const isTypingRef = useRef(false);
   const animationFrameRef = useRef<number | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
