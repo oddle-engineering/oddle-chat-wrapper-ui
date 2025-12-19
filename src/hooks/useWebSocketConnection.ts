@@ -107,6 +107,11 @@ export function useWebSocketConnection({
     if (contextHelpersChanged) {
       contextHelpersRef.current = contextHelpers;
       contextHelpersStableRef.current = contextHelpers;
+      
+      // Sync to existing client if already initialized
+      if (chatClientRef.current && contextHelpers) {
+        chatClientRef.current.updateContextHelpers(contextHelpers);
+      }
     }
   }, [contextHelpers]);
 
