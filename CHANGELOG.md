@@ -25,6 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.21] - 2025-12-19
+
+### Added
+- sync contextHelpers to existing chat client when updated
+- add dynamic contextHelpers with brandInfo after 10 seconds delay
+
 ## [1.0.20] - 2025-12-17
 
 ### Changed
