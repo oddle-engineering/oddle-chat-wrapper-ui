@@ -1725,7 +1725,7 @@ function Ao({
     o
   );
   Re(() => {
-    JSON.stringify(o) !== JSON.stringify(P.current) && (P.current = o, Z.current = o);
+    JSON.stringify(o) !== JSON.stringify(P.current) && (P.current = o, Z.current = o, v.current && o && v.current.updateContextHelpers(o));
   }, [o]), Re(() => {
     D.current = s, O.current = c, U.current = d, E.current = l, B.current = e, Q.current = t, F.current = n, ne.current = r, G.current = i;
   }, [

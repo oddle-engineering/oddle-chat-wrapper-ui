@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 
 import {
   ChatWrapper,
@@ -173,10 +173,20 @@ function App() {
       },
     ],
     footer: (
-      <div style={{ textAlign: 'center', padding: '16px', fontSize: '14px', color: '#637381' }}>
-        <p style={{ margin: '0 0 8px 0' }}>🤖 Powered by Oddle AI</p>
-        <p style={{ margin: '0', fontSize: '12px' }}>
-          Need help? Contact <a href="mailto:support@oddle.me" style={{ color: '#6f767b' }}>support@oddle.me</a>
+      <div
+        style={{
+          textAlign: "center",
+          padding: "16px",
+          fontSize: "14px",
+          color: "#637381",
+        }}
+      >
+        <p style={{ margin: "0 0 8px 0" }}>🤖 Powered by Oddle AI</p>
+        <p style={{ margin: "0", fontSize: "12px" }}>
+          Need help? Contact{" "}
+          <a href="mailto:support@oddle.me" style={{ color: "#6f767b" }}>
+            support@oddle.me
+          </a>
         </p>
       </div>
     ),
@@ -230,11 +240,36 @@ function App() {
   // Start with empty to test the "metadata starts empty then gets populated" scenario
   const [dynamicMetadata, setDynamicMetadata] = useState<any>();
 
+  // State for dynamic contextHelpers (for testing contextHelpers prop sync)
+  // Start with minimal context, then add brandInfo after 10 seconds
+  const [contextHelpers, setContextHelpers] = useState<any>({
+    locale: "en-US",
+  });
+
   // Ref to ChatWrapper for imperative API access
   const chatWrapperRef = useRef<ChatWrapperRef>(null);
 
   // Get providerResId from the store
   const providerResId = useUIStore((state) => state.providerResId);
+
+  // Effect to simulate brandInfo being attached after 10 seconds
+  useEffect(() => {
+    console.log("⏱️ Starting 10-second timer to attach brandInfo...");
+    const timer = setTimeout(() => {
+      console.log(
+        "✅ 10 seconds elapsed - attaching brandInfo to contextHelpers"
+      );
+      setContextHelpers({
+        brandInfo: {
+          id: "ud21_123",
+          brandName: "UD21 Restaurant",
+        },
+        locale: "en-US",
+      });
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // Handler for thread attachment - now updates metadata prop to test auto-sync
   const handleThreadAttachment = useCallback(
@@ -1317,15 +1352,9 @@ function App() {
         },
       },
       tools: tools,
-      contextHelpers: {
-        brandInfo: {
-          id: "ud21_123",
-          brandName: "UD21 Restaurant",
-        },
-        locale: "en-US",
-      },
+      contextHelpers: contextHelpers,
     }),
-    [customConfig, tools, dynamicMetadata]
+    [customConfig, tools, dynamicMetadata, contextHelpers]
   );
 
   return (
@@ -1412,10 +1441,7 @@ function App() {
           }}
         >
           <div style={{ marginTop: "48px", marginBottom: "48px" }}>
-            <ChatWrapper
-              ref={chatWrapperRef}
-              {...sidebarChatProps}
-            />
+            <ChatWrapper ref={chatWrapperRef} {...sidebarChatProps} />
           </div>
         </div>
         <div
