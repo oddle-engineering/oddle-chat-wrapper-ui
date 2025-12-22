@@ -55,6 +55,12 @@ export class MessageHandler {
           this.handleChatError(data);
           break;
         case InboundMessageType.TOOL_CALL_REQUEST:
+          console.log(`📥 [MessageHandler] Tool call request message received from WebSocket:`, {
+            type: data.type,
+            callId: (data as ToolCallRequest).callId,
+            toolName: (data as ToolCallRequest).toolName,
+            timestamp: new Date().toISOString(),
+          });
           this.handleToolCallRequest(data as ToolCallRequest);
           break;
         case InboundMessageType.HEARTBEAT_PING:
@@ -175,6 +181,19 @@ export class MessageHandler {
   }
 
   private handleToolCallRequest(request: ToolCallRequest): void {
+    console.log(`🔧 [MessageHandler] Received client tool call request:`, {
+      callId: request.callId,
+      toolName: request.toolName,
+      parameters: request.parameters,
+      timestamp: new Date().toISOString(),
+      source: 'WebSocket Message',
+    });
+    
+    console.log(`📨 [MessageHandler] Dispatching tool request to ToolHandler:`, { 
+      callId: request.callId, 
+      toolName: request.toolName 
+    });
+    
     this.toolHandler.handleToolCallRequest(request);
   }
 

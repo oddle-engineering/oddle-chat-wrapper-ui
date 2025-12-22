@@ -21,19 +21,47 @@ export class ToolHandler extends BaseHandler {
   async handleToolCallRequest(request: ToolCallRequest): Promise<void> {
     const { callId, toolName, parameters } = request;
     
+    console.log(`🔧 [ToolHandler] Server requested client tool execution:`, {
+      callId,
+      toolName,
+      parameters,
+      timestamp: new Date().toISOString(),
+      availableTools: Object.keys(this.clientTools),
+    });
 
     if (this.processedToolCalls.has(callId)) {
+      console.log(`⚠️ [ToolHandler] Tool call already processed, skipping:`, { callId, toolName });
       return;
     }
     
     this.processedToolCalls.add(callId);
+    
+    console.log(`▶️ [ToolHandler] Starting tool execution:`, { callId, toolName });
     this.getHandler('onReasoningUpdate')?.(true, `${REASONING_CONSTANTS.HANDLING_MARKER} ${toolName}`, request);
 
     try {
+      console.log(`🚀 [ToolHandler] Executing tool function:`, { callId, toolName, parameters });
       const result = await this.executeToolFunction(toolName, parameters);
+      
+      console.log(`✅ [ToolHandler] Tool execution successful:`, { 
+        callId, 
+        toolName, 
+        result: typeof result === 'object' ? JSON.stringify(result) : result,
+        resultType: typeof result,
+        timestamp: new Date().toISOString(),
+      });
+      
       this.sendToolResponse(callId, result);
       this.getHandler('onReasoningUpdate')?.(false, `${REASONING_CONSTANTS.COMPLETED_MARKER} ${toolName}`, request);
     } catch (error) {
+      console.error(`❌ [ToolHandler] Tool execution failed:`, { 
+        callId, 
+        toolName, 
+        error: error instanceof Error ? error.message : error,
+        stack: error instanceof Error ? error.stack : undefined,
+        timestamp: new Date().toISOString(),
+      });
+      
       this.sendToolError(callId, error);
       this.getHandler('onReasoningUpdate')?.(false, `${REASONING_CONSTANTS.ERROR_MARKER} Error: ${toolName} - ${error}`, request);
     }
@@ -53,21 +81,41 @@ export class ToolHandler extends BaseHandler {
 
   private sendToolResponse(callId: string, result: any): void {
     if (!this.sendMessage) {
+      console.warn(`⚠️ [ToolHandler] No sendMessage handler available to send response:`, { callId, result });
       return;
     }
 
+    console.log(`📤 [ToolHandler] Sending tool response to server:`, { 
+      callId, 
+      result: typeof result === 'object' ? JSON.stringify(result) : result,
+      timestamp: new Date().toISOString(),
+    });
+
     const message = MessageFactory.serializeToolCallSuccess(callId, result);
     this.sendMessage(message);
+    
+    console.log(`✉️ [ToolHandler] Tool response sent to server:`, { callId });
   }
 
   private sendToolError(callId: string, error: unknown): void {
     if (!this.sendMessage) {
+      console.warn(`⚠️ [ToolHandler] No sendMessage handler available to send error:`, { callId, error });
       return;
     }
 
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    
+    console.log(`📤❌ [ToolHandler] Sending tool error to server:`, { 
+      callId, 
+      errorMessage,
+      errorType: error instanceof Error ? error.constructor.name : typeof error,
+      timestamp: new Date().toISOString(),
+    });
+
     const message = MessageFactory.serializeToolCallError(callId, errorMessage);
     this.sendMessage(message);
+    
+    console.log(`✉️❌ [ToolHandler] Tool error sent to server:`, { callId, errorMessage });
   }
 
   handleServerToolCall(toolData: any): void {
