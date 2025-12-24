@@ -25,6 +25,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.22] - 2025-12-24
+
+### Added
+- update promotions structure and add new promo details
+
+### Changed
+- Merge pull request #5 from oddle-engineering/hotfix/sync-client-tools
+
+### Fixed
+- modify chat wrapper styles
+
 ## [1.0.21] - 2025-12-19
 
 ### Added
