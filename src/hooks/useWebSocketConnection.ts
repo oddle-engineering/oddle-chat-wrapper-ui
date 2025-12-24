@@ -138,30 +138,35 @@ export function useWebSocketConnection({
     entityType,
   ]);
 
-  // Process tools and extract schemas for server
-  const { toolSchemas, clientToolExecutors } = useMemo(() => {
+  // Process tools and extract schemas for server (only depends on structure changes)
+  const toolSchemas = useMemo(() => {
     const stableTools = toolsStableRef.current;
     if (stableTools && stableTools.length > 0) {
       // Extract schemas (without execute functions) for server
-      const schemas = stableTools.map(({ execute, ...schema }) => schema);
-      const executors: Record<string, (...args: any[]) => any> = {};
+      return stableTools.map(({ execute, ...schema }) => schema);
+    }
+    return [];
+  }, [toolsStableRef.current]);
 
-      // Extract execution functions for client-side use
-      stableTools.forEach((tool) => {
+  // Extract fresh executors on every render to avoid stale closures
+  // This doesn't cause reconnection since it's not used in connectChatClient dependencies
+  const clientToolExecutors = useMemo(() => {
+    if (tools && tools.length > 0) {
+      const executors: Record<string, (...args: any[]) => any> = {};
+      tools.forEach((tool) => {
         executors[tool.name] = tool.execute;
       });
-
-      return {
-        toolSchemas: schemas,
-        clientToolExecutors: executors,
-      };
+      return executors;
     }
+    return {};
+  }, [tools]); // Use fresh tools, not stable ref
 
-    return {
-      toolSchemas: [],
-      clientToolExecutors: {},
-    };
-  }, [toolsStableRef.current]);
+  // Update client executors when they change (without reconnection)
+  useEffect(() => {
+    if (chatClientRef.current && Object.keys(clientToolExecutors).length > 0) {
+      chatClientRef.current.updateClientTools(clientToolExecutors);
+    }
+  }, [clientToolExecutors]);
 
   // Retry function that doesn't depend on connectChatClient
   const retryConnectionRef = useRef<() => void>();

@@ -1757,6 +1757,7 @@
 .chat-wrapper__list-item .chat-wrapper__ordered-list {
   margin: 6px 0;
   padding-left: 20px;
+  list-style-type: none;
 }
 
 .chat-wrapper__list-item .chat-wrapper__list-item {
