@@ -301,6 +301,14 @@ export class WebSocketChatClient {
     this.wsManager.send(message);
   }
 
+  /**
+   * Update client-side tool executors without modifying schemas or reconnecting
+   * This ensures fresh closures when useCallback dependencies change
+   */
+  updateClientTools(tools: Record<string, Function>): void {
+    this.messageHandler.updateClientTools(tools);
+  }
+
   getConnectionStatus(): ConnectionStatus {
     return {
       connected: this.connectionState.isConnected,
