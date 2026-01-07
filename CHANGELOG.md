@@ -25,6 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.23] - 2026-01-07
+
+### Added
+- add ConnectionError component and integrate it into ChatContent for improved error handling
+- add ChatSkeleton component for loading state and enhance ChatInput with connecting state indicator
+
 ## [1.0.22] - 2025-12-24
 
 ### Added
