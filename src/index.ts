@@ -5,6 +5,7 @@ export { ChatWrapper } from './components/ChatWrapper';
 export { ConnectionNotification } from './components/ConnectionNotification';
 export type { ConnectionNotificationProps } from './components/ConnectionNotification';
 export { ChatSkeleton } from './components/ChatSkeleton';
+export { ConnectionError } from './components/ConnectionError';
 export { Reasoning, ReasoningTrigger, ReasoningContent } from './components/Reasoning';
 export { Loader } from './components/Loader';
 export { InlineLoader } from './components/InlineLoader';

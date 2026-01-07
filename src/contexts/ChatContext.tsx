@@ -76,6 +76,7 @@ export interface ChatContextValue {
   onStopGeneration: () => void;
   onPromptSelect?: (prompt: { description: string }) => void;
   onRetryMessage?: (messageId: string) => void;
+  onRetryConnection?: () => void;
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null);

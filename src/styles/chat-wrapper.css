@@ -3184,7 +3184,7 @@
 }
 
 .chat-wrapper__skeleton-prompt-card {
-  height: 120px;
+  height: 160px;
   background: linear-gradient(
     90deg,
     #f0f0f0 0%,
@@ -3194,7 +3194,6 @@
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
 }
 
 .chat-wrapper__skeleton-prompt-card:nth-child(1) {
@@ -3234,7 +3233,6 @@
   animation: shimmer 1.5s ease-in-out infinite;
   animation-delay: 0.6s;
   border-radius: 12px;
-  border: 2px solid #e8e8e8;
 }
 
 @keyframes shimmer {
@@ -3264,6 +3262,162 @@
   );
   background-size: 200% 100%;
   border-color: #374151;
+}
+
+/* Connection Error Overlay */
+.chat-wrapper__connection-error-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.chat-wrapper__connection-error-card {
+  background: white;
+  border-radius: 16px;
+  padding: 32px 24px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+              0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: slideIn 0.3s ease-out;
+}
+
+.chat-wrapper__connection-error-icon {
+  margin-bottom: 16px;
+}
+
+.chat-wrapper__connection-error-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+  font-family: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
+}
+
+.chat-wrapper__connection-error-message {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+  font-family: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
+}
+
+.chat-wrapper__connection-error-retry-count {
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 0 0 16px 0;
+  font-family: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
+}
+
+.chat-wrapper__connection-error-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #410099;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
+}
+
+.chat-wrapper__connection-error-button:hover {
+  background-color: #330077;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+              0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.chat-wrapper__connection-error-button:active {
+  transform: translateY(0);
+}
+
+/* Connection Error Footer - inside the error card */
+.chat-wrapper__connection-error-footer {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Dark mode connection error */
+.chat-wrapper--dark .chat-wrapper__connection-error-overlay {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.chat-wrapper--dark .chat-wrapper__connection-error-card {
+  background: #1f2937;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3),
+              0 10px 10px -5px rgba(0, 0, 0, 0.2);
+}
+
+.chat-wrapper--dark .chat-wrapper__connection-error-title {
+  color: #f9fafb;
+}
+
+.chat-wrapper--dark .chat-wrapper__connection-error-message {
+  color: #d1d5db;
+}
+
+.chat-wrapper--dark .chat-wrapper__connection-error-retry-count {
+  color: #9ca3af;
+}
+
+.chat-wrapper--dark .chat-wrapper__connection-error-footer {
+  border-top-color: #374151;
+}
+
+/* Error State Footer */
+.chat-wrapper__error-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #e5e7eb;
+  background-color: #ffffff;
+  flex-shrink: 0;
+}
+
+.chat-wrapper--dark .chat-wrapper__error-footer {
+  border-top-color: #374151;
+  background-color: #1f2937;
 }
 
 

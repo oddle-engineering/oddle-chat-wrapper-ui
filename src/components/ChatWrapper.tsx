@@ -955,6 +955,15 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       ]
     );
 
+    // Handle retry connection: attempt to reconnect when connection fails
+    const handleRetryConnection = useCallback(async () => {
+      try {
+        await connectChatClient();
+      } catch (error) {
+        console.error("Failed to reconnect:", error);
+      }
+    }, [connectChatClient]);
+
     const handlers = useMemo(
       () => ({
         onSubmit: handleSubmit,
@@ -962,6 +971,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         onStopGeneration: stopGeneration,
         onPromptSelect: handlePromptSelect,
         onRetryMessage: handleRetryMessage,
+        onRetryConnection: handleRetryConnection,
       }),
       [
         handleSubmit,
@@ -969,6 +979,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         stopGeneration,
         handlePromptSelect,
         handleRetryMessage,
+        handleRetryConnection,
       ]
     );
 

@@ -95,6 +95,14 @@ export declare type ChatMode = "sidebar" | "fullscreen" | "modal" | "embedded";
 
 export declare type ChatPosition = "left" | "right";
 
+/**
+ * ChatSkeleton - Loading skeleton for the entire chat interface
+ *
+ * Displays a skeleton UI when the chat is in an empty state and connecting
+ * to get the ticket and establish WebSocket connection.
+ */
+export declare const ChatSkeleton: default_2.FC;
+
 export declare interface ChatSlice {
     chatStatus: ChatStatus;
     streamingStatus: StreamingStatus;
@@ -164,6 +172,27 @@ export declare type ClientTools = ClientTool[];
 export declare const CloseIcon: default_2.FC<IconProps>;
 
 export declare const CollapseIcon: default_2.FC<IconProps>;
+
+/**
+ * ConnectionError - Displays error overlay when connection fails
+ *
+ * Shows a friendly error message with retry option when ticket fetch
+ * or WebSocket connection fails.
+ */
+export declare const ConnectionError: default_2.FC<ConnectionErrorProps>;
+
+declare interface ConnectionErrorProps {
+    /** Type of error that occurred */
+    errorType?: "network" | "auth" | "server" | "unknown";
+    /** Custom error message */
+    errorMessage?: string;
+    /** Number of retry attempts made */
+    retryCount?: number;
+    /** Callback when retry button is clicked */
+    onRetry?: () => void;
+    /** Optional footer content to show below error */
+    footer?: default_2.ReactNode;
+}
 
 /**
  * ConnectionNotification - Subtle banner notification for connection status

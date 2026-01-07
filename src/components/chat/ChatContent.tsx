@@ -5,6 +5,7 @@ import { SuggestedPrompts } from "../SuggestedPrompts";
 import { InlineLoader } from "../InlineLoader";
 import { ChatMainHeader } from "./ChatMainHeader";
 import { ChatSkeleton } from "../ChatSkeleton";
+import { ConnectionError } from "../ConnectionError";
 import { chatUtils } from "../../utils/chatUtils";
 import { useChatContext } from "../../contexts";
 import { ConnectionState } from "../../types";
@@ -31,7 +32,8 @@ export const ChatContent: React.FC = () => {
     chatInputRef,
     isOffline,
     connectionState,
-    // conversationError,
+    conversationError,
+    onRetryConnection,
   } = useChatContext();
 
   // Check if we should show skeleton (empty state + connecting)
@@ -40,9 +42,27 @@ export const ChatContent: React.FC = () => {
     !isLoadingConversation && 
     connectionState === ConnectionState.CONNECTING;
 
-  // If showing skeleton, render it and nothing else
-  if (shouldShowSkeleton) {
-    return <ChatSkeleton />;
+  // Check if connection failed in empty state
+  const shouldShowConnectionError =
+    messages.length === 0 &&
+    !isLoadingConversation &&
+    connectionState === ConnectionState.DISCONNECTED;
+
+  // If showing skeleton, render it with error overlay if connection failed
+  if (shouldShowSkeleton || shouldShowConnectionError) {
+    return (
+      <div style={{ position: "relative", height: "100%" }}>
+        <ChatSkeleton />
+        {shouldShowConnectionError && (
+          <ConnectionError
+            errorType={isOffline ? "network" : "server"}
+            errorMessage={conversationError || undefined}
+            onRetry={onRetryConnection}
+            footer={footer}
+          />
+        )}
+      </div>
+    );
   }
 
   const shouldShowMainHeader = chatUtils.state.shouldShowMainHeader(
