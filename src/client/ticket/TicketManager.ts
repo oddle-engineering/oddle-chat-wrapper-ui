@@ -43,7 +43,7 @@ export interface TicketManagerConfig {
 
   /**
    * Timeout for ticket requests (ms)
-   * Default: 10000 (10 seconds)
+   * Default: 30000 (30 seconds) - increased for slow connections
    */
   requestTimeout?: number;
 
@@ -94,7 +94,7 @@ export class TicketManager {
       renewalThreshold: config.renewalThreshold ?? 300,
       maxRetries: config.maxRetries ?? 3,
       retryBaseDelay: config.retryBaseDelay ?? 1000,
-      requestTimeout: config.requestTimeout ?? 10000,
+      requestTimeout: config.requestTimeout ?? 30000, // 30s for slow connections
       onError: config.onError,
     };
   }

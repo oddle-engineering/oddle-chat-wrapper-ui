@@ -31,6 +31,7 @@ export interface ChatContextValue {
   
   // ===== Connection State =====
   connectionState: ConnectionState;
+  isInitialConnection?: boolean;
   
   // ===== Configuration =====
   headerName: string;

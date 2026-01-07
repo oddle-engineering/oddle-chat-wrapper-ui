@@ -233,7 +233,7 @@ function App() {
     },
   ]);
 
-  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const [isThreadModalOpen, setIsThreadModalOpen] = useState(false);
 
   // State for dynamic metadata (for testing metadata prop sync)
@@ -784,7 +784,8 @@ function App() {
           campaignId: null,
           menuId: "2c9f8adc663cc6c201663dd253da5c35",
           imageName: null,
-          imageUrl: "https://s3-ap-southeast-1.amazonaws.com/v3-live.image.oddle.me/2c9f8adc663cc6c201663dd253da5c35/promotion/null.jpg",
+          imageUrl:
+            "https://s3-ap-southeast-1.amazonaws.com/v3-live.image.oddle.me/2c9f8adc663cc6c201663dd253da5c35/promotion/null.jpg",
           enableCampaignPromoCode: false,
         },
       ],
@@ -1324,7 +1325,7 @@ function App() {
       // Authentication and entity context
       auth: {
         token:
-          "7b42923191dbb2584ff400dec8319c6ad1b3cfeed4975dcce7b80e4154c5dbe5ce87860bd78de3128eada83246fa65cc880ad446f4b50d8d6ac47a085b2e3900",
+          "3e90c047a8ecc048e0b360971f90232933b0517e90585f97b02b6b7dee658951d70254107f0bcf414912dc574d3f4efa8eacabe1f84637f514f14663c4e88e5a",
         entityId: "8a8197e78054904a01805a25a4bb25be1",
         entityType: EntityType.BRAND,
       },
@@ -1442,16 +1443,18 @@ function App() {
       />
 
       <div className="main-content">
-        <div
-          className="chat-sidebar-container"
-          style={{
-            display: isSidebarVisible ? "block" : "none",
-          }}
-        >
-          <div style={{ marginTop: "48px", marginBottom: "48px" }}>
-            <ChatWrapper ref={chatWrapperRef} {...sidebarChatProps} />
+        {isSidebarVisible && (
+          <div
+            className="chat-sidebar-container"
+            style={{
+              display: isSidebarVisible ? "block" : "none",
+            }}
+          >
+            <div style={{ marginTop: "48px", marginBottom: "48px" }}>
+              <ChatWrapper ref={chatWrapperRef} {...sidebarChatProps} />
+            </div>
           </div>
-        </div>
+        )}
         <div
           className="panels-container"
           style={{

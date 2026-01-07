@@ -285,6 +285,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       chatClient,
       connectionState,
       // reconnectAttempts: reconnectAttempt,
+      isInitialConnection,
       connectChatClient,
     } = useWebSocketConnection({
       // Authentication and server properties
@@ -642,7 +643,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
             setIsStreaming(false);
             setChatStatus(CHAT_STATUS.IDLE);
             setStreamingStatus(STREAMING_STATUS.IDLE);
-          }, 60000); // 60 seconds - more reasonable for LLM processing and tool execution
+          }, 120000); // 120 seconds - more reasonable for LLM processing and tool execution
           
           // Store the timeout ID so we can clear it if we get a response
           // (You'd need to clear this when the first message comes in)
@@ -758,6 +759,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         conversationError,
         isOffline: !isOnline,
         connectionState,
+        isInitialConnection,
       }),
       [
         isLoadingConversation,
@@ -765,6 +767,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         conversationError,
         isOnline,
         connectionState,
+        isInitialConnection,
       ]
     );
 
@@ -918,7 +921,7 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
             setIsStreaming(false);
             setChatStatus(CHAT_STATUS.IDLE);
             setStreamingStatus(STREAMING_STATUS.IDLE);
-          }, 60000); // 60 seconds - more reasonable for LLM processing and tool execution
+          }, 120000); // 120 seconds - more reasonable for LLM processing and tool execution
           
           (window as any).responseTimeoutId = responseTimeoutId;
         } catch (error) {

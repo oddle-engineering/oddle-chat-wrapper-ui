@@ -62,6 +62,7 @@ export function useWebSocketConnection({
     ConnectionState.DISCONNECTED
   );
   const [connectionAttempts, setConnectionAttempts] = useState(0);
+  const [isInitialConnection, setIsInitialConnection] = useState(true);
   const chatClientRef = useRef<WebSocketChatClient | null>(null);
 
   // Use refs to store callbacks to prevent reconnections when they change
@@ -213,6 +214,7 @@ export function useWebSocketConnection({
       });
 
       setConnectionState(ConnectionState.CONNECTED);
+      setIsInitialConnection(false); // Successfully connected, no longer initial
     } catch (error) {
       const classification = logClassifiedError(error, "WebSocketConnection");
       setConnectionState(ConnectionState.DISCONNECTED);
@@ -228,6 +230,9 @@ export function useWebSocketConnection({
             retryConnectionRef.current?.();
           }
         }, 2000);
+      } else {
+        // Non-retryable error, mark as no longer initial connection
+        setIsInitialConnection(false);
       }
     }
   }, [
@@ -290,6 +295,7 @@ export function useWebSocketConnection({
     chatClient,
     connectionState,
     reconnectAttempts: connectionAttempts,
+    isInitialConnection,
     connectChatClient,
     disconnectChatClient,
   };

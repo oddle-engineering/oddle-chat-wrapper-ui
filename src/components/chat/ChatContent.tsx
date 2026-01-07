@@ -32,6 +32,7 @@ export const ChatContent: React.FC = () => {
     chatInputRef,
     isOffline,
     connectionState,
+    isInitialConnection,
     conversationError,
     onRetryConnection,
   } = useChatContext();
@@ -43,10 +44,12 @@ export const ChatContent: React.FC = () => {
     connectionState === ConnectionState.CONNECTING;
 
   // Check if connection failed in empty state
+  // Only show error if we're past the initial connection attempts (not on first try with slow network)
   const shouldShowConnectionError =
     messages.length === 0 &&
     !isLoadingConversation &&
-    connectionState === ConnectionState.DISCONNECTED;
+    connectionState === ConnectionState.DISCONNECTED &&
+    !isInitialConnection; // Don't show error during initial connection retries
 
   // If showing skeleton, render it with error overlay if connection failed
   if (shouldShowSkeleton || shouldShowConnectionError) {
