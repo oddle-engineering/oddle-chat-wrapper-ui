@@ -4,8 +4,10 @@ import { ChatInput } from "../ChatInput";
 import { SuggestedPrompts } from "../SuggestedPrompts";
 import { InlineLoader } from "../InlineLoader";
 import { ChatMainHeader } from "./ChatMainHeader";
+import { ChatSkeleton } from "../ChatSkeleton";
 import { chatUtils } from "../../utils/chatUtils";
 import { useChatContext } from "../../contexts";
+import { ConnectionState } from "../../types";
 
 /**
  * ChatContent - Main content area of the chat interface
@@ -28,8 +30,21 @@ export const ChatContent: React.FC = () => {
     messagesEndRef,
     chatInputRef,
     isOffline,
+    connectionState,
     // conversationError,
   } = useChatContext();
+
+  // Check if we should show skeleton (empty state + connecting)
+  const shouldShowSkeleton = 
+    messages.length === 0 && 
+    !isLoadingConversation && 
+    connectionState === ConnectionState.CONNECTING;
+
+  // If showing skeleton, render it and nothing else
+  if (shouldShowSkeleton) {
+    return <ChatSkeleton />;
+  }
+
   const shouldShowMainHeader = chatUtils.state.shouldShowMainHeader(
     messages.length,
     isStreaming,

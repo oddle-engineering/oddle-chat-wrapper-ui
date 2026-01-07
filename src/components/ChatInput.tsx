@@ -50,6 +50,9 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
     isLoadingConversation ||
     connectionState !== ConnectionState.CONNECTED;
 
+  // Helper to check if we're in connecting state (ticket not available)
+  const isConnecting = connectionState === ConnectionState.CONNECTING;
+
   // Helper to check if placeholder should be shown
   const shouldShowPlaceholder = connectionState === ConnectionState.CONNECTED;
 
@@ -355,7 +358,6 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
   return (
     <PromptInput
       onSubmit={handleSubmit}
-      style={{ position: "relative" }}
       className={`${isInputDisabled ? "chat-wrapper__prompt-input--disabled" : ""} ${(uploadedMedia.length > 0 || uploadingFiles.length > 0 || uploadError) ? "chat-wrapper__prompt-input--with-media" : ""}`}
     >
       <PromptInputTextarea
@@ -374,6 +376,14 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
           placeholderTexts={activePlaceholderTexts}
           shouldAnimate={shouldAnimate}
         />
+      )}
+
+      {/* Loading state for connecting */}
+      {isConnecting && (
+        <div className="chat-wrapper__connecting-indicator">
+          <div className="chat-wrapper__connecting-spinner" />
+          <span>Connecting...</span>
+        </div>
       )}
 
 
@@ -400,70 +410,24 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
 
       {/* Media preview section - above the textarea */}
       {(uploadedMedia.length > 0 || uploadingFiles.length > 0) && (
-        <div
-          style={{
-            padding: "8px 16px",
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "8px",
-            alignItems: "center",
-          }}
-        >
+        <div className="chat-wrapper__media-preview-container">
           {/* Render uploading files with loading indicators */}
           {uploadingFiles.map((uploadingFile, index) => (
             <div
               key={`uploading-${index}`}
-              style={{
-                position: "relative",
-                display: "inline-block",
-              }}
+              className="chat-wrapper__media-item-wrapper"
             >
-              <div
-                style={{
-                  position: "relative",
-                  width: "56px",
-                  height: "56px",
-                  borderRadius: "8px",
-                  overflow: "hidden",
-                  border: "1px solid #e2e8f0",
-                }}
-              >
+              <div className="chat-wrapper__uploading-thumbnail">
                 {/* Image preview */}
                 <img
                   src={uploadingFile.preview}
                   alt={`Uploading ${index + 1}`}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                  }}
+                  className="chat-wrapper__uploading-thumbnail-image"
                 />
                 {/* Loading overlay */}
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: "rgba(0, 0, 0, 0.5)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    zIndex: 2,
-                  }}
-                >
+                <div className="chat-wrapper__uploading-overlay">
                   {/* Spinning loading indicator */}
-                  <div
-                    style={{
-                      width: "20px",
-                      height: "20px",
-                      border: "2px solid rgba(255, 255, 255, 0.3)",
-                      borderTop: "2px solid white",
-                      borderRadius: "50%",
-                      animation: "spin 1s linear infinite",
-                    }}
-                  />
+                  <div className="chat-wrapper__uploading-spinner" />
                 </div>
               </div>
               {/* Remove button */}
@@ -471,26 +435,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                 onClick={() => {
                   setUploadingFiles(prev => prev.filter((_, i) => i !== index));
                 }}
-                style={{
-                  position: "absolute",
-                  top: "6px",
-                  right: "6px",
-                  width: "20px",
-                  height: "20px",
-                  borderRadius: "50%",
-                  backgroundColor: "transparent",
-                  border: "2px solid white",
-                  color: "white",
-                  fontSize: "14px",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  zIndex: 3,
-                  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.3)",
-                  fontWeight: "bold",
-                  transition: "all 0.2s",
-                }}
+                className="chat-wrapper__media-remove-button"
                 title="Cancel upload"
               >
                 ×
@@ -511,22 +456,11 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
             return (
               <div
                 key={`uploaded-${index}`}
-                style={{
-                  position: "relative",
-                  display: "inline-block",
-                }}
+                className="chat-wrapper__media-item-wrapper"
               >
                 {isImage ? (
                   <div
-                    style={{
-                      position: "relative",
-                      width: "56px",
-                      height: "56px",
-                      borderRadius: "8px",
-                      overflow: "hidden",
-                      border: "1px solid #e2e8f0",
-                      cursor: "pointer",
-                    }}
+                    className="chat-wrapper__media-thumbnail"
                     onClick={() => handleImagePreview(media)}
                     title="Click to view full image"
                   >
@@ -534,66 +468,17 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                     <img
                       src={media}
                       alt={`Attachment ${index + 1}`}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
+                      className="chat-wrapper__media-thumbnail-image"
                     />
                     {/* Dark overlay on top of image */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundColor: "rgba(0, 0, 0, 0.3)",
-                        zIndex: 1,
-                      }}
-                    />
+                    <div className="chat-wrapper__media-thumbnail-overlay" />
                     {/* Zoom icon overlay */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                        color: "white",
-                        fontSize: "16px",
-                        zIndex: 2,
-                        opacity: 0.8,
-                        pointerEvents: "none",
-                      }}
-                    ></div>
+                    <div className="chat-wrapper__media-thumbnail-zoom-icon"></div>
                   </div>
                 ) : (
-                  <div
-                    style={{
-                      position: "relative",
-                      display: "flex",
-                      alignItems: "center",
-                      backgroundColor: "#1f2937",
-                      borderRadius: "12px",
-                      padding: "8px 12px",
-                      minWidth: "200px",
-                      maxWidth: "300px",
-                    }}
-                  >
+                  <div className="chat-wrapper__file-preview">
                     {/* File icon */}
-                    <div
-                      style={{
-                        width: "40px",
-                        height: "40px",
-                        backgroundColor: "#8b5cf6",
-                        borderRadius: "8px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginRight: "12px",
-                        flexShrink: 0,
-                      }}
-                    >
+                    <div className="chat-wrapper__file-icon-container">
                       <svg
                         width="24"
                         height="25"
@@ -627,19 +512,8 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                     </div>
 
                     {/* File info */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div
-                        style={{
-                          color: "white",
-                          fontSize: "14px",
-                          fontWeight: "500",
-                          marginBottom: "2px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          maxWidth: "100px",
-                        }}
-                      >
+                    <div className="chat-wrapper__file-info">
+                      <div className="chat-wrapper__file-name">
                         {/* Extract filename from media string */}
                         {(() => {
                           const nameMatch = media.match(/name=([^;]+)/);
@@ -649,13 +523,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                           return "document.pdf";
                         })()}
                       </div>
-                      <div
-                        style={{
-                          color: "#9ca3af",
-                          fontSize: "12px",
-                          textTransform: "uppercase",
-                        }}
-                      >
+                      <div className="chat-wrapper__file-type">
                         {/* Extract file type from media string */}
                         {(() => {
                           const typeMatch = media.match(/data:([^;]+)/);
@@ -710,26 +578,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                       setUploadError(null);
                     }
                   }}
-                  style={{
-                    position: "absolute",
-                    top: isImage ? "6px" : "8px",
-                    right: isImage ? "6px" : "8px",
-                    width: "20px",
-                    height: "20px",
-                    borderRadius: "50%",
-                    backgroundColor: "transparent",
-                    border: "2px solid white",
-                    color: "white",
-                    fontSize: "14px",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    zIndex: 2, // Above the overlay
-                    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.3)",
-                    fontWeight: "bold",
-                    transition: "all 0.2s",
-                  }}
+                  className={`chat-wrapper__media-remove-button ${!isImage ? 'chat-wrapper__media-remove-button--file' : ''}`}
                   title="Remove attachment"
                 >
                   ×
@@ -743,12 +592,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
       <PromptInputToolbar>
         <PromptInputTools>
           {fileUploadEnabled && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
+            <div className="chat-wrapper__file-upload-container">
               <PromptInputButton
                 variant="ghost"
                 size="icon"
@@ -761,9 +605,6 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                     : `Attach images (max ${fileUploadConfig?.maxFiles ?? 5} files, ${Math.round((fileUploadConfig?.maxFileSize ?? (15 * 1024 * 1024)) / (1024 * 1024))}MB each)`
                 }
                 disabled={isInputDisabled || uploadingFiles.length > 0}
-                style={{
-                  position: "relative",
-                }}
               >
                 <svg
                   width="36"
