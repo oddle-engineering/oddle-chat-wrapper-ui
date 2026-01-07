@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.24] - 2026-01-07
+
+### Added
+- update sidebar visibility, increase request timeout, and enhance WebSocket connection handling
+
 ## [1.0.23] - 2026-01-07
 
 ### Added
