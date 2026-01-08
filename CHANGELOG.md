@@ -25,6 +25,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.25] - 2026-01-08
+
+### Changed
+- chore: Refactor ChatInput component to simplify connection state handling and improve file upload logic
+
+### Fixed
+- update repository URL and remove prepublishOnly script from package.json
+
 ## [1.0.24] - 2026-01-07
 
 ### Added
