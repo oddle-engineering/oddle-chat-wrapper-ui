@@ -275,6 +275,12 @@ export function useWebSocketConnection({
       if (chatClientRef.current) {
         const status = chatClientRef.current.getConnectionStatus();
 
+        // Don't let monitoring interval change state during initial connection
+        // Initial connection state is managed by connectChatClient flow
+        if (isInitialConnection && connectionState === ConnectionState.CONNECTING) {
+          return;
+        }
+
         // Update connection state based on client status
         // Only update if the state actually changed to avoid unnecessary re-renders
         if (status.connected && connectionState !== ConnectionState.CONNECTED) {
@@ -290,7 +296,7 @@ export function useWebSocketConnection({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [connectionState]);
+  }, [connectionState, isInitialConnection]);
 
   return {
     chatClient,
