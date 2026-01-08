@@ -25,6 +25,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.26] - 2026-01-08
+
+### Changed
+- chore: update built files
+
+### Fixed
+- check internet connectivity before establishing WebSocket connection
+- prevent state changes during initial connection in WebSocket monitoring
+
 ## [1.0.25] - 2026-01-08
 
 ### Changed
