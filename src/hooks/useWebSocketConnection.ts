@@ -174,6 +174,13 @@ export function useWebSocketConnection({
 
   const connectChatClient = useCallback(async () => {
     try {
+      // Check if online before attempting connection
+      if (!navigator.onLine) {
+        setConnectionState(ConnectionState.DISCONNECTED);
+        setIsInitialConnection(false); // Mark as not initial so error shows
+        throw new Error("No internet connection. Please check your network and try again.");
+      }
+
       setConnectionState(ConnectionState.CONNECTING);
       // Validate required props using refs
       if (!userMpAuthTokenRef.current) {
