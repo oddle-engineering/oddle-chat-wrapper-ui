@@ -276,11 +276,12 @@ export function useWebSocketConnection({
         const status = chatClientRef.current.getConnectionStatus();
 
         // Update connection state based on client status
-        if (status.connected) {
+        // Only update if the state actually changed to avoid unnecessary re-renders
+        if (status.connected && connectionState !== ConnectionState.CONNECTED) {
           setConnectionState(ConnectionState.CONNECTED);
-        } else if (status.isReconnecting) {
+        } else if (status.isReconnecting && connectionState !== ConnectionState.RECONNECTING) {
           setConnectionState(ConnectionState.RECONNECTING);
-        } else {
+        } else if (!status.connected && !status.isReconnecting && connectionState !== ConnectionState.DISCONNECTED) {
           setConnectionState(ConnectionState.DISCONNECTED);
         }
 
@@ -289,7 +290,7 @@ export function useWebSocketConnection({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [connectionState]);
 
   return {
     chatClient,

@@ -46,22 +46,27 @@ export function useConversationLoader({
 
     // Skip if entityId is not provided - no history to load
     if (!entityId) {
+      setIsLoadingConversation(false); // Mark as not loading when skipping
       return;
     }
 
     // Skip if metadata is empty/undefined - start fresh conversation
     if (!metadata || (typeof metadata === 'object' && Object.keys(metadata).length === 0)) {
+      setIsLoadingConversation(false); // Mark as not loading when skipping
       return;
     }
 
     // Validate required props
     if (!httpApiUrl) {
+      setIsLoadingConversation(false); // Mark as not loading when skipping
       return;
     }
     if (!userMpAuthToken) {
+      setIsLoadingConversation(false); // Mark as not loading when skipping
       return;
     }
     if (!chatServerKey) {
+      setIsLoadingConversation(false); // Mark as not loading when skipping
       return;
     }
 

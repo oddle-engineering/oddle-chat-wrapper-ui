@@ -1,6 +1,5 @@
 import { useRef, useEffect, useCallback } from "react";
 import { useChatContext } from "../contexts";
-import { ConnectionState } from "../types";
 
 interface SuggestedPrompt {
   title: string;
@@ -14,7 +13,7 @@ interface SuggestedPrompt {
  * Implements custom typing animation that works with React's controlled inputs.
  */
 export const SuggestedPrompts: React.FC = () => {
-  const { suggestedPrompts, chatInputRef, enableSuggestedPromptsAnimation = true, connectionState } = useChatContext();
+  const { suggestedPrompts, chatInputRef, enableSuggestedPromptsAnimation = true } = useChatContext();
   const isTypingRef = useRef(false);
   const animationFrameRef = useRef<number | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -36,11 +35,6 @@ export const SuggestedPrompts: React.FC = () => {
   }
 
   const handlePromptSelect = useCallback((prompt: SuggestedPrompt) => {
-    // Don't allow selection if not connected
-    if (connectionState !== ConnectionState.CONNECTED) {
-      return;
-    }
-
     // Prevent multiple simultaneous typing animations
     if (isTypingRef.current) {
       return;
@@ -141,9 +135,7 @@ export const SuggestedPrompts: React.FC = () => {
       }
       isTypingRef.current = false;
     };
-  }, [chatInputRef, enableSuggestedPromptsAnimation, connectionState]);
-
-  const isDisabled = connectionState !== ConnectionState.CONNECTED;
+  }, [chatInputRef, enableSuggestedPromptsAnimation]);
 
   return (
     <div className="chat-wrapper__suggested-prompts">
@@ -154,12 +146,6 @@ export const SuggestedPrompts: React.FC = () => {
             key={index}
             className="chat-wrapper__suggested-prompt-card"
             onClick={() => handlePromptSelect(prompt)}
-            disabled={isDisabled}
-            style={{
-              opacity: isDisabled ? 0.5 : 1,
-              cursor: isDisabled ? 'not-allowed' : 'pointer',
-              pointerEvents: isDisabled ? 'none' : 'auto',
-            }}
           >
             <div className="chat-wrapper__suggested-prompt-content">
               <h4 className="chat-wrapper__suggested-prompt-title">

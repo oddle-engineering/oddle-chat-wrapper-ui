@@ -18,7 +18,6 @@ import { isChatActive } from "../constants/chatStatus";
 import { AnimatedPlaceholder } from "./AnimatedPlaceholder";
 import { sanitizeMessage, sanitizeFileName } from "../utils/security";
 import { useChatContext } from "../contexts";
-import { ConnectionState } from "../types";
 
 export interface ChatInputRef {
   focus: () => void;
@@ -41,43 +40,32 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
     onSubmit,
     onFileUpload,
     onStopGeneration,
-    connectionState,
   } = useChatContext();
 
-  // Helper to check if input should be disabled based on connection state
-  const isInputDisabled =
-    isStreaming ||
-    isLoadingConversation ||
-    connectionState !== ConnectionState.CONNECTED;
-
-  // Helper to check if we're in connecting state (ticket not available)
-  const isConnecting = connectionState === ConnectionState.CONNECTING;
-
-  // Helper to check if placeholder should be shown
-  const shouldShowPlaceholder = connectionState === ConnectionState.CONNECTED;
+  // Helper to check if input should be disabled
+  // Note: No need to check connectionState since skeleton handles the connecting state
+  const isInputDisabled = isStreaming || isLoadingConversation;
 
   const hasMessages = messages.length > 0;
   const [input, setInput] = useState("");
   const [uploadedMedia, setUploadedMedia] = useState<string[]>([]);
-  const [uploadingFiles, setUploadingFiles] = useState<Array<{
-    file: File;
-    preview: string;
-    isUploading: boolean;
-    progress: number;
-  }>>([]);
+  const [uploadingFiles, setUploadingFiles] = useState<
+    Array<{
+      file: File;
+      preview: string;
+      isUploading: boolean;
+      progress: number;
+    }>
+  >([]);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-
-  const handleImagePreview = useCallback(
-    (media: string) => {
-      setPreviewImageUrl(media);
-      setIsPreviewModalOpen(true);
-    },
-    []
-  );
+  const handleImagePreview = useCallback((media: string) => {
+    setPreviewImageUrl(media);
+    setIsPreviewModalOpen(true);
+  }, []);
 
   // Helper function to create preview URL for file
   const createFilePreview = useCallback((file: File): Promise<string> => {
@@ -99,24 +87,28 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
   const shouldAnimate =
     input.length === 0 && !hasMessages && activePlaceholderTexts.length > 1;
 
-  useImperativeHandle(ref, () => ({
-    focus: () => {
-      textareaRef.current?.focus();
-    },
-    setText: (text: string) => {
-      setInput(text);
-      // Focus the textarea and move cursor to the end
-      setTimeout(() => {
-        if (textareaRef.current) {
-          textareaRef.current.focus();
-          // Set cursor position to the end of the text
-          const length = text.length;
-          textareaRef.current.setSelectionRange(length, length);
-        }
-      }, 0);
-    },
-    textareaRef,
-  }), []);
+  useImperativeHandle(
+    ref,
+    () => ({
+      focus: () => {
+        textareaRef.current?.focus();
+      },
+      setText: (text: string) => {
+        setInput(text);
+        // Focus the textarea and move cursor to the end
+        setTimeout(() => {
+          if (textareaRef.current) {
+            textareaRef.current.focus();
+            // Set cursor position to the end of the text
+            const length = text.length;
+            textareaRef.current.setSelectionRange(length, length);
+          }
+        }, 0);
+      },
+      textareaRef,
+    }),
+    []
+  );
 
   const handleSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
@@ -153,7 +145,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
         .replace(/on\w+\s*=/gi, ""); // Remove event handlers
 
       setInput(sanitizedValue);
-      
+
       // Clear upload error when user starts typing
       if (uploadError && sanitizedValue.trim()) {
         setUploadError(null);
@@ -193,23 +185,29 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
             // Validate file size and type before upload
             const validFiles = files.filter((file) => {
               // Check file size using configurable limit
-              const maxSize = fileUploadConfig?.maxFileSize ?? (15 * 1024 * 1024);
+              const maxSize = fileUploadConfig?.maxFileSize ?? 15 * 1024 * 1024;
               if (file.size > maxSize) {
-                setUploadError(`File too large. Maximum size is ${Math.round(maxSize / (1024 * 1024))}MB.`);
+                setUploadError(
+                  `File too large. Maximum size is ${Math.round(
+                    maxSize / (1024 * 1024)
+                  )}MB.`
+                );
                 return false;
               }
 
               // File type validation using configurable types
               const allowedTypes = fileUploadConfig?.allowedTypes ?? [
                 "image/jpeg",
-                "image/png", 
+                "image/png",
                 "image/gif",
                 "image/webp",
               ];
 
               if (!allowedTypes.includes(file.type)) {
                 setUploadError(
-                  `File type not supported. Allowed types: ${allowedTypes.join(", ")}`
+                  `File type not supported. Allowed types: ${allowedTypes.join(
+                    ", "
+                  )}`
                 );
                 return false;
               }
@@ -220,9 +218,16 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
             if (validFiles.length > 0) {
               // Check total file limit using configurable limit
               const maxFiles = fileUploadConfig?.maxFiles ?? 5;
-              const totalFiles = uploadedMedia.length + uploadingFiles.length + validFiles.length;
+              const totalFiles =
+                uploadedMedia.length +
+                uploadingFiles.length +
+                validFiles.length;
               if (totalFiles > maxFiles) {
-                setUploadError(`Maximum ${maxFiles} files allowed. Currently ${uploadedMedia.length + uploadingFiles.length} files, trying to add ${validFiles.length} more.`);
+                setUploadError(
+                  `Maximum ${maxFiles} files allowed. Currently ${
+                    uploadedMedia.length + uploadingFiles.length
+                  } files, trying to add ${validFiles.length} more.`
+                );
                 return;
               }
 
@@ -235,21 +240,27 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
               }));
 
               const filePreviews = await Promise.all(filePreviewPromises);
-              setUploadingFiles(prev => [...prev, ...filePreviews]);
+              setUploadingFiles((prev) => [...prev, ...filePreviews]);
 
               try {
                 // Start upload
                 const newMedia = await onFileUpload(validFiles);
-                
+
                 // Move from uploading to uploaded
-                setUploadingFiles(prev => prev.filter(item => !validFiles.includes(item.file)));
-                setUploadedMedia(prev => [...prev, ...newMedia]);
+                setUploadingFiles((prev) =>
+                  prev.filter((item) => !validFiles.includes(item.file))
+                );
+                setUploadedMedia((prev) => [...prev, ...newMedia]);
                 setUploadError(null);
               } catch (uploadError) {
                 // Remove failed files from uploading state (don't show thumbnails)
-                setUploadingFiles(prev => prev.filter(item => !validFiles.includes(item.file)));
-                
-                setUploadError("File upload failed. Ensure a stable connection and try again.");
+                setUploadingFiles((prev) =>
+                  prev.filter((item) => !validFiles.includes(item.file))
+                );
+
+                setUploadError(
+                  "File upload failed. Ensure a stable connection and try again."
+                );
               }
             }
           }
@@ -262,7 +273,13 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
         }
       }
     },
-    [onFileUpload, fileUploadConfig, uploadedMedia, uploadingFiles, createFilePreview]
+    [
+      onFileUpload,
+      fileUploadConfig,
+      uploadedMedia,
+      uploadingFiles,
+      createFilePreview,
+    ]
   );
 
   const handleFileUploadClick = useCallback(async () => {
@@ -284,9 +301,13 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
             }
 
             // Check file size using configurable limit
-            const maxSize = fileUploadConfig?.maxFileSize ?? (15 * 1024 * 1024);
+            const maxSize = fileUploadConfig?.maxFileSize ?? 15 * 1024 * 1024;
             if (file.size > maxSize) {
-              setUploadError(`File too large. Maximum size is ${Math.round(maxSize / (1024 * 1024))}MB.`);
+              setUploadError(
+                `File too large. Maximum size is ${Math.round(
+                  maxSize / (1024 * 1024)
+                )}MB.`
+              );
               return false;
             }
 
@@ -300,7 +321,9 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
 
             if (!allowedTypes.includes(file.type)) {
               setUploadError(
-                `File type not supported. Allowed types: ${allowedTypes.join(", ")}`
+                `File type not supported. Allowed types: ${allowedTypes.join(
+                  ", "
+                )}`
               );
               return false;
             }
@@ -311,9 +334,14 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
           if (validFiles.length > 0) {
             // Check total file limit using configurable limit
             const maxFiles = fileUploadConfig?.maxFiles ?? 5;
-            const totalFiles = uploadedMedia.length + uploadingFiles.length + validFiles.length;
+            const totalFiles =
+              uploadedMedia.length + uploadingFiles.length + validFiles.length;
             if (totalFiles > maxFiles) {
-              setUploadError(`Maximum ${maxFiles} files allowed. Currently ${uploadedMedia.length + uploadingFiles.length} files, trying to add ${validFiles.length} more.`);
+              setUploadError(
+                `Maximum ${maxFiles} files allowed. Currently ${
+                  uploadedMedia.length + uploadingFiles.length
+                } files, trying to add ${validFiles.length} more.`
+              );
               return;
             }
 
@@ -326,21 +354,27 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
             }));
 
             const filePreviews = await Promise.all(filePreviewPromises);
-            setUploadingFiles(prev => [...prev, ...filePreviews]);
+            setUploadingFiles((prev) => [...prev, ...filePreviews]);
 
             try {
               // Start upload
               const newMedia = await onFileUpload(validFiles);
-              
+
               // Move from uploading to uploaded
-              setUploadingFiles(prev => prev.filter(item => !validFiles.includes(item.file)));
-              setUploadedMedia(prev => [...prev, ...newMedia]);
+              setUploadingFiles((prev) =>
+                prev.filter((item) => !validFiles.includes(item.file))
+              );
+              setUploadedMedia((prev) => [...prev, ...newMedia]);
               setUploadError(null); // Clear any previous errors on successful upload
             } catch (uploadError) {
               // Remove failed files from uploading state (don't show thumbnails)
-              setUploadingFiles(prev => prev.filter(item => !validFiles.includes(item.file)));
-              
-              setUploadError("File upload failed. Ensure a stable connection and try again.");
+              setUploadingFiles((prev) =>
+                prev.filter((item) => !validFiles.includes(item.file))
+              );
+
+              setUploadError(
+                "File upload failed. Ensure a stable connection and try again."
+              );
             }
           }
         } catch (error) {
@@ -353,12 +387,24 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
       }
     };
     fileInput.click();
-  }, [onFileUpload, fileUploadConfig, uploadedMedia, uploadingFiles, createFilePreview]);
+  }, [
+    onFileUpload,
+    fileUploadConfig,
+    uploadedMedia,
+    uploadingFiles,
+    createFilePreview,
+  ]);
 
   return (
     <PromptInput
       onSubmit={handleSubmit}
-      className={`${isInputDisabled ? "chat-wrapper__prompt-input--disabled" : ""} ${(uploadedMedia.length > 0 || uploadingFiles.length > 0 || uploadError) ? "chat-wrapper__prompt-input--with-media" : ""}`}
+      className={`${
+        isInputDisabled ? "chat-wrapper__prompt-input--disabled" : ""
+      } ${
+        uploadedMedia.length > 0 || uploadingFiles.length > 0 || uploadError
+          ? "chat-wrapper__prompt-input--with-media"
+          : ""
+      }`}
     >
       <PromptInputTextarea
         ref={textareaRef}
@@ -371,21 +417,12 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
       />
 
       {/* Animated placeholder component */}
-      {!input.trim() && shouldShowPlaceholder && (
+      {!input.trim() && (
         <AnimatedPlaceholder
           placeholderTexts={activePlaceholderTexts}
           shouldAnimate={shouldAnimate}
         />
       )}
-
-      {/* Loading state for connecting */}
-      {isConnecting && (
-        <div className="chat-wrapper__connecting-indicator">
-          <div className="chat-wrapper__connecting-spinner" />
-          <span>Connecting...</span>
-        </div>
-      )}
-
 
       {/* Upload error message */}
       {uploadError && (
@@ -393,11 +430,11 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
           <div className="chat-wrapper__upload-error-icon">
             <span className="chat-wrapper__upload-error-icon-text">!</span>
           </div>
-          
+
           <span className="chat-wrapper__upload-error-message">
             {uploadError}
           </span>
-          
+
           <button
             className="chat-wrapper__upload-error-dismiss"
             onClick={() => setUploadError(null)}
@@ -433,7 +470,9 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
               {/* Remove button */}
               <button
                 onClick={() => {
-                  setUploadingFiles(prev => prev.filter((_, i) => i !== index));
+                  setUploadingFiles((prev) =>
+                    prev.filter((_, i) => i !== index)
+                  );
                 }}
                 className="chat-wrapper__media-remove-button"
                 title="Cancel upload"
@@ -578,7 +617,9 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                       setUploadError(null);
                     }
                   }}
-                  className={`chat-wrapper__media-remove-button ${!isImage ? 'chat-wrapper__media-remove-button--file' : ''}`}
+                  className={`chat-wrapper__media-remove-button ${
+                    !isImage ? "chat-wrapper__media-remove-button--file" : ""
+                  }`}
                   title="Remove attachment"
                 >
                   ×
@@ -601,8 +642,15 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                   uploadingFiles.length > 0
                     ? `Uploading ${uploadingFiles.length} file(s)...`
                     : uploadedMedia.length > 0
-                    ? `${uploadedMedia.length}/${fileUploadConfig?.maxFiles ?? 5} image(s) attached`
-                    : `Attach images (max ${fileUploadConfig?.maxFiles ?? 5} files, ${Math.round((fileUploadConfig?.maxFileSize ?? (15 * 1024 * 1024)) / (1024 * 1024))}MB each)`
+                    ? `${uploadedMedia.length}/${
+                        fileUploadConfig?.maxFiles ?? 5
+                      } image(s) attached`
+                    : `Attach images (max ${
+                        fileUploadConfig?.maxFiles ?? 5
+                      } files, ${Math.round(
+                        (fileUploadConfig?.maxFileSize ?? 15 * 1024 * 1024) /
+                          (1024 * 1024)
+                      )}MB each)`
                 }
                 disabled={isInputDisabled || uploadingFiles.length > 0}
               >
