@@ -22,7 +22,7 @@ const Se = {
   COMPLETED: "completed",
   ERROR: "error"
 }, gr = (e) => e === Se.SUBMITTED || e === Se.STREAMING, nd = (e) => e === Se.IDLE, rd = (e) => e === Se.ERROR, id = (e) => e === qe.PROCESSING, ad = (e) => e === qe.COMPLETED, od = (e) => e === qe.ERROR;
-var mo = /* @__PURE__ */ ((e) => (e.BRAND = "BRAND", e.ACCOUNT = "ACCOUNT", e.USER = "USER", e))(mo || {}), Fe = /* @__PURE__ */ ((e) => (e.DISCONNECTED = "disconnected", e.CONNECTING = "connecting", e.CONNECTED = "connected", e.RECONNECTING = "reconnecting", e))(Fe || {});
+var mo = /* @__PURE__ */ ((e) => (e.BRAND = "BRAND", e.ACCOUNT = "ACCOUNT", e.USER = "USER", e))(mo || {}), De = /* @__PURE__ */ ((e) => (e.DISCONNECTED = "disconnected", e.CONNECTING = "connecting", e.CONNECTED = "connected", e.RECONNECTING = "reconnecting", e))(De || {});
 const Co = {
   maxReconnectAttempts: 1 / 0,
   reconnectDelay: 1e3,
@@ -1724,7 +1724,7 @@ function Ao({
   const [m, g] = Re(
     null
   ), [T, S] = Re(
-    Fe.DISCONNECTED
+    De.DISCONNECTED
   ), [A, E] = Re(0), [v, D] = Re(!0), N = ge(null), H = ge(s), b = ge(c), z = ge(h), re = ge(l), Y = ge(e), ne = ge(t), W = ge(n), X = ge(r), M = ge(i), P = ge(a), q = ge(a);
   be(() => {
     JSON.stringify(a) !== JSON.stringify(P.current) && (P.current = a, q.current = a);
@@ -1765,7 +1765,9 @@ function Ao({
   const y = ge(), F = ue(async () => {
     var V;
     try {
-      if (S(Fe.CONNECTING), !Y.current)
+      if (!navigator.onLine)
+        throw S(De.DISCONNECTED), D(!1), new Error("No internet connection. Please check your network and try again.");
+      if (S(De.CONNECTING), !Y.current)
         throw new Error("userMpAuthToken is required");
       if (!ne.current)
         throw new Error("chatServerUrl is required");
@@ -1790,10 +1792,10 @@ function Ao({
         onReasoningUpdate: z.current,
         onThreadCreated: re.current,
         onError: f
-      }), S(Fe.CONNECTED), D(!1);
+      }), S(De.CONNECTED), D(!1);
     } catch (B) {
       const ae = Qt(B, "WebSocketConnection");
-      S(Fe.DISCONNECTED), ae.isRetryable ? setTimeout(() => {
+      S(De.DISCONNECTED), ae.isRetryable ? setTimeout(() => {
         var pe;
         (N.current === null || !N.current.getConnectionStatus().connected) && ((pe = y.current) == null || pe.call(y));
       }, 2e3) : D(!1);
@@ -1804,7 +1806,7 @@ function Ao({
     // All other props use refs to prevent reconnections
     // connectChatClient only recreates when tools change
   ]), te = ue(() => {
-    N.current && (N.current.disconnect(), N.current = null), g(null), S(Fe.DISCONNECTED);
+    N.current && (N.current.disconnect(), N.current = null), g(null), S(De.DISCONNECTED);
   }, []);
   y.current = F;
   const C = ge(!1);
@@ -1814,11 +1816,13 @@ function Ao({
     const V = setInterval(() => {
       if (N.current) {
         const B = N.current.getConnectionStatus();
-        B.connected && T !== Fe.CONNECTED ? S(Fe.CONNECTED) : B.isReconnecting && T !== Fe.RECONNECTING ? S(Fe.RECONNECTING) : !B.connected && !B.isReconnecting && T !== Fe.DISCONNECTED && S(Fe.DISCONNECTED), E(B.reconnectAttempts);
+        if (v && T === De.CONNECTING)
+          return;
+        B.connected && T !== De.CONNECTED ? S(De.CONNECTED) : B.isReconnecting && T !== De.RECONNECTING ? S(De.RECONNECTING) : !B.connected && !B.isReconnecting && T !== De.DISCONNECTED && S(De.DISCONNECTED), E(B.reconnectAttempts);
       }
     }, 1e3);
     return () => clearInterval(V);
-  }, [T]), {
+  }, [T, v]), {
     chatClient: m,
     connectionState: T,
     reconnectAttempts: A,
@@ -2061,7 +2065,7 @@ function da() {
       value: null
     }
   }));
-  let we = !0, de = !0, xe = !1, De = !0, ze = !1, _t = !0, ot = !1, vt = !1, Rt = !1, Ct = !1, It = !1, yt = !1, Ut = !0, Bt = !1;
+  let we = !0, de = !0, xe = !1, Pe = !0, ze = !1, _t = !0, ot = !1, vt = !1, Rt = !1, Ct = !1, It = !1, yt = !1, Ut = !0, Bt = !1;
   const Gt = "user-content-";
   let pt = !0, ft = !1, x = {}, _ = null;
   const G = he({}, ["annotation-xml", "audio", "colgroup", "desc", "foreignobject", "head", "iframe", "math", "mi", "mn", "mo", "ms", "mtext", "noembed", "noframes", "noscript", "plaintext", "script", "style", "svg", "template", "thead", "title", "video", "xmp"]);
@@ -2082,7 +2086,7 @@ function da() {
     let w = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {};
     if (!(Mt && Mt === w)) {
       if ((!w || typeof w != "object") && (w = {}), w = Nt(w), Lt = // eslint-disable-next-line unicorn/prefer-includes
-      En.indexOf(w.PARSER_MEDIA_TYPE) === -1 ? xn : w.PARSER_MEDIA_TYPE, Me = Lt === "application/xhtml+xml" ? Xn : Dn, F = gt(w, "ALLOWED_TAGS") ? he({}, w.ALLOWED_TAGS, Me) : te, C = gt(w, "ALLOWED_ATTR") ? he({}, w.ALLOWED_ATTR, Me) : V, Ve = gt(w, "ALLOWED_NAMESPACES") ? he({}, w.ALLOWED_NAMESPACES, Xn) : Sn, Ie = gt(w, "ADD_URI_SAFE_ATTR") ? he(Nt(Ue), w.ADD_URI_SAFE_ATTR, Me) : Ue, Z = gt(w, "ADD_DATA_URI_TAGS") ? he(Nt(se), w.ADD_DATA_URI_TAGS, Me) : se, _ = gt(w, "FORBID_CONTENTS") ? he({}, w.FORBID_CONTENTS, Me) : G, ae = gt(w, "FORBID_TAGS") ? he({}, w.FORBID_TAGS, Me) : Nt({}), pe = gt(w, "FORBID_ATTR") ? he({}, w.FORBID_ATTR, Me) : Nt({}), x = gt(w, "USE_PROFILES") ? w.USE_PROFILES : !1, we = w.ALLOW_ARIA_ATTR !== !1, de = w.ALLOW_DATA_ATTR !== !1, xe = w.ALLOW_UNKNOWN_PROTOCOLS || !1, De = w.ALLOW_SELF_CLOSE_IN_ATTR !== !1, ze = w.SAFE_FOR_TEMPLATES || !1, _t = w.SAFE_FOR_XML !== !1, ot = w.WHOLE_DOCUMENT || !1, Ct = w.RETURN_DOM || !1, It = w.RETURN_DOM_FRAGMENT || !1, yt = w.RETURN_TRUSTED_TYPE || !1, Rt = w.FORCE_BODY || !1, Ut = w.SANITIZE_DOM !== !1, Bt = w.SANITIZE_NAMED_PROPS || !1, pt = w.KEEP_CONTENT !== !1, ft = w.IN_PLACE || !1, y = w.ALLOWED_URI_REGEXP || ua, ke = w.NAMESPACE || Ge, $t = w.MATHML_TEXT_INTEGRATION_POINTS || $t, qt = w.HTML_INTEGRATION_POINTS || qt, B = w.CUSTOM_ELEMENT_HANDLING || {}, w.CUSTOM_ELEMENT_HANDLING && nn(w.CUSTOM_ELEMENT_HANDLING.tagNameCheck) && (B.tagNameCheck = w.CUSTOM_ELEMENT_HANDLING.tagNameCheck), w.CUSTOM_ELEMENT_HANDLING && nn(w.CUSTOM_ELEMENT_HANDLING.attributeNameCheck) && (B.attributeNameCheck = w.CUSTOM_ELEMENT_HANDLING.attributeNameCheck), w.CUSTOM_ELEMENT_HANDLING && typeof w.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements == "boolean" && (B.allowCustomizedBuiltInElements = w.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements), ze && (de = !1), It && (Ct = !0), x && (F = he({}, ai), C = [], x.html === !0 && (he(F, ii), he(C, oi)), x.svg === !0 && (he(F, Jn), he(C, tr), he(C, In)), x.svgFilters === !0 && (he(F, Qn), he(C, tr), he(C, In)), x.mathMl === !0 && (he(F, er), he(C, si), he(C, In))), w.ADD_TAGS && (typeof w.ADD_TAGS == "function" ? ie.tagCheck = w.ADD_TAGS : (F === te && (F = Nt(F)), he(F, w.ADD_TAGS, Me))), w.ADD_ATTR && (typeof w.ADD_ATTR == "function" ? ie.attributeCheck = w.ADD_ATTR : (C === V && (C = Nt(C)), he(C, w.ADD_ATTR, Me))), w.ADD_URI_SAFE_ATTR && he(Ie, w.ADD_URI_SAFE_ATTR, Me), w.FORBID_CONTENTS && (_ === G && (_ = Nt(_)), he(_, w.FORBID_CONTENTS, Me)), pt && (F["#text"] = !0), ot && he(F, ["html", "head", "body"]), F.table && (he(F, ["tbody"]), delete ae.tbody), w.TRUSTED_TYPES_POLICY) {
+      En.indexOf(w.PARSER_MEDIA_TYPE) === -1 ? xn : w.PARSER_MEDIA_TYPE, Me = Lt === "application/xhtml+xml" ? Xn : Dn, F = gt(w, "ALLOWED_TAGS") ? he({}, w.ALLOWED_TAGS, Me) : te, C = gt(w, "ALLOWED_ATTR") ? he({}, w.ALLOWED_ATTR, Me) : V, Ve = gt(w, "ALLOWED_NAMESPACES") ? he({}, w.ALLOWED_NAMESPACES, Xn) : Sn, Ie = gt(w, "ADD_URI_SAFE_ATTR") ? he(Nt(Ue), w.ADD_URI_SAFE_ATTR, Me) : Ue, Z = gt(w, "ADD_DATA_URI_TAGS") ? he(Nt(se), w.ADD_DATA_URI_TAGS, Me) : se, _ = gt(w, "FORBID_CONTENTS") ? he({}, w.FORBID_CONTENTS, Me) : G, ae = gt(w, "FORBID_TAGS") ? he({}, w.FORBID_TAGS, Me) : Nt({}), pe = gt(w, "FORBID_ATTR") ? he({}, w.FORBID_ATTR, Me) : Nt({}), x = gt(w, "USE_PROFILES") ? w.USE_PROFILES : !1, we = w.ALLOW_ARIA_ATTR !== !1, de = w.ALLOW_DATA_ATTR !== !1, xe = w.ALLOW_UNKNOWN_PROTOCOLS || !1, Pe = w.ALLOW_SELF_CLOSE_IN_ATTR !== !1, ze = w.SAFE_FOR_TEMPLATES || !1, _t = w.SAFE_FOR_XML !== !1, ot = w.WHOLE_DOCUMENT || !1, Ct = w.RETURN_DOM || !1, It = w.RETURN_DOM_FRAGMENT || !1, yt = w.RETURN_TRUSTED_TYPE || !1, Rt = w.FORCE_BODY || !1, Ut = w.SANITIZE_DOM !== !1, Bt = w.SANITIZE_NAMED_PROPS || !1, pt = w.KEEP_CONTENT !== !1, ft = w.IN_PLACE || !1, y = w.ALLOWED_URI_REGEXP || ua, ke = w.NAMESPACE || Ge, $t = w.MATHML_TEXT_INTEGRATION_POINTS || $t, qt = w.HTML_INTEGRATION_POINTS || qt, B = w.CUSTOM_ELEMENT_HANDLING || {}, w.CUSTOM_ELEMENT_HANDLING && nn(w.CUSTOM_ELEMENT_HANDLING.tagNameCheck) && (B.tagNameCheck = w.CUSTOM_ELEMENT_HANDLING.tagNameCheck), w.CUSTOM_ELEMENT_HANDLING && nn(w.CUSTOM_ELEMENT_HANDLING.attributeNameCheck) && (B.attributeNameCheck = w.CUSTOM_ELEMENT_HANDLING.attributeNameCheck), w.CUSTOM_ELEMENT_HANDLING && typeof w.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements == "boolean" && (B.allowCustomizedBuiltInElements = w.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements), ze && (de = !1), It && (Ct = !0), x && (F = he({}, ai), C = [], x.html === !0 && (he(F, ii), he(C, oi)), x.svg === !0 && (he(F, Jn), he(C, tr), he(C, In)), x.svgFilters === !0 && (he(F, Qn), he(C, tr), he(C, In)), x.mathMl === !0 && (he(F, er), he(C, si), he(C, In))), w.ADD_TAGS && (typeof w.ADD_TAGS == "function" ? ie.tagCheck = w.ADD_TAGS : (F === te && (F = Nt(F)), he(F, w.ADD_TAGS, Me))), w.ADD_ATTR && (typeof w.ADD_ATTR == "function" ? ie.attributeCheck = w.ADD_ATTR : (C === V && (C = Nt(C)), he(C, w.ADD_ATTR, Me))), w.ADD_URI_SAFE_ATTR && he(Ie, w.ADD_URI_SAFE_ATTR, Me), w.FORBID_CONTENTS && (_ === G && (_ = Nt(_)), he(_, w.FORBID_CONTENTS, Me)), pt && (F["#text"] = !0), ot && he(F, ["html", "head", "body"]), F.table && (he(F, ["tbody"]), delete ae.tbody), w.TRUSTED_TYPES_POLICY) {
         if (typeof w.TRUSTED_TYPES_POLICY.createHTML != "function")
           throw ln('TRUSTED_TYPES_POLICY configuration option must provide a "createHTML" hook.');
         if (typeof w.TRUSTED_TYPES_POLICY.createScriptURL != "function")
@@ -2166,7 +2170,7 @@ function da() {
     );
   }, _e = function(w) {
     return w instanceof f && (typeof w.nodeName != "string" || typeof w.textContent != "string" || typeof w.removeChild != "function" || !(w.attributes instanceof l) || typeof w.removeAttribute != "function" || typeof w.setAttribute != "function" || typeof w.namespaceURI != "string" || typeof w.insertBefore != "function" || typeof w.hasChildNodes != "function");
-  }, Pe = function(w) {
+  }, Fe = function(w) {
     return typeof s == "function" && w instanceof s;
   };
   function je(J, w, L) {
@@ -2182,7 +2186,7 @@ function da() {
     if (je(W.uponSanitizeElement, w, {
       tagName: $,
       allowedTags: F
-    }), _t && w.hasChildNodes() && !Pe(w.firstElementChild) && Ye(/<[/\w!]/g, w.innerHTML) && Ye(/<[/\w!]/g, w.textContent) || w.nodeType === un.progressingInstruction || _t && w.nodeType === un.comment && Ye(/<[/\w]/g, w.data))
+    }), _t && w.hasChildNodes() && !Fe(w.firstElementChild) && Ye(/<[/\w!]/g, w.innerHTML) && Ye(/<[/\w!]/g, w.textContent) || w.nodeType === un.progressingInstruction || _t && w.nodeType === un.comment && Ye(/<[/\w]/g, w.data))
       return R(w), !0;
     if (!(ie.tagCheck instanceof Function && ie.tagCheck($)) && (!F[$] || ae[$])) {
       if (!ae[$] && Yr($) && (B.tagNameCheck instanceof RegExp && Ye(B.tagNameCheck, $) || B.tagNameCheck instanceof Function && B.tagNameCheck($)))
@@ -2271,7 +2275,7 @@ function da() {
         fe(Oe, w);
         continue;
       }
-      if (!De && Ye(/\/>/i, We)) {
+      if (!Pe && Ye(/\/>/i, We)) {
         fe(Oe, w);
         continue;
       }
@@ -2311,7 +2315,7 @@ function da() {
   };
   return t.sanitize = function(J) {
     let w = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {}, L = null, $ = null, ve = null, $e = null;
-    if (Ke = !J, Ke && (J = "<!-->"), typeof J != "string" && !Pe(J))
+    if (Ke = !J, Ke && (J = "<!-->"), typeof J != "string" && !Fe(J))
       if (typeof J.toString == "function") {
         if (J = J.toString(), typeof J != "string")
           throw ln("dirty is not a string, aborting");
@@ -9004,11 +9008,11 @@ function Ku(e, t, n) {
       function C(ie) {
         return we;
         function we(de) {
-          const xe = de !== null && ie[de], De = de !== null && ie.null, ze = [
+          const xe = de !== null && ie[de], Pe = de !== null && ie.null, ze = [
             // To do: add more extension tests.
             /* c8 ignore next 2 */
             ...Array.isArray(xe) ? xe : xe ? [xe] : [],
-            ...Array.isArray(De) ? De : De ? [De] : []
+            ...Array.isArray(Pe) ? Pe : Pe ? [Pe] : []
           ];
           return V(ze)(de);
         }
@@ -9219,7 +9223,7 @@ function a1(e) {
       codeFencedFenceInfo: o,
       codeFencedFenceMeta: o,
       codeIndented: a(xe, o),
-      codeText: a(De, o),
+      codeText: a(Pe, o),
       codeTextData: Y,
       data: Y,
       codeFlowValue: Y,
@@ -9653,7 +9657,7 @@ function a1(e) {
   function xe() {
     return { type: "code", lang: null, meta: null, value: "" };
   }
-  function De() {
+  function Pe() {
     return { type: "inlineCode", value: "" };
   }
   function ze() {
@@ -13357,11 +13361,11 @@ const Uh = ({
               try {
                 const xe = await m(ae);
                 H(
-                  (De) => De.filter((ze) => !ae.includes(ze.file))
-                ), D((De) => [...De, ...xe]), z(null);
+                  (Pe) => Pe.filter((ze) => !ae.includes(ze.file))
+                ), D((Pe) => [...Pe, ...xe]), z(null);
               } catch {
                 H(
-                  (De) => De.filter((ze) => !ae.includes(ze.file))
+                  (Pe) => Pe.filter((ze) => !ae.includes(ze.file))
                 ), z(
                   "File upload failed. Ensure a stable connection and try again."
                 );
@@ -13960,7 +13964,7 @@ const Uh = ({
     isInitialConnection: f,
     conversationError: m,
     onRetryConnection: g
-  } = kn(), T = e.length === 0 && !t && l === Fe.CONNECTING, S = e.length === 0 && !t && l === Fe.DISCONNECTED && !f;
+  } = kn(), T = e.length === 0 && !t && l === De.CONNECTING, S = e.length === 0 && !t && l === De.DISCONNECTED && !f;
   if (T || S)
     return /* @__PURE__ */ I("div", { style: { position: "relative", height: "100%" }, children: [
       /* @__PURE__ */ p(Kh, {}),
@@ -14084,7 +14088,7 @@ const co = Vn(
       // isStreaming, setIsStreaming, isThinking, setIsThinking,
       // streamingContent, isHandlingTool, currentAssistantMessageIdRef,
       currentAssistantMessageIdRef: xe,
-      getReasoningStatus: De,
+      getReasoningStatus: Pe,
       getReasoningDuration: ze,
       getReasoningContentOnly: _t,
       getReasoningTitle: ot,
@@ -14215,7 +14219,7 @@ const co = Vn(
       setCurrentThreadId: ye,
       setProviderResId: y,
       metadata: r,
-      isConnected: se === Fe.CONNECTED,
+      isConnected: se === De.CONNECTED,
       // Only load after connection established
       onConversationInitialized: i.onConversationInitialized ? () => {
         var R;
@@ -14262,12 +14266,12 @@ const co = Vn(
         if (de((_e) => [..._e, Xe]), i.onConversationInitialized && !ft.current && (ft.current = !0, i.onConversationInitialized()), !navigator.onLine) {
           V(!1), W(Se.ERROR), de(
             (_e) => _e.map(
-              (Pe) => Pe.id === Xe.id ? {
-                ...Pe,
+              (Fe) => Fe.id === Xe.id ? {
+                ...Fe,
                 hasError: !0,
                 isRetrying: !1,
                 errorMessage: "No internet connection. Please check your network and try again."
-              } : Pe
+              } : Fe
             )
           ), te(!1), W(Se.IDLE), M(lt.IDLE);
           return;
@@ -14284,7 +14288,7 @@ const co = Vn(
             }),
             _e
           ]), W(Se.STREAMING);
-          const Pe = setTimeout(() => {
+          const Fe = setTimeout(() => {
             V(!1), W(Se.ERROR), de(
               (je) => je.map(
                 (Dt) => Dt.id === Xe.id ? {
@@ -14296,16 +14300,16 @@ const co = Vn(
               )
             ), te(!1), W(Se.IDLE), M(lt.IDLE);
           }, 12e4);
-          window.responseTimeoutId = Pe;
+          window.responseTimeoutId = Fe;
         } catch (_e) {
           V(!1), W(Se.ERROR), de(
-            (Pe) => Pe.map(
+            (Fe) => Fe.map(
               (je) => je.id === Xe.id ? {
                 ...je,
                 hasError: !0,
                 isRetrying: !1,
                 // Explicitly ensure not in retrying state
-                errorMessage: se !== Fe.CONNECTED ? "Connection lost. Message not sent." : _e instanceof Error ? _e.message : "Failed to send message. Please try again."
+                errorMessage: se !== De.CONNECTED ? "Connection lost. Message not sent." : _e instanceof Error ? _e.message : "Failed to send message. Please try again."
               } : je
             )
           ), te(!1), W(Se.IDLE), M(lt.IDLE);
@@ -14415,7 +14419,7 @@ const co = Vn(
     ), Me = Ae(
       () => ({
         getReasoningTitle: ot,
-        getReasoningStatus: De,
+        getReasoningStatus: Pe,
         getReasoningDuration: ze,
         getReasoningContentOnly: _t,
         getToolingTitle: vt,
@@ -14423,7 +14427,7 @@ const co = Vn(
       }),
       [
         ot,
-        De,
+        Pe,
         ze,
         _t,
         vt,
@@ -14455,7 +14459,7 @@ const co = Vn(
           return;
         }
         try {
-          se !== Fe.CONNECTED && await Ue(), await (Z == null ? void 0 : Z.onTriggerMessage({
+          se !== De.CONNECTED && await Ue(), await (Z == null ? void 0 : Z.onTriggerMessage({
             message: fe.content,
             media: fe.media,
             providerResId: Ce || void 0
@@ -14463,12 +14467,12 @@ const co = Vn(
           const Ne = setTimeout(() => {
             V(!1), W(Se.ERROR), de(
               (_e) => _e.map(
-                (Pe) => Pe.id === R ? {
-                  ...Pe,
+                (Fe) => Fe.id === R ? {
+                  ...Fe,
                   hasError: !0,
                   isRetrying: !1,
                   errorMessage: "No response received. Connection may be lost."
-                } : Pe
+                } : Fe
               )
             ), te(!1), W(Se.IDLE), M(lt.IDLE);
           }, 12e4);
@@ -14476,12 +14480,12 @@ const co = Vn(
         } catch (Ne) {
           V(!1), te(!1), W(Se.ERROR), M(lt.IDLE), de(
             (_e) => _e.map(
-              (Pe) => Pe.id === R ? {
-                ...Pe,
+              (Fe) => Fe.id === R ? {
+                ...Fe,
                 isRetrying: !1,
                 hasError: !0,
                 errorMessage: Ne instanceof Error ? Ne.message : "Retry failed. Please try again."
-              } : Pe
+              } : Fe
             )
           ), W(Se.IDLE);
         }
@@ -14565,7 +14569,7 @@ const co = Vn(
             Jh,
             {
               isVisible: !S,
-              isReconnecting: se === Fe.RECONNECTING
+              isReconnecting: se === De.RECONNECTING
             }
           ),
           Et.state.shouldShowHeader(i.headerVisible) && /* @__PURE__ */ p(
