@@ -22,7 +22,6 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "prepublishOnly": "npm run build",
     "test": "echo \"Tests will be added in Phase 1.4\"",
     "lint": "echo \"Linting will be added in Phase 3.4\"",
     "preversion": "npm run preversion:check",
@@ -79,10 +78,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-company/chat-wrapper-ui.git"
+    "url": "https://github.com/oddle-engineering/oddle-chat-wrapper-ui.git"
   },
-  "publishConfig": {
-    "access": "restricted",
-    "registry": "https://npm.pkg.github.com"
-  }
+  "private": true
 }
