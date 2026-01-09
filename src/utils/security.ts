@@ -95,8 +95,6 @@ function containsSuspiciousContent(content: string): boolean {
  * @returns Sanitized message
  */
 export function sanitizeMessage(message: string, isAssistant = false): string {
-  // TODO: 
-  return message;
   const context = isAssistant ? 'assistantMessage' : 'userMessage';
   return sanitizeInput(message, context);
 }
