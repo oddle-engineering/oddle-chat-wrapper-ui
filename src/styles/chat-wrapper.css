@@ -1726,22 +1726,24 @@
   list-style-type: none;
 }
 
-.chat-wrapper__ordered-list .chat-wrapper__list-item {
+.chat-wrapper__ordered-list > .chat-wrapper__list-item {
   counter-increment: ordered-list-counter;
   position: relative;
+  padding-left: 0;
 }
 
-.chat-wrapper__ordered-list .chat-wrapper__list-item::before {
+.chat-wrapper__ordered-list > .chat-wrapper__list-item::before {
   content: counter(ordered-list-counter) ". ";
-  position: absolute;
-  left: -20px;
   font-weight: inherit;
+  position: absolute;
+  left: -24px;
+  top: 0;
 }
 
 .chat-wrapper__list-item {
   margin: 6px 0;
   line-height: 1.6;
-  padding-left: 4px;
+  padding-left: 0;
 }
 
 .chat-wrapper__list-item:first-child {
@@ -1752,16 +1754,47 @@
   margin-bottom: 0;
 }
 
-/* Nested list spacing */
-.chat-wrapper__list-item .chat-wrapper__list,
-.chat-wrapper__list-item .chat-wrapper__ordered-list {
-  margin: 6px 0;
-  padding-left: 20px;
-  list-style-type: none;
+/* Paragraphs inside list items should not add extra spacing */
+.chat-wrapper__list-item > p {
+  margin: 0;
+  display: inline;
 }
 
+/* Ensure strong elements stay inline */
+.chat-wrapper__list-item strong,
+.chat-wrapper__list-item b {
+  display: inline;
+  font-weight: 600;
+}
+
+/* Nested list spacing */
+.chat-wrapper__list-item > .chat-wrapper__list,
+.chat-wrapper__list-item > .chat-wrapper__ordered-list {
+  margin: 6px 0;
+  padding-left: 24px;
+}
+
+/* Preserve bullet points for nested unordered lists */
+.chat-wrapper__list-item > .chat-wrapper__list {
+  list-style-type: disc;
+}
+
+/* Nested ordered lists reset counter */
+.chat-wrapper__list-item > .chat-wrapper__ordered-list {
+  list-style-type: none;
+  counter-reset: ordered-list-counter;
+}
+
+/* Nested list items */
 .chat-wrapper__list-item .chat-wrapper__list-item {
-  margin: 3px 0;
+  margin: 4px 0;
+  padding-left: 0;
+}
+
+/* Nested ordered list items get their own counter */
+.chat-wrapper__ordered-list .chat-wrapper__ordered-list > .chat-wrapper__list-item::before {
+  content: counter(ordered-list-counter) ". ";
+  margin-right: 8px;
 }
 
 .chat-wrapper__code-block {
