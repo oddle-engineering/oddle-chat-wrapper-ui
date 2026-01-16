@@ -1,5 +1,5 @@
 import React, { ReactNode, useState } from "react";
-import { REASONING_CONSTANTS } from "../client/constants/reasoning";
+import { useTranslations } from "../i18n";
 
 interface ReasoningProps {
   isStreaming: boolean;
@@ -17,11 +17,13 @@ interface ReasoningTriggerProps {
 interface ReasoningContentProps {
   children: ReactNode;
   isVisible?: boolean;
+  title?: string;
 }
 
 export function Reasoning({ children, isStreaming }: ReasoningProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [hasCompleted, setHasCompleted] = useState(false);
+  const [reasoningTitle, setReasoningTitle] = useState<string>("");
 
   // When reasoning completes (isStreaming becomes false), auto-collapse
   React.useEffect(() => {
@@ -45,6 +47,11 @@ export function Reasoning({ children, isStreaming }: ReasoningProps) {
   const childrenWithProps = React.Children.map(children, (child) => {
     if (React.isValidElement(child)) {
       if (child.type === ReasoningTrigger) {
+        // Capture the title from trigger
+        const triggerProps = child.props as ReasoningTriggerProps;
+        if (triggerProps.title && triggerProps.title !== reasoningTitle) {
+          setReasoningTitle(triggerProps.title);
+        }
         return React.cloneElement(
           child as React.ReactElement<ReasoningTriggerProps>,
           {
@@ -58,6 +65,7 @@ export function Reasoning({ children, isStreaming }: ReasoningProps) {
           child as React.ReactElement<ReasoningContentProps>,
           {
             isVisible: isExpanded,
+            title: reasoningTitle,
           }
         );
       }
@@ -75,6 +83,8 @@ export function ReasoningTrigger({
   onToggle,
   isExpanded = true,
 }: ReasoningTriggerProps) {
+  const { t } = useTranslations();
+
   const renderIcon = () => {
     return (
       <svg
@@ -107,8 +117,8 @@ export function ReasoningTrigger({
 
   const canToggle =
     status === "completed" ||
-    title.includes(REASONING_CONSTANTS.UI_TEXT.THINKING) ||
-    title.includes(REASONING_CONSTANTS.UI_TEXT.PROCESSING);
+    title.includes(t("chat.reasoning.thinking")) ||
+    title.includes(t("chat.reasoning.processing"));
 
   return (
     <div
@@ -165,8 +175,20 @@ export function ReasoningTrigger({
 export function ReasoningContent({
   children,
   isVisible = true,
+  title = "",
 }: ReasoningContentProps) {
   if (!isVisible) return null;
+
+  // Show text content ONLY when title is "Thinking" or "Thought"
+  // Hide for any other titles
+  const isThinkingOrThought =
+    title.toLowerCase().includes("thinking") ||
+    title.toLowerCase().includes("thought");
+
+  // If title is different from "Thinking" or "Thought", don't show the text content
+  if (!isThinkingOrThought) {
+    return null;
+  }
 
   return (
     <div className="chat-wrapper__reasoning-content">

@@ -239,13 +239,13 @@ function App() {
   // State for dynamic metadata (for testing metadata prop sync)
   // Start with empty to test the "metadata starts empty then gets populated" scenario
   const [dynamicMetadata, setDynamicMetadata] = useState<any>({
-    marketingId: "123",
+    marketingId: "new_09",
   });
 
   // State for dynamic contextHelpers (for testing contextHelpers prop sync)
   // Start with minimal context, then add brandInfo after 10 seconds
   const [contextHelpers, setContextHelpers] = useState<any>({
-    locale: "en-US",
+    locale: "zh_HK",
   });
 
   // Ref to ChatWrapper for imperative API access
@@ -266,7 +266,7 @@ function App() {
           id: "ud21_123",
           brandName: "UD21 Restaurant",
         },
-        locale: "en-US",
+        locale: "zh_HK",
       });
     }, 10000);
 

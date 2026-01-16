@@ -162,12 +162,10 @@ export function useMessageHandlers({
 
       const isReasoningThinking =
         ReasoningDetector.isThinkingMessage(content) &&
-        !content.includes("for") &&
-        !content.includes("seconds");
+        !REASONING_CONSTANTS.PATTERNS.DURATION.test(content);
       const isReasoningCompleted =
         ReasoningDetector.isThinkingMessage(content) &&
-        content.includes("for") &&
-        content.includes("seconds");
+        REASONING_CONSTANTS.PATTERNS.DURATION.test(content);
 
       const isToolStarted = ReasoningDetector.isHandlingMessage(content);
       const isToolCompleted = ReasoningDetector.isCompletedMessage(content);

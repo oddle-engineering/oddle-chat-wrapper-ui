@@ -1,3 +1,4 @@
+import { useTranslations } from '../i18n';
 import '../styles/network-status-banner.css';
 
 interface NetworkStatusBannerProps {
@@ -5,10 +6,12 @@ interface NetworkStatusBannerProps {
   isReconnecting?: boolean;
 }
 
-export function NetworkStatusBanner({ 
-  isVisible, 
-  isReconnecting = false 
+export function NetworkStatusBanner({
+  isVisible,
+  isReconnecting = false
 }: NetworkStatusBannerProps) {
+  const { t } = useTranslations();
+
   if (!isVisible) {
     return null;
   }
@@ -19,7 +22,7 @@ export function NetworkStatusBanner({
         {isReconnecting ? (
           <>
             <div className="network-status-banner__spinner" />
-            <span>Reconnecting...</span>
+            <span>{t('chat.connection.reconnecting')}</span>
           </>
         ) : (
           <>
@@ -27,7 +30,7 @@ export function NetworkStatusBanner({
               <span className="network-status-banner__icon-text">!</span>
             </div>
             <span className="network-status-banner__message">
-              No internet connection — please check your network settings and try again
+              {t('chat.errors.connection')}
             </span>
           </>
         )}

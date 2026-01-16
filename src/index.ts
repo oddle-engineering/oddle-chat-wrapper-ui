@@ -92,3 +92,16 @@ export type {
 // Legacy hook export (for backward compatibility)
 // @deprecated Use Zustand store hooks instead (useLayoutState, useChatState, etc.)
 export { useUIState } from './hooks/useUIState';
+
+// i18n / Translation exports
+export {
+  TranslationProvider,
+  useTranslations,
+  useI18next,
+  fetchTranslations
+} from './i18n';
+export type {
+  TranslationResources,
+  TranslationContextValue,
+  TranslationProviderProps
+} from './i18n';

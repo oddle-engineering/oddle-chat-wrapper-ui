@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { ClientTools } from "../types";
+import { useTranslations } from "../i18n";
 
 interface ToolingHandleProps {
   isStreaming: boolean;
@@ -29,6 +30,7 @@ export function ToolingHandleTrigger({
   toolName,
   clientTools,
 }: ToolingHandleTriggerProps) {
+  const { t } = useTranslations();
 
   // Find the tool description from clientTools
   const getToolDescription = () => {
@@ -41,7 +43,7 @@ export function ToolingHandleTrigger({
   if (toolName?.startsWith("lat_")) {
     const query = toolData?.parameters?.query;
     const url = toolData?.parameters?.url; // Fixed: added 's' to 'parameters'
-    toolDescription = query || url || "Executing tool...";
+    toolDescription = query || url || t('chat.tools.executing');
   } else {
     toolDescription = getToolDescription();
   }
@@ -185,7 +187,7 @@ export function ToolingHandleTrigger({
                   </svg>
                 </div>
               </div>
-              <span>Running...</span>
+              <span>{t('chat.tools.executing')}</span>
             </div>
           </div>
         );
@@ -284,7 +286,7 @@ export function ToolingHandleTrigger({
                   </svg>
                 </div>
               </div>
-              <span>Completed</span>
+              <span>{t('chat.tools.completed')}</span>
             </div>
           </div>
         );
@@ -433,7 +435,7 @@ export function ToolingHandleTrigger({
                 </svg>
               </div>
             </div>
-            <span>Pending...</span>
+            <span>{t('chat.tools.executing')}</span>
           </div>
         );
     }

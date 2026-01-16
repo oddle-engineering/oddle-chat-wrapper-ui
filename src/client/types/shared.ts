@@ -7,5 +7,8 @@ export interface ToolCallRequest {
 }
 
 export interface ContextHelpers {
+  /** Locale for translations (default: 'en') */
+  locale?: string;
+  /** Additional context data */
   [key: string]: any;
 }

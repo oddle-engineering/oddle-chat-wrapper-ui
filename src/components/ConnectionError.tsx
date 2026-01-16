@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslations } from "../i18n";
 
 export interface ConnectionErrorProps {
   /** Type of error that occurred */
@@ -26,10 +27,12 @@ export const ConnectionError: React.FC<ConnectionErrorProps> = ({
   onRetry,
   footer,
 }) => {
+  const { t } = useTranslations();
+
   const getErrorContent = () => {
     if (errorMessage) {
       return {
-        title: "Connection Failed",
+        title: t('chat.errors.connection'),
         message: errorMessage,
       };
     }
@@ -37,27 +40,23 @@ export const ConnectionError: React.FC<ConnectionErrorProps> = ({
     switch (errorType) {
       case "network":
         return {
-          title: "Connection Failed",
-          message:
-            "We couldn't establish a connection. Please check your internet connection and try again.",
+          title: t('chat.errors.connection'),
+          message: t('chat.errors.connection'),
         };
       case "auth":
         return {
-          title: "Authentication Failed",
-          message:
-            "We couldn't verify your identity. Please refresh the page to try again.",
+          title: t('chat.errors.authentication'),
+          message: t('chat.errors.authentication'),
         };
       case "server":
         return {
-          title: "Something went wrong",
-          message:
-            "AI-Assist is temporarily unable to reach the server. Please try again.",
+          title: t('chat.errors.unexpected'),
+          message: t('chat.errors.unexpected'),
         };
       default:
         return {
-          title: "Something went wrong",
-          message:
-            "AI-Assist is temporarily unable to reach the server. Please try again.",
+          title: t('chat.errors.unexpected'),
+          message: t('chat.errors.unexpected'),
         };
     }
   };
@@ -120,7 +119,7 @@ export const ConnectionError: React.FC<ConnectionErrorProps> = ({
                 strokeLinejoin="round"
               />
             </svg>
-            Try Again
+            {t('chat.errors.retry')}
           </button>
         )}
 
