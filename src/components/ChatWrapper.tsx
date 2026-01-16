@@ -39,9 +39,10 @@ import { ChatHeader } from "./chat/ChatHeader";
 import { ChatContent } from "./chat/ChatContent";
 import { ChatProvider } from "../contexts";
 import { NetworkStatusBanner } from "./NetworkStatusBanner";
+import { TranslationProvider } from "../i18n";
 import "../styles/chat-wrapper.css";
 
-const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
+const ChatWrapperInner = forwardRef<ChatWrapperRef, ChatWrapperProps>(
   (
     {
       // Authentication and entity context
@@ -1091,6 +1092,26 @@ const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
           </div>
         </WebSocketErrorBoundary>
       </ChatErrorBoundary>
+    );
+  }
+);
+
+ChatWrapperInner.displayName = "ChatWrapperInner";
+
+const ChatWrapperContainer = forwardRef<ChatWrapperRef, ChatWrapperProps>(
+  (props, ref) => {
+    const { auth, chatServerUrl, chatServerKey, contextHelpers } = props;
+    const locale = contextHelpers?.locale || "en";
+
+    return (
+      <TranslationProvider
+        locale={locale}
+        chatServerUrl={chatServerUrl}
+        chatServerKey={chatServerKey}
+        mpAuthToken={auth.token}
+      >
+        <ChatWrapperInner ref={ref} {...props} />
+      </TranslationProvider>
     );
   }
 );

@@ -6,6 +6,7 @@ import { ReactNode } from 'react';
 import { RefAttributes } from 'react';
 import { StoreApi } from 'zustand';
 import { UseBoundStore } from 'zustand';
+import { UseTranslationResponse } from 'react-i18next';
 
 export declare const AnimatedPlaceholder: ({ placeholderTexts, shouldAnimate, className, }: AnimatedPlaceholderProps) => JSX_2.Element;
 
@@ -231,6 +232,9 @@ export declare interface ConnectionNotificationProps {
 }
 
 declare interface ContextHelpers {
+    /** Locale for translations (default: 'en') */
+    locale?: string;
+    /** Additional context data */
     [key: string]: any;
 }
 
@@ -295,6 +299,22 @@ export declare function fetchThreadMessages(apiBaseUrl: string, queryParams: {
     providerResId?: string;
     threadId?: string;
 }>;
+
+/**
+ * Fetches translation resources from the chat server
+ *
+ * @param params - Configuration for fetching translations
+ * @returns Promise with translation resources
+ * @throws Error if the fetch fails
+ */
+export declare function fetchTranslations({ chatServerUrl, chatServerKey, mpAuthToken, locale, }: FetchTranslationsParams): Promise<TranslationResources>;
+
+declare interface FetchTranslationsParams {
+    chatServerUrl: string;
+    chatServerKey: string;
+    mpAuthToken: string;
+    locale: string;
+}
 
 export declare const FullscreenIcon: default_2.FC<FullscreenIconProps>;
 
@@ -596,6 +616,43 @@ export declare interface ToolSchema {
     parameters: ToolParameter[];
 }
 
+export declare interface TranslationContextValue {
+    /** Translation function - returns translated string for given key */
+    t: (key: string, options?: Record<string, string | number>) => string;
+    /** Current locale */
+    locale: string;
+    /** Whether translations are still loading */
+    isLoading: boolean;
+    /** Whether translations are ready to use */
+    isReady: boolean;
+    /** Error if translation loading failed */
+    error: Error | null;
+}
+
+export declare function TranslationProvider({ children, locale, chatServerUrl, chatServerKey, mpAuthToken, fallback, }: TranslationProviderProps): JSX_2.Element;
+
+export declare interface TranslationProviderProps {
+    /** Children to render */
+    children: React.ReactNode;
+    /** Locale to use for translations (default: 'en') */
+    locale?: string;
+    /** Chat server URL for API calls */
+    chatServerUrl: string;
+    /** Chat server API key */
+    chatServerKey: string;
+    /** MP auth token for authentication */
+    mpAuthToken: string;
+    /** Fallback content to show while loading */
+    fallback?: React.ReactNode;
+}
+
+/**
+ * Translation system types
+ */
+export declare interface TranslationResources {
+    [key: string]: string | TranslationResources;
+}
+
 export declare type UIStore = LayoutSlice & ChatSlice & ConversationSlice & ThreadSlice & MessagesSlice;
 
 /**
@@ -703,6 +760,12 @@ export declare const useConversationState: () => {
     clearConversationError: () => void;
 };
 
+/**
+ * Hook to access the underlying i18next t function from react-i18next
+ * Use this if you need more advanced i18next features
+ */
+export declare function useI18next(): UseTranslationResponse<"translation", undefined>;
+
 export declare const useLayoutState: () => {
     isModalOpen: boolean;
     isCollapsed: boolean;
@@ -720,6 +783,22 @@ export declare const useThreadState: () => {
     setProviderResId: (providerResId: string | null) => void;
     clearThreadData: () => void;
 };
+
+/**
+ * Hook to access translation functions and state
+ *
+ * @returns Translation context with t function, locale, and loading state
+ * @throws Error if used outside TranslationProvider
+ *
+ * @example
+ * ```tsx
+ * function ChatHeader() {
+ *   const { t, isReady } = useTranslations();
+ *   return <h1>{t('chat.title')}</h1>;
+ * }
+ * ```
+ */
+export declare function useTranslations(): TranslationContextValue;
 
 /**
  * Legacy hook for backward compatibility - now uses Zustand store

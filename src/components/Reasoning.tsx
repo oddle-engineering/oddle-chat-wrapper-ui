@@ -1,5 +1,5 @@
 import React, { ReactNode, useState } from "react";
-import { REASONING_CONSTANTS } from "../client/constants/reasoning";
+import { useTranslations } from "../i18n";
 
 interface ReasoningProps {
   isStreaming: boolean;
@@ -75,6 +75,8 @@ export function ReasoningTrigger({
   onToggle,
   isExpanded = true,
 }: ReasoningTriggerProps) {
+  const { t } = useTranslations();
+
   const renderIcon = () => {
     return (
       <svg
@@ -107,8 +109,8 @@ export function ReasoningTrigger({
 
   const canToggle =
     status === "completed" ||
-    title.includes(REASONING_CONSTANTS.UI_TEXT.THINKING) ||
-    title.includes(REASONING_CONSTANTS.UI_TEXT.PROCESSING);
+    title.includes(t('chat.reasoning.thinking')) ||
+    title.includes(t('chat.reasoning.processing'));
 
   return (
     <div

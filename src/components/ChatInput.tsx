@@ -18,6 +18,7 @@ import { isChatActive } from "../constants/chatStatus";
 import { AnimatedPlaceholder } from "./AnimatedPlaceholder";
 import { sanitizeMessage, sanitizeFileName } from "../utils/security";
 import { useChatContext } from "../contexts";
+import { useTranslations } from "../i18n";
 
 export interface ChatInputRef {
   focus: () => void;
@@ -41,6 +42,8 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
     onFileUpload,
     onStopGeneration,
   } = useChatContext();
+
+  const { t } = useTranslations();
 
   // Helper to check if input should be disabled
   // Note: No need to check connectionState since skeleton handles the connecting state
@@ -81,7 +84,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
   const activePlaceholderTexts =
     placeholderTexts && placeholderTexts.length > 0
       ? placeholderTexts
-      : ["What would you like to know?"];
+      : [t('chat.input.placeholder')];
 
   // Determine if animation should be active
   const shouldAnimate =
@@ -188,9 +191,9 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
               const maxSize = fileUploadConfig?.maxFileSize ?? 15 * 1024 * 1024;
               if (file.size > maxSize) {
                 setUploadError(
-                  `File too large. Maximum size is ${Math.round(
-                    maxSize / (1024 * 1024)
-                  )}MB.`
+                  t('chat.fileUpload.sizeLimitExceeded', {
+                    maxSize: Math.round(maxSize / (1024 * 1024))
+                  })
                 );
                 return false;
               }
@@ -204,11 +207,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
               ];
 
               if (!allowedTypes.includes(file.type)) {
-                setUploadError(
-                  `File type not supported. Allowed types: ${allowedTypes.join(
-                    ", "
-                  )}`
-                );
+                setUploadError(t('chat.fileUpload.typeNotAllowed'));
                 return false;
               }
 
@@ -224,9 +223,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                 validFiles.length;
               if (totalFiles > maxFiles) {
                 setUploadError(
-                  `Maximum ${maxFiles} files allowed. Currently ${
-                    uploadedMedia.length + uploadingFiles.length
-                  } files, trying to add ${validFiles.length} more.`
+                  t('chat.fileUpload.maxFilesExceeded', { maxFiles })
                 );
                 return;
               }
@@ -258,15 +255,13 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                   prev.filter((item) => !validFiles.includes(item.file))
                 );
 
-                setUploadError(
-                  "File upload failed. Ensure a stable connection and try again."
-                );
+                setUploadError(t('chat.errors.connection'));
               }
             }
           }
         } catch (error) {
           setUploadError(
-            error instanceof Error ? error.message : "Failed to paste image"
+            error instanceof Error ? error.message : t('chat.errors.unexpected')
           );
           // Clear uploading files on error
           setUploadingFiles([]);
@@ -279,6 +274,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
       uploadedMedia,
       uploadingFiles,
       createFilePreview,
+      t,
     ]
   );
 
@@ -304,9 +300,9 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
             const maxSize = fileUploadConfig?.maxFileSize ?? 15 * 1024 * 1024;
             if (file.size > maxSize) {
               setUploadError(
-                `File too large. Maximum size is ${Math.round(
-                  maxSize / (1024 * 1024)
-                )}MB.`
+                t('chat.fileUpload.sizeLimitExceeded', {
+                  maxSize: Math.round(maxSize / (1024 * 1024))
+                })
               );
               return false;
             }
@@ -320,11 +316,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
             ];
 
             if (!allowedTypes.includes(file.type)) {
-              setUploadError(
-                `File type not supported. Allowed types: ${allowedTypes.join(
-                  ", "
-                )}`
-              );
+              setUploadError(t('chat.fileUpload.typeNotAllowed'));
               return false;
             }
 
@@ -338,9 +330,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
               uploadedMedia.length + uploadingFiles.length + validFiles.length;
             if (totalFiles > maxFiles) {
               setUploadError(
-                `Maximum ${maxFiles} files allowed. Currently ${
-                  uploadedMedia.length + uploadingFiles.length
-                } files, trying to add ${validFiles.length} more.`
+                t('chat.fileUpload.maxFilesExceeded', { maxFiles })
               );
               return;
             }
@@ -372,14 +362,12 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
                 prev.filter((item) => !validFiles.includes(item.file))
               );
 
-              setUploadError(
-                "File upload failed. Ensure a stable connection and try again."
-              );
+              setUploadError(t('chat.errors.connection'));
             }
           }
         } catch (error) {
           setUploadError(
-            error instanceof Error ? error.message : "Upload failed"
+            error instanceof Error ? error.message : t('chat.errors.unexpected')
           );
           // Clear uploading files on error
           setUploadingFiles([]);
@@ -393,6 +381,7 @@ export const ChatInput = forwardRef<ChatInputRef, {}>((_, ref) => {
     uploadedMedia,
     uploadingFiles,
     createFilePreview,
+    t,
   ]);
 
   return (

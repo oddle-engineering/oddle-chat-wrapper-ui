@@ -7,8 +7,8 @@ import { Loader } from "./Loader";
 import { CopyIcon } from "./icons";
 import { SystemMessageCollapsible } from "./SystemMessageCollapsible";
 import { ImagePreviewModal } from "./ImagePreviewModal";
-import { REASONING_CONSTANTS } from "../client/constants/reasoning";
 import { useChatContext } from "../contexts";
+import { useTranslations } from "../i18n";
 
 interface MessageItemProps {
   message: Message;
@@ -81,7 +81,9 @@ export const MessageItem = memo<MessageItemProps>(
       currentAssistantMessageIdRef,
       onRetryMessage,
     } = useChatContext();
-    
+
+    const { t } = useTranslations();
+
     const [copied, setCopied] = useState(false);
     const [showCopyButton, setShowCopyButton] = useState(false);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -114,18 +116,18 @@ export const MessageItem = memo<MessageItemProps>(
     const renderStreamingPlaceholder = () => (
       <div className="chat-wrapper__streaming-placeholder">
         <Loader size={16} variant="dots" />
-        <span>{REASONING_CONSTANTS.UI_TEXT.THINKING}</span>
+        <span>{t('chat.reasoning.thinking')}</span>
       </div>
     );
 
 
     const renderRetryButton = () => (
       onRetryMessage && (
-        <button 
+        <button
           className="chat-wrapper__retry-button"
           onClick={handleRetry}
         >
-          Retry?
+          {t('chat.errors.retry')}
         </button>
       )
     );
