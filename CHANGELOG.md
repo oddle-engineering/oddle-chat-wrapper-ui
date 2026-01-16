@@ -25,6 +25,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.27] - 2026-01-16
+
+### Added
+- add i18n-ally localesPaths for localization support
+- update dynamic metadata and contextHelpers for localization; improve reasoning component logic
+- update dynamic metadata and contextHelpers; enhance Reasoning component
+
+### Changed
+- Merge pull request #6 from oddle-engineering/feature/i18n
+- chore: update built files
+- feat(i18n): integrate i18next for translation support
+
+### Fixed
+- improve list item styling and spacing in chat wrapper
+- implement message sanitization in sanitizeMessage function
+- update dependencies to latest versions in package-lock.json
+
 ## [1.0.26] - 2026-01-08
 
 ### Changed
