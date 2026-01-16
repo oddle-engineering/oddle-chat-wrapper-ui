@@ -17,11 +17,13 @@ interface ReasoningTriggerProps {
 interface ReasoningContentProps {
   children: ReactNode;
   isVisible?: boolean;
+  title?: string;
 }
 
 export function Reasoning({ children, isStreaming }: ReasoningProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [hasCompleted, setHasCompleted] = useState(false);
+  const [reasoningTitle, setReasoningTitle] = useState<string>("");
 
   // When reasoning completes (isStreaming becomes false), auto-collapse
   React.useEffect(() => {
@@ -45,6 +47,11 @@ export function Reasoning({ children, isStreaming }: ReasoningProps) {
   const childrenWithProps = React.Children.map(children, (child) => {
     if (React.isValidElement(child)) {
       if (child.type === ReasoningTrigger) {
+        // Capture the title from trigger
+        const triggerProps = child.props as ReasoningTriggerProps;
+        if (triggerProps.title && triggerProps.title !== reasoningTitle) {
+          setReasoningTitle(triggerProps.title);
+        }
         return React.cloneElement(
           child as React.ReactElement<ReasoningTriggerProps>,
           {
@@ -58,6 +65,7 @@ export function Reasoning({ children, isStreaming }: ReasoningProps) {
           child as React.ReactElement<ReasoningContentProps>,
           {
             isVisible: isExpanded,
+            title: reasoningTitle,
           }
         );
       }
@@ -167,8 +175,23 @@ export function ReasoningTrigger({
 export function ReasoningContent({
   children,
   isVisible = true,
+  title = "",
 }: ReasoningContentProps) {
+  const { t } = useTranslations();
+  
   if (!isVisible) return null;
+
+  // Check if title is "Thinking" or "Thought" (in any language)
+  const isThinkingOrThought = 
+    title.toLowerCase().includes(t('chat.reasoning.thinking').toLowerCase()) ||
+    title.toLowerCase().includes(t('chat.reasoning.thought').toLowerCase()) ||
+    title.toLowerCase().includes('thinking') ||
+    title.toLowerCase().includes('thought');
+
+  // If title is different from "Thinking" or "Thought", don't show the text content
+  if (!isThinkingOrThought) {
+    return null;
+  }
 
   return (
     <div className="chat-wrapper__reasoning-content">

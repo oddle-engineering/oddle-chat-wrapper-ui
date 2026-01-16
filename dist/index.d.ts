@@ -487,11 +487,12 @@ declare interface PromptInputToolsProps extends default_2.HTMLAttributes<HTMLDiv
 
 export declare function Reasoning({ children, isStreaming }: ReasoningProps): JSX_2.Element;
 
-export declare function ReasoningContent({ children, isVisible, }: ReasoningContentProps): JSX_2.Element | null;
+export declare function ReasoningContent({ children, isVisible, title, }: ReasoningContentProps): JSX_2.Element | null;
 
 declare interface ReasoningContentProps {
     children: ReactNode;
     isVisible?: boolean;
+    title?: string;
 }
 
 declare interface ReasoningProps {
