@@ -32,7 +32,7 @@ const go = {
   // Normal closure
   GOING_AWAY: 1001
 };
-var pt = /* @__PURE__ */ ((t) => (t.CONNECTION_ESTABLISHED = "connection_established", t.CONNECTION_LOST = "connection_lost", t.CONNECTION_RESTORED = "connection_restored", t.CONNECTION_FAILED = "connection_failed", t.RECONNECTING = "reconnecting", t.CHAT_COMPLETED = "chat_completed", t.CHAT_ERROR = "chat_error", t))(pt || {}), Tt = /* @__PURE__ */ ((t) => (t.CHAT_MESSAGE = "chat_message", t.CONFIGURE_TOOLS = "configure_tools", t.UPDATE_TOOLS = "update_tools", t.UPDATE_CONTEXT_HELPERS = "update_context_helpers", t.TOOL_CALL_RESPONSE = "tool_call_response", t.HEARTBEAT_PING = "heartbeat_ping", t.HEARTBEAT_PONG = "heartbeat_pong", t.STOP_RUN = "stop_run", t))(Tt || {}), Qe = /* @__PURE__ */ ((t) => (t.SESSION_ESTABLISHED = "session_established", t.TOOLS_CONFIGURED = "tools_configured", t.CLIENT_TOOLS_UPDATED = "client_tools_updated", t.CONFIGURE_TOOLS = "configure_tools", t.CHAT_EVENT = "chat_event", t.CHAT_FINISHED = "chat_finished", t.CHAT_ERROR = "chat_error", t.THREAD_CREATED = "thread_created", t.TOOL_CALL_REQUEST = "tool_call_request", t.HEARTBEAT_PING = "heartbeat_ping", t.HEARTBEAT_ACK = "heartbeat_ack", t.ERROR = "error", t))(Qe || {}), qn = /* @__PURE__ */ ((t) => (t.PROVIDER_EVENT = "provider-event", t.LATITUDE_EVENT = "latitude-event", t.CONTENT_DELTA = "content-delta", t))(qn || {}), $t = /* @__PURE__ */ ((t) => (t.TEXT_DELTA = "text-delta", t.REASONING_START = "reasoning-start", t.REASONING_DELTA = "reasoning-delta", t.REASONING_END = "reasoning-end", t.TOOL_CALL = "tool-call", t.TOOL_RESULT = "tool-result", t))($t || {});
+var pt = /* @__PURE__ */ ((t) => (t.CONNECTION_ESTABLISHED = "connection_established", t.CONNECTION_LOST = "connection_lost", t.CONNECTION_RESTORED = "connection_restored", t.CONNECTION_FAILED = "connection_failed", t.RECONNECTING = "reconnecting", t.CHAT_COMPLETED = "chat_completed", t.CHAT_ERROR = "chat_error", t))(pt || {}), Tt = /* @__PURE__ */ ((t) => (t.CHAT_MESSAGE = "chat_message", t.CONFIGURE_TOOLS = "configure_tools", t.UPDATE_TOOLS = "update_tools", t.UPDATE_CONTEXT_HELPERS = "update_context_helpers", t.TOOL_CALL_RESPONSE = "tool_call_response", t.HEARTBEAT_PING = "heartbeat_ping", t.HEARTBEAT_PONG = "heartbeat_pong", t.STOP_RUN = "stop_run", t))(Tt || {}), Qe = /* @__PURE__ */ ((t) => (t.SESSION_ESTABLISHED = "session_established", t.TOOLS_CONFIGURED = "tools_configured", t.CLIENT_TOOLS_UPDATED = "client_tools_updated", t.CONFIGURE_TOOLS = "configure_tools", t.CHAT_EVENT = "chat_event", t.CHAT_FINISHED = "chat_finished", t.CHAT_ERROR = "chat_error", t.THREAD_CREATED = "thread_created", t.TOOL_CALL_REQUEST = "tool_call_request", t.HEARTBEAT_PING = "heartbeat_ping", t.HEARTBEAT_ACK = "heartbeat_ack", t.ERROR = "error", t))(Qe || {}), qn = /* @__PURE__ */ ((t) => (t.PROVIDER_EVENT = "provider-event", t.LATITUDE_EVENT = "latitude-event", t.CONTENT_DELTA = "content-delta", t))(qn || {}), Bt = /* @__PURE__ */ ((t) => (t.TEXT_DELTA = "text-delta", t.REASONING_START = "reasoning-start", t.REASONING_DELTA = "reasoning-delta", t.REASONING_END = "reasoning-end", t.TOOL_CALL = "tool-call", t.TOOL_RESULT = "tool-result", t))(Bt || {});
 class nn {
   static createConnectionEvent(e, n) {
     return {
@@ -833,29 +833,29 @@ class So {
   handleProviderEvent(e) {
     var r, i, a;
     switch ((r = e.data) == null ? void 0 : r.type) {
-      case $t.TEXT_DELTA:
+      case Bt.TEXT_DELTA:
         e.data.textDelta && ((a = (i = this.handlers).onSetMessage) == null || a.call(i, e.data.textDelta));
         break;
-      case $t.REASONING_START:
+      case Bt.REASONING_START:
         this.reasoningHandler.handleReasoningStart(e.data);
         break;
-      case $t.REASONING_DELTA:
+      case Bt.REASONING_DELTA:
         this.reasoningHandler.handleReasoningDelta(e.data);
         break;
-      case $t.REASONING_END:
+      case Bt.REASONING_END:
         this.reasoningHandler.handleReasoningEnd(e.data);
         break;
-      case $t.TOOL_CALL:
+      case Bt.TOOL_CALL:
         this.toolHandler.handleServerToolCall(e.data);
         break;
-      case $t.TOOL_RESULT:
+      case Bt.TOOL_RESULT:
         this.toolHandler.handleServerToolResult(e.data);
         break;
     }
   }
   handleLatitudeEvent(e) {
     var n;
-    if (((n = e.data) == null ? void 0 : n.type) === $t.TOOL_RESULT && this.handlers.onReasoningUpdate) {
+    if (((n = e.data) == null ? void 0 : n.type) === Bt.TOOL_RESULT && this.handlers.onReasoningUpdate) {
       const r = e.data;
       if (r.toolCallId && r.toolName) {
         const i = Xn.createServerToolCall(
@@ -2088,7 +2088,7 @@ function Qa() {
   const On = fe({}, [$e, rt, je], dr);
   let Xt = fe({}, ["mi", "mo", "mn", "ms", "mtext"]), Jt = fe({}, ["annotation-xml"]);
   const Ln = fe({}, ["title", "style", "font", "a", "script"]);
-  let zt = null;
+  let Ht = null;
   const Pn = ["application/xhtml+xml", "text/html"], Dn = "text/html";
   let Ae = null, Ot = null;
   const Fn = n.createElement("form"), un = function(S) {
@@ -2096,8 +2096,8 @@ function Qa() {
   }, hn = function() {
     let S = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {};
     if (!(Ot && Ot === S)) {
-      if ((!S || typeof S != "object") && (S = {}), S = Pt(S), zt = // eslint-disable-next-line unicorn/prefer-includes
-      Pn.indexOf(S.PARSER_MEDIA_TYPE) === -1 ? Dn : S.PARSER_MEDIA_TYPE, Ae = zt === "application/xhtml+xml" ? dr : Kn, te = yt(S, "ALLOWED_TAGS") ? fe({}, S.ALLOWED_TAGS, Ae) : V, C = yt(S, "ALLOWED_ATTR") ? fe({}, S.ALLOWED_ATTR, Ae) : Z, Ve = yt(S, "ALLOWED_NAMESPACES") ? fe({}, S.ALLOWED_NAMESPACES, dr) : On, Me = yt(S, "ADD_URI_SAFE_ATTR") ? fe(Pt(Be), S.ADD_URI_SAFE_ATTR, Ae) : Be, J = yt(S, "ADD_DATA_URI_TAGS") ? fe(Pt(ue), S.ADD_DATA_URI_TAGS, Ae) : ue, v = yt(S, "FORBID_CONTENTS") ? fe({}, S.FORBID_CONTENTS, Ae) : G, he = yt(S, "FORBID_TAGS") ? fe({}, S.FORBID_TAGS, Ae) : Pt({}), Ce = yt(S, "FORBID_ATTR") ? fe({}, S.FORBID_ATTR, Ae) : Pt({}), _ = yt(S, "USE_PROFILES") ? S.USE_PROFILES : !1, xe = S.ALLOW_ARIA_ATTR !== !1, de = S.ALLOW_DATA_ATTR !== !1, Ne = S.ALLOW_UNKNOWN_PROTOCOLS || !1, ve = S.ALLOW_SELF_CLOSE_IN_ATTR !== !1, Fe = S.SAFE_FOR_TEMPLATES || !1, lt = S.SAFE_FOR_XML !== !1, ct = S.WHOLE_DOCUMENT || !1, xt = S.RETURN_DOM || !1, At = S.RETURN_DOM_FRAGMENT || !1, kt = S.RETURN_TRUSTED_TYPE || !1, Mt = S.FORCE_BODY || !1, Vt = S.SANITIZE_DOM !== !1, Gt = S.SANITIZE_NAMED_PROPS || !1, mt = S.KEEP_CONTENT !== !1, Ct = S.IN_PLACE || !1, w = S.ALLOWED_URI_REGEXP || Xa, ke = S.NAMESPACE || je, Xt = S.MATHML_TEXT_INTEGRATION_POINTS || Xt, Jt = S.HTML_INTEGRATION_POINTS || Jt, z = S.CUSTOM_ELEMENT_HANDLING || {}, S.CUSTOM_ELEMENT_HANDLING && un(S.CUSTOM_ELEMENT_HANDLING.tagNameCheck) && (z.tagNameCheck = S.CUSTOM_ELEMENT_HANDLING.tagNameCheck), S.CUSTOM_ELEMENT_HANDLING && un(S.CUSTOM_ELEMENT_HANDLING.attributeNameCheck) && (z.attributeNameCheck = S.CUSTOM_ELEMENT_HANDLING.attributeNameCheck), S.CUSTOM_ELEMENT_HANDLING && typeof S.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements == "boolean" && (z.allowCustomizedBuiltInElements = S.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements), Fe && (de = !1), At && (xt = !0), _ && (te = fe({}, Mi), C = [], _.html === !0 && (fe(te, Ni), fe(C, Ai)), _.svg === !0 && (fe(te, fr), fe(C, Cr), fe(C, Bn)), _.svgFilters === !0 && (fe(te, gr), fe(C, Cr), fe(C, Bn)), _.mathMl === !0 && (fe(te, mr), fe(C, Oi), fe(C, Bn))), S.ADD_TAGS && (typeof S.ADD_TAGS == "function" ? ie.tagCheck = S.ADD_TAGS : (te === V && (te = Pt(te)), fe(te, S.ADD_TAGS, Ae))), S.ADD_ATTR && (typeof S.ADD_ATTR == "function" ? ie.attributeCheck = S.ADD_ATTR : (C === Z && (C = Pt(C)), fe(C, S.ADD_ATTR, Ae))), S.ADD_URI_SAFE_ATTR && fe(Me, S.ADD_URI_SAFE_ATTR, Ae), S.FORBID_CONTENTS && (v === G && (v = Pt(v)), fe(v, S.FORBID_CONTENTS, Ae)), mt && (te["#text"] = !0), ct && fe(te, ["html", "head", "body"]), te.table && (fe(te, ["tbody"]), delete he.tbody), S.TRUSTED_TYPES_POLICY) {
+      if ((!S || typeof S != "object") && (S = {}), S = Pt(S), Ht = // eslint-disable-next-line unicorn/prefer-includes
+      Pn.indexOf(S.PARSER_MEDIA_TYPE) === -1 ? Dn : S.PARSER_MEDIA_TYPE, Ae = Ht === "application/xhtml+xml" ? dr : Kn, te = yt(S, "ALLOWED_TAGS") ? fe({}, S.ALLOWED_TAGS, Ae) : V, C = yt(S, "ALLOWED_ATTR") ? fe({}, S.ALLOWED_ATTR, Ae) : Z, Ve = yt(S, "ALLOWED_NAMESPACES") ? fe({}, S.ALLOWED_NAMESPACES, dr) : On, Me = yt(S, "ADD_URI_SAFE_ATTR") ? fe(Pt(Be), S.ADD_URI_SAFE_ATTR, Ae) : Be, J = yt(S, "ADD_DATA_URI_TAGS") ? fe(Pt(ue), S.ADD_DATA_URI_TAGS, Ae) : ue, v = yt(S, "FORBID_CONTENTS") ? fe({}, S.FORBID_CONTENTS, Ae) : G, he = yt(S, "FORBID_TAGS") ? fe({}, S.FORBID_TAGS, Ae) : Pt({}), Ce = yt(S, "FORBID_ATTR") ? fe({}, S.FORBID_ATTR, Ae) : Pt({}), _ = yt(S, "USE_PROFILES") ? S.USE_PROFILES : !1, xe = S.ALLOW_ARIA_ATTR !== !1, de = S.ALLOW_DATA_ATTR !== !1, Ne = S.ALLOW_UNKNOWN_PROTOCOLS || !1, ve = S.ALLOW_SELF_CLOSE_IN_ATTR !== !1, Fe = S.SAFE_FOR_TEMPLATES || !1, lt = S.SAFE_FOR_XML !== !1, ct = S.WHOLE_DOCUMENT || !1, xt = S.RETURN_DOM || !1, At = S.RETURN_DOM_FRAGMENT || !1, kt = S.RETURN_TRUSTED_TYPE || !1, Mt = S.FORCE_BODY || !1, Vt = S.SANITIZE_DOM !== !1, Gt = S.SANITIZE_NAMED_PROPS || !1, mt = S.KEEP_CONTENT !== !1, Ct = S.IN_PLACE || !1, w = S.ALLOWED_URI_REGEXP || Xa, ke = S.NAMESPACE || je, Xt = S.MATHML_TEXT_INTEGRATION_POINTS || Xt, Jt = S.HTML_INTEGRATION_POINTS || Jt, z = S.CUSTOM_ELEMENT_HANDLING || {}, S.CUSTOM_ELEMENT_HANDLING && un(S.CUSTOM_ELEMENT_HANDLING.tagNameCheck) && (z.tagNameCheck = S.CUSTOM_ELEMENT_HANDLING.tagNameCheck), S.CUSTOM_ELEMENT_HANDLING && un(S.CUSTOM_ELEMENT_HANDLING.attributeNameCheck) && (z.attributeNameCheck = S.CUSTOM_ELEMENT_HANDLING.attributeNameCheck), S.CUSTOM_ELEMENT_HANDLING && typeof S.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements == "boolean" && (z.allowCustomizedBuiltInElements = S.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements), Fe && (de = !1), At && (xt = !0), _ && (te = fe({}, Mi), C = [], _.html === !0 && (fe(te, Ni), fe(C, Ai)), _.svg === !0 && (fe(te, fr), fe(C, Cr), fe(C, Bn)), _.svgFilters === !0 && (fe(te, gr), fe(C, Cr), fe(C, Bn)), _.mathMl === !0 && (fe(te, mr), fe(C, Oi), fe(C, Bn))), S.ADD_TAGS && (typeof S.ADD_TAGS == "function" ? ie.tagCheck = S.ADD_TAGS : (te === V && (te = Pt(te)), fe(te, S.ADD_TAGS, Ae))), S.ADD_ATTR && (typeof S.ADD_ATTR == "function" ? ie.attributeCheck = S.ADD_ATTR : (C === Z && (C = Pt(C)), fe(C, S.ADD_ATTR, Ae))), S.ADD_URI_SAFE_ATTR && fe(Me, S.ADD_URI_SAFE_ATTR, Ae), S.FORBID_CONTENTS && (v === G && (v = Pt(v)), fe(v, S.FORBID_CONTENTS, Ae)), mt && (te["#text"] = !0), ct && fe(te, ["html", "head", "body"]), te.table && (fe(te, ["tbody"]), delete he.tbody), S.TRUSTED_TYPES_POLICY) {
         if (typeof S.TRUSTED_TYPES_POLICY.createHTML != "function")
           throw gn('TRUSTED_TYPES_POLICY configuration option must provide a "createHTML" hook.');
         if (typeof S.TRUSTED_TYPES_POLICY.createScriptURL != "function")
@@ -2114,7 +2114,7 @@ function Qa() {
       tagName: "template"
     });
     const X = Kn(S.tagName), Ie = Kn(D.tagName);
-    return Ve[S.namespaceURI] ? S.namespaceURI === rt ? D.namespaceURI === je ? X === "svg" : D.namespaceURI === $e ? X === "svg" && (Ie === "annotation-xml" || Xt[Ie]) : !!ur[X] : S.namespaceURI === $e ? D.namespaceURI === je ? X === "math" : D.namespaceURI === rt ? X === "math" && Jt[Ie] : !!dn[X] : S.namespaceURI === je ? D.namespaceURI === rt && !Jt[Ie] || D.namespaceURI === $e && !Xt[Ie] ? !1 : !dn[X] && (Ln[X] || !ur[X]) : !!(zt === "application/xhtml+xml" && Ve[S.namespaceURI]) : !1;
+    return Ve[S.namespaceURI] ? S.namespaceURI === rt ? D.namespaceURI === je ? X === "svg" : D.namespaceURI === $e ? X === "svg" && (Ie === "annotation-xml" || Xt[Ie]) : !!ur[X] : S.namespaceURI === $e ? D.namespaceURI === je ? X === "math" : D.namespaceURI === rt ? X === "math" && Jt[Ie] : !!dn[X] : S.namespaceURI === je ? D.namespaceURI === rt && !Jt[Ie] || D.namespaceURI === $e && !Xt[Ie] ? !1 : !dn[X] && (Ln[X] || !ur[X]) : !!(Ht === "application/xhtml+xml" && Ve[S.namespaceURI]) : !1;
   }, M = function(S) {
     pn(e.removed, {
       element: S
@@ -2155,11 +2155,11 @@ function Qa() {
       const Le = pr(S, /^[\r\n\t ]+/);
       X = Le && Le[0];
     }
-    zt === "application/xhtml+xml" && ke === je && (S = '<html xmlns="http://www.w3.org/1999/xhtml"><head></head><body>' + S + "</body></html>");
+    Ht === "application/xhtml+xml" && ke === je && (S = '<html xmlns="http://www.w3.org/1999/xhtml"><head></head><body>' + S + "</body></html>");
     const Ie = A ? A.createHTML(S) : S;
     if (ke === je)
       try {
-        D = new m().parseFromString(Ie, zt);
+        D = new m().parseFromString(Ie, Ht);
       } catch {
       }
     if (!D || !D.documentElement) {
@@ -2189,7 +2189,7 @@ function Qa() {
       X.call(e, S, D, Ot);
     });
   }
-  const Ut = function(S) {
+  const zt = function(S) {
     let D = null;
     if (We(q.beforeSanitizeElements, S, null), Re(S))
       return M(S), !0;
@@ -2321,7 +2321,7 @@ function Qa() {
     let D = null;
     const X = Oe(S);
     for (We(q.beforeSanitizeShadowDOM, S, null); D = X.nextNode(); )
-      We(q.uponSanitizeShadowNode, D, null), Ut(D), Ei(D), D.content instanceof a && ne(D.content);
+      We(q.uponSanitizeShadowNode, D, null), zt(D), Ei(D), D.content instanceof a && ne(D.content);
     We(q.afterSanitizeShadowDOM, S, null);
   };
   return e.sanitize = function(ne) {
@@ -2352,7 +2352,7 @@ function Qa() {
     D && Mt && M(D.firstChild);
     const Le = Oe(Ct ? ne : D);
     for (; Ie = Le.nextNode(); )
-      Ut(Ie), Ei(Ie), Ie.content instanceof a && uo(Ie.content);
+      zt(Ie), Ei(Ie), Ie.content instanceof a && uo(Ie.content);
     if (Ct)
       return ne;
     if (xt) {
@@ -4634,7 +4634,7 @@ function pc({
   );
   return o && a ? /* @__PURE__ */ g(Ft, { children: a }) : /* @__PURE__ */ g(hs.Provider, { value: I, children: t });
 }
-function Ht() {
+function $t() {
   const t = ii(hs);
   if (!t)
     throw new Error(
@@ -4646,7 +4646,7 @@ function sf() {
   return uc();
 }
 function fc() {
-  const { t } = Ht(), e = se(
+  const { t } = $t(), e = se(
     (a, s) => s === !1 ? Ue.isErrorMessage(a) ? Ke.ERROR : Ke.COMPLETED : Ue.isCompletedMessage(a) ? Ke.COMPLETED : Ue.isErrorMessage(a) ? Ke.ERROR : Ke.PROCESSING,
     []
   ), n = se(
@@ -4682,7 +4682,7 @@ function fc() {
   };
 }
 function gc() {
-  const { t } = Ht(), e = se(
+  const { t } = $t(), e = se(
     (r, i) => i === !1 ? r.includes(ae.ERROR_MARKER) ? t("chat.tools.failed") : t("chat.tools.completed") : r.includes(ae.COMPLETED_MARKER) || r.includes("✅") ? t("chat.tools.completed") : r.includes(ae.ERROR_MARKER) ? t("chat.tools.failed") : (r.includes(ae.HANDLING_MARKER), t("chat.tools.executing")),
     [t]
   ), n = se(
@@ -11166,10 +11166,10 @@ function Qd(t) {
       (Me[1] || Ea).call(G, void 0, Me[0]);
     }
     for (v.position = {
-      start: Bt(
+      start: Ut(
         _.length > 0 ? _[0][1].start : { line: 1, column: 1, offset: 0 }
       ),
-      end: Bt(
+      end: Ut(
         _.length > 0 ? _[_.length - 2][1].end : { line: 1, column: 1, offset: 0 }
       )
     }, ue = -1; ++ue < e.transforms.length; )
@@ -11241,7 +11241,7 @@ function Qd(t) {
   function o(_, v, G) {
     const J = this.stack[this.stack.length - 1];
     k(J, "expected `parent`"), k("children" in J, "expected `parent`"), J.children.push(_), this.stack.push(_), this.tokenStack.push([v, G || void 0]), _.position = {
-      start: Bt(v.start),
+      start: Ut(v.start),
       // @ts-expect-error: `end` will be patched later.
       end: void 0
     };
@@ -11261,7 +11261,7 @@ function Qd(t) {
     else throw new Error(
       "Cannot close `" + _.type + "` (" + Tn({ start: _.start, end: _.end }) + "): it’s not open"
     );
-    k(G.type !== "fragment", "unexpected fragment `exit`ed"), k(G.position, "expected `position` to be defined"), G.position.end = Bt(_.end);
+    k(G.type !== "fragment", "unexpected fragment `exit`ed"), k(G.position, "expected `position` to be defined"), G.position.end = Ut(_.end);
   }
   function c() {
     return qu(this.stack.pop());
@@ -11337,21 +11337,21 @@ function Qd(t) {
     const G = v.children;
     let J = G[G.length - 1];
     (!J || J.type !== "text") && (J = mt(), J.position = {
-      start: Bt(_.start),
+      start: Ut(_.start),
       // @ts-expect-error: we’ll add `end` later.
       end: void 0
     }, G.push(J)), this.stack.push(J);
   }
   function K(_) {
     const v = this.stack.pop();
-    k(v, "expected a `node` to be on the stack"), k("value" in v, "expected a `literal` to be on the stack"), k(v.position, "expected `node` to have an open position"), v.value += this.sliceSerialize(_), v.position.end = Bt(_.end);
+    k(v, "expected a `node` to be on the stack"), k("value" in v, "expected a `literal` to be on the stack"), k(v.position, "expected `node` to have an open position"), v.value += this.sliceSerialize(_), v.position.end = Ut(_.end);
   }
   function q(_) {
     const v = this.stack[this.stack.length - 1];
     if (k(v, "expected `node`"), this.data.atHardBreak) {
       k("children" in v, "expected `parent`");
       const G = v.children[v.children.length - 1];
-      k(G.position, "expected tail to have a starting position"), G.position.end = Bt(_.end), this.data.atHardBreak = void 0;
+      k(G.position, "expected tail to have a starting position"), G.position.end = Ut(_.end), this.data.atHardBreak = void 0;
       return;
     }
     !this.data.setextHeadingSlurpLineEnding && e.canContainEols.includes(v.type) && ($.call(this, _), K.call(this, _));
@@ -11460,7 +11460,7 @@ function Qd(t) {
   }
   function Ce(_) {
     const v = this.stack.pop();
-    k(v, "expected `node`"), k(v.position, "expected `node.position`"), v.position.end = Bt(_.end);
+    k(v, "expected `node`"), k(v.position, "expected `node.position`"), v.position.end = Ut(_.end);
   }
   function ie(_) {
     K.call(this, _);
@@ -11543,7 +11543,7 @@ function Qd(t) {
     return { type: "thematicBreak" };
   }
 }
-function Bt(t) {
+function Ut(t) {
   return { line: t.line, column: t.column, offset: t.offset };
 }
 function $s(t, e) {
@@ -13772,7 +13772,7 @@ function Qs({
   onToggle: r,
   isExpanded: i = !0
 }) {
-  const { t: a } = Ht(), s = () => /* @__PURE__ */ L(
+  const { t: a } = $t(), s = () => /* @__PURE__ */ L(
     "svg",
     {
       width: "16",
@@ -13863,8 +13863,7 @@ function eo({
   isVisible: e = !0,
   title: n = ""
 }) {
-  const { t: r } = Ht();
-  return !e || !(n.toLowerCase().includes(r("chat.reasoning.thinking").toLowerCase()) || n.toLowerCase().includes(r("chat.reasoning.thought").toLowerCase()) || n.toLowerCase().includes("thinking") || n.toLowerCase().includes("thought")) ? null : /* @__PURE__ */ g("div", { className: "chat-wrapper__reasoning-content", children: /* @__PURE__ */ g("div", { className: "chat-wrapper__reasoning-text", children: t }) });
+  return !e || !(n.toLowerCase().includes("thinking") || n.toLowerCase().includes("thought")) ? null : /* @__PURE__ */ g("div", { className: "chat-wrapper__reasoning-content", children: /* @__PURE__ */ g("div", { className: "chat-wrapper__reasoning-text", children: t }) });
 }
 function bp({ children: t }) {
   return /* @__PURE__ */ g("div", { className: "chat-wrapper__tooling-handle", children: t });
@@ -13877,7 +13876,7 @@ function _p({
   clientTools: i
 }) {
   var u, c;
-  const { t: a } = Ht(), s = () => {
+  const { t: a } = $t(), s = () => {
     if (!r || !i) return null;
     const h = i.find((m) => m.name === r);
     return (h == null ? void 0 : h.description) || null;
@@ -14538,7 +14537,7 @@ const io = {
       clientTools: o,
       currentAssistantMessageIdRef: l,
       onRetryMessage: u
-    } = An(), { t: c } = Ht(), [h, m] = Se(!1), [d, y] = Se(!1), [x, I] = Se(null), T = se(async () => {
+    } = An(), { t: c } = $t(), [h, m] = Se(!1), [d, y] = Se(!1), [x, I] = Se(null), T = se(async () => {
       try {
         await navigator.clipboard.writeText(t.content), m(!0), setTimeout(() => m(!1), 2e3);
       } catch (b) {
@@ -15078,7 +15077,7 @@ const Lp = ({
     onSubmit: h,
     onFileUpload: m,
     onStopGeneration: d
-  } = An(), { t: y } = Ht(), x = r || i, I = c.length > 0, [T, R] = Se(""), [N, A] = Se([]), [H, E] = Se([]), [U, W] = Se(null), [$, K] = Se(null), [q, B] = Se(!1), b = ge(null), O = se((V) => {
+  } = An(), { t: y } = $t(), x = r || i, I = c.length > 0, [T, R] = Se(""), [N, A] = Se([]), [H, E] = Se([]), [U, W] = Se(null), [$, K] = Se(null), [q, B] = Se(!1), b = ge(null), O = se((V) => {
     K(V), B(!0);
   }, []), F = se((V) => new Promise((C, Z) => {
     const z = new FileReader();
@@ -15650,7 +15649,7 @@ const Lp = ({
   onRetry: r,
   footer: i
 }) => {
-  const { t: a } = Ht(), s = () => {
+  const { t: a } = $t(), s = () => {
     if (e)
       return {
         title: a("chat.errors.connection"),
@@ -15822,7 +15821,7 @@ function Wp({
   isVisible: t,
   isReconnecting: e = !1
 }) {
-  const { t: n } = Ht();
+  const { t: n } = $t();
   return t ? /* @__PURE__ */ g("div", { className: "network-status-banner", children: /* @__PURE__ */ g("div", { className: "network-status-banner__content", children: e ? /* @__PURE__ */ L(Ft, { children: [
     /* @__PURE__ */ g("div", { className: "network-status-banner__spinner" }),
     /* @__PURE__ */ g("span", { children: n("chat.connection.reconnecting") })
@@ -16081,8 +16080,8 @@ const lo = In(
           return;
         }
         try {
-          const Re = new Promise((We, Ut) => {
-            setTimeout(() => Ut(new Error("Message send timeout - connection may be lost")), 5e3);
+          const Re = new Promise((We, zt) => {
+            setTimeout(() => zt(new Error("Message send timeout - connection may be lost")), 5e3);
           });
           await Promise.race([
             J.onTriggerMessage({
@@ -16095,12 +16094,12 @@ const lo = In(
           const ze = setTimeout(() => {
             Z(!1), q(Ee.ERROR), de(
               (We) => We.map(
-                (Ut) => Ut.id === Xe.id ? {
-                  ...Ut,
+                (zt) => zt.id === Xe.id ? {
+                  ...zt,
                   hasError: !0,
                   isRetrying: !1,
                   errorMessage: "No response received. Connection may be lost."
-                } : Ut
+                } : zt
               )
             ), V(!1), q(Ee.IDLE), b(ht.IDLE);
           }, 12e4);
@@ -16156,7 +16155,7 @@ const lo = In(
         mt.current && mt.current.setText(M.description);
       },
       []
-    ), zt = He(
+    ), Ht = He(
       () => ({
         messages: xe,
         isStreaming: te,
@@ -16326,7 +16325,7 @@ const lo = In(
       ]
     ), hn = He(
       () => ({
-        ...zt,
+        ...Ht,
         ...Pn,
         ...Dn,
         ...Ae,
@@ -16336,7 +16335,7 @@ const lo = In(
         chatInputRef: mt
       }),
       [
-        zt,
+        Ht,
         Pn,
         Dn,
         Ae,
@@ -16534,7 +16533,7 @@ export {
   sf as useI18next,
   tf as useLayoutState,
   af as useThreadState,
-  Ht as useTranslations,
+  $t as useTranslations,
   of as useUIState,
   oe as useUIStore
 };

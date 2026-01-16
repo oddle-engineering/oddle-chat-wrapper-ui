@@ -117,8 +117,8 @@ export function ReasoningTrigger({
 
   const canToggle =
     status === "completed" ||
-    title.includes(t('chat.reasoning.thinking')) ||
-    title.includes(t('chat.reasoning.processing'));
+    title.includes(t("chat.reasoning.thinking")) ||
+    title.includes(t("chat.reasoning.processing"));
 
   return (
     <div
@@ -177,16 +177,13 @@ export function ReasoningContent({
   isVisible = true,
   title = "",
 }: ReasoningContentProps) {
-  const { t } = useTranslations();
-  
   if (!isVisible) return null;
 
-  // Check if title is "Thinking" or "Thought" (in any language)
-  const isThinkingOrThought = 
-    title.toLowerCase().includes(t('chat.reasoning.thinking').toLowerCase()) ||
-    title.toLowerCase().includes(t('chat.reasoning.thought').toLowerCase()) ||
-    title.toLowerCase().includes('thinking') ||
-    title.toLowerCase().includes('thought');
+  // Show text content ONLY when title is "Thinking" or "Thought"
+  // Hide for any other titles
+  const isThinkingOrThought =
+    title.toLowerCase().includes("thinking") ||
+    title.toLowerCase().includes("thought");
 
   // If title is different from "Thinking" or "Thought", don't show the text content
   if (!isThinkingOrThought) {
