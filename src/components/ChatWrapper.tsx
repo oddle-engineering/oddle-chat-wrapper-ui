@@ -220,21 +220,10 @@ const ChatWrapperInner = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         setProviderResId(data.providerResId);
         setCurrentThreadId(data.threadId);
 
-        // Update metadata if server allows it and we have metadata
-        if (
-          data.canUpdateMetadata &&
-          metadata &&
-          Object.keys(metadata).length > 0 &&
-          chatClientRef.current
-        ) {
-          chatClientRef.current
-            .updateMetadata(data.providerResId, { metadata })
-            .catch((_error: any) => {
-              // Silent failure for metadata update
-            });
-        }
+        // Note: Metadata updates are now handled exclusively by useMetadataSync hook
+        // to prevent race conditions when metadata changes rapidly
       },
-      [setProviderResId, setCurrentThreadId, metadata]
+      [setProviderResId, setCurrentThreadId]
     );
 
     // Handle system events

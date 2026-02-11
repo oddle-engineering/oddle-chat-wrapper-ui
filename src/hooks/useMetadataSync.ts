@@ -35,6 +35,8 @@ export function useMetadataSync({
 }: UseMetadataSyncProps) {
   const lastMetadataRef = useRef<any>(undefined);
   const hasInitializedRef = useRef(false);
+  const pendingUpdateRef = useRef<Promise<void> | null>(null);
+  const lastSentMetadataRef = useRef<any>(undefined);
 
   useEffect(() => {
     // Skip during conversation loading to avoid overwriting existing metadata
@@ -91,17 +93,54 @@ export function useMetadataSync({
     } else if (isExistingThread) {
       // Case 2: Existing thread - make immediate API call
 
-      chatClient
+      // Deduplication: Check if this exact metadata was already sent
+      if (lastSentMetadataRef.current === metadata) {
+        return;
+      }
+
+      // Deduplication: If there's already a pending update, wait for it to complete
+      if (pendingUpdateRef.current) {
+        pendingUpdateRef.current.finally(() => {
+          // After pending update completes, check if we still need to update
+          if (lastSentMetadataRef.current !== metadata) {
+            const updatePromise = chatClient
+              .updateMetadata(currentProviderResId, { metadata })
+              .then(() => {
+                lastMetadataRef.current = metadata;
+                lastSentMetadataRef.current = metadata;
+                pendingUpdateRef.current = null;
+              })
+              .catch((error: any) => {
+                console.error(
+                  "[useMetadataSync] ❌ Failed to update existing thread metadata:",
+                  error
+                );
+                pendingUpdateRef.current = null;
+              });
+
+            pendingUpdateRef.current = updatePromise;
+          }
+        });
+        return;
+      }
+
+      // Make the update call
+      const updatePromise = chatClient
         .updateMetadata(currentProviderResId, { metadata })
         .then(() => {
           lastMetadataRef.current = metadata;
+          lastSentMetadataRef.current = metadata;
+          pendingUpdateRef.current = null;
         })
         .catch((error: any) => {
           console.error(
             "[useMetadataSync] ❌ Failed to update existing thread metadata:",
             error
           );
+          pendingUpdateRef.current = null;
         });
+
+      pendingUpdateRef.current = updatePromise;
     }
   }, [
     metadata,
