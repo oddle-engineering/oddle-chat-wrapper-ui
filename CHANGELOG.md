@@ -25,6 +25,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.28] - 2026-02-11
+
+### Added
+- enhance the logic to handle metadata
+- enhance the logic to handle metadata
+
+### Changed
+- Merge pull request #8 from oddle-engineering/hotfix/single-source-of-truth-metadata
+
 ## [1.0.27] - 2026-01-16
 
 ### Added
