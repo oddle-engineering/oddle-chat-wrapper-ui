@@ -11,6 +11,19 @@ interface UseMetadataSyncProps {
 }
 
 /**
+ * Check if metadata has at least one non-null value
+ */
+function hasValidMetadataValues(metadata: any): boolean {
+  if (!metadata || typeof metadata !== 'object') return false;
+
+  const keys = Object.keys(metadata);
+  if (keys.length === 0) return false;
+
+  // Check if at least one value is not null/undefined
+  return keys.some(key => metadata[key] != null);
+}
+
+/**
  * Hook to handle metadata synchronization across all scenarios:
  *
  * Case 1 — Draft + Empty Metadata:
@@ -77,10 +90,11 @@ export function useMetadataSync({
       return;
     }
 
-    // Check if new metadata is meaningful
-    const hasNewMetadata = metadata && Object.keys(metadata).length > 0;
+    // Check if new metadata is meaningful (has at least one non-null value)
+    const hasValidMetadata = hasValidMetadataValues(metadata);
 
-    if (!hasNewMetadata) {
+    if (!hasValidMetadata) {
+      // Update tracking ref but don't make API call for null-only metadata
       lastMetadataRef.current = metadata;
       return;
     }
