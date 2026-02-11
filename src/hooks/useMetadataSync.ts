@@ -11,6 +11,19 @@ interface UseMetadataSyncProps {
 }
 
 /**
+ * Check if metadata has at least one non-null value
+ */
+function hasValidMetadataValues(metadata: any): boolean {
+  if (!metadata || typeof metadata !== 'object') return false;
+
+  const keys = Object.keys(metadata);
+  if (keys.length === 0) return false;
+
+  // Check if at least one value is not null/undefined
+  return keys.some(key => metadata[key] != null);
+}
+
+/**
  * Hook to handle metadata synchronization across all scenarios:
  *
  * Case 1 — Draft + Empty Metadata:
@@ -35,6 +48,8 @@ export function useMetadataSync({
 }: UseMetadataSyncProps) {
   const lastMetadataRef = useRef<any>(undefined);
   const hasInitializedRef = useRef(false);
+  const pendingUpdateRef = useRef<Promise<void> | null>(null);
+  const lastSentMetadataRef = useRef<any>(undefined);
 
   useEffect(() => {
     // Skip during conversation loading to avoid overwriting existing metadata
@@ -75,10 +90,11 @@ export function useMetadataSync({
       return;
     }
 
-    // Check if new metadata is meaningful
-    const hasNewMetadata = metadata && Object.keys(metadata).length > 0;
+    // Check if new metadata is meaningful (has at least one non-null value)
+    const hasValidMetadata = hasValidMetadataValues(metadata);
 
-    if (!hasNewMetadata) {
+    if (!hasValidMetadata) {
+      // Update tracking ref but don't make API call for null-only metadata
       lastMetadataRef.current = metadata;
       return;
     }
@@ -91,17 +107,54 @@ export function useMetadataSync({
     } else if (isExistingThread) {
       // Case 2: Existing thread - make immediate API call
 
-      chatClient
+      // Deduplication: Check if this exact metadata was already sent
+      if (lastSentMetadataRef.current === metadata) {
+        return;
+      }
+
+      // Deduplication: If there's already a pending update, wait for it to complete
+      if (pendingUpdateRef.current) {
+        pendingUpdateRef.current.finally(() => {
+          // After pending update completes, check if we still need to update
+          if (lastSentMetadataRef.current !== metadata) {
+            const updatePromise = chatClient
+              .updateMetadata(currentProviderResId, { metadata })
+              .then(() => {
+                lastMetadataRef.current = metadata;
+                lastSentMetadataRef.current = metadata;
+                pendingUpdateRef.current = null;
+              })
+              .catch((error: any) => {
+                console.error(
+                  "[useMetadataSync] ❌ Failed to update existing thread metadata:",
+                  error
+                );
+                pendingUpdateRef.current = null;
+              });
+
+            pendingUpdateRef.current = updatePromise;
+          }
+        });
+        return;
+      }
+
+      // Make the update call
+      const updatePromise = chatClient
         .updateMetadata(currentProviderResId, { metadata })
         .then(() => {
           lastMetadataRef.current = metadata;
+          lastSentMetadataRef.current = metadata;
+          pendingUpdateRef.current = null;
         })
         .catch((error: any) => {
           console.error(
             "[useMetadataSync] ❌ Failed to update existing thread metadata:",
             error
           );
+          pendingUpdateRef.current = null;
         });
+
+      pendingUpdateRef.current = updatePromise;
     }
   }, [
     metadata,
