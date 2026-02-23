@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.29] - 2026-02-23
+
+### Changed
+- feat(email): added handlers for messages persisted events in WebSocketChatClient and MessageHandler
+
 ## [1.0.28] - 2026-02-11
 
 ### Added
