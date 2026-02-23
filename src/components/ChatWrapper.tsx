@@ -296,6 +296,7 @@ const ChatWrapperInner = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       onSystemEvent: handleSystemEvent,
       onReasoningUpdate: handleReasoningUpdate,
       onThreadCreated: handleThreadCreated,
+      onMessagesPersisted: config.onMessagesPersisted,
       onError: config.onError,
     });
 

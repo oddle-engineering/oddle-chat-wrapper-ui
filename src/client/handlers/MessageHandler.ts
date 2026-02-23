@@ -21,7 +21,7 @@ export class MessageHandler {
 
   constructor(
     handlers: ChatEventHandlers,
-    clientTools: Record<string, Function> = {}
+    clientTools: Record<string, Function> = {},
   ) {
     this.handlers = handlers;
     this.reasoningHandler = new ReasoningHandler(handlers.onReasoningUpdate);
@@ -50,6 +50,9 @@ export class MessageHandler {
           break;
         case InboundMessageType.CHAT_FINISHED:
           this.handleChatFinished(data);
+          break;
+        case InboundMessageType.MESSAGES_PERSISTED:
+          this.handleMessagesPersisted(data);
           break;
         case InboundMessageType.CHAT_ERROR:
           this.handleChatError(data);
@@ -152,13 +155,13 @@ export class MessageHandler {
       if (toolResultData.toolCallId && toolResultData.toolName) {
         const syntheticRequest = ToolCallFactory.createServerToolCall(
           toolResultData.toolName,
-          toolResultData.toolCallId
+          toolResultData.toolCallId,
         );
 
         this.handlers.onReasoningUpdate(
           false,
           `${REASONING_CONSTANTS.COMPLETED_MARKER} ${toolResultData.toolName}`,
-          syntheticRequest
+          syntheticRequest,
         );
       }
     }
@@ -168,9 +171,18 @@ export class MessageHandler {
     this.handlers.onSystemEvent?.(SystemEventFactory.chatCompleted(data.uuid));
   }
 
+  private handleMessagesPersisted(data: WebSocketMessage): void {
+    if (this.handlers.onMessagesPersisted) {
+      this.handlers.onMessagesPersisted({
+        threadId: data.data?.threadId,
+        providerResId: data.data?.providerResId,
+      });
+    }
+  }
+
   private handleChatError(data: WebSocketMessage): void {
     this.handlers.onSystemEvent?.(
-      SystemEventFactory.chatError(data.error || "Unknown error")
+      SystemEventFactory.chatError(data.error || "Unknown error"),
     );
   }
 
@@ -185,14 +197,14 @@ export class MessageHandler {
 
     const message = MessageFactory.serializeHeartbeatPong(
       data.timestamp,
-      data.pingTime
+      data.pingTime,
     );
     this.sendMessage(message);
   }
 
   private handleError(data: WebSocketMessage): void {
     this.handlers.onSystemEvent?.(
-      SystemEventFactory.chatError(data.error || "Unknown WebSocket error")
+      SystemEventFactory.chatError(data.error || "Unknown WebSocket error"),
     );
   }
 

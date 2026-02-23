@@ -34,7 +34,7 @@ interface Reservation {
 
 interface MarketingToolsFunctions {
   createCampaign: (
-    params: CreateCampaignParams
+    params: CreateCampaignParams,
   ) => Promise<CreateCampaignResponse>;
   getBrandItems: () => Promise<unknown>;
   searchMediaLibrary: (params: {
@@ -44,6 +44,58 @@ interface MarketingToolsFunctions {
   getReservationTickets: () => Promise<unknown>;
   getPromos: () => Promise<unknown>;
   getRedeemables: () => Promise<unknown>;
+  readEmail: () => Promise<EmailJsonResponse>;
+  updateEmailContent: (
+    params: UpdateEmailContentParams,
+  ) => Promise<EmailJsonResponse>;
+  updateEmailBlock: (
+    params: UpdateEmailBlockParams,
+  ) => Promise<EmailJsonResponse>;
+  updateEmailSettings: (
+    params: UpdateEmailSettingsParams,
+  ) => Promise<EmailSettingsResponse>;
+}
+
+export interface EmailJsonResponse {
+  success: boolean;
+  emailJson: {
+    subject: string;
+    preHeader: string;
+    reminderSubject?: string;
+    reminderPreHeader?: string;
+    content: Array<{
+      type: string;
+      props: Record<string, unknown> & { id: string };
+    }>;
+  };
+}
+
+export interface UpdateEmailContentParams {
+  emailJson: EmailJsonResponse["emailJson"];
+}
+
+export interface UpdateEmailBlockParams {
+  targetBlockId: string;
+  blockJson: {
+    content: Array<{
+      type: string;
+      props: Record<string, unknown> & { id: string };
+    }>;
+  };
+}
+
+export interface UpdateEmailSettingsParams {
+  campaignJson: {
+    subject: string;
+    preHeader: string;
+    reminderSubject?: string;
+    reminderPreHeader?: string;
+  };
+}
+
+export interface EmailSettingsResponse {
+  success: boolean;
+  campaignJson: UpdateEmailSettingsParams["campaignJson"];
 }
 
 export interface CreateCampaignParams {
@@ -109,7 +161,7 @@ async function fetchMenuItems() {
             "46370126a336e40d73c73e5c83e5b19cfbbe53fa8324aa1220e4a7afd6c7b86883e2436e9ce2288a0b1d2c11efcf3c9ccc49ccda3e89f79ee81410061b77cb1e",
           "x-oddle-chat-server-key": "mock-api-key",
         },
-      }
+      },
     );
     const res = await response.json();
     return {
@@ -126,6 +178,49 @@ async function fetchMenuItems() {
 // Updated to use: userMpAuthToken, chatServerUrl, chatServerKey (all required)
 // Plus optional: entityId, entityType, providerResId for conversation generation
 function App() {
+  // Mock email state for demo purposes
+  const [currentEmail, setCurrentEmail] = useState<
+    EmailJsonResponse["emailJson"]
+  >({
+    subject: "Exclusive Deals Just for You!",
+    preHeader: "Don't miss out on our latest offers",
+    reminderSubject: "Last Chance: Exclusive Deals Waiting!",
+    reminderPreHeader:
+      "You haven't opened our email yet - check out these amazing offers",
+    content: [
+      {
+        type: "Header",
+        props: {
+          id: "Header-1",
+          logoUrl: "https://example.com/logo.png",
+          brandName: "McDonald's",
+        },
+      },
+      {
+        type: "Title",
+        props: {
+          id: "Title-1",
+          text: "Welcome to Our Newsletter",
+        },
+      },
+      {
+        type: "Text",
+        props: {
+          id: "Text-1",
+          content: "Check out our latest menu items and special offers!",
+        },
+      },
+      {
+        type: "Footer",
+        props: {
+          id: "Footer-1",
+          companyName: "McDonald's",
+          unsubscribeLink: "https://example.com/unsubscribe",
+        },
+      },
+    ],
+  });
+
   const [customConfig] = useState({
     mode: "sidebar" as ChatMode,
     theme: "light" as ChatTheme,
@@ -238,9 +333,7 @@ function App() {
 
   // State for dynamic metadata (for testing metadata prop sync)
   // Start with empty to test the "metadata starts empty then gets populated" scenario
-  const [dynamicMetadata, setDynamicMetadata] = useState<any>({
-    marketingId: "new_09",
-  });
+  const [dynamicMetadata, setDynamicMetadata] = useState<any>({});
 
   // State for dynamic contextHelpers (for testing contextHelpers prop sync)
   // Start with minimal context, then add brandInfo after 10 seconds
@@ -259,7 +352,7 @@ function App() {
     console.log("⏱️ Starting 10-second timer to attach brandInfo...");
     const timer = setTimeout(() => {
       console.log(
-        "✅ 10 seconds elapsed - attaching brandInfo to contextHelpers"
+        "✅ 10 seconds elapsed - attaching brandInfo to contextHelpers",
       );
       setContextHelpers({
         brandInfo: {
@@ -296,7 +389,7 @@ function App() {
       if (metadata) {
         console.log(
           "[App] Updating metadata prop to test auto-sync:",
-          metadata
+          metadata,
         );
         setDynamicMetadata((prev: any) => ({
           ...prev,
@@ -317,7 +410,7 @@ function App() {
         throw new Error("Please provide at least one field to update");
       }
     },
-    [providerResId]
+    [providerResId],
   );
 
   // Helper functions for panels
@@ -351,18 +444,18 @@ function App() {
         prev.map((r) =>
           r.id === id
             ? { ...r, status, updated_at: new Date().toISOString() }
-            : r
-        )
+            : r,
+        ),
       );
     },
-    []
+    [],
   );
 
   const handleCancelReservation = useCallback((id: string, reason?: string) => {
     console.log(
       "Cancelling reservation:",
       id,
-      reason ? `Reason: ${reason}` : ""
+      reason ? `Reason: ${reason}` : "",
     );
     setReservations((prev) =>
       prev.map((r) =>
@@ -372,8 +465,8 @@ function App() {
               status: "cancelled" as const,
               updated_at: new Date().toISOString(),
             }
-          : r
-      )
+          : r,
+      ),
     );
   }, []);
 
@@ -395,7 +488,7 @@ function App() {
         message: `Created to-do: "${params.task_description}"`,
       };
     },
-    []
+    [],
   );
 
   const readTodos = useCallback(async () => {
@@ -452,7 +545,7 @@ function App() {
 
       const updatedReservation = { ...reservation, ...updates };
       return prev.map((r) =>
-        r.id === params.reservation_id ? updatedReservation : r
+        r.id === params.reservation_id ? updatedReservation : r,
       );
     });
 
@@ -490,7 +583,7 @@ function App() {
         }`,
       };
     },
-    []
+    [],
   );
 
   const confirmReservation = useCallback(
@@ -522,7 +615,7 @@ function App() {
         }`,
       };
     },
-    []
+    [],
   );
 
   const markNoShow = useCallback(async (params: { id: string }) => {
@@ -586,13 +679,13 @@ function App() {
 
           if (params?.status) {
             filteredReservations = filteredReservations.filter(
-              (r) => r.status === params.status
+              (r) => r.status === params.status,
             );
           }
 
           if (params?.date) {
             filteredReservations = filteredReservations.filter(
-              (r) => r.date === params.date
+              (r) => r.date === params.date,
             );
           }
 
@@ -609,7 +702,7 @@ function App() {
         });
       });
     },
-    []
+    [],
   );
 
   const getAvailability = useCallback(
@@ -618,7 +711,7 @@ function App() {
       return new Promise<any>((resolve) => {
         setReservations((prev) => {
           const dayReservations = prev.filter(
-            (r) => r.date === params.date && r.status !== "cancelled"
+            (r) => r.date === params.date && r.status !== "cancelled",
           );
           const totalTables = 20; // Mock restaurant capacity
           const bookedTables = dayReservations.length;
@@ -641,7 +734,7 @@ function App() {
         });
       });
     },
-    []
+    [],
   );
 
   const getReservationStats = useCallback(async () => {
@@ -709,7 +802,7 @@ function App() {
         message: `Found 2 media items for queries: ${params.queries}`,
       };
     },
-    []
+    [],
   );
 
   const getReservationTickets = useCallback(async () => {
@@ -840,9 +933,73 @@ function App() {
     };
   }, []);
 
+  // Email management tools
+  const readEmail = useCallback(async (): Promise<EmailJsonResponse> => {
+    console.log("Reading current email");
+    return {
+      success: true,
+      emailJson: currentEmail,
+    };
+  }, [currentEmail]);
+
+  const updateEmailContent = useCallback(
+    async (params: UpdateEmailContentParams): Promise<EmailJsonResponse> => {
+      console.log("Updating email content:", params);
+      setCurrentEmail(params.emailJson);
+      return {
+        success: true,
+        emailJson: params.emailJson,
+      };
+    },
+    [],
+  );
+
+  const updateEmailBlock = useCallback(
+    async (params: UpdateEmailBlockParams): Promise<EmailJsonResponse> => {
+      console.log("Updating email block:", params);
+      const updatedContent = currentEmail.content.map((block) => {
+        if (block.props.id === params.targetBlockId) {
+          // Replace with the first block from blockJson.content
+          return params.blockJson.content[0] || block;
+        }
+        return block;
+      });
+
+      const updatedEmail = {
+        ...currentEmail,
+        content: updatedContent,
+      };
+
+      setCurrentEmail(updatedEmail);
+      return {
+        success: true,
+        emailJson: updatedEmail,
+      };
+    },
+    [currentEmail],
+  );
+
+  const updateEmailSettings = useCallback(
+    async (
+      params: UpdateEmailSettingsParams,
+    ): Promise<EmailSettingsResponse> => {
+      console.log("Updating email settings:", params);
+      const updatedEmail = {
+        ...currentEmail,
+        ...params.campaignJson,
+      };
+      setCurrentEmail(updatedEmail);
+      return {
+        success: true,
+        campaignJson: params.campaignJson,
+      };
+    },
+    [currentEmail],
+  );
+
   // Marketing tools factory
   const MARKETING_TOOLS: (functions: MarketingToolsFunctions) => Tools = (
-    fn
+    fn,
   ) => [
     // media_library
     {
@@ -921,7 +1078,8 @@ function App() {
             properties: {
               campaignName: {
                 type: "string",
-                description: "Name of the campaign for internal use.",
+                description:
+                  "Name of the campaign for internal use. Recommended format (unless instructed otherwise) {dd mmm yy} | Name",
               },
               campaignDesc: {
                 type: "string",
@@ -1023,6 +1181,193 @@ function App() {
       ],
       execute: fn.createCampaign,
     },
+    {
+      name: "read_email",
+      description: "Retrieves the current email in emailJson format",
+      parameters: [],
+      execute: fn.readEmail,
+    },
+    {
+      name: "update_email_content",
+      description:
+        "Replaces the current email with a new one provided in emailJson format",
+      parameters: [
+        {
+          name: "emailJson",
+          type: "object",
+          description:
+            "Details of the email content including subject, preheader, and email layout",
+          isRequired: true,
+          schema: {
+            type: "object",
+            properties: {
+              subject: {
+                type: "string",
+                description: "The email subject title.",
+              },
+              preHeader: {
+                type: "string",
+                description: "The email preview text shown in inboxes",
+              },
+              reminderSubject: {
+                type: "string",
+                description:
+                  "The subject title for the follow up email sent to non-openers after 8 days",
+              },
+              reminderPreHeader: {
+                type: "string",
+                description:
+                  "The email preview text for the follow up email to non-openers after 8 days",
+              },
+              content: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    type: {
+                      type: "string",
+                      enum: [
+                        "Header",
+                        "Title",
+                        "Text",
+                        "Button",
+                        "Image",
+                        "ImageWithText",
+                        "Divider",
+                        "Spacer",
+                        "MenuItem",
+                        "ReserveTicket",
+                        "Redeemable",
+                        "Promo",
+                        "PersonalSignOff",
+                        "Footer",
+                      ],
+                    },
+                    props: {
+                      type: "object",
+                      properties: {
+                        id: {
+                          type: "string",
+                          description:
+                            "A unique id for the block. id must be unique for each block. format {blocktype}-{number} e.g. Header-1",
+                        },
+                      },
+                      required: ["id"],
+                    },
+                  },
+                  required: ["type", "props"],
+                },
+              },
+            },
+            required: ["subject", "preHeader", "content"],
+          },
+        },
+      ],
+      execute: fn.updateEmailContent,
+    },
+    {
+      name: "update_email_block",
+      description:
+        "Replaces a specific target email block in the current email in blockJson format",
+      parameters: [
+        {
+          name: "targetBlockId",
+          type: "string",
+          description: "id of the target email block to replace",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "blockJson",
+          type: "object",
+          description: "blockJson object defining the new email block",
+          isRequired: true,
+          schema: {
+            type: "object",
+            properties: {
+              content: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    type: {
+                      type: "string",
+                      enum: [
+                        "Header",
+                        "Title",
+                        "Text",
+                        "Button",
+                        "Image",
+                        "ImageWithText",
+                        "Divider",
+                        "Spacer",
+                        "MenuItem",
+                        "ReserveTicket",
+                        "Redeemable",
+                        "Promo",
+                        "PersonalSignOff",
+                        "Footer",
+                      ],
+                    },
+                    props: {
+                      type: "object",
+                      properties: {
+                        id: {
+                          type: "string",
+                          description:
+                            "A unique id for the block. id must be unique for each block. format {blocktype}-{number} e.g. Header-1",
+                        },
+                      },
+                      required: ["id"],
+                    },
+                  },
+                  required: ["type", "props"],
+                },
+              },
+            },
+          },
+        },
+      ],
+      execute: fn.updateEmailBlock,
+    },
+    {
+      name: "update_email_settings",
+      description:
+        "Replaces the current email settings like email subject etc with a new one provided in campaignJson format",
+      parameters: [
+        {
+          name: "campaignJson",
+          type: "object",
+          description:
+            "Details of the email content including subject, preheader, and email layout",
+          isRequired: true,
+          schema: {
+            type: "object",
+            properties: {
+              subject: {
+                type: "string",
+                description: "The email subject title.",
+              },
+              preHeader: {
+                type: "string",
+                description: "The email preview text shown in inboxes",
+              },
+              reminderSubject: {
+                type: "string",
+                description:
+                  "The subject title for the follow up email sent to non-openers after 8 days",
+              },
+              reminderPreHeader: {
+                type: "string",
+                description:
+                  "The email preview text for the follow up email to non-openers after 8 days",
+              },
+            },
+          },
+        },
+      ],
+      execute: fn.updateEmailSettings,
+    },
   ];
 
   // Create marketing tools instance
@@ -1034,6 +1379,10 @@ function App() {
       getReservationTickets,
       getPromos,
       getRedeemables,
+      readEmail,
+      updateEmailContent,
+      updateEmailBlock,
+      updateEmailSettings,
     };
     return MARKETING_TOOLS(marketingFunctions);
   }, [
@@ -1043,6 +1392,10 @@ function App() {
     getReservationTickets,
     getPromos,
     getRedeemables,
+    readEmail,
+    updateEmailContent,
+    updateEmailBlock,
+    updateEmailSettings,
   ]);
 
   // New unified tools with execution functions
@@ -1319,7 +1672,7 @@ function App() {
       listReservations,
       getAvailability,
       getReservationStats,
-    ]
+    ],
   );
 
   const sidebarChatProps: ChatWrapperProps = useMemo(
@@ -1345,6 +1698,22 @@ function App() {
       config: {
         ...customConfig,
         enableSuggestedPromptsAnimation: true,
+        onMessagesPersisted: (data) => {
+          console.log("✅ Messages persisted to database:", data);
+          // This callback is triggered after server successfully writes messages to DB
+          // Use this for safe navigation to history/chat view
+          // Example use cases:
+          // - Navigate to conversation history page
+          // - Show success toast notification
+          // - Update UI to reflect saved state
+          // - Enable history navigation button
+          if (data.threadId && data.providerResId) {
+            console.log(
+              `💾 Safe to navigate to thread: ${data.threadId} (conversation: ${data.providerResId})`,
+            );
+          }
+        },
+
         onMessage: (message) => {
           console.log("Custom demo message:", message);
         },
@@ -1365,7 +1734,7 @@ function App() {
       tools: tools,
       contextHelpers: contextHelpers,
     }),
-    [customConfig, tools, dynamicMetadata, contextHelpers]
+    [customConfig, tools, dynamicMetadata, contextHelpers],
   );
 
   return (

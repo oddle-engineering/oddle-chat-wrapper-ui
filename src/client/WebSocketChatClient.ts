@@ -221,6 +221,7 @@ export class WebSocketChatClient {
       onSystemEvent: props.onSystemEvent,
       onReasoningUpdate: props.onReasoningUpdate,
       onThreadCreated: props.onThreadCreated,
+      onMessagesPersisted: props.onMessagesPersisted,
     };
 
     this.messageHandler.updateEventHandlers(handlers);

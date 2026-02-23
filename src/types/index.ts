@@ -136,6 +136,10 @@ export interface ChatConfig {
   onToolResult?: (tool: string, result: any) => void;
   onStreamingStatusChange?: (status: string) => void;
   onConversationInitialized?: () => void;
+  onMessagesPersisted?: (data: {
+    threadId?: string;
+    providerResId?: string;
+  }) => void;
   customStyles?: React.CSSProperties;
 }
 

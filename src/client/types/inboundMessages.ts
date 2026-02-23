@@ -14,6 +14,7 @@ export enum InboundMessageType {
   CHAT_EVENT = 'chat_event',
   CHAT_FINISHED = 'chat_finished',
   CHAT_ERROR = 'chat_error',
+  MESSAGES_PERSISTED = 'messages_persisted',
   
   // Thread Management
   THREAD_CREATED = 'thread_created',
@@ -122,6 +123,14 @@ export interface ChatErrorMessage extends BaseInboundMessage {
   };
 }
 
+export interface MessagesPersistedMessage extends BaseInboundMessage {
+  type: InboundMessageType.MESSAGES_PERSISTED;
+  data?: {
+    threadId?: string;
+    providerResId?: string;
+  };
+}
+
 // Thread management messages
 export interface ThreadCreatedMessage extends BaseInboundMessage {
   type: InboundMessageType.THREAD_CREATED;
@@ -171,6 +180,7 @@ export type InboundMessage =
   | ChatEventMessage
   | ChatFinishedMessage
   | ChatErrorMessage
+  | MessagesPersistedMessage
   | ThreadCreatedMessage
   | ToolCallRequestMessage
   | HeartbeatPingMessage
@@ -196,3 +206,6 @@ export const isChatError = (msg: BaseInboundMessage): msg is ChatErrorMessage =>
 
 export const isThreadCreated = (msg: BaseInboundMessage): msg is ThreadCreatedMessage =>
   msg.type === InboundMessageType.THREAD_CREATED;
+
+export const isMessagesPersisted = (msg: BaseInboundMessage): msg is MessagesPersistedMessage =>
+  msg.type === InboundMessageType.MESSAGES_PERSISTED;

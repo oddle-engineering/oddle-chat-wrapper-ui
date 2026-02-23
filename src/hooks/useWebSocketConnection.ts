@@ -31,6 +31,10 @@ interface UseWebSocketConnectionProps {
     canUpdateMetadata: boolean;
     updateEndpoint: string;
   }) => void;
+  onMessagesPersisted?: (data: {
+    threadId?: string;
+    providerResId?: string;
+  }) => void;
   onError?: (error: Error, classification?: { reason: string; errorType: string }) => void;
 }
 
@@ -53,6 +57,7 @@ export function useWebSocketConnection({
   onSystemEvent,
   onReasoningUpdate,
   onThreadCreated,
+  onMessagesPersisted,
   onError,
 }: UseWebSocketConnectionProps) {
   const [chatClient, setChatClient] = useState<WebSocketChatClient | null>(
@@ -70,6 +75,7 @@ export function useWebSocketConnection({
   const onSystemEventRef = useRef(onSystemEvent);
   const onReasoningUpdateRef = useRef(onReasoningUpdate);
   const onThreadCreatedRef = useRef(onThreadCreated);
+  const onMessagesPersistedRef = useRef(onMessagesPersisted);
 
   // Use refs to store authentication and entity props to prevent reconnections
   const userMpAuthTokenRef = useRef(userMpAuthToken);
@@ -122,6 +128,7 @@ export function useWebSocketConnection({
     onSystemEventRef.current = onSystemEvent;
     onReasoningUpdateRef.current = onReasoningUpdate;
     onThreadCreatedRef.current = onThreadCreated;
+    onMessagesPersistedRef.current = onMessagesPersisted;
     userMpAuthTokenRef.current = userMpAuthToken;
     chatServerUrlRef.current = chatServerUrl;
     chatServerKeyRef.current = chatServerKey;
@@ -132,6 +139,7 @@ export function useWebSocketConnection({
     onSystemEvent,
     onReasoningUpdate,
     onThreadCreated,
+    onMessagesPersisted,
     userMpAuthToken,
     chatServerUrl,
     chatServerKey,
@@ -217,6 +225,7 @@ export function useWebSocketConnection({
         onSystemEvent: onSystemEventRef.current,
         onReasoningUpdate: onReasoningUpdateRef.current,
         onThreadCreated: onThreadCreatedRef.current,
+        onMessagesPersisted: onMessagesPersistedRef.current,
         onError: onError,
       });
 
