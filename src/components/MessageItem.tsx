@@ -1,5 +1,6 @@
 import { useState, useCallback, memo } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkBreaks from "remark-breaks";
 import { Message } from "../types";
 import { Reasoning, ReasoningTrigger, ReasoningContent } from "./Reasoning";
 import { ToolingHandle, ToolingHandleTrigger } from "./ToolingHandle";
@@ -15,6 +16,12 @@ interface MessageItemProps {
 }
 
 const MarkdownComponents = {
+  p: ({ children, ...props }: any) => (
+    <p className="chat-wrapper__paragraph" {...props}>
+      {children}
+    </p>
+  ),
+  br: ({ ...props }: any) => <br {...props} />,
   pre: ({ children, ...props }: any) => (
     <pre className="chat-wrapper__code-block" {...props}>
       {children}
@@ -153,7 +160,11 @@ export const MessageItem = memo<MessageItemProps>(
       <div className="chat-wrapper__regular-message chat-wrapper__assistant-message-container">
         <div className="chat-wrapper__assistant-content-wrapper">
           <div className="chat-wrapper__markdown-content">
-            <ReactMarkdown components={MarkdownComponents}>
+            <ReactMarkdown 
+              components={MarkdownComponents}
+              remarkPlugins={[remarkBreaks]}
+              key={`${message.id}-${message.isStreaming ? 'streaming' : 'final'}`}
+            >
               {message.content}
             </ReactMarkdown>
           </div>
@@ -165,7 +176,11 @@ export const MessageItem = memo<MessageItemProps>(
     const renderUserMessage = () => (
       <div className="chat-wrapper__regular-message">
         <div className="chat-wrapper__markdown-content">
-          <ReactMarkdown components={UserMarkdownComponents}>
+          <ReactMarkdown 
+            remarkPlugins={[remarkBreaks]}
+            components={UserMarkdownComponents}
+            key={`${message.id}-user`}
+          >
             {message.content}
           </ReactMarkdown>
         </div>

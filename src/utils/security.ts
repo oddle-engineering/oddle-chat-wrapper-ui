@@ -95,8 +95,15 @@ function containsSuspiciousContent(content: string): boolean {
  * @returns Sanitized message
  */
 export function sanitizeMessage(message: string, isAssistant = false): string {
+  // Preserve newlines by temporarily replacing them with placeholders
+  const newlinePlaceholder = '___NEWLINE___';
+  const preservedMessage = message.replace(/\n/g, newlinePlaceholder);
+  
   const context = isAssistant ? 'assistantMessage' : 'userMessage';
-  return sanitizeInput(message, context);
+  const sanitized = sanitizeInput(preservedMessage, context);
+  
+  // Restore newlines
+  return sanitized.replace(new RegExp(newlinePlaceholder, 'g'), '\n');
 }
 
 /**

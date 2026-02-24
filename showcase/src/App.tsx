@@ -333,12 +333,14 @@ function App() {
 
   // State for dynamic metadata (for testing metadata prop sync)
   // Start with empty to test the "metadata starts empty then gets populated" scenario
-  const [dynamicMetadata, setDynamicMetadata] = useState<any>({});
+  const [dynamicMetadata, setDynamicMetadata] = useState<any>({
+    campaign_id: "33333",
+  });
 
   // State for dynamic contextHelpers (for testing contextHelpers prop sync)
   // Start with minimal context, then add brandInfo after 10 seconds
   const [contextHelpers, setContextHelpers] = useState<any>({
-    locale: "zh_HK",
+    locale: "en_SG",
   });
 
   // Ref to ChatWrapper for imperative API access
@@ -359,7 +361,7 @@ function App() {
           id: "ud21_123",
           brandName: "UD21 Restaurant",
         },
-        locale: "zh_HK",
+        locale: "en_SG",
       });
     }, 10000);
 
@@ -1680,7 +1682,7 @@ function App() {
       // Authentication and entity context
       auth: {
         token:
-          "ae6dc8bcb7cebdbbb51eb6925b37c032c6f76e0d05c66a57222cde7876de16ca452c9b9df6a323928de1b313c4a86daade3497b97581b72148951704e7a1223f",
+          "4988e102894d4c676de3aa93891e674a829383aa07789e2fe81d550f881fd245d3d011112e7d0aac5c8698b1fec6cea7c9596dbe6a091371b19a2009e9a0ebda",
         entityId: "8a8197e78054904a01805a25a4bb25be1",
         entityType: EntityType.BRAND,
       },
