@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.30] - 2026-02-24
+
+### Added
+- add remark-breaks for improved markdown rendering
+
 ## [1.0.29] - 2026-02-23
 
 ### Changed
