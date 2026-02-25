@@ -738,12 +738,6 @@
   }
 }
 
-/* Focus Management */
-.chat-wrapper:focus-within {
-  /* outline: 2px solid #6f767b;
-  outline-offset: 2px; */
-}
-
 /* Animation for smooth appearance */
 .chat-wrapper {
   animation: slideUp 0.3s ease-out;
@@ -1502,6 +1496,16 @@
 
 .chat-wrapper__thinking-icon {
   display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  min-height: 20px;
+}
+
+.chat-wrapper__thinking-icon svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
 }
 
 .chat-wrapper__status-group {
@@ -1510,6 +1514,12 @@
   gap: 4px;
   margin-left: 16px;
   white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.chat-wrapper__status-group svg {
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
 }
 
@@ -2692,6 +2702,26 @@
     .chat-wrapper__description {
       font-size: 14px !important;
     }
+  }
+}
+
+/* Ensure tooling icons remain visible on small screens */
+@media (max-width: 640px) {
+  .chat-wrapper__thinking-icon,
+  .chat-wrapper__thinking-icon svg,
+  .chat-wrapper__status-group svg {
+    min-width: 18px;
+    min-height: 18px;
+    width: 18px;
+    height: 18px;
+  }
+  
+  .chat-wrapper__tooling-handle-trigger {
+    padding: 6px 10px;
+  }
+  
+  .chat-wrapper__tooling-handle-trigger-content {
+    gap: 6px;
   }
 }
 
