@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.32] - 2026-02-25
+
+### Changed
+- refactor: remove focus management, enhance thinking icon and status group responsiveness, and adjust media queries for small screens
+
 ## [1.0.31] - 2026-02-25
 
 ### Fixed
