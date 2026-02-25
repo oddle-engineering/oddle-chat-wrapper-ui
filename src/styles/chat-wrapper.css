@@ -1759,7 +1759,17 @@
 /* Paragraphs inside list items should not add extra spacing */
 .chat-wrapper__list-item > p {
   margin: 0;
+}
+
+.chat-wrapper__list-item > p:only-child {
   display: inline;
+}
+
+/* Line breaks within list items should work */
+.chat-wrapper__list-item br {
+  display: block;
+  content: "";
+  margin-top: 0;
 }
 
 /* Ensure strong elements stay inline */
