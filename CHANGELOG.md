@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.31] - 2026-02-25
+
+### Fixed
+- list item paragraph spacing and improve line break handling
+
 ## [1.0.30] - 2026-02-24
 
 ### Added
