@@ -16,7 +16,6 @@ export class WebSocketManager {
   private visibilityChangeHandler: () => void;
   private currentTicket: string | null = null;
   private intentionalDisconnect: boolean = false; // Track intentional disconnects
-  private justRefreshedTicket: boolean = false; // Track if ticket was just refreshed to skip duplicate validation
 
   private onOpen?: () => void;
   private onMessage?: (event: MessageEvent) => void;
@@ -256,24 +255,16 @@ export class WebSocketManager {
     try {
       console.log("[WebSocketManager] ====== RECONNECT ATTEMPT START ======", {
         hasCurrentTicket: !!this.currentTicket,
-        justRefreshedTicket: this.justRefreshedTicket,
         reconnectAttempt: this.connectionState.reconnectAttempts,
       });
-      
+
       this.closeConnection();
 
       // Step 1: Validate current ticket if validation callback is available
+      // The TicketManager now has a 30-second cache, so this won't cause repeated API calls
       let needsNewTicket = true;
-      
-      // Skip validation if we just refreshed the ticket in the previous attempt
-      // This prevents duplicate validation calls when reconnection fails after refresh
-      if (this.justRefreshedTicket) {
-        console.log(
-          "[WebSocketManager] Skipping validation - ticket was just refreshed in previous attempt"
-        );
-        needsNewTicket = false;
-        this.justRefreshedTicket = false; // Reset flag
-      } else if (this.onTicketValidate && this.currentTicket) {
+
+      if (this.onTicketValidate && this.currentTicket) {
         console.log(
           "[WebSocketManager] Validating current ticket before reconnection..."
         );
@@ -309,7 +300,6 @@ export class WebSocketManager {
         try {
           const freshTicket = await this.onTicketRefresh();
           this.currentTicket = freshTicket;
-          this.justRefreshedTicket = true; // Mark that we just refreshed
           console.log(
             "[WebSocketManager] Fresh ticket obtained for reconnection"
           );
@@ -358,7 +348,6 @@ export class WebSocketManager {
 
   private handleReconnectionOpened(): void {
     this.updateConnectionState(true, false);
-    this.justRefreshedTicket = false; // Reset flag on successful connection
     this.startHeartbeat();
     this.onSystemEvent?.(SystemEventFactory.connectionRestored());
     this.onOpen?.();

@@ -82,6 +82,14 @@ export class TicketManager {
     onError?: TicketManagerConfig["onError"];
   };
 
+  // Validation cache to prevent repeated validations of the same ticket
+  private lastValidationResult: {
+    ticket: string;
+    valid: boolean;
+    timestamp: number;
+  } | null = null;
+  private validationCacheTTL = 30000; // 30 seconds cache
+
   constructor(
     authData: AuthData,
     apiUrl: string,
@@ -185,6 +193,9 @@ export class TicketManager {
           hasTicket: !!this.ticket.ticket,
           expiresAt: this.ticket.expiresAt,
         });
+
+        // Clear validation cache when new ticket is obtained
+        this.lastValidationResult = null;
 
         return this.ticket.ticket;
       } catch (error) {
@@ -340,6 +351,7 @@ export class TicketManager {
   /**
    * Validate current ticket with server API
    * This provides authoritative server-side validation
+   * Uses a 30-second cache to prevent repeated validations of the same ticket
    */
   async validateWithServer(): Promise<TicketValidationResponse> {
     if (!this.ticket) {
@@ -347,6 +359,27 @@ export class TicketManager {
         valid: false,
         error: "No ticket available to validate",
         code: "NO_TICKET",
+      };
+    }
+
+    // Check validation cache to prevent repeated validations of the same ticket
+    const now = Date.now();
+    if (
+      this.lastValidationResult &&
+      this.lastValidationResult.ticket === this.ticket.ticket &&
+      now - this.lastValidationResult.timestamp < this.validationCacheTTL
+    ) {
+      const cacheAge = ((now - this.lastValidationResult.timestamp) / 1000).toFixed(1);
+      console.log(
+        `[TicketManager] Using cached validation result (${cacheAge}s old):`,
+        {
+          valid: this.lastValidationResult.valid,
+          ticket: this.ticket.ticket.substring(0, 8) + '...',
+        }
+      );
+      return {
+        valid: this.lastValidationResult.valid,
+        code: this.lastValidationResult.valid ? "VALID" : "INVALID_CACHED",
       };
     }
 
@@ -372,6 +405,16 @@ export class TicketManager {
         code: result.code,
         retryable: result.retryable,
       });
+
+      // Cache the validation result (only if it's a definitive answer, not a connectivity issue)
+      if (!result.retryable || result.valid) {
+        this.lastValidationResult = {
+          ticket: this.ticket.ticket,
+          valid: result.valid,
+          timestamp: now,
+        };
+        console.log("[TicketManager] Cached validation result for 30 seconds");
+      }
 
       // Log specific guidance based on validation result
       if (!result.valid) {
@@ -446,6 +489,7 @@ export class TicketManager {
    */
   clear(): void {
     this.ticket = null;
+    this.lastValidationResult = null; // Clear validation cache
     this.stopProactiveRenewal();
     console.log("TicketManager: Ticket cleared");
   }
