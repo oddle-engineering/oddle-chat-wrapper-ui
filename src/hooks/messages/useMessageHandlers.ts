@@ -106,11 +106,12 @@ export function useMessageHandlers({
         }
       }
       
-      const sanitizedChar = sanitizeMessage(char, true);
+      // Don't sanitize individual characters - only sanitize the complete message on finalization
+      // Sanitizing character-by-character can strip spaces and other valid characters
 
       if (currentAssistantMessageIdRef.current) {
         // Update existing streaming message
-        streamingContentRef.current += sanitizedChar;
+        streamingContentRef.current += char;
         setStreamingContent(streamingContentRef.current);
 
         updateMessageContent(
@@ -123,13 +124,13 @@ export function useMessageHandlers({
         setIsThinking(false);
         const newAssistantMessageId = generateId();
         currentAssistantMessageIdRef.current = newAssistantMessageId;
-        streamingContentRef.current = sanitizedChar;
-        setStreamingContent(sanitizedChar);
+        streamingContentRef.current = char;
+        setStreamingContent(char);
 
         const streamingMessage: Message = {
           id: newAssistantMessageId,
           role: "assistant",
-          content: sanitizedChar,
+          content: char,
           timestamp: new Date(),
           isStreaming: true,
         };

@@ -222,7 +222,7 @@ function App() {
   });
 
   const [customConfig] = useState({
-    mode: "sidebar" as ChatMode,
+    mode: "embedded" as ChatMode,
     theme: "light" as ChatTheme,
     position: "left" as ChatPosition,
     headerName: "Create Emails in Seconds",
