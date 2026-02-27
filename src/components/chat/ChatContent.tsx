@@ -38,9 +38,9 @@ export const ChatContent: React.FC = () => {
   } = useChatContext();
 
   // Check if we should show skeleton (empty state + connecting)
-  const shouldShowSkeleton = 
-    messages.length === 0 && 
-    !isLoadingConversation && 
+  const shouldShowSkeleton =
+    messages.length === 0 &&
+    !isLoadingConversation &&
     connectionState === ConnectionState.CONNECTING;
 
   // Check if connection failed in empty state
@@ -51,8 +51,25 @@ export const ChatContent: React.FC = () => {
     connectionState === ConnectionState.DISCONNECTED &&
     !isInitialConnection; // Don't show error during initial connection retries
 
+  // Debug logging to track why skeleton is showing
+  console.log("[ChatContent] Render state check:", {
+    shouldShowSkeleton,
+    shouldShowConnectionError,
+    messagesLength: messages.length,
+    isLoadingConversation,
+    connectionState,
+    isInitialConnection,
+    isOffline,
+    conversationError,
+  });
+
   // If showing skeleton, render it with error overlay if connection failed
   if (shouldShowSkeleton || shouldShowConnectionError) {
+    console.log("[ChatContent] Showing skeleton/error:", {
+      reason: shouldShowSkeleton ? "SKELETON (connecting)" : "CONNECTION_ERROR",
+      shouldShowSkeleton,
+      shouldShowConnectionError,
+    });
     return (
       <div style={{ position: "relative", height: "100%" }}>
         <ChatSkeleton />
@@ -67,6 +84,8 @@ export const ChatContent: React.FC = () => {
       </div>
     );
   }
+
+  console.log("[ChatContent] Rendering normal chat interface");
 
   const shouldShowMainHeader = chatUtils.state.shouldShowMainHeader(
     messages.length,

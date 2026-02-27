@@ -182,14 +182,19 @@ export function useWebSocketConnection({
 
   const connectChatClient = useCallback(async () => {
     try {
+      console.log("[useWebSocketConnection] Starting connection attempt...");
+
       // Check if online before attempting connection
       if (!navigator.onLine) {
+        console.log("[useWebSocketConnection] Connection failed - offline");
         setConnectionState(ConnectionState.DISCONNECTED);
         setIsInitialConnection(false); // Mark as not initial so error shows
         throw new Error("No internet connection. Please check your network and try again.");
       }
 
+      console.log("[useWebSocketConnection] Setting state to CONNECTING");
       setConnectionState(ConnectionState.CONNECTING);
+
       // Validate required props using refs
       if (!userMpAuthTokenRef.current) {
         throw new Error("userMpAuthToken is required");
@@ -208,6 +213,7 @@ export function useWebSocketConnection({
       const contextHelpersToUse: ContextHelpers =
         contextHelpersStableRef.current || {};
 
+      console.log("[useWebSocketConnection] Calling client.onInit()...");
       await client.onInit({
         // Authentication and server properties (from refs)
         userMpAuthToken: userMpAuthTokenRef.current,
@@ -229,24 +235,30 @@ export function useWebSocketConnection({
         onError: onError,
       });
 
+      console.log("[useWebSocketConnection] client.onInit() completed successfully, setting state to CONNECTED");
       setConnectionState(ConnectionState.CONNECTED);
       setIsInitialConnection(false); // Successfully connected, no longer initial
     } catch (error) {
+      console.error("[useWebSocketConnection] Connection failed:", error);
       const classification = logClassifiedError(error, "WebSocketConnection");
+      console.log("[useWebSocketConnection] Setting state to DISCONNECTED, isRetryable:", classification.isRetryable);
       setConnectionState(ConnectionState.DISCONNECTED);
 
       // Only retry for retryable errors (network issues, server errors)
       // Skip retrying for CORS, authentication, and permission errors
       if (classification.isRetryable) {
+        console.log("[useWebSocketConnection] Scheduling retry in 2 seconds...");
         setTimeout(() => {
           if (
             chatClientRef.current === null ||
             !chatClientRef.current.getConnectionStatus().connected
           ) {
+            console.log("[useWebSocketConnection] Executing retry...");
             retryConnectionRef.current?.();
           }
         }, 2000);
       } else {
+        console.log("[useWebSocketConnection] Non-retryable error, not retrying");
         // Non-retryable error, mark as no longer initial connection
         setIsInitialConnection(false);
       }
@@ -254,6 +266,7 @@ export function useWebSocketConnection({
   }, [
     toolSchemas,
     clientToolExecutors,
+    onError,
     // All other props use refs to prevent reconnections
     // connectChatClient only recreates when tools change
   ]);
@@ -291,19 +304,35 @@ export function useWebSocketConnection({
       if (chatClientRef.current) {
         const status = chatClientRef.current.getConnectionStatus();
 
+        console.log("[useWebSocketConnection] Status check:", {
+          currentConnectionState: connectionState,
+          isInitialConnection,
+          clientStatus: {
+            connected: status.connected,
+            isReconnecting: status.isReconnecting,
+            reconnectAttempts: status.reconnectAttempts,
+            websocketState: status.websocketState,
+            hasValidTicket: status.hasValidTicket,
+          },
+        });
+
         // Don't let monitoring interval change state during initial connection
         // Initial connection state is managed by connectChatClient flow
         if (isInitialConnection && connectionState === ConnectionState.CONNECTING) {
+          console.log("[useWebSocketConnection] Skipping state update - initial connection in progress");
           return;
         }
 
         // Update connection state based on client status
         // Only update if the state actually changed to avoid unnecessary re-renders
         if (status.connected && connectionState !== ConnectionState.CONNECTED) {
+          console.log("[useWebSocketConnection] State change: CONNECTING/RECONNECTING -> CONNECTED");
           setConnectionState(ConnectionState.CONNECTED);
         } else if (status.isReconnecting && connectionState !== ConnectionState.RECONNECTING) {
+          console.log("[useWebSocketConnection] State change: -> RECONNECTING");
           setConnectionState(ConnectionState.RECONNECTING);
         } else if (!status.connected && !status.isReconnecting && connectionState !== ConnectionState.DISCONNECTED) {
+          console.log("[useWebSocketConnection] State change: -> DISCONNECTED");
           setConnectionState(ConnectionState.DISCONNECTED);
         }
 
