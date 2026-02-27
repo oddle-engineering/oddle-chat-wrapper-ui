@@ -82,6 +82,10 @@ export class TicketManager {
     onError?: TicketManagerConfig["onError"];
   };
 
+  // Track when ticket was obtained to skip validation for fresh tickets
+  private ticketObtainedAt: number | null = null;
+  private freshTicketThreshold = 60000; // 60 seconds - consider ticket "fresh" for this duration
+
   // Validation cache to prevent repeated validations of the same ticket
   private lastValidationResult: {
     ticket: string;
@@ -194,7 +198,8 @@ export class TicketManager {
           expiresAt: this.ticket.expiresAt,
         });
 
-        // Clear validation cache when new ticket is obtained
+        // Track when ticket was obtained and clear validation cache
+        this.ticketObtainedAt = Date.now();
         this.lastValidationResult = null;
 
         return this.ticket.ticket;
@@ -351,6 +356,7 @@ export class TicketManager {
   /**
    * Validate current ticket with server API
    * This provides authoritative server-side validation
+   * Skips validation for freshly obtained tickets (within 60 seconds)
    * Uses a 30-second cache to prevent repeated validations of the same ticket
    */
   async validateWithServer(): Promise<TicketValidationResponse> {
@@ -362,8 +368,27 @@ export class TicketManager {
       };
     }
 
-    // Check validation cache to prevent repeated validations of the same ticket
     const now = Date.now();
+
+    // Skip validation if ticket was just obtained (fresh ticket is guaranteed valid)
+    if (
+      this.ticketObtainedAt &&
+      now - this.ticketObtainedAt < this.freshTicketThreshold
+    ) {
+      const ticketAge = ((now - this.ticketObtainedAt) / 1000).toFixed(1);
+      console.log(
+        `[TicketManager] Skipping validation - ticket is fresh (${ticketAge}s old):`,
+        {
+          ticket: this.ticket.ticket.substring(0, 8) + '...',
+        }
+      );
+      return {
+        valid: true,
+        code: "FRESH_TICKET",
+      };
+    }
+
+    // Check validation cache to prevent repeated validations of the same ticket
     if (
       this.lastValidationResult &&
       this.lastValidationResult.ticket === this.ticket.ticket &&
@@ -489,6 +514,7 @@ export class TicketManager {
    */
   clear(): void {
     this.ticket = null;
+    this.ticketObtainedAt = null; // Clear ticket timestamp
     this.lastValidationResult = null; // Clear validation cache
     this.stopProactiveRenewal();
     console.log("TicketManager: Ticket cleared");
