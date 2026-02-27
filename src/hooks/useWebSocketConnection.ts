@@ -69,6 +69,7 @@ export function useWebSocketConnection({
   const [connectionAttempts, setConnectionAttempts] = useState(0);
   const [isInitialConnection, setIsInitialConnection] = useState(true);
   const chatClientRef = useRef<WebSocketChatClient | null>(null);
+  const isConnectingRef = useRef(false); // Guard to prevent concurrent connection attempts
 
   // Use refs to store callbacks to prevent reconnections when they change
   const onSetMessageRef = useRef(onSetMessage);
@@ -181,7 +182,14 @@ export function useWebSocketConnection({
   const retryConnectionRef = useRef<() => void>();
 
   const connectChatClient = useCallback(async () => {
+    // Prevent concurrent connection attempts
+    if (isConnectingRef.current) {
+      console.log("[useWebSocketConnection] Connection attempt already in progress, skipping...");
+      return;
+    }
+
     try {
+      isConnectingRef.current = true;
       console.log("[useWebSocketConnection] Starting connection attempt...");
 
       // Check if online before attempting connection
@@ -262,6 +270,10 @@ export function useWebSocketConnection({
         // Non-retryable error, mark as no longer initial connection
         setIsInitialConnection(false);
       }
+    } finally {
+      // Reset the connecting flag after the connection attempt completes (success or failure)
+      isConnectingRef.current = false;
+      console.log("[useWebSocketConnection] Connection attempt completed, reset guard flag");
     }
   }, [
     toolSchemas,
@@ -278,6 +290,7 @@ export function useWebSocketConnection({
     }
     setChatClient(null);
     setConnectionState(ConnectionState.DISCONNECTED);
+    isConnectingRef.current = false; // Reset guard flag on disconnect
   }, []);
 
   // Set up retry function ref
