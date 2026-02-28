@@ -17,6 +17,10 @@
   margin-left: 0;
   white-space: nowrap;
   gap: 6px;
+  max-width: 200px;
+  flex-shrink: 1;
+  min-width: 0;
+  margin-right: 8px;
 }
 
 .chat-wrapper__restaurant-logo {
@@ -30,6 +34,31 @@
 .chat-wrapper__restaurant-name {
   line-height: 1;
   font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 150px;
+}
+
+/* Responsive truncation for smaller screens */
+@media (max-width: 640px) {
+  .chat-wrapper__restaurant-chip {
+    max-width: 150px;
+  }
+
+  .chat-wrapper__restaurant-name {
+    max-width: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chat-wrapper__restaurant-chip {
+    max-width: 120px;
+  }
+
+  .chat-wrapper__restaurant-name {
+    max-width: 70px;
+  }
 }
 
 .chat-wrapper__divider {
@@ -37,6 +66,7 @@
   height: 36px;
   background-color: #e5e7eb;
   margin: 0 8px;
+  flex-shrink: 0;
 }
 
 /* Chat Wrapper Base Styles */
@@ -2056,6 +2086,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 /* Button Base Styles */
@@ -2469,6 +2502,7 @@
 .chat-wrapper__file-upload-container {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
 }
 
 /* Select Components */

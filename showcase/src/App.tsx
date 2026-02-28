@@ -237,7 +237,7 @@ function App() {
       "Ask Oddle AI to generate irresistible offers..",
     ],
     headerVisible: false,
-    chipName: "McDonald's",
+    chipName: "McDonald's McDonald McDonald McDonald McDonald McDonald",
     chipLogo:
       "https://lounge.beta.oddle.me/_next/image?url=https%3A%2F%2Fs3-ap-southeast-1.amazonaws.com%2Fv3-beta.image.oddle.me%2Flogo%2Fmenu_logo_Nomnom5a565b.jpg&w=96&q=75",
 
