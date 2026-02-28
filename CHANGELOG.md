@@ -25,6 +25,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.34] - 2026-02-28
+
+### Added
+- update campaign_id and enhance metadata synchronization logic
+
+### Changed
+- chore: Enhance restaurant chip display and styling
+
 ## [1.0.33] - 2026-02-26
 
 ### Fixed
