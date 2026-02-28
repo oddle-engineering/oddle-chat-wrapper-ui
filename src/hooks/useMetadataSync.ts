@@ -50,6 +50,7 @@ export function useMetadataSync({
   const hasInitializedRef = useRef(false);
   const pendingUpdateRef = useRef<Promise<void> | null>(null);
   const lastSentMetadataRef = useRef<any>(undefined);
+  const lastProviderResIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     // Skip during conversation loading to avoid overwriting existing metadata
@@ -80,11 +81,55 @@ export function useMetadataSync({
     if (!hasInitializedRef.current) {
       hasInitializedRef.current = true;
       lastMetadataRef.current = metadata;
+      lastProviderResIdRef.current = currentProviderResId;
       return;
     }
 
+    // Detect transition from draft to existing thread (thread just created)
+    // Only consider it "just created" if we transitioned from draft state (no messages)
+    // If messages exist, it means the thread was loaded from server, not newly created
+    const threadJustCreated = !lastProviderResIdRef.current && currentProviderResId && messages.length === 0;
+
     // Check if metadata has changed
     const metadataChanged = lastMetadataRef.current !== metadata;
+
+    // For thread just created scenario: sync metadata even if reference hasn't changed
+    // This handles the case where metadata was set before thread creation
+    // Skip this if thread was loaded from server (messages.length > 0)
+    if (threadJustCreated) {
+      console.log('[useMetadataSync] 🆕 Thread just created, syncing initial metadata');
+      lastProviderResIdRef.current = currentProviderResId;
+
+      // Check if we have valid metadata to sync
+      const hasValidMetadata = hasValidMetadataValues(metadata);
+
+      if (hasValidMetadata && lastSentMetadataRef.current !== metadata) {
+        console.log('[useMetadataSync] 📤 Syncing metadata to newly created thread:', metadata);
+
+        // Make the update call for the newly created thread
+        const updatePromise = chatClient
+          .updateMetadata(currentProviderResId, { metadata })
+          .then(() => {
+            console.log('[useMetadataSync] ✅ Initial metadata synced successfully');
+            lastMetadataRef.current = metadata;
+            lastSentMetadataRef.current = metadata;
+            pendingUpdateRef.current = null;
+          })
+          .catch((error: any) => {
+            console.error(
+              "[useMetadataSync] ❌ Failed to sync initial metadata to new thread:",
+              error
+            );
+            pendingUpdateRef.current = null;
+          });
+
+        pendingUpdateRef.current = updatePromise;
+      }
+      return;
+    }
+
+    // Update providerResId tracking
+    lastProviderResIdRef.current = currentProviderResId;
 
     if (!metadataChanged) {
       return;
@@ -102,10 +147,11 @@ export function useMetadataSync({
     // Handle metadata update based on state
     if (isDraftState) {
       // Case 1: Draft state - track metadata, will be applied during thread creation
-
+      console.log('[useMetadataSync] 📝 Draft state: tracking metadata for future sync');
       lastMetadataRef.current = metadata;
     } else if (isExistingThread) {
       // Case 2: Existing thread - make immediate API call
+      console.log('[useMetadataSync] 🔄 Existing thread: updating metadata');
 
       // Deduplication: Check if this exact metadata was already sent
       if (lastSentMetadataRef.current === metadata) {
@@ -120,6 +166,7 @@ export function useMetadataSync({
             const updatePromise = chatClient
               .updateMetadata(currentProviderResId, { metadata })
               .then(() => {
+                console.log('[useMetadataSync] ✅ Metadata updated successfully (queued)');
                 lastMetadataRef.current = metadata;
                 lastSentMetadataRef.current = metadata;
                 pendingUpdateRef.current = null;
@@ -142,6 +189,7 @@ export function useMetadataSync({
       const updatePromise = chatClient
         .updateMetadata(currentProviderResId, { metadata })
         .then(() => {
+          console.log('[useMetadataSync] ✅ Metadata updated successfully');
           lastMetadataRef.current = metadata;
           lastSentMetadataRef.current = metadata;
           pendingUpdateRef.current = null;
