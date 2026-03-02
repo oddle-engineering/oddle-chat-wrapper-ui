@@ -86,16 +86,16 @@ export function useMetadataSync({
     }
 
     // Detect transition from draft to existing thread (thread just created)
-    // Only consider it "just created" if we transitioned from draft state (no messages)
-    // If messages exist, it means the thread was loaded from server, not newly created
-    const threadJustCreated = !lastProviderResIdRef.current && currentProviderResId && messages.length === 0;
+    // This happens when we transition from no providerResId to having one
+    // Note: messages.length will be >= 1 because user message is added before thread creation
+    // The isLoadingConversation check at the top ensures we don't interfere with loaded threads
+    const threadJustCreated = !lastProviderResIdRef.current && currentProviderResId;
 
     // Check if metadata has changed
     const metadataChanged = lastMetadataRef.current !== metadata;
 
     // For thread just created scenario: sync metadata even if reference hasn't changed
     // This handles the case where metadata was set before thread creation
-    // Skip this if thread was loaded from server (messages.length > 0)
     if (threadJustCreated) {
       console.log('[useMetadataSync] 🆕 Thread just created, syncing initial metadata');
       lastProviderResIdRef.current = currentProviderResId;

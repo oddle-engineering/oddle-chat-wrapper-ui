@@ -5082,7 +5082,7 @@ function kc({
       c.current = !0, o.current = t, h.current = n;
       return;
     }
-    const C = !h.current && n && i.length === 0, x = o.current !== t;
+    const C = !h.current && n, x = o.current !== t;
     if (C) {
       if (console.log("[useMetadataSync] 🆕 Thread just created, syncing initial metadata"), h.current = n, ta(t) && l.current !== t) {
         console.log("[useMetadataSync] 📤 Syncing metadata to newly created thread:", t);
