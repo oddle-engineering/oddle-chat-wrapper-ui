@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.35] - 2026-03-02
+
+### Fixed
+- update campaign_id in App component and refine thread creation logic in useMetadataSync hook
+
 ## [1.0.34] - 2026-02-28
 
 ### Added
