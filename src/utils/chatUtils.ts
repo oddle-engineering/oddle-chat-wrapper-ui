@@ -51,11 +51,21 @@ export const chatStateHelpers = {
   getContentAreaClass: (
     messagesLength: number,
     isStreaming: boolean,
-    isLoadingConversation: boolean
+    isLoadingConversation: boolean,
+    showSuggestedPrompts?: boolean
   ): string => {
     const baseClass = "chat-wrapper__content";
     const isEmpty = messagesLength === 0 && !isStreaming && !isLoadingConversation;
-    return `${baseClass} ${isEmpty ? 'chat-wrapper__content--empty' : 'chat-wrapper__content--with-messages'}`;
+    
+    if (isEmpty) {
+      // If empty but prompts are hidden, use compact layout
+      if (showSuggestedPrompts === false) {
+        return `${baseClass} chat-wrapper__content--compact`;
+      }
+      return `${baseClass} chat-wrapper__content--empty`;
+    }
+    
+    return `${baseClass} chat-wrapper__content--with-messages`;
   },
 
   /**
@@ -65,12 +75,14 @@ export const chatStateHelpers = {
     messagesLength: number,
     isStreaming: boolean,
     isLoadingConversation: boolean,
-    suggestedPrompts?: any[]
+    suggestedPrompts?: any[],
+    showSuggestedPromptsOnInit?: boolean
   ): boolean => {
     return messagesLength === 0 &&
            !isStreaming &&
            !isLoadingConversation &&
-           !!suggestedPrompts;
+           !!suggestedPrompts &&
+           (showSuggestedPromptsOnInit ?? true);
   },
 };
 

@@ -27,6 +27,7 @@ export const ChatContent: React.FC = () => {
     headerName,
     headerDescription,
     suggestedPrompts,
+    showSuggestedPromptsOnInit,
     footer,
     messagesEndRef,
     chatInputRef,
@@ -78,23 +79,29 @@ export const ChatContent: React.FC = () => {
     messages.length,
     isStreaming,
     isLoadingConversation,
-    suggestedPrompts
+    suggestedPrompts,
+    showSuggestedPromptsOnInit
   );
 
   const contentAreaClass = chatUtils.state.getContentAreaClass(
     messages.length,
     isStreaming,
-    isLoadingConversation
+    isLoadingConversation,
+    shouldShowSuggestedPrompts
   );
+
+  // Determine if we're in compact mode (header should be inside content area)
+  const isCompactMode = contentAreaClass.includes('compact');
 
   return (
     <>
       {/* Main Header Section - only show when no messages and not loading */}
-      {shouldShowMainHeader && (
+      {shouldShowMainHeader && !isCompactMode && (
         <div style={isOffline ? { paddingTop: "48px" } : undefined}>
           <ChatMainHeader
             headerName={headerName}
             headerDescription={headerDescription}
+            showIcon={false}
           />
         </div>
       )}
@@ -104,13 +111,31 @@ export const ChatContent: React.FC = () => {
         className={contentAreaClass}
         style={isOffline && messages.length > 0 ? { paddingTop: "72px" } : undefined}
       >
-        {/* Messages Area */}
-        {isLoadingConversation && messages.length === 0 ? (
-          <div className="chat-wrapper__messages">
-            <InlineLoader fullHeight={true} />
+        {/* Header in compact mode - centered in available space */}
+        {shouldShowMainHeader && isCompactMode && (
+          <div style={{ 
+            flex: '1 1 auto', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            paddingTop: isOffline ? "48px" : undefined
+          }}>
+            <ChatMainHeader
+              headerName={headerName}
+              headerDescription={headerDescription}
+              showIcon={true}
+            />
           </div>
-        ) : (
-          <MessagesList ref={messagesEndRef} />
+        )}
+        {/* Messages Area - hide in compact mode */}
+        {!isCompactMode && (
+          isLoadingConversation && messages.length === 0 ? (
+            <div className="chat-wrapper__messages">
+              <InlineLoader fullHeight={true} />
+            </div>
+          ) : (
+            <MessagesList ref={messagesEndRef} />
+          )
         )}
 
         {/* Chat Input - flexible sizing */}

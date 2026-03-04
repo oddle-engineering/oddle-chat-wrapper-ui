@@ -667,6 +667,8 @@ interface ChatConfig {
     description: string;
     icon?: React.ReactNode;
   }>;
+  enableSuggestedPromptsAnimation?: boolean; // Enable typing animation (default: false)
+  showSuggestedPromptsOnInit?: boolean; // Show prompts on initial render (default: true)
 
   // === FEATURES ===
   features?: {
@@ -881,9 +883,29 @@ Guide users with pre-defined prompt suggestions:
         icon: <span>📱</span>,
       },
     ],
+    // Optional: Enable typing animation when clicking prompts
+    enableSuggestedPromptsAnimation: true,
+    // Optional: Control visibility on initial render
+    showSuggestedPromptsOnInit: true, // Default: true
   }}
 />
 ```
+
+**Control Suggested Prompts Display:**
+
+```tsx
+// Hide suggested prompts on initial render (show original simple theme)
+<ChatWrapper
+  {...props}
+  config={{
+    ...otherConfig,
+    suggestedPrompts: [...], // Prompts are configured but won't show initially
+    showSuggestedPromptsOnInit: false, // Hide prompts until user interacts
+  }}
+/>
+```
+
+This is useful when you want to provide a cleaner initial experience while still having prompts available for later interactions.
 
 ### 7.4 Context Helpers
 

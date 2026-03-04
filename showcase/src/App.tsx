@@ -285,6 +285,7 @@ function App() {
         </p>
       </div>
     ),
+    showSuggestedPromptsOnInit: false, // false = compact mode with icon, input expands on focus (48px → 96px), true = empty mode with suggested prompts (no icon)
   });
 
   const [todos, setTodos] = useState<any[]>([
@@ -333,9 +334,7 @@ function App() {
 
   // State for dynamic metadata (for testing metadata prop sync)
   // Start with empty to test the "metadata starts empty then gets populated" scenario
-  const [dynamicMetadata, setDynamicMetadata] = useState<any>({
-    campaign_id: "c01",
-  });
+  const [dynamicMetadata, setDynamicMetadata] = useState<any>({});
 
   // State for dynamic contextHelpers (for testing contextHelpers prop sync)
   // Start with minimal context, then add brandInfo after 10 seconds

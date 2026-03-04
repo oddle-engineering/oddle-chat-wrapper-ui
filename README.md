@@ -289,6 +289,8 @@ interface ChatConfig {
     description: string;
     icon?: React.ReactNode;                       // Optional icon component
   }>;
+  enableSuggestedPromptsAnimation?: boolean;      // Enable typing animation for prompts (default: false)
+  showSuggestedPromptsOnInit?: boolean;           // Show suggested prompts on initial render (default: true)
   
   // Feature Toggles
   features?: {

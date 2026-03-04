@@ -245,6 +245,19 @@
   /* No background color as requested */
 }
 
+.chat-wrapper__main-header-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.chat-wrapper__main-header-icon svg {
+  width: 24px;
+  height: 24px;
+  opacity: 0.8;
+}
+
 .chat-wrapper__main-title {
   color: var(--Primary-Darker, #1a1243);
   text-align: center;
@@ -345,6 +358,7 @@
 /* Empty state - input takes most of the space */
 .chat-wrapper__content--empty {
   justify-content: flex-start;
+  overflow: visible;
   /* padding-top: 24px; Ensure spacing from header */
 }
 
@@ -352,11 +366,6 @@
 .chat-wrapper {
   overflow-y: auto;
   max-height: 100vh;
-}
-
-.chat-wrapper__content--empty {
-  justify-content: flex-start;
-  overflow: visible;
 }
 
 .chat-wrapper__content--empty::after {
@@ -425,6 +434,83 @@
 .chat-wrapper__prompt-input--with-media .chat-wrapper__prompt-textarea {
   min-height: 60px !important;
   max-height: 112px !important;
+}
+
+/* Compact state - when suggested prompts are intentionally hidden */
+.chat-wrapper__content--compact {
+  justify-content: flex-end; /* Push input to bottom */
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Allow natural sizing */
+}
+
+.chat-wrapper__content--compact .chat-wrapper__messages {
+  display: none;
+}
+
+.chat-wrapper__content--compact .chat-wrapper__input-container {
+  flex: 0 0 auto; /* Don't expand to fill space */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 0 16px 16px;
+  min-height: auto;
+  transition: all 0.3s ease-in-out;
+  margin-top: auto; /* Push to bottom */
+}
+
+/* Compact state - normal sized input */
+.chat-wrapper__content--compact .chat-wrapper__prompt-input {
+  margin: 0;
+  min-height: auto;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chat-wrapper__content--compact .chat-wrapper__prompt-textarea {
+  min-height: 76px !important;
+  max-height: 140px !important;
+  height: auto !important;
+  transition: min-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Compact mode - expand textarea on focus for better typing experience */
+.chat-wrapper__content--compact .chat-wrapper__prompt-textarea:focus {
+  min-height: 170px !important; /* Double the height */
+  max-height: 262px !important; /* Slightly increased max */
+}
+
+/* Compact mode - header styles */
+.chat-wrapper__content--compact .chat-wrapper__main-header {
+  padding: 16px; /* Reduced padding for compact layout */
+}
+
+.chat-wrapper__content--compact .chat-wrapper__main-header-icon {
+  margin-bottom: 8px; /* Smaller spacing for compact mode */
+}
+
+.chat-wrapper__content--compact .chat-wrapper__main-title {
+  color: var(--Text-Light-Primary, #212B36);
+  text-align: center;
+  font-family: "Public Sans";
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 30px; /* 150% */
+}
+
+.chat-wrapper__content--compact .chat-wrapper__description {
+  color: var(--Text-Light-Secondary, #637381);
+  text-align: center;
+  font-family: "Public Sans";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 22px; /* 157.143% */
+  padding-bottom: 8px;
 }
 
 /* Upload Error Message Styles */

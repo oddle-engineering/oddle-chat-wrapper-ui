@@ -771,6 +771,7 @@ const ChatWrapperInner = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         chipLogo: config.chipLogo,
         suggestedPrompts: config.suggestedPrompts,
         enableSuggestedPromptsAnimation: config.enableSuggestedPromptsAnimation,
+        showSuggestedPromptsOnInit: config.showSuggestedPromptsOnInit ?? true, // Default to true for backward compatibility
         footer: config.footer,
         clientTools: uiClientTools,
         fileUploadEnabled: config.features?.fileUpload,
@@ -793,6 +794,7 @@ const ChatWrapperInner = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         config.chipLogo,
         config.suggestedPrompts,
         config.enableSuggestedPromptsAnimation,
+        config.showSuggestedPromptsOnInit,
         config.features?.fileUpload,
         config.fileUploadConfig,
         uiClientTools,

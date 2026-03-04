@@ -117,6 +117,7 @@ export interface ChatConfig {
     icon?: React.ReactNode; // Optional icon component for the prompt
   }>; // Suggested prompts to display when no messages are present
   enableSuggestedPromptsAnimation?: boolean; // Enable typing animation for suggested prompts (default: false)
+  showSuggestedPromptsOnInit?: boolean; // Control whether to show suggested prompts on initial render (default: true)
   footer?: React.ReactNode; // Custom footer component to display below suggested prompts
   features?: {
     fileUpload?: boolean;
