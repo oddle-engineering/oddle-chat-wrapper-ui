@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.37] - 2026-03-04
+
+### Changed
+- Refactor chat-wrapper CSS to remove unnecessary !important from main title font size
+
 ## [1.0.36] - 2026-03-04
 
 ### Added
