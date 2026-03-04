@@ -242,7 +242,7 @@
 .chat-wrapper__main-header {
   padding: 24px 16px;
   text-align: center;
-  /* No background color as requested */
+  /* No background - inherits from parent to show customStyles */
 }
 
 .chat-wrapper__main-header-icon {
@@ -353,6 +353,7 @@
   min-height: 0;
   overflow: visible; /* Allow content to flow naturally */
   transition: all 0.3s ease-in-out;
+  /* No background - inherits from parent to show customStyles */
 }
 
 /* Empty state - input takes most of the space */
@@ -606,11 +607,6 @@
 
 .chat-wrapper__content--with-messages .chat-wrapper__prompt-toolbar {
   flex: 0 0 auto;
-}
-
-/* Input Container */
-.chat-wrapper__input-container {
-  background-color: #ffffff;
 }
 
 /* Messages Container */
@@ -2734,6 +2730,9 @@
 .chat-wrapper--dark .chat-wrapper__prompt-textarea::-webkit-scrollbar-thumb {
   background-color: #4a5568;
 }
+
+/* Dark theme - containers inherit background to show customStyles */
+/* No background overrides - let customStyles apply to padding areas */
 
 /* Container-based responsive styles for chat-wrapper */
 

@@ -1731,6 +1731,9 @@ function App() {
           messageHistory: true,
           exportChat: true,
         },
+        customStyles: {
+          backgroundColor: "#F4F6F8",
+        },
       },
       tools: tools,
       contextHelpers: contextHelpers,
