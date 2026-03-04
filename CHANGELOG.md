@@ -25,6 +25,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.38] - 2026-03-04
+
+### Added
+- add custom styles for chat wrapper background and update related comments
+
+### Changed
+- Implement feature X to enhance user experience and optimize performance
+
 ## [1.0.37] - 2026-03-04
 
 ### Changed
