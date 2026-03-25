@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.39] - 2026-03-25
+
+### Added
+- add mcpHeaders prop for custom metadata in chat messages
+
 ## [1.0.38] - 2026-03-04
 
 ### Added
