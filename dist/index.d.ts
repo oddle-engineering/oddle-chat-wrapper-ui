@@ -128,6 +128,9 @@ export declare interface ChatWrapperProps {
     chatServerUrl: string;
     chatServerKey: string;
     metadata?: any;
+    mcpHeaders?: {
+        [key: string]: Record<string, string>;
+    };
     config: Omit<ChatConfig, "apiEndpoint">;
     tools?: Tools;
     contextHelpers?: ContextHelpers;

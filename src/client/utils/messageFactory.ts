@@ -20,12 +20,14 @@ export class MessageFactory {
     content: string;
     media?: string[];
     providerResId?: string;
+    mcpHeaders?: { [key: string]: Record<string, string> };
   }): ChatMessage {
     return {
       type: OutboundMessageType.CHAT_MESSAGE,
       content: params.content,
       media: params.media || [],
       providerResId: params.providerResId,
+      mcpHeaders: params.mcpHeaders,
     };
   }
 
@@ -152,6 +154,7 @@ export class MessageFactory {
     content: string;
     media?: string[];
     providerResId?: string;
+    mcpHeaders?: { [key: string]: Record<string, string> };
   }): string {
     return this.createAndSerialize(() => this.createChatMessage(params));
   }

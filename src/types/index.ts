@@ -178,13 +178,14 @@ export interface ChatWrapperRef {
 export interface ChatWrapperProps {
   // Authentication and entity context (grouped)
   auth: AuthConfig;
-  
+
   // Server configuration
   chatServerUrl: string; // Making connection to WebSocket and HTTP requests
   chatServerKey: string; // Server can detect which app is using the chat server (UD21, etc.)
 
   // Conversation configuration
   metadata?: any; // Additional metadata for business context (orderId, tableId, etc.)
+  mcpHeaders?: { [key: string]: Record<string, string> }; // MCP headers for custom metadata
 
   // Existing props
   config: Omit<ChatConfig, "apiEndpoint">;

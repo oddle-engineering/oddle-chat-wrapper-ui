@@ -339,7 +339,7 @@ function App() {
   // State for dynamic contextHelpers (for testing contextHelpers prop sync)
   // Start with minimal context, then add brandInfo after 10 seconds
   const [contextHelpers, setContextHelpers] = useState<any>({
-    locale: "en_SG",
+    locale: "zh_HK",
   });
 
   // Ref to ChatWrapper for imperative API access
@@ -360,7 +360,7 @@ function App() {
           id: "ud21_123",
           brandName: "UD21 Restaurant",
         },
-        locale: "en_SG",
+        locale: "zh_HK",
       });
     }, 10000);
 
@@ -1681,20 +1681,32 @@ function App() {
       // Authentication and entity context
       auth: {
         token:
-          "4988e102894d4c676de3aa93891e674a829383aa07789e2fe81d550f881fd245d3d011112e7d0aac5c8698b1fec6cea7c9596dbe6a091371b19a2009e9a0ebda",
+          "7c9495430e47cd08f65927380275326f01a6b6765658133a506985cfdc2a367d6205896eb2c9c5a855c59dcecc3893442312f3643d8ffbad7ca8822f4db4165d",
         entityId: "8a8197e78054904a01805a25a4bb25be1",
         entityType: EntityType.BRAND,
       },
 
       // Server configuration
       // chatServerUrl: "http://34.56.173.183",
-      chatServerUrl: "https://localhost:3000",
+      chatServerUrl: "http://localhost:3000",
       chatServerKey: "ud21-chat-server-key",
       uploadServerUrl:
         "https://oddle-media-library-staging-215139993835.asia-southeast1.run.app//api/media/upload",
 
       // Conversation metadata (now dynamic for testing auto-sync!)
       metadata: dynamicMetadata,
+
+      // MCP headers for testing
+      mcpHeaders: {
+        "test-context": {
+          "user-id": "test-user-123",
+          "session-id": "test-session-456",
+        },
+        "app-metadata": {
+          "app-name": "showcase-app",
+          "version": "1.0.0",
+        },
+      },
 
       config: {
         ...customConfig,

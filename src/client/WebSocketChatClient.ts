@@ -244,13 +244,13 @@ export class WebSocketChatClient {
   async onTriggerMessage(params: TriggerMessageParams): Promise<void> {
     const wsState = this.wsManager.getWebSocketState();
     const isConnected = this.connectionState.isConnected;
-    
+
     if (!isConnected || wsState !== "OPEN") {
       const errorMsg = "Connection lost. Please check your internet connection and try again.";
       throw new Error(errorMsg);
     }
 
-    const { message, media, providerResId } = params;
+    const { message, media, providerResId, mcpHeaders } = params;
 
     try {
       this.messageHandler.clearProcessedToolCalls();
@@ -259,6 +259,7 @@ export class WebSocketChatClient {
         content: message,
         media,
         providerResId,
+        mcpHeaders,
       });
       this.wsManager.send(chatMessage);
     } catch (error) {

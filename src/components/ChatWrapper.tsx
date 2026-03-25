@@ -54,6 +54,7 @@ const ChatWrapperInner = forwardRef<ChatWrapperRef, ChatWrapperProps>(
 
       // Conversation configuration
       metadata,
+      mcpHeaders,
 
       // Existing props
       config,
@@ -603,6 +604,7 @@ const ChatWrapperInner = forwardRef<ChatWrapperRef, ChatWrapperProps>(
               message: userMessage.content,
               media,
               providerResId: currentProviderResId || undefined,
+              mcpHeaders,
             }),
             timeoutPromise
           ]);
@@ -885,6 +887,7 @@ const ChatWrapperInner = forwardRef<ChatWrapperRef, ChatWrapperProps>(
             message: messageToRetry.content,
             media: messageToRetry.media,
             providerResId: currentProviderResId || undefined,
+            mcpHeaders,
           });
           
           // Transition to streaming state (keep loading indicators)

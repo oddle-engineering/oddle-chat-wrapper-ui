@@ -66,6 +66,7 @@ export interface TriggerMessageParams {
   message: string;
   media?: string[];
   providerResId?: string;
+  mcpHeaders?: { [key: string]: Record<string, string> };
 }
 
 export interface ChatPayload {
