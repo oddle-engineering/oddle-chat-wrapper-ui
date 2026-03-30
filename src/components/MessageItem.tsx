@@ -1,4 +1,4 @@
-import { useState, useCallback, memo } from "react";
+import { useState, useCallback, useMemo, memo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkBreaks from "remark-breaks";
 import { Message } from "../types";
@@ -15,7 +15,16 @@ interface MessageItemProps {
   message: Message;
 }
 
-const MarkdownComponents = {
+// Converts bare ucarecdn.com URLs to markdown image syntax so react-markdown renders them as images
+const preprocessMessageContent = (content: string): string => {
+  // Match bare ucarecdn URLs not already inside markdown image/link syntax
+  return content.replace(
+    /(?<!\]\()(?<!!.*\]\()https:\/\/ucarecdn\.com\/[^\s)>]+/g,
+    (url) => `![image](${url})`
+  );
+};
+
+const createMarkdownComponents = (onImageClick: (url: string) => void) => ({
   p: ({ children, ...props }: any) => (
     <p className="chat-wrapper__paragraph" {...props}>
       {children}
@@ -57,23 +66,30 @@ const MarkdownComponents = {
   hr: ({ ...props }: any) => (
     <hr className="chat-wrapper__hr" {...props} />
   ),
-};
+  img: ({ src, alt, ...props }: any) => (
+    <img
+      src={src}
+      alt={alt}
+      className="chat-wrapper__media-image chat-wrapper__media-image--clickable chat-wrapper__inline-image"
+      onClick={() => src && onImageClick(src)}
+      style={{
+        cursor: 'zoom-in',
+        transition: 'transform 0.2s, box-shadow 0.2s',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'scale(1.02)';
+        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'scale(1)';
+        e.currentTarget.style.boxShadow = '';
+      }}
+      title="Click to view full size"
+      {...props}
+    />
+  ),
+});
 
-const UserMarkdownComponents = {
-  ...MarkdownComponents,
-  code: ({ children, className, ...props }: any) => {
-    const isInline = !className;
-    return isInline ? (
-      <code className="chat-wrapper__inline-code" {...props}>
-        {children}
-      </code>
-    ) : (
-      <code className="chat-wrapper__code" {...props}>
-        {children}
-      </code>
-    );
-  },
-};
 
 export const MessageItem = memo<MessageItemProps>(
   ({ message }) => {
@@ -156,16 +172,18 @@ export const MessageItem = memo<MessageItemProps>(
       </>
     );
 
+    const markdownComponents = useMemo(() => createMarkdownComponents(handleImageClick), [handleImageClick]);
+
     const renderAssistantMessage = () => (
       <div className="chat-wrapper__regular-message chat-wrapper__assistant-message-container">
         <div className="chat-wrapper__assistant-content-wrapper">
           <div className="chat-wrapper__markdown-content">
-            <ReactMarkdown 
-              components={MarkdownComponents}
+            <ReactMarkdown
+              components={markdownComponents}
               remarkPlugins={[remarkBreaks]}
               key={`${message.id}-${message.isStreaming ? 'streaming' : 'final'}`}
             >
-              {message.content}
+              {preprocessMessageContent(message.content)}
             </ReactMarkdown>
           </div>
           {renderCopyButton()}
@@ -176,9 +194,9 @@ export const MessageItem = memo<MessageItemProps>(
     const renderUserMessage = () => (
       <div className="chat-wrapper__regular-message">
         <div className="chat-wrapper__markdown-content">
-          <ReactMarkdown 
+          <ReactMarkdown
             remarkPlugins={[remarkBreaks]}
-            components={UserMarkdownComponents}
+            components={markdownComponents}
             key={`${message.id}-user`}
           >
             {message.content}

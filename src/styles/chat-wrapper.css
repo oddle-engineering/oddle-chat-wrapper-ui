@@ -3785,6 +3785,17 @@
   color: #38bdf8;
 }
 
+/* Inline images rendered from URLs inside message content */
+.chat-wrapper__inline-image {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  display: block;
+  margin: 8px 0;
+}
+
 /* Clickable image styles */
 .chat-wrapper__media-image--clickable {
   border-radius: 8px;

@@ -44,6 +44,7 @@ interface MarketingToolsFunctions {
   getReservationTickets: () => Promise<unknown>;
   getPromos: () => Promise<unknown>;
   getRedeemables: () => Promise<unknown>;
+  createRedeemable: (params: CreateRedeemableParams) => Promise<unknown>;
   readEmail: () => Promise<EmailJsonResponse>;
   updateEmailContent: (
     params: UpdateEmailContentParams,
@@ -126,6 +127,19 @@ export interface CreateCampaignResponse {
   success: boolean;
   campaignJson: CreateCampaignParams["campaignJson"];
   emailJson: CreateCampaignParams["emailJson"];
+}
+
+export interface CreateRedeemableParams {
+  name: string;
+  description: string;
+  points_required: number;
+  valid_from: string;
+  valid_until: string;
+  applicable_to: string[];
+  stock_available?: number;
+  image_url?: string;
+  applicable_outlets?: string[];
+  dine_in_only?: boolean;
 }
 
 async function fetchTodos() {
@@ -339,7 +353,7 @@ function App() {
   // State for dynamic contextHelpers (for testing contextHelpers prop sync)
   // Start with minimal context, then add brandInfo after 10 seconds
   const [contextHelpers, setContextHelpers] = useState<any>({
-    locale: "zh_HK",
+    locale: "en_SG",
   });
 
   // Ref to ChatWrapper for imperative API access
@@ -360,7 +374,7 @@ function App() {
           id: "ud21_123",
           brandName: "UD21 Restaurant",
         },
-        locale: "zh_HK",
+        locale: "en_SG",
       });
     }, 10000);
 
@@ -934,6 +948,21 @@ function App() {
     };
   }, []);
 
+  const createRedeemable = useCallback(async (params: CreateRedeemableParams) => {
+    console.log("Creating redeemable:", params);
+    // Mock redeemable creation
+    return {
+      success: true,
+      redeemable: {
+        id: `redeem_${Date.now()}`,
+        ...params,
+        status: "active",
+        created_at: new Date().toISOString(),
+      },
+      message: `Redeemable "${params.name}" created successfully`,
+    };
+  }, []);
+
   // Email management tools
   const readEmail = useCallback(async (): Promise<EmailJsonResponse> => {
     console.log("Reading current email");
@@ -1046,6 +1075,87 @@ function App() {
         "Retrieves all redeemables available for use for the brand's online shop for delivery or takeaway",
       parameters: [],
       execute: fn.getRedeemables,
+    },
+    {
+      name: "create_redeemable",
+      description:
+        "Creates a new redeemable voucher or reward for the brand's online shop",
+      parameters: [
+        {
+          name: "name",
+          type: "string",
+          description: "Name of the redeemable",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "description",
+          type: "string",
+          description: "Description of what the customer receives when redeeming",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "points_required",
+          type: "number",
+          description: "Number of loyalty points required to redeem",
+          isRequired: true,
+          schema: { type: "integer" },
+        },
+        {
+          name: "valid_from",
+          type: "string",
+          description: "Start date of the redeemable validity in YYYY-MM-DD format",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "valid_until",
+          type: "string",
+          description: "End date of the redeemable validity in YYYY-MM-DD format",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "applicable_to",
+          type: "array",
+          description: 'Order types this redeemable applies to, e.g. ["delivery", "takeaway", "dine_in"]',
+          isRequired: true,
+          schema: {
+            type: "array",
+            items: { type: "string", enum: ["delivery", "takeaway", "dine_in"] },
+          },
+        },
+        {
+          name: "stock_available",
+          type: "number",
+          description: "Maximum number of times this redeemable can be used. Omit for unlimited.",
+          isRequired: false,
+          schema: { type: "integer" },
+        },
+        {
+          name: "image_url",
+          type: "string",
+          description: "URL of the image to display for this redeemable",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+        {
+          name: "applicable_outlets",
+          type: "array",
+          description: "List of outlet IDs this redeemable is valid at. Omit for all outlets.",
+          isRequired: false,
+          schema: { type: "array", items: { type: "string" } },
+        },
+        {
+          name: "dine_in_only",
+          type: "boolean",
+          description: "Whether this redeemable is restricted to dine-in orders only",
+          isRequired: false,
+          schema: { type: "boolean" },
+        },
+      ],
+      execute: fn.createRedeemable,
     },
     {
       name: "get_brand_items",
@@ -1380,6 +1490,7 @@ function App() {
       getReservationTickets,
       getPromos,
       getRedeemables,
+      createRedeemable,
       readEmail,
       updateEmailContent,
       updateEmailBlock,
@@ -1393,6 +1504,7 @@ function App() {
     getReservationTickets,
     getPromos,
     getRedeemables,
+    createRedeemable,
     readEmail,
     updateEmailContent,
     updateEmailBlock,
@@ -1681,7 +1793,7 @@ function App() {
       // Authentication and entity context
       auth: {
         token:
-          "7c9495430e47cd08f65927380275326f01a6b6765658133a506985cfdc2a367d6205896eb2c9c5a855c59dcecc3893442312f3643d8ffbad7ca8822f4db4165d",
+          "b94dc20f4795bd5f9f34930ed8d95f6aa471d4f294f5e691f25b64cac199caa54dde4715ac771d05266a70225d4b9e98bd136043d474ef163f5e40c12f7effa6",
         entityId: "8a8197e78054904a01805a25a4bb25be1",
         entityType: EntityType.BRAND,
       },
@@ -1691,7 +1803,7 @@ function App() {
       chatServerUrl: "http://localhost:3000",
       chatServerKey: "ud21-chat-server-key",
       uploadServerUrl:
-        "https://oddle-media-library-staging-215139993835.asia-southeast1.run.app//api/media/upload",
+        "https://oddle-media-library-staging-215139993835.asia-southeast1.run.app/api/media/upload",
 
       // Conversation metadata (now dynamic for testing auto-sync!)
       metadata: dynamicMetadata,
