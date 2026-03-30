@@ -25,6 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.40] - 2026-03-30
+
+### Added
+- render generated image
+- render generated image
+
 ## [1.0.39] - 2026-03-25
 
 ### Added
