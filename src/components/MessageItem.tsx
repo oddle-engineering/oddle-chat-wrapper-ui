@@ -15,13 +15,20 @@ interface MessageItemProps {
   message: Message;
 }
 
-// Converts bare ucarecdn.com URLs to markdown image syntax so react-markdown renders them as images
+// Converts bare ucarecdn.com URLs to markdown image syntax so react-markdown renders them as images,
+// and converts other bare URLs to markdown link syntax
 const preprocessMessageContent = (content: string): string => {
-  // Match bare ucarecdn URLs not already inside markdown image/link syntax
-  return content.replace(
+  // First, convert bare ucarecdn URLs to image syntax
+  let result = content.replace(
     /(?<!\]\()(?<!!.*\]\()https:\/\/ucarecdn\.com\/[^\s)>]+/g,
     (url) => `![image](${url})`
   );
+  // Then, convert remaining bare URLs (not already in markdown link/image syntax) to links
+  result = result.replace(
+    /(?<!\]\()(?<!!\[.*\]\()(?<!\()(https?:\/\/[^\s)>]+)/g,
+    (url) => `[${url}](${url})`
+  );
+  return result;
 };
 
 const createMarkdownComponents = (onImageClick: (url: string) => void) => ({
@@ -62,6 +69,17 @@ const createMarkdownComponents = (onImageClick: (url: string) => void) => ({
     <li className="chat-wrapper__list-item" {...props}>
       {children}
     </li>
+  ),
+  a: ({ href, children, ...props }: any) => (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="chat-wrapper__link"
+      {...props}
+    >
+      {children}
+    </a>
   ),
   hr: ({ ...props }: any) => (
     <hr className="chat-wrapper__hr" {...props} />

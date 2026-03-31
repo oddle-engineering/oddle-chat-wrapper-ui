@@ -14658,10 +14658,16 @@ function Ln() {
     );
   return t;
 }
-const Hp = (t) => t.replace(
-  new RegExp("(?<!\\]\\()(?<!!.*\\]\\()https:\\/\\/ucarecdn\\.com\\/[^\\s)>]+", "g"),
-  (e) => `![image](${e})`
-), zp = (t) => ({
+const Hp = (t) => {
+  let e = t.replace(
+    new RegExp("(?<!\\]\\()(?<!!.*\\]\\()https:\\/\\/ucarecdn\\.com\\/[^\\s)>]+", "g"),
+    (n) => `![image](${n})`
+  );
+  return e = e.replace(
+    new RegExp("(?<!\\]\\()(?<!!\\[.*\\]\\()(?<!\\()(https?:\\/\\/[^\\s)>]+)", "g"),
+    (n) => `[${n}](${n})`
+  ), e;
+}, zp = (t) => ({
   p: ({ children: e, ...n }) => /* @__PURE__ */ p("p", { className: "chat-wrapper__paragraph", ...n, children: e }),
   br: ({ ...e }) => /* @__PURE__ */ p("br", { ...e }),
   pre: ({ children: e, ...n }) => /* @__PURE__ */ p("pre", { className: "chat-wrapper__code-block", ...n, children: e }),
@@ -14669,6 +14675,17 @@ const Hp = (t) => t.replace(
   ul: ({ children: e, ...n }) => /* @__PURE__ */ p("ul", { className: "chat-wrapper__list", ...n, children: e }),
   ol: ({ children: e, ...n }) => /* @__PURE__ */ p("ol", { className: "chat-wrapper__ordered-list", ...n, children: e }),
   li: ({ children: e, ...n }) => /* @__PURE__ */ p("li", { className: "chat-wrapper__list-item", ...n, children: e }),
+  a: ({ href: e, children: n, ...r }) => /* @__PURE__ */ p(
+    "a",
+    {
+      href: e,
+      target: "_blank",
+      rel: "noopener noreferrer",
+      className: "chat-wrapper__link",
+      ...r,
+      children: n
+    }
+  ),
   hr: ({ ...e }) => /* @__PURE__ */ p("hr", { className: "chat-wrapper__hr", ...e }),
   img: ({ src: e, alt: n, ...r }) => /* @__PURE__ */ p(
     "img",

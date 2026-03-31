@@ -1981,6 +1981,12 @@
   height: 0;
 }
 
+.chat-wrapper__link {
+  color: inherit;
+  text-decoration: underline;
+  word-break: break-all;
+}
+
 .chat-wrapper__bold {
   font-weight: 600;
 }
