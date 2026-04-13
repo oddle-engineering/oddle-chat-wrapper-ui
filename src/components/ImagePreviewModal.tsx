@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ImagePreviewModalProps {
   imageUrl: string | null;
@@ -48,7 +49,7 @@ export function ImagePreviewModal({
     return null;
   }
 
-  return (
+  return createPortal(
     <div
       className="image-preview-modal__backdrop"
       onClick={handleBackdropClick}
@@ -145,6 +146,7 @@ export function ImagePreviewModal({
       >
         Press Esc or click outside to close
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

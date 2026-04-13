@@ -45,6 +45,8 @@ interface MarketingToolsFunctions {
   getPromos: () => Promise<unknown>;
   getRedeemables: () => Promise<unknown>;
   createRedeemable: (params: CreateRedeemableParams) => Promise<unknown>;
+  createRedeemableCampaign: (params: CreateRedeemableCampaignParams) => Promise<unknown>;
+  updateRedeemableCampaign: (params: UpdateRedeemableCampaignParams) => Promise<unknown>;
   readEmail: () => Promise<EmailJsonResponse>;
   updateEmailContent: (
     params: UpdateEmailContentParams,
@@ -140,6 +142,67 @@ export interface CreateRedeemableParams {
   image_url?: string;
   applicable_outlets?: string[];
   dine_in_only?: boolean;
+}
+
+export interface CreateRedeemableCampaignParams {
+  name: string;
+  redeemableTitle: string;
+  description: string;
+  termsAndConditions: string;
+  imageUrl: string;
+  issuedType: "unlimited" | "limited";
+  issuedMax?: number;
+  redemptionType: string;
+  redemptionMax?: number;
+  claimLimit: number;
+  expiryType: "never" | "fix" | "specific_date";
+  expiryDays?: number;
+  expiryDate?: string;
+  redemptionAvailableWhen: {
+    type: "IMMEDIATELY" | "NEXT_DAY" | "AFTER_DAYS_AMOUNT" | "AFTER_SPECIFIC_DATE";
+    days?: number;
+    date?: string;
+  } | null;
+  redemptionAvailableSchedule?: {
+    Mon?: string[] | null;
+    Tue?: string[] | null;
+    Wed?: string[] | null;
+    Thu?: string[] | null;
+    Fri?: string[] | null;
+    Sat?: string[] | null;
+    Sun?: string[] | null;
+  } | null;
+}
+
+export interface UpdateRedeemableCampaignParams {
+  id: string;
+  name?: string;
+  redeemableTitle?: string;
+  description?: string;
+  termsAndConditions?: string;
+  imageUrl?: string;
+  issuedType?: "unlimited" | "limited";
+  issuedMax?: number;
+  redemptionType?: string;
+  redemptionMax?: number;
+  claimLimit?: number;
+  expiryType?: "never" | "fix" | "specific_date";
+  expiryDays?: number;
+  expiryDate?: string;
+  redemptionAvailableWhen?: {
+    type: "IMMEDIATELY" | "NEXT_DAY" | "AFTER_DAYS_AMOUNT" | "AFTER_SPECIFIC_DATE";
+    days?: number;
+    date?: string;
+  } | null;
+  redemptionAvailableSchedule?: {
+    Mon?: string[] | null;
+    Tue?: string[] | null;
+    Wed?: string[] | null;
+    Thu?: string[] | null;
+    Fri?: string[] | null;
+    Sat?: string[] | null;
+    Sun?: string[] | null;
+  } | null;
 }
 
 async function fetchTodos() {
@@ -963,6 +1026,32 @@ function App() {
     };
   }, []);
 
+  const createRedeemableCampaign = useCallback(async (params: CreateRedeemableCampaignParams) => {
+    console.log("Creating redeemable campaign:", params);
+    return {
+      success: true,
+      campaign: {
+        id: `redeemable_campaign_${Date.now()}`,
+        ...params,
+        status: "active",
+        created_at: new Date().toISOString(),
+      },
+      message: `Redeemable campaign "${params.name}" created successfully`,
+    };
+  }, []);
+
+  const updateRedeemableCampaign = useCallback(async (params: UpdateRedeemableCampaignParams) => {
+    console.log("Updating redeemable campaign:", params);
+    return {
+      success: true,
+      campaign: {
+        ...params,
+        updated_at: new Date().toISOString(),
+      },
+      message: `Redeemable campaign "${params.id}" updated successfully`,
+    };
+  }, []);
+
   // Email management tools
   const readEmail = useCallback(async (): Promise<EmailJsonResponse> => {
     console.log("Reading current email");
@@ -1156,6 +1245,289 @@ function App() {
         },
       ],
       execute: fn.createRedeemable,
+    },
+    {
+      name: "create_redeemable_campaign",
+      description: "Creates a redeemable campaign for in-store use.",
+      parameters: [
+        {
+          name: "name",
+          type: "string",
+          description: "Internal campaign name.",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "redeemableTitle",
+          type: "string",
+          description: "Title shown to customers.",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "description",
+          type: "string",
+          description: "Customer-facing description (HTML allowed).",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "termsAndConditions",
+          type: "string",
+          description: "Terms and conditions (HTML allowed).",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "imageUrl",
+          type: "string",
+          description: "Image URL (must be an Uploadcare URL; if user provides an external URL, it must be uploaded to the media library first).",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "issuedType",
+          type: "string",
+          description: "Whether the redeemable has unlimited issuance or a limited max issuance.",
+          isRequired: true,
+          schema: { type: "string", enum: ["unlimited", "limited"] },
+        },
+        {
+          name: "issuedMax",
+          type: "number",
+          description: "Required when issuedType is limited; maximum number of redeemables that can be issued.",
+          isRequired: false,
+          schema: { type: "number" },
+        },
+        {
+          name: "redemptionType",
+          type: "string",
+          description: "Redemption limit type.",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "redemptionMax",
+          type: "number",
+          description: "Maximum number of redemptions.",
+          isRequired: false,
+          schema: { type: "number" },
+        },
+        {
+          name: "claimLimit",
+          type: "number",
+          description: "Maximum claims per customer.",
+          isRequired: true,
+          schema: { type: "number" },
+        },
+        {
+          name: "expiryType",
+          type: "string",
+          description: "Expiry configuration.",
+          isRequired: true,
+          schema: { type: "string", enum: ["never", "fix", "specific_date"] },
+        },
+        {
+          name: "expiryDays",
+          type: "number",
+          description: "Optional. Used when expiryType is fix.",
+          isRequired: false,
+          schema: { type: "integer" },
+        },
+        {
+          name: "expiryDate",
+          type: "string",
+          description: "Optional. Used when expiryType is specific_date.",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+        {
+          name: "redemptionAvailableWhen",
+          type: "object",
+          description: "When the redeemable becomes available for redemption.",
+          isRequired: true,
+          schema: {
+            type: "object",
+            nullable: true,
+            properties: {
+              type: {
+                type: "string",
+                enum: ["IMMEDIATELY", "NEXT_DAY", "AFTER_DAYS_AMOUNT", "AFTER_SPECIFIC_DATE"],
+              },
+              days: { type: "integer", description: "Optional. Used when type is AFTER_DAYS_AMOUNT." },
+              date: { type: "string", description: "Optional. Used when type is AFTER_SPECIFIC_DATE." },
+            },
+            required: ["type"],
+            additionalProperties: false,
+          },
+        },
+        {
+          name: "redemptionAvailableSchedule",
+          type: "object",
+          description: "Optional. Day/time availability schedule. Omit or set null to allow all days/all time.",
+          isRequired: false,
+          schema: {
+            type: "object",
+            nullable: true,
+            properties: {
+              Mon: { type: "array", nullable: true, items: { type: "string", pattern: "^(?:[01]\\d|2[0-3]):[0-5]\\d-(?:[01]\\d|2[0-3]):[0-5]\\d$" } },
+              Tue: { type: "array", nullable: true, items: { type: "string", pattern: "^(?:[01]\\d|2[0-3]):[0-5]\\d-(?:[01]\\d|2[0-3]):[0-5]\\d$" } },
+              Wed: { type: "array", nullable: true, items: { type: "string", pattern: "^(?:[01]\\d|2[0-3]):[0-5]\\d-(?:[01]\\d|2[0-3]):[0-5]\\d$" } },
+              Thu: { type: "array", nullable: true, items: { type: "string", pattern: "^(?:[01]\\d|2[0-3]):[0-5]\\d-(?:[01]\\d|2[0-3]):[0-5]\\d$" } },
+              Fri: { type: "array", nullable: true, items: { type: "string", pattern: "^(?:[01]\\d|2[0-3]):[0-5]\\d-(?:[01]\\d|2[0-3]):[0-5]\\d$" } },
+              Sat: { type: "array", nullable: true, items: { type: "string", pattern: "^(?:[01]\\d|2[0-3]):[0-5]\\d-(?:[01]\\d|2[0-3]):[0-5]\\d$" } },
+              Sun: { type: "array", nullable: true, items: { type: "string", pattern: "^(?:[01]\\d|2[0-3]):[0-5]\\d-(?:[01]\\d|2[0-3]):[0-5]\\d$" } },
+            },
+            additionalProperties: false,
+          },
+        },
+      ],
+      execute: fn.createRedeemableCampaign,
+    },
+    {
+      name: "update_redeemable_campaign",
+      description: "Updates an existing redeemable campaign. Only provide the fields you want to change.",
+      parameters: [
+        {
+          name: "id",
+          type: "string",
+          description: "ID of the redeemable campaign to update.",
+          isRequired: true,
+          schema: { type: "string" },
+        },
+        {
+          name: "name",
+          type: "string",
+          description: "Internal campaign name.",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+        {
+          name: "redeemableTitle",
+          type: "string",
+          description: "Title shown to customers.",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+        {
+          name: "description",
+          type: "string",
+          description: "Customer-facing description (HTML allowed).",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+        {
+          name: "termsAndConditions",
+          type: "string",
+          description: "Terms and conditions (HTML allowed).",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+        {
+          name: "imageUrl",
+          type: "string",
+          description: "Image URL (must be an Uploadcare URL).",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+        {
+          name: "issuedType",
+          type: "string",
+          description: "Whether the redeemable has unlimited issuance or a limited max issuance.",
+          isRequired: false,
+          schema: { type: "string", enum: ["unlimited", "limited"] },
+        },
+        {
+          name: "issuedMax",
+          type: "number",
+          description: "Required when issuedType is limited; maximum number of redeemables that can be issued.",
+          isRequired: false,
+          schema: { type: "number" },
+        },
+        {
+          name: "redemptionType",
+          type: "string",
+          description: "Redemption limit type.",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+        {
+          name: "redemptionMax",
+          type: "number",
+          description: "Maximum number of redemptions.",
+          isRequired: false,
+          schema: { type: "number" },
+        },
+        {
+          name: "claimLimit",
+          type: "number",
+          description: "Maximum claims per customer.",
+          isRequired: false,
+          schema: { type: "number" },
+        },
+        {
+          name: "expiryType",
+          type: "string",
+          description: "Expiry configuration.",
+          isRequired: false,
+          schema: { type: "string", enum: ["never", "fix", "specific_date"] },
+        },
+        {
+          name: "expiryDays",
+          type: "number",
+          description: "Used when expiryType is fix.",
+          isRequired: false,
+          schema: { type: "integer" },
+        },
+        {
+          name: "expiryDate",
+          type: "string",
+          description: "Used when expiryType is specific_date.",
+          isRequired: false,
+          schema: { type: "string" },
+        },
+        {
+          name: "redemptionAvailableWhen",
+          type: "object",
+          description: "When the redeemable becomes available for redemption.",
+          isRequired: false,
+          schema: {
+            type: "object",
+            nullable: true,
+            properties: {
+              type: {
+                type: "string",
+                enum: ["IMMEDIATELY", "NEXT_DAY", "AFTER_DAYS_AMOUNT", "AFTER_SPECIFIC_DATE"],
+              },
+              days: { type: "integer" },
+              date: { type: "string" },
+            },
+            required: ["type"],
+            additionalProperties: false,
+          },
+        },
+        {
+          name: "redemptionAvailableSchedule",
+          type: "object",
+          description: "Day/time availability schedule. Set null to allow all days/all time.",
+          isRequired: false,
+          schema: {
+            type: "object",
+            nullable: true,
+            properties: {
+              Mon: { type: "array", nullable: true, items: { type: "string" } },
+              Tue: { type: "array", nullable: true, items: { type: "string" } },
+              Wed: { type: "array", nullable: true, items: { type: "string" } },
+              Thu: { type: "array", nullable: true, items: { type: "string" } },
+              Fri: { type: "array", nullable: true, items: { type: "string" } },
+              Sat: { type: "array", nullable: true, items: { type: "string" } },
+              Sun: { type: "array", nullable: true, items: { type: "string" } },
+            },
+            additionalProperties: false,
+          },
+        },
+      ],
+      execute: fn.updateRedeemableCampaign,
     },
     {
       name: "get_brand_items",
@@ -1491,6 +1863,8 @@ function App() {
       getPromos,
       getRedeemables,
       createRedeemable,
+      createRedeemableCampaign,
+      updateRedeemableCampaign,
       readEmail,
       updateEmailContent,
       updateEmailBlock,
@@ -1505,6 +1879,8 @@ function App() {
     getPromos,
     getRedeemables,
     createRedeemable,
+    createRedeemableCampaign,
+    updateRedeemableCampaign,
     readEmail,
     updateEmailContent,
     updateEmailBlock,
@@ -1793,13 +2169,13 @@ function App() {
       // Authentication and entity context
       auth: {
         token:
-          "b94dc20f4795bd5f9f34930ed8d95f6aa471d4f294f5e691f25b64cac199caa54dde4715ac771d05266a70225d4b9e98bd136043d474ef163f5e40c12f7effa6",
+          "10f19f9683f832f3b5e8d6cc6e044b1e71291629b4aea30a8160b536fab60496780876e0f819e3cfed05c492ba03deb4519a9255e7dcd2574e77ec0afd87e500",
         entityId: "8a8197e78054904a01805a25a4bb25be1",
         entityType: EntityType.BRAND,
       },
 
       // Server configuration
-      // chatServerUrl: "http://34.56.173.183",
+      // chatServerUrl: "https://ai-chat.staging.oddleapp.com",
       chatServerUrl: "http://localhost:3000",
       chatServerKey: "ud21-chat-server-key",
       uploadServerUrl:
