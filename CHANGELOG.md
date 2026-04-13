@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.43] - 2026-04-13
+
+### Fixed
+- the image is cut off on the previewer for the large height of image
+
 ## [1.0.42] - 2026-04-13
 
 ### Added
