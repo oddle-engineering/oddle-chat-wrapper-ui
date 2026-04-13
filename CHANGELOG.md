@@ -25,6 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.42] - 2026-04-13
+
+### Added
+- update create redeemable schema
+- enhance the previewer with full screen view mode
+
 ## [1.0.41] - 2026-03-31
 
 ### Added
