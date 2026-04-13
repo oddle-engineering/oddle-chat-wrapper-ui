@@ -30,18 +30,32 @@ export function ImagePreviewModal({
 
   // Add/remove event listeners
   useEffect(() => {
+    const messagesEl = document.querySelector<HTMLElement>('.chat-wrapper__messages');
+    const preventWheel = (e: WheelEvent) => e.preventDefault();
+
     if (isOpen) {
       document.addEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'hidden'; // Prevent background scroll
+      document.body.style.overflow = 'hidden';
+      if (messagesEl) {
+        messagesEl.style.overflowY = 'hidden';
+        messagesEl.addEventListener('wheel', preventWheel, { passive: false });
+      }
     } else {
       document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = ''; // Restore scroll
+      document.body.style.overflow = '';
+      if (messagesEl) {
+        messagesEl.style.overflowY = '';
+        messagesEl.removeEventListener('wheel', preventWheel);
+      }
     }
 
-    // Cleanup on unmount
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
+      if (messagesEl) {
+        messagesEl.style.overflowY = '';
+        messagesEl.removeEventListener('wheel', preventWheel);
+      }
     };
   }, [isOpen, handleKeyDown]);
 
@@ -102,8 +116,6 @@ export function ImagePreviewModal({
       {/* Image container */}
       <div
         style={{
-          maxWidth: '90vw',
-          maxHeight: '90vh',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -115,15 +127,14 @@ export function ImagePreviewModal({
           src={imageUrl}
           alt={alt}
           style={{
-            maxWidth: '100%',
-            maxHeight: '100%',
+            maxWidth: '90vw',
+            maxHeight: '90vh',
             objectFit: 'contain',
             borderRadius: '8px',
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-            opacity: 1, // Ensure image is visible by default
+            opacity: 1,
           }}
           onLoad={(e) => {
-            // Ensure image is visible when loaded
             e.currentTarget.style.opacity = '1';
             e.currentTarget.style.transition = 'opacity 0.2s';
           }}

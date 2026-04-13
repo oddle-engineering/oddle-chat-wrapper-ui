@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, memo } from "react";
+import { useState, useCallback, useMemo, memo, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkBreaks from "remark-breaks";
 import { Message } from "../types";
@@ -14,6 +14,40 @@ import { useTranslations } from "../i18n";
 interface MessageItemProps {
   message: Message;
 }
+
+interface ImageWithFallbackProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+  onImageClick?: () => void;
+}
+
+const ImageWithFallback = ({ onImageClick, className, style, title, ...props }: ImageWithFallbackProps) => {
+  const [broken, setBroken] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  if (broken) {
+    return (
+      <div className={`chat-wrapper__image-unavailable ${className ?? ''}`}>
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+          <path d="M3 15l5-5 4 4 3-3 6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <line x1="2" y1="2" x2="22" y2="22" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        </svg>
+        <span>Image unavailable</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      ref={imgRef}
+      className={className}
+      style={style}
+      title={title}
+      onError={() => setBroken(true)}
+      onClick={onImageClick}
+      {...props}
+    />
+  );
+};
 
 // Converts bare ucarecdn.com URLs to markdown image syntax so react-markdown renders them as images,
 // and converts other bare URLs to markdown link syntax
@@ -85,22 +119,22 @@ const createMarkdownComponents = (onImageClick: (url: string) => void) => ({
     <hr className="chat-wrapper__hr" {...props} />
   ),
   img: ({ src, alt, ...props }: any) => (
-    <img
+    <ImageWithFallback
       src={src}
       alt={alt}
       className="chat-wrapper__media-image chat-wrapper__media-image--clickable chat-wrapper__inline-image"
-      onClick={() => src && onImageClick(src)}
+      onImageClick={() => src && onImageClick(src)}
       style={{
         cursor: 'zoom-in',
         transition: 'transform 0.2s, box-shadow 0.2s',
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'scale(1.02)';
-        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+        (e.currentTarget as HTMLImageElement).style.transform = 'scale(1.02)';
+        (e.currentTarget as HTMLImageElement).style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'scale(1)';
-        e.currentTarget.style.boxShadow = '';
+        (e.currentTarget as HTMLImageElement).style.transform = 'scale(1)';
+        (e.currentTarget as HTMLImageElement).style.boxShadow = '';
       }}
       title="Click to view full size"
       {...props}
@@ -225,23 +259,23 @@ export const MessageItem = memo<MessageItemProps>(
             {message.media.map((mediaUrl, index) => {
               // Media URL is now a direct CDN URL
               return (
-                <img
+                <ImageWithFallback
                   key={index}
-                  src={mediaUrl} // Use mediaUrl directly (it's now a clean CDN URL)
+                  src={mediaUrl}
                   alt={`Uploaded content ${index + 1}`}
                   className="chat-wrapper__media-image chat-wrapper__media-image--clickable"
-                  onClick={() => handleImageClick(mediaUrl)} // Use mediaUrl directly for full-size view
-                  style={{ 
+                  onImageClick={() => handleImageClick(mediaUrl)}
+                  style={{
                     cursor: 'zoom-in',
                     transition: 'transform 0.2s, box-shadow 0.2s',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'scale(1.02)';
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+                    (e.currentTarget as HTMLImageElement).style.transform = 'scale(1.02)';
+                    (e.currentTarget as HTMLImageElement).style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'scale(1)';
-                    e.currentTarget.style.boxShadow = '';
+                    (e.currentTarget as HTMLImageElement).style.transform = 'scale(1)';
+                    (e.currentTarget as HTMLImageElement).style.boxShadow = '';
                   }}
                   title="Click to view full size"
                 />
