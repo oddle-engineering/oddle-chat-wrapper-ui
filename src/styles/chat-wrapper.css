@@ -1606,6 +1606,36 @@
   animation-delay: -0.16s;
 }
 
+/* Gradient-colored dots when used in streaming placeholder */
+@keyframes dotColorCycle {
+  0%, 100% {
+    background-color: #9ca3af;
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    background-color: #6366f1;
+    transform: scale(1.35);
+    opacity: 0.85;
+  }
+}
+
+.chat-wrapper__streaming-placeholder .chat-wrapper__loader-dots span {
+  animation: dotColorCycle 1.4s infinite ease-in-out;
+}
+
+.chat-wrapper__streaming-placeholder .chat-wrapper__loader-dots span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.chat-wrapper__streaming-placeholder .chat-wrapper__loader-dots span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+.chat-wrapper__streaming-placeholder .chat-wrapper__loader-dots span:nth-child(3) {
+  animation-delay: 0s;
+}
+
 .chat-wrapper__thinking-icon {
   display: flex;
   align-items: center;
@@ -1633,6 +1663,53 @@
   width: 20px;
   height: 20px;
   flex-shrink: 0;
+}
+
+/* Processing state animations for ToolingHandle */
+@keyframes processingRowShimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(250%);
+  }
+}
+
+@keyframes processingTextFade {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.chat-wrapper__tooling-handle-trigger-content--processing {
+  position: relative;
+  overflow: hidden;
+}
+
+.chat-wrapper__tooling-handle-trigger-content--processing::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(99, 115, 129, 0.12) 50%,
+    transparent 100%
+  );
+  animation: processingRowShimmer 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.chat-wrapper__tooling-handle-trigger-content--processing
+  .chat-wrapper__status-group
+  span {
+  animation: processingTextFade 1.8s ease-in-out infinite;
 }
 
 /* Suggested Prompts */
@@ -2014,6 +2091,10 @@
   gap: 8px;
   color: #6b7280;
   font-size: 14px;
+}
+
+.chat-wrapper__streaming-placeholder span {
+  animation: processingTextFade 1.8s ease-in-out infinite;
 }
 
 .chat-wrapper__streaming-status {
@@ -2974,6 +3055,33 @@
 
 .chat-wrapper--dark .chat-wrapper__tooling-handle-trigger-content span {
   color: #9ca3af;
+}
+
+.chat-wrapper--dark
+  .chat-wrapper__tooling-handle-trigger-content--processing::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(156, 163, 175, 0.1) 50%,
+    transparent 100%
+  );
+}
+
+.chat-wrapper--dark .chat-wrapper__streaming-placeholder .chat-wrapper__loader-dots span {
+  animation: dotColorCycleDark 1.4s infinite ease-in-out;
+}
+
+@keyframes dotColorCycleDark {
+  0%, 100% {
+    background-color: #6b7280;
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    background-color: #818cf8;
+    transform: scale(1.35);
+    opacity: 0.85;
+  }
 }
 
 .chat-wrapper--dark .chat-wrapper__code-block {
