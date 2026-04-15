@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.44] - 2026-04-15
+
+### Added
+- animate tool execution row and streaming placeholder
+
 ## [1.0.43] - 2026-04-13
 
 ### Fixed
