@@ -25,6 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.48] - 2026-04-23
+
+### Fixed
+- eliminate loading flash by holding skeleton through full history fetch
+- hold skeleton through all loading phases and fade in final content
+
 ## [1.0.47] - 2026-04-23
 
 ### Fixed
