@@ -15987,7 +15987,7 @@ const qf = ({
     isInitialConnection: g,
     conversationError: d,
     onRetryConnection: C
-  } = Ln(), k = t.length === 0 && !e && h === He.CONNECTING, _ = t.length === 0 && !e && h === He.DISCONNECTED && !g;
+  } = Ln(), k = t.length === 0 && (g || h === He.CONNECTING || e), _ = t.length === 0 && !e && h === He.DISCONNECTED && !g;
   if (k || _)
     return /* @__PURE__ */ P("div", { style: { position: "relative", height: "100%" }, children: [
       /* @__PURE__ */ p(n1, {}),

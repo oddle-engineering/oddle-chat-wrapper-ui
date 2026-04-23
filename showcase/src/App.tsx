@@ -435,7 +435,9 @@ function App() {
 
   // State for dynamic metadata (for testing metadata prop sync)
   // Start with empty to test the "metadata starts empty then gets populated" scenario
-  const [dynamicMetadata, setDynamicMetadata] = useState<any>({});
+  const [dynamicMetadata, setDynamicMetadata] = useState<any>({
+    campaignId: "sss",
+  });
 
   // State for dynamic contextHelpers (for testing contextHelpers prop sync)
   // Start with minimal context, then add brandInfo after 10 seconds
@@ -2294,7 +2296,7 @@ function App() {
       auth: {
         token:
           "1c26f13dc6bbc3fb61875291e29a33f7d4314da695f997b0b5e29009798e4ce6a71cebbdaa1466ab2976399a433d3fdf0d460bfce9d0ead7ec1a11a6fa7018bc",
-        entityId: "8a8197e78054904a01805a25a4bb25be1",
+        entityId: "8a608005902f987401902ff891b901a5",
         entityType: EntityType.BRAND,
       },
 
