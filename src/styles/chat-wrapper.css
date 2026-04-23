@@ -1745,26 +1745,11 @@
   overflow-x: auto;
   overflow-y: visible;
   padding-bottom: 8px;
+  scrollbar-width: none; /* Firefox */
 }
 
-/* Horizontal scrollbar styling for suggested prompts */
 .chat-wrapper__suggested-prompts-grid::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-.chat-wrapper__suggested-prompts-grid::-webkit-scrollbar-track {
-  background: transparent;
-  margin-right: -16px;
-}
-
-.chat-wrapper__suggested-prompts-grid::-webkit-scrollbar-thumb {
-  background: #cbd5e0;
-  border-radius: 3px;
-}
-
-.chat-wrapper__suggested-prompts-grid::-webkit-scrollbar-thumb:hover {
-  background: #a0aec0;
+  display: none; /* Chrome, Safari, Edge */
 }
 
 .chat-wrapper__suggested-prompt-card {

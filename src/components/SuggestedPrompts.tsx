@@ -137,10 +137,55 @@ export const SuggestedPrompts: React.FC = () => {
     };
   }, [chatInputRef, enableSuggestedPromptsAnimation]);
 
+  const gridRef = useRef<HTMLDivElement>(null);
+  const dragState = useRef({ isDown: false, startX: 0, scrollLeft: 0, hasDragged: false });
+
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    const el = gridRef.current;
+    if (!el) return;
+    dragState.current = { isDown: true, startX: e.pageX - el.offsetLeft, scrollLeft: el.scrollLeft, hasDragged: false };
+    el.style.cursor = "grabbing";
+    el.style.userSelect = "none";
+  }, []);
+
+  const onMouseMove = useCallback((e: React.MouseEvent) => {
+    const el = gridRef.current;
+    if (!el || !dragState.current.isDown) return;
+    const x = e.pageX - el.offsetLeft;
+    const delta = x - dragState.current.startX;
+    if (Math.abs(delta) > 4) dragState.current.hasDragged = true;
+    el.scrollLeft = dragState.current.scrollLeft - delta;
+  }, []);
+
+  const onMouseUp = useCallback(() => {
+    const el = gridRef.current;
+    if (!el) return;
+    dragState.current.isDown = false;
+    el.style.cursor = "grab";
+    el.style.userSelect = "";
+  }, []);
+
+  // Suppress click on cards when the user was dragging
+  const onClickCapture = useCallback((e: React.MouseEvent) => {
+    if (dragState.current.hasDragged) {
+      e.stopPropagation();
+      dragState.current.hasDragged = false;
+    }
+  }, []);
+
   return (
     <div className="chat-wrapper__suggested-prompts">
       <h3 className="chat-wrapper__suggested-prompts-title">Suggested Prompts</h3>
-      <div className="chat-wrapper__suggested-prompts-grid">
+      <div
+        ref={gridRef}
+        className="chat-wrapper__suggested-prompts-grid"
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={onMouseUp}
+        onMouseLeave={onMouseUp}
+        onClickCapture={onClickCapture}
+        style={{ cursor: "grab" }}
+      >
         {suggestedPrompts.map((prompt, index) => (
           <button
             key={index}

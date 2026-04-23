@@ -352,6 +352,18 @@ function App() {
       {
         title: "Limited-Time Offer Blast",
         description:
+          "Write a marketing email to win back lapsed customers and encourage them to order again. Structure the email with: a header, hero image, title, introductory text, body text, divider, menu section title, menu introduction text, 4 menu items, a sign-off message, and footer.",
+        icon: <span>⚡</span>,
+      },
+      {
+        title: "Limited-Time Offer Blast",
+        description:
+          "Create a limited-time restaurant offer email that builds excitement and gets customers to book instantly.",
+        icon: <span>⚡</span>,
+      },
+      {
+        title: "Limited-Time Offer Blast",
+        description:
           "Create a limited-time restaurant offer email that builds excitement and gets customers to book instantly.",
         icon: <span>⚡</span>,
       },
@@ -374,7 +386,7 @@ function App() {
         </p>
       </div>
     ),
-    showSuggestedPromptsOnInit: false, // false = compact mode with icon, input expands on focus (48px → 96px), true = empty mode with suggested prompts (no icon)
+    showSuggestedPromptsOnInit: true, // false = compact mode with icon, input expands on focus (48px → 96px), true = empty mode with suggested prompts (no icon)
   });
 
   const [todos, setTodos] = useState<any[]>([
