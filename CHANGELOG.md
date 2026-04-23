@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.47] - 2026-04-23
+
+### Fixed
+- scope embedded constrained padding to empty state only
+
 ## [1.0.46] - 2026-04-23
 
 ### Changed
