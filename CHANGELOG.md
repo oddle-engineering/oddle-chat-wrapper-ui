@@ -25,6 +25,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.45] - 2026-04-23
+
+### Added
+- add mouse drag-to-scroll on suggested prompts grid and hide scrollbar
+
+### Fixed
+- add consistent horizontal padding to messages and input in with-messages state
+- anchor messages to bottom of container on initial load
+
 ## [1.0.44] - 2026-04-15
 
 ### Added
