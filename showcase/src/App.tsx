@@ -436,7 +436,7 @@ function App() {
   // State for dynamic metadata (for testing metadata prop sync)
   // Start with empty to test the "metadata starts empty then gets populated" scenario
   const [dynamicMetadata, setDynamicMetadata] = useState<any>({
-    campaignId: "sss",
+    campaignId: 4114,
   });
 
   // State for dynamic contextHelpers (for testing contextHelpers prop sync)

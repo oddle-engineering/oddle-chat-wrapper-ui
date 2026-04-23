@@ -67,7 +67,5 @@ Available context files:
 # --- dynamic context (auto-managed) ---
 
 <!-- dynamic-context:start -->
-@context/components.md
-@context/state.md
-@context/api.md
+<!-- no specific context loaded | branch: main -->
 <!-- dynamic-context:end -->

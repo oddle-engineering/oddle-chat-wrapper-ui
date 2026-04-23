@@ -38,10 +38,13 @@ export const ChatContent: React.FC = () => {
     onRetryConnection,
   } = useChatContext();
 
-  // Show skeleton until all loading phases complete: initial mount, connecting, and history fetch
+  // Show skeleton until all loading phases complete: initial mount, connecting, and history fetch.
+  // isLoadingConversation is not gated on messages.length — Zustand and React state can render
+  // out of sync, so we hold the skeleton for the entire fetch regardless of whether messages
+  // have arrived yet.
   const shouldShowSkeleton =
-    messages.length === 0 &&
-    (isInitialConnection || connectionState === ConnectionState.CONNECTING || isLoadingConversation);
+    isLoadingConversation ||
+    (messages.length === 0 && (isInitialConnection || connectionState === ConnectionState.CONNECTING));
 
   // Check if connection failed in empty state
   // Only show error if we're past the initial connection attempts (not on first try with slow network)
