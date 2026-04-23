@@ -171,6 +171,9 @@
 /* When embedded in a constrained parent, fill the container */
 .chat-wrapper--embedded.chat-wrapper--constrained {
   max-height: none;
+}
+
+.chat-wrapper--embedded.chat-wrapper--constrained .chat-wrapper__content--empty {
   padding: 0 24px;
 }
 
@@ -456,7 +459,7 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  padding: 0 16px 16px;
+  padding: 0 0px 16px;
   min-height: auto;
   transition: all 0.3s ease-in-out;
   margin-top: auto; /* Push to bottom */
