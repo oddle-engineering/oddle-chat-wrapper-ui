@@ -3190,7 +3190,6 @@
 
 /* Thinking bubble styles */
 .chat-wrapper__thinking-bubble {
-  padding: 12px;
   transition: all 0.3s ease;
 }
 
