@@ -25,6 +25,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.49] - 2026-04-27
+
+### Added
+- make suggested prompts full-width by moving outside content area
+
+### Fixed
+- constrain reasoning-icon SVG to 20×20px to match thinking-icon
+- replace inline pulsating SVG with PulsatingDots component and fix animation layering
+
 ## [1.0.48] - 2026-04-23
 
 ### Fixed
