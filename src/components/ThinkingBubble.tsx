@@ -1,4 +1,5 @@
 import React from "react";
+import { PulsatingDots } from "./PulsatingDots";
 
 interface ThinkingBubbleProps {
   isVisible: boolean;
@@ -11,11 +12,7 @@ export const ThinkingBubble: React.FC<ThinkingBubbleProps> = ({ isVisible }) => 
     <div className="chat-wrapper__message chat-wrapper__message--assistant">
       <div className="chat-wrapper__thinking-bubble">
         <div className="chat-wrapper__thinking-content">
-          <div className="chat-wrapper__thinking-dots">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
+          <PulsatingDots />
         </div>
       </div>
     </div>

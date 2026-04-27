@@ -4,10 +4,10 @@ import remarkBreaks from "remark-breaks";
 import { Message } from "../types";
 import { Reasoning, ReasoningTrigger, ReasoningContent } from "./Reasoning";
 import { ToolingHandle, ToolingHandleTrigger } from "./ToolingHandle";
-import { Loader } from "./Loader";
 import { CopyIcon } from "./icons";
 import { SystemMessageCollapsible } from "./SystemMessageCollapsible";
 import { ImagePreviewModal } from "./ImagePreviewModal";
+import { PulsatingDots } from "./PulsatingDots";
 import { useChatContext } from "../contexts";
 import { useTranslations } from "../i18n";
 
@@ -190,8 +190,7 @@ export const MessageItem = memo<MessageItemProps>(
 
     const renderStreamingPlaceholder = () => (
       <div className="chat-wrapper__streaming-placeholder">
-        <Loader size={16} variant="dots" />
-        <span>{t('chat.reasoning.thinking')}</span>
+        <PulsatingDots />
       </div>
     );
 

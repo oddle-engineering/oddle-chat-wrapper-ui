@@ -247,7 +247,7 @@ async function fetchMenuItems() {
         headers: {
           "Content-Type": "application/json",
           "x-oddle-mp-auth-token":
-            "46370126a336e40d73c73e5c83e5b19cfbbe53fa8324aa1220e4a7afd6c7b86883e2436e9ce2288a0b1d2c11efcf3c9ccc49ccda3e89f79ee81410061b77cb1e",
+            "ec934bc1904cdc6bcefb49caa287923e733b5dd8af2cae5c73ba7fc59cf6f9c7d03bdf8f26aa6e86003445159ccc8e68fef50ae0ce3cd280c5530a88c2770832",
           "x-oddle-chat-server-key": "mock-api-key",
         },
       },
@@ -2295,7 +2295,7 @@ function App() {
       // Authentication and entity context
       auth: {
         token:
-          "a2bde39558c13dc801a819003538c94556f7efba537812789f9d648024f21376f8c40f02675cbf4c74d506eb1a53f39b964f4e6b0012c8745c50ca5dd79f7b5b",
+          "ec934bc1904cdc6bcefb49caa287923e733b5dd8af2cae5c73ba7fc59cf6f9c7d03bdf8f26aa6e86003445159ccc8e68fef50ae0ce3cd280c5530a88c2770832",
         entityId: "8a608005902f987401902ff891b901a5",
         entityType: EntityType.BRAND,
       },
