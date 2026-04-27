@@ -173,9 +173,6 @@
   max-height: none;
 }
 
-.chat-wrapper--embedded.chat-wrapper--constrained .chat-wrapper__content--empty {
-  padding: 0 24px;
-}
 
 /* Position Variations */
 .chat-wrapper--left {
@@ -364,7 +361,7 @@
 .chat-wrapper__content--empty {
   justify-content: flex-start;
   overflow: visible;
-  /* padding-top: 24px; Ensure spacing from header */
+  padding: 0 24px;
   animation: chatContentFadeIn 0.25s ease-out both;
 }
 
@@ -1729,7 +1726,7 @@
 
 /* Suggested Prompts */
 .chat-wrapper__suggested-prompts {
-  padding: 40px 0px 0px; /* Normal padding */
+  padding: 40px 0 0 24px; /* left padding aligns with content above */
   flex: 0 0 auto; /* Prevent shrinking in flex layout */
   background-color: transparent; /* Ensure visibility */
   z-index: 1; /* Ensure it appears above other content */
@@ -1764,16 +1761,20 @@
 .chat-wrapper__suggested-prompt-card {
   display: flex;
   flex-direction: column;
-  padding: 24px 12px 12px 12px;
+  padding: 24px 0 12px 12px;
   border: none;
   background-color: #f4f6f8;
   border-radius: 8px;
   cursor: pointer;
   text-align: left;
   transition: all 0.2s ease;
-  flex: 1 1 calc(25% - 12px);
+  flex: 1 0 calc(25% - 24px);
   min-width: 200px;
   box-sizing: border-box;
+}
+
+.chat-wrapper__suggested-prompt-card:last-child {
+  margin-right: 24px;
 }
 
 .chat-wrapper__suggested-prompt-card:hover {
@@ -1813,12 +1814,16 @@
   }
 
   .chat-wrapper__suggested-prompt-card {
-    padding: 24px;
+    padding: 24px 0 24px 24px;
     min-height: 100px;
   }
 
+  .chat-wrapper__suggested-prompt-card:last-child {
+    margin-right: 24px;
+  }
+
   .chat-wrapper__suggested-prompts {
-    padding: 24px 12px;
+    padding: 24px 0 0 24px;
   }
 }
 

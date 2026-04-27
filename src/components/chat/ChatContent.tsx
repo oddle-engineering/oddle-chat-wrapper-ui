@@ -144,13 +144,13 @@ export const ChatContent: React.FC = () => {
         <div className="chat-wrapper__input-container">
           <ChatInput ref={chatInputRef} />
         </div>
-
-        {/* Suggested Prompts - only show when no messages and not loading */}
-        {shouldShowSuggestedPrompts && <SuggestedPrompts />}
-
-        {/* Custom Footer - only show when no messages and not loading */}
-        {shouldShowSuggestedPrompts && footer && <div>{footer}</div>}
       </div>
+
+      {/* Suggested Prompts - outside the padded content area so it can span full wrapper width */}
+      {shouldShowSuggestedPrompts && <SuggestedPrompts />}
+
+      {/* Custom Footer - only show when no messages and not loading */}
+      {shouldShowSuggestedPrompts && footer && <div>{footer}</div>}
     </>
   );
 };

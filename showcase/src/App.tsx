@@ -355,18 +355,18 @@ function App() {
           "Write a marketing email to win back lapsed customers and encourage them to order again. Structure the email with: a header, hero image, title, introductory text, body text, divider, menu section title, menu introduction text, 4 menu items, a sign-off message, and footer.",
         icon: <span>⚡</span>,
       },
-      {
-        title: "Limited-Time Offer Blast",
-        description:
-          "Create a limited-time restaurant offer email that builds excitement and gets customers to book instantly.",
-        icon: <span>⚡</span>,
-      },
-      {
-        title: "Limited-Time Offer Blast",
-        description:
-          "Create a limited-time restaurant offer email that builds excitement and gets customers to book instantly.",
-        icon: <span>⚡</span>,
-      },
+      // {
+      //   title: "Limited-Time Offer Blast",
+      //   description:
+      //     "Create a limited-time restaurant offer email that builds excitement and gets customers to book instantly.",
+      //   icon: <span>⚡</span>,
+      // },
+      // {
+      //   title: "Limited-Time Offer Blast",
+      //   description:
+      //     "Create a limited-time restaurant offer email that builds excitement and gets customers to book instantly.",
+      //   icon: <span>⚡</span>,
+      // },
     ],
     footer: (
       <div
@@ -436,7 +436,7 @@ function App() {
   // State for dynamic metadata (for testing metadata prop sync)
   // Start with empty to test the "metadata starts empty then gets populated" scenario
   const [dynamicMetadata, setDynamicMetadata] = useState<any>({
-    campaignId: 4114,
+    campaignId: 41140000,
   });
 
   // State for dynamic contextHelpers (for testing contextHelpers prop sync)
@@ -2295,7 +2295,7 @@ function App() {
       // Authentication and entity context
       auth: {
         token:
-          "1c26f13dc6bbc3fb61875291e29a33f7d4314da695f997b0b5e29009798e4ce6a71cebbdaa1466ab2976399a433d3fdf0d460bfce9d0ead7ec1a11a6fa7018bc",
+          "a2bde39558c13dc801a819003538c94556f7efba537812789f9d648024f21376f8c40f02675cbf4c74d506eb1a53f39b964f4e6b0012c8745c50ca5dd79f7b5b",
         entityId: "8a608005902f987401902ff891b901a5",
         entityType: EntityType.BRAND,
       },
@@ -2358,7 +2358,7 @@ function App() {
           exportChat: true,
         },
         customStyles: {
-          backgroundColor: "#F4F6F8",
+          backgroundColor: "",
         },
       },
       tools: tools,

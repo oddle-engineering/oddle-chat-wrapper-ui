@@ -16047,12 +16047,12 @@ const qf = ({
             }
           ) }),
           !O && (e && t.length === 0 ? /* @__PURE__ */ p("div", { className: "chat-wrapper__messages", children: /* @__PURE__ */ p(e1, { fullHeight: !0 }) }) : /* @__PURE__ */ p(uo, { ref: c })),
-          /* @__PURE__ */ p("div", { className: "chat-wrapper__input-container", children: /* @__PURE__ */ p(Jf, { ref: u }) }),
-          b && /* @__PURE__ */ p(Qf, {}),
-          b && o && /* @__PURE__ */ p("div", { children: o })
+          /* @__PURE__ */ p("div", { className: "chat-wrapper__input-container", children: /* @__PURE__ */ p(Jf, { ref: u }) })
         ]
       }
-    )
+    ),
+    b && /* @__PURE__ */ p(Qf, {}),
+    b && o && /* @__PURE__ */ p("div", { children: o })
   ] });
 };
 function a1({
