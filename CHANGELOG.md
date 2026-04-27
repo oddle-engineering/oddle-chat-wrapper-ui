@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.51] - 2026-04-27
+
+### Fixed
+- no padding for the chat-wrapper with message
+
 ## [1.0.50] - 2026-04-27
 
 ### Fixed
