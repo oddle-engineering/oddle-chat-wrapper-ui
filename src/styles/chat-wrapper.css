@@ -1409,8 +1409,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 20px;
+  min-height: 20px;
+}
+
+.chat-wrapper__reasoning-icon svg {
   width: 20px;
   height: 20px;
+  flex-shrink: 0;
 }
 
 .chat-wrapper__reasoning-spinner {
