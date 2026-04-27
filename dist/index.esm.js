@@ -1,7 +1,7 @@
 var mo = Object.defineProperty;
 var yo = (t, e, n) => e in t ? mo(t, e, { enumerable: !0, configurable: !0, writable: !0, value: n }) : t[e] = n;
 var J = (t, e, n) => yo(t, typeof e != "symbol" ? e + "" : e, n);
-import { jsx as p, Fragment as Ht, jsxs as P } from "react/jsx-runtime";
+import { jsx as p, Fragment as $t, jsxs as P } from "react/jsx-runtime";
 import wt, { useState as we, useRef as he, useEffect as ke, useMemo as ze, useCallback as te, createContext as ri, useContext as ii, Component as ai, memo as Ya, forwardRef as Nn, useImperativeHandle as Ja } from "react";
 import { createPortal as Co } from "react-dom";
 const be = {
@@ -33,7 +33,7 @@ const So = {
   // Normal closure
   GOING_AWAY: 1001
 };
-var ft = /* @__PURE__ */ ((t) => (t.CONNECTION_ESTABLISHED = "connection_established", t.CONNECTION_LOST = "connection_lost", t.CONNECTION_RESTORED = "connection_restored", t.CONNECTION_FAILED = "connection_failed", t.RECONNECTING = "reconnecting", t.CHAT_COMPLETED = "chat_completed", t.CHAT_ERROR = "chat_error", t))(ft || {}), xt = /* @__PURE__ */ ((t) => (t.CHAT_MESSAGE = "chat_message", t.CONFIGURE_TOOLS = "configure_tools", t.UPDATE_TOOLS = "update_tools", t.UPDATE_CONTEXT_HELPERS = "update_context_helpers", t.TOOL_CALL_RESPONSE = "tool_call_response", t.HEARTBEAT_PING = "heartbeat_ping", t.HEARTBEAT_PONG = "heartbeat_pong", t.STOP_RUN = "stop_run", t))(xt || {}), qe = /* @__PURE__ */ ((t) => (t.SESSION_ESTABLISHED = "session_established", t.TOOLS_CONFIGURED = "tools_configured", t.CLIENT_TOOLS_UPDATED = "client_tools_updated", t.CONFIGURE_TOOLS = "configure_tools", t.CHAT_EVENT = "chat_event", t.CHAT_FINISHED = "chat_finished", t.CHAT_ERROR = "chat_error", t.MESSAGES_PERSISTED = "messages_persisted", t.THREAD_CREATED = "thread_created", t.TOOL_CALL_REQUEST = "tool_call_request", t.HEARTBEAT_PING = "heartbeat_ping", t.HEARTBEAT_ACK = "heartbeat_ack", t.ERROR = "error", t))(qe || {}), qn = /* @__PURE__ */ ((t) => (t.PROVIDER_EVENT = "provider-event", t.LATITUDE_EVENT = "latitude-event", t.CONTENT_DELTA = "content-delta", t))(qn || {}), $t = /* @__PURE__ */ ((t) => (t.TEXT_DELTA = "text-delta", t.REASONING_START = "reasoning-start", t.REASONING_DELTA = "reasoning-delta", t.REASONING_END = "reasoning-end", t.TOOL_CALL = "tool-call", t.TOOL_RESULT = "tool-result", t))($t || {});
+var ft = /* @__PURE__ */ ((t) => (t.CONNECTION_ESTABLISHED = "connection_established", t.CONNECTION_LOST = "connection_lost", t.CONNECTION_RESTORED = "connection_restored", t.CONNECTION_FAILED = "connection_failed", t.RECONNECTING = "reconnecting", t.CHAT_COMPLETED = "chat_completed", t.CHAT_ERROR = "chat_error", t))(ft || {}), xt = /* @__PURE__ */ ((t) => (t.CHAT_MESSAGE = "chat_message", t.CONFIGURE_TOOLS = "configure_tools", t.UPDATE_TOOLS = "update_tools", t.UPDATE_CONTEXT_HELPERS = "update_context_helpers", t.TOOL_CALL_RESPONSE = "tool_call_response", t.HEARTBEAT_PING = "heartbeat_ping", t.HEARTBEAT_PONG = "heartbeat_pong", t.STOP_RUN = "stop_run", t))(xt || {}), qe = /* @__PURE__ */ ((t) => (t.SESSION_ESTABLISHED = "session_established", t.TOOLS_CONFIGURED = "tools_configured", t.CLIENT_TOOLS_UPDATED = "client_tools_updated", t.CONFIGURE_TOOLS = "configure_tools", t.CHAT_EVENT = "chat_event", t.CHAT_FINISHED = "chat_finished", t.CHAT_ERROR = "chat_error", t.MESSAGES_PERSISTED = "messages_persisted", t.THREAD_CREATED = "thread_created", t.TOOL_CALL_REQUEST = "tool_call_request", t.HEARTBEAT_PING = "heartbeat_ping", t.HEARTBEAT_ACK = "heartbeat_ack", t.ERROR = "error", t))(qe || {}), qn = /* @__PURE__ */ ((t) => (t.PROVIDER_EVENT = "provider-event", t.LATITUDE_EVENT = "latitude-event", t.CONTENT_DELTA = "content-delta", t))(qn || {}), Bt = /* @__PURE__ */ ((t) => (t.TEXT_DELTA = "text-delta", t.REASONING_START = "reasoning-start", t.REASONING_DELTA = "reasoning-delta", t.REASONING_END = "reasoning-end", t.TOOL_CALL = "tool-call", t.TOOL_RESULT = "tool-result", t))(Bt || {});
 class an {
   static createConnectionEvent(e, n) {
     return {
@@ -838,29 +838,29 @@ class bo {
   handleProviderEvent(e) {
     var r, i, a;
     switch ((r = e.data) == null ? void 0 : r.type) {
-      case $t.TEXT_DELTA:
+      case Bt.TEXT_DELTA:
         e.data.textDelta && ((a = (i = this.handlers).onSetMessage) == null || a.call(i, e.data.textDelta));
         break;
-      case $t.REASONING_START:
+      case Bt.REASONING_START:
         this.reasoningHandler.handleReasoningStart(e.data);
         break;
-      case $t.REASONING_DELTA:
+      case Bt.REASONING_DELTA:
         this.reasoningHandler.handleReasoningDelta(e.data);
         break;
-      case $t.REASONING_END:
+      case Bt.REASONING_END:
         this.reasoningHandler.handleReasoningEnd(e.data);
         break;
-      case $t.TOOL_CALL:
+      case Bt.TOOL_CALL:
         this.toolHandler.handleServerToolCall(e.data);
         break;
-      case $t.TOOL_RESULT:
+      case Bt.TOOL_RESULT:
         this.toolHandler.handleServerToolResult(e.data);
         break;
     }
   }
   handleLatitudeEvent(e) {
     var n;
-    if (((n = e.data) == null ? void 0 : n.type) === $t.TOOL_RESULT && this.handlers.onReasoningUpdate) {
+    if (((n = e.data) == null ? void 0 : n.type) === Bt.TOOL_RESULT && this.handlers.onReasoningUpdate) {
       const r = e.data;
       if (r.toolCallId && r.toolName) {
         const i = Yn.createServerToolCall(
@@ -2105,7 +2105,7 @@ function rs() {
   const dn = fe({}, [Le, ct, Be], dr);
   let qt = fe({}, ["mi", "mo", "mn", "ms", "mtext"]), Qt = fe({}, ["annotation-xml"]);
   const cr = fe({}, ["title", "style", "font", "a", "script"]);
-  let zt = null;
+  let Ht = null;
   const On = ["application/xhtml+xml", "text/html"], Pn = "text/html";
   let Oe = null, Lt = null;
   const Dn = n.createElement("form"), pn = function(S) {
@@ -2113,8 +2113,8 @@ function rs() {
   }, en = function() {
     let S = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {};
     if (!(Lt && Lt === S)) {
-      if ((!S || typeof S != "object") && (S = {}), S = Dt(S), zt = // eslint-disable-next-line unicorn/prefer-includes
-      On.indexOf(S.PARSER_MEDIA_TYPE) === -1 ? Pn : S.PARSER_MEDIA_TYPE, Oe = zt === "application/xhtml+xml" ? dr : Kn, X = Ct(S, "ALLOWED_TAGS") ? fe({}, S.ALLOWED_TAGS, Oe) : G, y = Ct(S, "ALLOWED_ATTR") ? fe({}, S.ALLOWED_ATTR, Oe) : ue, $e = Ct(S, "ALLOWED_NAMESPACES") ? fe({}, S.ALLOWED_NAMESPACES, dr) : dn, Ee = Ct(S, "ADD_URI_SAFE_ATTR") ? fe(Dt(lt), S.ADD_URI_SAFE_ATTR, Oe) : lt, de = Ct(S, "ADD_DATA_URI_TAGS") ? fe(Dt(re), S.ADD_DATA_URI_TAGS, Oe) : re, I = Ct(S, "FORBID_CONTENTS") ? fe({}, S.FORBID_CONTENTS, Oe) : V, oe = Ct(S, "FORBID_TAGS") ? fe({}, S.FORBID_TAGS, Oe) : Dt({}), ie = Ct(S, "FORBID_ATTR") ? fe({}, S.FORBID_ATTR, Oe) : Dt({}), v = Ct(S, "USE_PROFILES") ? S.USE_PROFILES : !1, Te = S.ALLOW_ARIA_ATTR !== !1, me = S.ALLOW_DATA_ATTR !== !1, ye = S.ALLOW_UNKNOWN_PROTOCOLS || !1, Ie = S.ALLOW_SELF_CLOSE_IN_ATTR !== !1, Ue = S.SAFE_FOR_TEMPLATES || !1, at = S.SAFE_FOR_XML !== !1, st = S.WHOLE_DOCUMENT || !1, yt = S.RETURN_DOM || !1, Nt = S.RETURN_DOM_FRAGMENT || !1, Mt = S.RETURN_TRUSTED_TYPE || !1, It = S.FORCE_BODY || !1, Wt = S.SANITIZE_DOM !== !1, Gt = S.SANITIZE_NAMED_PROPS || !1, At = S.KEEP_CONTENT !== !1, ot = S.IN_PLACE || !1, w = S.ALLOWED_URI_REGEXP || ts, Ae = S.NAMESPACE || Be, qt = S.MATHML_TEXT_INTEGRATION_POINTS || qt, Qt = S.HTML_INTEGRATION_POINTS || Qt, $ = S.CUSTOM_ELEMENT_HANDLING || {}, S.CUSTOM_ELEMENT_HANDLING && pn(S.CUSTOM_ELEMENT_HANDLING.tagNameCheck) && ($.tagNameCheck = S.CUSTOM_ELEMENT_HANDLING.tagNameCheck), S.CUSTOM_ELEMENT_HANDLING && pn(S.CUSTOM_ELEMENT_HANDLING.attributeNameCheck) && ($.attributeNameCheck = S.CUSTOM_ELEMENT_HANDLING.attributeNameCheck), S.CUSTOM_ELEMENT_HANDLING && typeof S.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements == "boolean" && ($.allowCustomizedBuiltInElements = S.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements), Ue && (me = !1), Nt && (yt = !0), v && (X = fe({}, Ai), y = [], v.html === !0 && (fe(X, Mi), fe(y, Li)), v.svg === !0 && (fe(X, fr), fe(y, yr), fe(y, Bn)), v.svgFilters === !0 && (fe(X, gr), fe(y, yr), fe(y, Bn)), v.mathMl === !0 && (fe(X, mr), fe(y, Oi), fe(y, Bn))), S.ADD_TAGS && (typeof S.ADD_TAGS == "function" ? Q.tagCheck = S.ADD_TAGS : (X === G && (X = Dt(X)), fe(X, S.ADD_TAGS, Oe))), S.ADD_ATTR && (typeof S.ADD_ATTR == "function" ? Q.attributeCheck = S.ADD_ATTR : (y === ue && (y = Dt(y)), fe(y, S.ADD_ATTR, Oe))), S.ADD_URI_SAFE_ATTR && fe(Ee, S.ADD_URI_SAFE_ATTR, Oe), S.FORBID_CONTENTS && (I === V && (I = Dt(I)), fe(I, S.FORBID_CONTENTS, Oe)), At && (X["#text"] = !0), st && fe(X, ["html", "head", "body"]), X.table && (fe(X, ["tbody"]), delete oe.tbody), S.TRUSTED_TYPES_POLICY) {
+      if ((!S || typeof S != "object") && (S = {}), S = Dt(S), Ht = // eslint-disable-next-line unicorn/prefer-includes
+      On.indexOf(S.PARSER_MEDIA_TYPE) === -1 ? Pn : S.PARSER_MEDIA_TYPE, Oe = Ht === "application/xhtml+xml" ? dr : Kn, X = Ct(S, "ALLOWED_TAGS") ? fe({}, S.ALLOWED_TAGS, Oe) : G, y = Ct(S, "ALLOWED_ATTR") ? fe({}, S.ALLOWED_ATTR, Oe) : ue, $e = Ct(S, "ALLOWED_NAMESPACES") ? fe({}, S.ALLOWED_NAMESPACES, dr) : dn, Ee = Ct(S, "ADD_URI_SAFE_ATTR") ? fe(Dt(lt), S.ADD_URI_SAFE_ATTR, Oe) : lt, de = Ct(S, "ADD_DATA_URI_TAGS") ? fe(Dt(re), S.ADD_DATA_URI_TAGS, Oe) : re, I = Ct(S, "FORBID_CONTENTS") ? fe({}, S.FORBID_CONTENTS, Oe) : V, oe = Ct(S, "FORBID_TAGS") ? fe({}, S.FORBID_TAGS, Oe) : Dt({}), ie = Ct(S, "FORBID_ATTR") ? fe({}, S.FORBID_ATTR, Oe) : Dt({}), v = Ct(S, "USE_PROFILES") ? S.USE_PROFILES : !1, Te = S.ALLOW_ARIA_ATTR !== !1, me = S.ALLOW_DATA_ATTR !== !1, ye = S.ALLOW_UNKNOWN_PROTOCOLS || !1, Ie = S.ALLOW_SELF_CLOSE_IN_ATTR !== !1, Ue = S.SAFE_FOR_TEMPLATES || !1, at = S.SAFE_FOR_XML !== !1, st = S.WHOLE_DOCUMENT || !1, yt = S.RETURN_DOM || !1, Nt = S.RETURN_DOM_FRAGMENT || !1, Mt = S.RETURN_TRUSTED_TYPE || !1, It = S.FORCE_BODY || !1, Wt = S.SANITIZE_DOM !== !1, Gt = S.SANITIZE_NAMED_PROPS || !1, At = S.KEEP_CONTENT !== !1, ot = S.IN_PLACE || !1, w = S.ALLOWED_URI_REGEXP || ts, Ae = S.NAMESPACE || Be, qt = S.MATHML_TEXT_INTEGRATION_POINTS || qt, Qt = S.HTML_INTEGRATION_POINTS || Qt, $ = S.CUSTOM_ELEMENT_HANDLING || {}, S.CUSTOM_ELEMENT_HANDLING && pn(S.CUSTOM_ELEMENT_HANDLING.tagNameCheck) && ($.tagNameCheck = S.CUSTOM_ELEMENT_HANDLING.tagNameCheck), S.CUSTOM_ELEMENT_HANDLING && pn(S.CUSTOM_ELEMENT_HANDLING.attributeNameCheck) && ($.attributeNameCheck = S.CUSTOM_ELEMENT_HANDLING.attributeNameCheck), S.CUSTOM_ELEMENT_HANDLING && typeof S.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements == "boolean" && ($.allowCustomizedBuiltInElements = S.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements), Ue && (me = !1), Nt && (yt = !0), v && (X = fe({}, Ai), y = [], v.html === !0 && (fe(X, Mi), fe(y, Li)), v.svg === !0 && (fe(X, fr), fe(y, yr), fe(y, Bn)), v.svgFilters === !0 && (fe(X, gr), fe(y, yr), fe(y, Bn)), v.mathMl === !0 && (fe(X, mr), fe(y, Oi), fe(y, Bn))), S.ADD_TAGS && (typeof S.ADD_TAGS == "function" ? Q.tagCheck = S.ADD_TAGS : (X === G && (X = Dt(X)), fe(X, S.ADD_TAGS, Oe))), S.ADD_ATTR && (typeof S.ADD_ATTR == "function" ? Q.attributeCheck = S.ADD_ATTR : (y === ue && (y = Dt(y)), fe(y, S.ADD_ATTR, Oe))), S.ADD_URI_SAFE_ATTR && fe(Ee, S.ADD_URI_SAFE_ATTR, Oe), S.FORBID_CONTENTS && (I === V && (I = Dt(I)), fe(I, S.FORBID_CONTENTS, Oe)), At && (X["#text"] = !0), st && fe(X, ["html", "head", "body"]), X.table && (fe(X, ["tbody"]), delete oe.tbody), S.TRUSTED_TYPES_POLICY) {
         if (typeof S.TRUSTED_TYPES_POLICY.createHTML != "function")
           throw mn('TRUSTED_TYPES_POLICY configuration option must provide a "createHTML" hook.');
         if (typeof S.TRUSTED_TYPES_POLICY.createScriptURL != "function")
@@ -2131,7 +2131,7 @@ function rs() {
       tagName: "template"
     });
     const Y = Kn(S.tagName), Ne = Kn(H.tagName);
-    return $e[S.namespaceURI] ? S.namespaceURI === ct ? H.namespaceURI === Be ? Y === "svg" : H.namespaceURI === Le ? Y === "svg" && (Ne === "annotation-xml" || qt[Ne]) : !!Fn[Y] : S.namespaceURI === Le ? H.namespaceURI === Be ? Y === "math" : H.namespaceURI === ct ? Y === "math" && Qt[Ne] : !!ur[Y] : S.namespaceURI === Be ? H.namespaceURI === ct && !Qt[Ne] || H.namespaceURI === Le && !qt[Ne] ? !1 : !ur[Y] && (cr[Y] || !Fn[Y]) : !!(zt === "application/xhtml+xml" && $e[S.namespaceURI]) : !1;
+    return $e[S.namespaceURI] ? S.namespaceURI === ct ? H.namespaceURI === Be ? Y === "svg" : H.namespaceURI === Le ? Y === "svg" && (Ne === "annotation-xml" || qt[Ne]) : !!Fn[Y] : S.namespaceURI === Le ? H.namespaceURI === Be ? Y === "math" : H.namespaceURI === ct ? Y === "math" && Qt[Ne] : !!ur[Y] : S.namespaceURI === Be ? H.namespaceURI === ct && !Qt[Ne] || H.namespaceURI === Le && !qt[Ne] ? !1 : !ur[Y] && (cr[Y] || !Fn[Y]) : !!(Ht === "application/xhtml+xml" && $e[S.namespaceURI]) : !1;
   }, ut = function(S) {
     fn(e.removed, {
       element: S
@@ -2172,11 +2172,11 @@ function rs() {
       const De = pr(S, /^[\r\n\t ]+/);
       Y = De && De[0];
     }
-    zt === "application/xhtml+xml" && Ae === Be && (S = '<html xmlns="http://www.w3.org/1999/xhtml"><head></head><body>' + S + "</body></html>");
+    Ht === "application/xhtml+xml" && Ae === Be && (S = '<html xmlns="http://www.w3.org/1999/xhtml"><head></head><body>' + S + "</body></html>");
     const Ne = O ? O.createHTML(S) : S;
     if (Ae === Be)
       try {
-        H = new g().parseFromString(Ne, zt);
+        H = new g().parseFromString(Ne, Ht);
       } catch {
       }
     if (!H || !H.documentElement) {
@@ -2236,7 +2236,7 @@ function rs() {
     }), S.textContent !== H && (fn(e.removed, {
       element: S.cloneNode()
     }), S.textContent = H)), Re(se.afterSanitizeElements, S, null), !1);
-  }, Ut = function(S, H, Y) {
+  }, zt = function(S, H, Y) {
     if (Wt && (H === "id" || H === "name") && (Y in n || Y in Dn))
       return !1;
     if (!(me && !ie[H] && Ye(z, H))) {
@@ -2311,7 +2311,7 @@ function rs() {
         We = gn(We, vi, " ");
       });
       const _i = Oe(S.nodeName);
-      if (!Ut(_i, tn, We)) {
+      if (!zt(_i, tn, We)) {
         L(De, S);
         continue;
       }
@@ -2393,7 +2393,7 @@ function rs() {
   }, e.isValidAttribute = function(ee, S, H) {
     Lt || en({});
     const Y = Oe(ee), Ne = Oe(S);
-    return Ut(Y, Ne, H);
+    return zt(Y, Ne, H);
   }, e.addHook = function(ee, S) {
     typeof S == "function" && fn(se[ee], S);
   }, e.removeHook = function(ee, S) {
@@ -4651,7 +4651,7 @@ function Cc({
     }),
     [k, e, o, u, h]
   );
-  return o && a ? /* @__PURE__ */ p(Ht, { children: a }) : /* @__PURE__ */ p(gs.Provider, { value: _, children: t });
+  return o && a ? /* @__PURE__ */ p($t, { children: a }) : /* @__PURE__ */ p(gs.Provider, { value: _, children: t });
 }
 function jt() {
   const t = ii(gs);
@@ -5627,7 +5627,7 @@ class Nc extends ai {
       /* @__PURE__ */ p("div", { className: "chat-wrapper__error-actions", children: i ? /* @__PURE__ */ P("div", { className: "chat-wrapper__error-retrying", children: [
         /* @__PURE__ */ p("span", { children: "Reconnecting..." }),
         /* @__PURE__ */ p("div", { className: "chat-wrapper__spinner" })
-      ] }) : /* @__PURE__ */ P(Ht, { children: [
+      ] }) : /* @__PURE__ */ P($t, { children: [
         this.retryCount < s && /* @__PURE__ */ P(
           "button",
           {
@@ -11230,10 +11230,10 @@ function ip(t) {
       (Ee[1] || _a).call(V, void 0, Ee[0]);
     }
     for (I.position = {
-      start: Bt(
+      start: Ut(
         v.length > 0 ? v[0][1].start : { line: 1, column: 1, offset: 0 }
       ),
-      end: Bt(
+      end: Ut(
         v.length > 0 ? v[v.length - 2][1].end : { line: 1, column: 1, offset: 0 }
       )
     }, re = -1; ++re < e.transforms.length; )
@@ -11305,7 +11305,7 @@ function ip(t) {
   function o(v, I, V) {
     const de = this.stack[this.stack.length - 1];
     x(de, "expected `parent`"), x("children" in de, "expected `parent`"), de.children.push(v), this.stack.push(v), this.tokenStack.push([I, V || void 0]), v.position = {
-      start: Bt(I.start),
+      start: Ut(I.start),
       // @ts-expect-error: `end` will be patched later.
       end: void 0
     };
@@ -11325,7 +11325,7 @@ function ip(t) {
     else throw new Error(
       "Cannot close `" + v.type + "` (" + En({ start: v.start, end: v.end }) + "): it’s not open"
     );
-    x(V.type !== "fragment", "unexpected fragment `exit`ed"), x(V.position, "expected `position` to be defined"), V.position.end = Bt(v.end);
+    x(V.type !== "fragment", "unexpected fragment `exit`ed"), x(V.position, "expected `position` to be defined"), V.position.end = Ut(v.end);
   }
   function l() {
     return Ju(this.stack.pop());
@@ -11401,21 +11401,21 @@ function ip(t) {
     const V = I.children;
     let de = V[V.length - 1];
     (!de || de.type !== "text") && (de = At(), de.position = {
-      start: Bt(v.start),
+      start: Ut(v.start),
       // @ts-expect-error: we’ll add `end` later.
       end: void 0
     }, V.push(de)), this.stack.push(de);
   }
   function Z(v) {
     const I = this.stack.pop();
-    x(I, "expected a `node` to be on the stack"), x("value" in I, "expected a `literal` to be on the stack"), x(I.position, "expected `node` to have an open position"), I.value += this.sliceSerialize(v), I.position.end = Bt(v.end);
+    x(I, "expected a `node` to be on the stack"), x("value" in I, "expected a `literal` to be on the stack"), x(I.position, "expected `node` to have an open position"), I.value += this.sliceSerialize(v), I.position.end = Ut(v.end);
   }
   function se(v) {
     const I = this.stack[this.stack.length - 1];
     if (x(I, "expected `node`"), this.data.atHardBreak) {
       x("children" in I, "expected `parent`");
       const V = I.children[I.children.length - 1];
-      x(V.position, "expected tail to have a starting position"), V.position.end = Bt(v.end), this.data.atHardBreak = void 0;
+      x(V.position, "expected tail to have a starting position"), V.position.end = Ut(v.end), this.data.atHardBreak = void 0;
       return;
     }
     !this.data.setextHeadingSlurpLineEnding && e.canContainEols.includes(I.type) && (W.call(this, v), Z.call(this, v));
@@ -11524,7 +11524,7 @@ function ip(t) {
   }
   function ie(v) {
     const I = this.stack.pop();
-    x(I, "expected `node`"), x(I.position, "expected `node.position`"), I.position.end = Bt(v.end);
+    x(I, "expected `node`"), x(I.position, "expected `node.position`"), I.position.end = Ut(v.end);
   }
   function Q(v) {
     Z.call(this, v);
@@ -11607,7 +11607,7 @@ function ip(t) {
     return { type: "thematicBreak" };
   }
 }
-function Bt(t) {
+function Ut(t) {
   return { line: t.line, column: t.column, offset: t.offset };
 }
 function Gs(t, e) {
@@ -13762,7 +13762,7 @@ function vf(t, e) {
   return n && a && Vr(
     "Unexpected combined `allowedElements` and `disallowedElements`, expected one or the other"
   ), eo(t, u), Pu(t, {
-    Fragment: Ht,
+    Fragment: $t,
     components: i,
     ignoreInvalidStyle: !0,
     jsx: p,
@@ -14721,7 +14721,7 @@ const lo = ({ onImageClick: t, className: e, style: n, title: r, ...i }) => {
         onClick: b,
         children: l("chat.errors.retry")
       }
-    ), U = () => /* @__PURE__ */ P(Ht, { children: [
+    ), U = () => /* @__PURE__ */ P($t, { children: [
       /* @__PURE__ */ p("div", { className: "chat-wrapper__copy-button-container", children: /* @__PURE__ */ p(
         "button",
         {
@@ -14797,14 +14797,14 @@ const lo = ({ onImageClick: t, className: e, style: n, title: r, ...i }) => {
         }
       ) });
     };
-    return /* @__PURE__ */ P(Ht, { children: [
+    return /* @__PURE__ */ P($t, { children: [
       /* @__PURE__ */ p(
         "div",
         {
           className: `chat-wrapper__message chat-wrapper__message--${t.role === "system" ? "assistant" : t.role === "reasoning" ? "reasoning" : t.role === "tooling" ? "tooling" : t.role}`,
           onMouseEnter: () => t.role === "assistant" && C(!0),
           onMouseLeave: () => t.role === "assistant" && C(!1),
-          children: t.role === "reasoning" ? D() : t.role === "tooling" ? N() : /* @__PURE__ */ P(Ht, { children: [
+          children: t.role === "reasoning" ? D() : t.role === "tooling" ? N() : /* @__PURE__ */ P($t, { children: [
             /* @__PURE__ */ p("div", { className: "chat-wrapper__message-content", children: se() }),
             t.role === "user" && t.hasError && !t.isRetrying && E()
           ] })
@@ -15800,6 +15800,7 @@ const qf = ({
           {
             className: "chat-wrapper__suggested-prompt-card",
             onClick: () => s(d),
+            title: d.description,
             children: /* @__PURE__ */ P("div", { className: "chat-wrapper__suggested-prompt-content", children: [
               /* @__PURE__ */ p("h4", { className: "chat-wrapper__suggested-prompt-title", children: d.title }),
               /* @__PURE__ */ p("p", { className: "chat-wrapper__suggested-prompt-description", children: d.description })
@@ -16026,7 +16027,7 @@ const t1 = ({
     e,
     b
   ), O = R.includes("compact");
-  return /* @__PURE__ */ P(Ht, { children: [
+  return /* @__PURE__ */ P("div", { className: `chat-wrapper__scroll-container${b ? " chat-wrapper__scroll-container--scrollable" : ""}`, children: [
     T && !O && /* @__PURE__ */ p("div", { style: l ? { paddingTop: "48px" } : void 0, children: /* @__PURE__ */ p(
       Xa,
       {
@@ -16069,10 +16070,10 @@ function s1({
   isReconnecting: e = !1
 }) {
   const { t: n } = jt();
-  return t ? /* @__PURE__ */ p("div", { className: "network-status-banner", children: /* @__PURE__ */ p("div", { className: "network-status-banner__content", children: e ? /* @__PURE__ */ P(Ht, { children: [
+  return t ? /* @__PURE__ */ p("div", { className: "network-status-banner", children: /* @__PURE__ */ p("div", { className: "network-status-banner__content", children: e ? /* @__PURE__ */ P($t, { children: [
     /* @__PURE__ */ p("div", { className: "network-status-banner__spinner" }),
     /* @__PURE__ */ p("span", { children: n("chat.connection.reconnecting") })
-  ] }) : /* @__PURE__ */ P(Ht, { children: [
+  ] }) : /* @__PURE__ */ P($t, { children: [
     /* @__PURE__ */ p("div", { className: "network-status-banner__icon", children: /* @__PURE__ */ p("span", { className: "network-status-banner__icon-text", children: "!" }) }),
     /* @__PURE__ */ p("span", { className: "network-status-banner__message", children: n("chat.errors.connection") })
   ] }) }) }) : null;
@@ -16328,8 +16329,8 @@ const po = Nn(
           return;
         }
         try {
-          const Me = new Promise((Ot, Ut) => {
-            setTimeout(() => Ut(new Error("Message send timeout - connection may be lost")), 5e3);
+          const Me = new Promise((Ot, zt) => {
+            setTimeout(() => zt(new Error("Message send timeout - connection may be lost")), 5e3);
           });
           await Promise.race([
             re.onTriggerMessage({
@@ -16343,12 +16344,12 @@ const po = Nn(
           const Re = setTimeout(() => {
             $(!1), D(be.ERROR), ye(
               (Ot) => Ot.map(
-                (Ut) => Ut.id === Xe.id ? {
-                  ...Ut,
+                (zt) => zt.id === Xe.id ? {
+                  ...zt,
                   hasError: !0,
                   isRetrying: !1,
                   errorMessage: "No response received. Connection may be lost."
-                } : Ut
+                } : zt
               )
             ), y(!1), D(be.IDLE), M(dt.IDLE);
           }, 12e4);
@@ -16399,7 +16400,7 @@ const po = Nn(
       ]
     ), cr = te(() => {
       A === "modal" ? E() : B();
-    }, [A, E, B]), zt = te(
+    }, [A, E, B]), Ht = te(
       (L) => {
         ot.current && ot.current.setText(L.description);
       },
@@ -16564,7 +16565,7 @@ const po = Nn(
         onSubmit: dn,
         onFileUpload: qt,
         onStopGeneration: ct,
-        onPromptSelect: zt,
+        onPromptSelect: Ht,
         onRetryMessage: Dn,
         onRetryConnection: pn
       }),
@@ -16572,7 +16573,7 @@ const po = Nn(
         dn,
         qt,
         ct,
-        zt,
+        Ht,
         Dn,
         pn
       ]

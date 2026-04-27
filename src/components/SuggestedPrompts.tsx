@@ -191,6 +191,7 @@ export const SuggestedPrompts: React.FC = () => {
             key={index}
             className="chat-wrapper__suggested-prompt-card"
             onClick={() => handlePromptSelect(prompt)}
+            title={prompt.description}
           >
             <div className="chat-wrapper__suggested-prompt-content">
               <h4 className="chat-wrapper__suggested-prompt-title">
