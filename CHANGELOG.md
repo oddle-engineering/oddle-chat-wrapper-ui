@@ -25,6 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.50] - 2026-04-27
+
+### Fixed
+- improve suggested prompt card layout and add hover tooltip
+- prevent suggested prompts from overlapping chat input on short wrappers
+
 ## [1.0.49] - 2026-04-27
 
 ### Added
