@@ -96,7 +96,7 @@ export const ChatContent: React.FC = () => {
   const isCompactMode = contentAreaClass.includes('compact');
 
   return (
-    <>
+    <div className={`chat-wrapper__scroll-container${shouldShowSuggestedPrompts ? ' chat-wrapper__scroll-container--scrollable' : ''}`}>
       {/* Main Header Section - only show when no messages and not loading */}
       {shouldShowMainHeader && !isCompactMode && (
         <div style={isOffline ? { paddingTop: "48px" } : undefined}>
@@ -151,6 +151,6 @@ export const ChatContent: React.FC = () => {
 
       {/* Custom Footer - only show when no messages and not loading */}
       {shouldShowSuggestedPrompts && footer && <div>{footer}</div>}
-    </>
+    </div>
   );
 };

@@ -346,6 +346,20 @@
   color: #f7fafc;
 }
 
+/* Scrollable wrapper that fills remaining space after the chat header */
+.chat-wrapper__scroll-container {
+  flex: 1;
+  min-height: 0;
+  overflow-y: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Enable scroll only in the empty state where SuggestedPrompts can overflow */
+.chat-wrapper__scroll-container--scrollable {
+  overflow-y: auto;
+}
+
 /* Chat Content Area - Flexible Layout */
 .chat-wrapper__content {
   display: flex;
@@ -363,6 +377,7 @@
   overflow: visible;
   padding: 0 24px;
   animation: chatContentFadeIn 0.25s ease-out both;
+  flex: 1 0 auto; /* Grow but don't shrink below natural height */
 }
 
 @keyframes chatContentFadeIn {
@@ -2841,6 +2856,15 @@
   .chat-wrapper__title {
     font-size: 16px !important;
   }
+
+  .chat-wrapper__content--with-messages,
+  .chat-wrapper__content--empty {
+    padding: 0 16px;
+  }
+
+  .chat-wrapper__suggested-prompts {
+    padding-left: 16px;
+  }
 }
 
 /* Very small containers (width < 300px) */
@@ -2867,6 +2891,15 @@
   .chat-wrapper__header h2,
   .chat-wrapper__title {
     font-size: 14px !important;
+  }
+
+  .chat-wrapper__content--with-messages,
+  .chat-wrapper__content--empty {
+    padding: 0 12px;
+  }
+
+  .chat-wrapper__suggested-prompts {
+    padding-left: 12px;
   }
 }
 
