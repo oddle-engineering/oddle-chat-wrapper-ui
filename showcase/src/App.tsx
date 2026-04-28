@@ -451,6 +451,12 @@ function App() {
   // Get providerResId from the store
   const providerResId = useUIStore((state) => state.providerResId);
 
+  // DEBUG: verify ESC from image preview doesn't close the chat modal
+  const isModalOpen = useUIStore((state) => state.isModalOpen);
+  useEffect(() => {
+    console.log("[DEBUG] isModalOpen changed:", isModalOpen);
+  }, [isModalOpen]);
+
   // Effect to simulate brandInfo being attached after 10 seconds
   useEffect(() => {
     console.log("⏱️ Starting 10-second timer to attach brandInfo...");
@@ -2295,7 +2301,7 @@ function App() {
       // Authentication and entity context
       auth: {
         token:
-          "1156f3e28239ec29a911d1f1f28231eece20e102c8aae969ff0795bc1035791eb4db79fdcab02ce96ac4b285c6329ab9b95ebc1e4b8a4b84bc1e731a055365f9",
+          "2ee6a5f61ecec576f3f99f3ccd40963ecb45420e4746f35f0509ea424d234baadc874a62c54057d958a7db40c40acdd9924b8c8a106f3894ba8b7224246ea15b",
         entityId: "8a608005902f987401902ff891b901a5",
         entityType: EntityType.BRAND,
       },

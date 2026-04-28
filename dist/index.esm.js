@@ -14478,14 +14478,14 @@ function ao({
   alt: r = "Image preview"
 }) {
   const i = te((s) => {
-    s.key === "Escape" && n();
+    s.key === "Escape" && (s.stopImmediatePropagation(), n());
   }, [n]), a = te((s) => {
     s.target === s.currentTarget && n();
   }, [n]);
   return ke(() => {
     const s = document.querySelector(".chat-wrapper__messages"), o = (c) => c.preventDefault();
-    return e ? (document.addEventListener("keydown", i), document.body.style.overflow = "hidden", s && (s.style.overflowY = "hidden", s.addEventListener("wheel", o, { passive: !1 }))) : (document.removeEventListener("keydown", i), document.body.style.overflow = "", s && (s.style.overflowY = "", s.removeEventListener("wheel", o))), () => {
-      document.removeEventListener("keydown", i), document.body.style.overflow = "", s && (s.style.overflowY = "", s.removeEventListener("wheel", o));
+    return e ? (document.addEventListener("keydown", i, { capture: !0 }), document.body.style.overflow = "hidden", s && (s.style.overflowY = "hidden", s.addEventListener("wheel", o, { passive: !1 }))) : (document.removeEventListener("keydown", i, { capture: !0 }), document.body.style.overflow = "", s && (s.style.overflowY = "", s.removeEventListener("wheel", o))), () => {
+      document.removeEventListener("keydown", i, { capture: !0 }), document.body.style.overflow = "", s && (s.style.overflowY = "", s.removeEventListener("wheel", o));
     };
   }, [e, i]), !e || !t ? null : Co(
     /* @__PURE__ */ P(

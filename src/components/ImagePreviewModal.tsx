@@ -17,6 +17,7 @@ export function ImagePreviewModal({
   // Handle escape key
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     if (event.key === 'Escape') {
+      event.stopImmediatePropagation();
       onClose();
     }
   }, [onClose]);
@@ -34,14 +35,14 @@ export function ImagePreviewModal({
     const preventWheel = (e: WheelEvent) => e.preventDefault();
 
     if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
+      document.addEventListener('keydown', handleKeyDown, { capture: true });
       document.body.style.overflow = 'hidden';
       if (messagesEl) {
         messagesEl.style.overflowY = 'hidden';
         messagesEl.addEventListener('wheel', preventWheel, { passive: false });
       }
     } else {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keydown', handleKeyDown, { capture: true });
       document.body.style.overflow = '';
       if (messagesEl) {
         messagesEl.style.overflowY = '';
@@ -50,7 +51,7 @@ export function ImagePreviewModal({
     }
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keydown', handleKeyDown, { capture: true });
       document.body.style.overflow = '';
       if (messagesEl) {
         messagesEl.style.overflowY = '';
