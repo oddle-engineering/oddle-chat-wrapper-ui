@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.53] - 2026-04-28
+
+### Fixed
+- prevent ESC from closing chat modal when image preview is open
+
 ## [1.0.52] - 2026-04-27
 
 ### Fixed
