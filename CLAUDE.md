@@ -67,10 +67,5 @@ Available context files:
 # --- dynamic context (auto-managed) ---
 
 <!-- dynamic-context:start -->
-@context/websocket.md
 @context/components.md
-@context/state.md
-@context/api.md
-@context/types.md
-@context/i18n.md
 <!-- dynamic-context:end -->

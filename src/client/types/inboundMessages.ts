@@ -21,8 +21,10 @@ export enum InboundMessageType {
   
   // Tool Execution
   TOOL_CALL_REQUEST = 'tool_call_request',
-  
-  
+
+  // Generative UI rendering
+  UI_COMPONENT = 'ui_component',
+
   // Connection Management
   HEARTBEAT_PING = 'heartbeat_ping',
   HEARTBEAT_ACK = 'heartbeat_ack',
@@ -147,6 +149,16 @@ export interface ToolCallRequestMessage extends BaseInboundMessage, ToolCallRequ
   type: InboundMessageType.TOOL_CALL_REQUEST;
 }
 
+// Generative-UI render directive sent directly from the server.
+// `toolCallId` is stable per render and used to dedupe / re-render in place.
+export interface UIComponentMessage extends BaseInboundMessage {
+  type: InboundMessageType.UI_COMPONENT;
+  toolCallId: string;
+  componentName: string;
+  props: Record<string, unknown>;
+  status: "streaming" | "complete" | "error";
+}
+
 
 // Connection management messages
 export interface HeartbeatPingMessage extends BaseInboundMessage {
@@ -183,6 +195,7 @@ export type InboundMessage =
   | MessagesPersistedMessage
   | ThreadCreatedMessage
   | ToolCallRequestMessage
+  | UIComponentMessage
   | HeartbeatPingMessage
   | HeartbeatAckMessage
   | ErrorMessage;
@@ -199,6 +212,9 @@ export const isChatEvent = (msg: BaseInboundMessage): msg is ChatEventMessage =>
 
 export const isToolCallRequest = (msg: BaseInboundMessage): msg is ToolCallRequestMessage =>
   msg.type === InboundMessageType.TOOL_CALL_REQUEST;
+
+export const isUIComponent = (msg: BaseInboundMessage): msg is UIComponentMessage =>
+  msg.type === InboundMessageType.UI_COMPONENT;
 
 
 export const isChatError = (msg: BaseInboundMessage): msg is ChatErrorMessage =>

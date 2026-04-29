@@ -2,6 +2,7 @@ import { createContext, useContext, ReactNode, RefObject } from 'react';
 import { Message, ClientTools, ConnectionState } from '../types';
 import { ChatStatus } from '../constants/chatStatus';
 import { ChatInputRef } from '../components/ChatInput';
+import type { ComponentRegistry } from '../services/componentRegistry';
 
 /**
  * ChatContext - Provides chat state and actions to child components
@@ -50,6 +51,7 @@ export interface ChatContextValue {
   
   // ===== Tools & Features =====
   clientTools?: ClientTools;
+  generativeRegistry?: ComponentRegistry;
   fileUploadEnabled?: boolean;
   fileUploadConfig?: {
     maxFiles: number;

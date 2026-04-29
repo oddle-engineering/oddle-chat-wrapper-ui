@@ -5,6 +5,13 @@ import { ToolCallFactory } from '../utils/toolCallFactory';
 import { BaseHandler } from './BaseHandler';
 import { REASONING_CONSTANTS } from '../constants/reasoning';
 
+/**
+ * Tool name reserved for the universal generative-UI render tool.
+ * The chat-server auto-resolves this tool and emits a dedicated `ui_component`
+ * message to the client — it should NOT arrive here as a tool_call_request.
+ */
+export const RENDER_UI_TOOL_NAME = 'render_ui';
+
 export class ToolHandler extends BaseHandler {
   private readonly processedToolCalls = new Set<string>();
   private clientTools: Record<string, Function> = {};
@@ -12,21 +19,31 @@ export class ToolHandler extends BaseHandler {
 
   constructor(
     clientTools: Record<string, Function> = {},
-    onReasoningUpdate?: ChatEventHandlers['onReasoningUpdate']
+    onReasoningUpdate?: ChatEventHandlers['onReasoningUpdate'],
+    onUIComponent?: ChatEventHandlers['onUIComponent']
   ) {
-    super({ onReasoningUpdate });
+    super({ onReasoningUpdate, onUIComponent });
     this.clientTools = clientTools;
   }
 
   async handleToolCallRequest(request: ToolCallRequest): Promise<void> {
     const { callId, toolName, parameters } = request;
-    
 
     if (this.processedToolCalls.has(callId)) {
       return;
     }
-    
+
     this.processedToolCalls.add(callId);
+
+    // Defensive: if the server ever forwards `render_ui` as a tool_call_request
+    // (it shouldn't — generative UI is delivered via the `ui_component` message),
+    // skip executing it as a real tool and ack synthetically so the agent
+    // doesn't hang. The actual render is driven by `ui_component`.
+    if (toolName === RENDER_UI_TOOL_NAME) {
+      this.sendToolResponse(callId, { rendered: true });
+      return;
+    }
+
     this.getHandler('onReasoningUpdate')?.(true, `${REASONING_CONSTANTS.HANDLING_MARKER} ${toolName}`, request);
 
     try {

@@ -1,4 +1,5 @@
 import React from "react";
+import type { ZodTypeAny, infer as ZodInfer } from "zod";
 import type { ContextHelpers } from "../client/types/shared";
 
 export type ChatMode = "sidebar" | "fullscreen" | "modal" | "embedded";
@@ -56,7 +57,7 @@ export interface AuthConfig {
 
 export interface Message {
   id: string;
-  role: "user" | "assistant" | "system" | "reasoning" | "tooling";
+  role: "user" | "assistant" | "system" | "reasoning" | "tooling" | "ui-component";
   content: string;
   timestamp: Date;
   isStreaming?: boolean;
@@ -71,6 +72,24 @@ export interface Message {
     result?: any;
     status?: "processing" | "completed" | "error";
   };
+  uiComponent?: {
+    name: string;
+    props: Record<string, any>;
+    callId: string;
+    status: "streaming" | "complete" | "error";
+  };
+  /**
+   * Persisted generative-UI renders attached to an assistant message.
+   * Populated by the server on thread rehydration (one entry per render_ui
+   * call the assistant made in that turn). The conversation loader expands
+   * each entry into a separate `role: "ui-component"` message so the renderer
+   * treats rehydrated and live-streamed renders the same way.
+   */
+  uiComponents?: Array<{
+    toolCallId: string;
+    componentName: string;
+    props: Record<string, any>;
+  }>;
 }
 
 export interface StreamEvent {
@@ -190,6 +209,7 @@ export interface ChatWrapperProps {
   // Existing props
   config: Omit<ChatConfig, "apiEndpoint">;
   tools?: Tools; // Unified tools with execution functions
+  generativeComponents?: GenerativeComponents; // React components the agent can render inline
   contextHelpers?: ContextHelpers;
 }
 
@@ -248,6 +268,44 @@ export interface Tool extends ToolSchema {
 
 // Type for tools array
 export type Tools = Tool[];
+
+/**
+ * A React component the agent can render inline in chat replies (generative UI).
+ *
+ * Registrations carry both the component implementation (used by the chat-ui
+ * library to render it) and a Zod schema describing its props (used to advertise
+ * the schema to the agent via the chat-server). The component must accept
+ * `Partial<TProps>` because props arrive incrementally during streaming.
+ *
+ * @example
+ * {
+ *   name: "OrderSummary",
+ *   description: "Show details of a customer order.",
+ *   propsSchema: z.object({
+ *     orderId: z.string().describe("Order ID, e.g., 'ORD-12345'"),
+ *     status: z.enum(["pending", "shipped", "delivered"]),
+ *   }),
+ *   component: OrderSummaryCard,
+ * }
+ */
+export interface GenerativeComponent<TSchema extends ZodTypeAny = ZodTypeAny> {
+  name: string;
+  description: string;
+  propsSchema: TSchema;
+  component: React.ComponentType<Partial<ZodInfer<TSchema>>>;
+}
+
+export type GenerativeComponents = GenerativeComponent<any>[];
+
+/**
+ * Component schema sent to the server (Zod schema converted to JSON Schema).
+ * The library performs the conversion internally; consumers pass `GenerativeComponent`.
+ */
+export interface ComponentSchema {
+  name: string;
+  description: string;
+  propsSchemaJson: Record<string, any>; // JSON Schema
+}
 
 // Legacy ClientTool interface (for backward compatibility)
 export interface ClientTool {

@@ -12,7 +12,10 @@ import {
   ChatMode,
   ChatWrapperRef,
   ConnectionState,
+  Message,
 } from "../types";
+import { ComponentRegistry } from "../services/componentRegistry";
+import type { UIComponentRenderRequest } from "../client/types/events";
 import { ChatInputRef } from "./ChatInput";
 import { SystemEvent, SystemEventType } from "../client";
 import {
@@ -59,6 +62,7 @@ const ChatWrapperInner = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       // Existing props
       config,
       tools, // Note: Tools are stabilized internally to prevent reconnections on re-renders
+      generativeComponents,
       contextHelpers,
     },
     ref
@@ -99,6 +103,19 @@ const ChatWrapperInner = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       }
       return [];
     }, [tools]);
+
+    // Build the generative-UI component registry once per registration set.
+    // Zod → JSON Schema conversion happens inside the registry constructor.
+    const generativeRegistry = useMemo(
+      () => new ComponentRegistry(generativeComponents),
+      [generativeComponents]
+    );
+
+    // JSON Schemas to advertise to the chat-server alongside the tool schemas.
+    const componentSchemas = useMemo(
+      () => generativeRegistry.getSchemas(),
+      [generativeRegistry]
+    );
 
     // Initialize custom hooks for state management
     const messageHandling = useMessageHandling();
@@ -209,6 +226,51 @@ const ChatWrapperInner = forwardRef<ChatWrapperRef, ChatWrapperProps>(
     // Create a ref to store chatClient so we can access it in handleSystemEvent
     const chatClientRef = useRef<any>(null);
 
+    // Handle a generative-UI render request from the agent.
+    //
+    // Behavior: we skip "streaming" events entirely and only render once the
+    // server signals "complete" (or "error"). This prevents an empty skeleton
+    // card from appearing above the agent's reasoning/text while props are
+    // still being assembled — the user only ever sees the final component,
+    // appended after the final assistant message.
+    //
+    // Each callId still dedupes, so a re-fired "complete" updates in place.
+    const handleUIComponent = useCallback(
+      (request: UIComponentRenderRequest) => {
+        if (request.status === "streaming") {
+          return;
+        }
+
+        setMessages((prev) => {
+          const existingIndex = prev.findIndex(
+            (m) => m.uiComponent?.callId === request.callId
+          );
+
+          const updated: Message = {
+            id: existingIndex >= 0 ? prev[existingIndex].id : request.callId,
+            role: "ui-component",
+            content: "",
+            timestamp:
+              existingIndex >= 0 ? prev[existingIndex].timestamp : new Date(),
+            uiComponent: {
+              name: request.componentName,
+              props: request.props,
+              callId: request.callId,
+              status: request.status,
+            },
+          };
+
+          if (existingIndex >= 0) {
+            const next = [...prev];
+            next[existingIndex] = updated;
+            return next;
+          }
+          return [...prev, updated];
+        });
+      },
+      [setMessages]
+    );
+
     // Handle thread creation
     const handleThreadCreated = useCallback(
       (data: {
@@ -291,11 +353,15 @@ const ChatWrapperInner = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       // Tools configuration
       tools,
 
+      // Generative-UI components
+      componentSchemas,
+
       // Other properties
       contextHelpers,
       onSetMessage: handleSetMessage,
       onSystemEvent: handleSystemEvent,
       onReasoningUpdate: handleReasoningUpdate,
+      onUIComponent: handleUIComponent,
       onThreadCreated: handleThreadCreated,
       onMessagesPersisted: config.onMessagesPersisted,
       onError: config.onError,
@@ -776,6 +842,7 @@ const ChatWrapperInner = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         showSuggestedPromptsOnInit: config.showSuggestedPromptsOnInit ?? true, // Default to true for backward compatibility
         footer: config.footer,
         clientTools: uiClientTools,
+        generativeRegistry,
         fileUploadEnabled: config.features?.fileUpload,
         fileUploadConfig: {
           maxFiles: config.fileUploadConfig?.maxFiles ?? 5,
@@ -800,6 +867,7 @@ const ChatWrapperInner = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         config.features?.fileUpload,
         config.fileUploadConfig,
         uiClientTools,
+        generativeRegistry,
       ]
     );
 

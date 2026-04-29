@@ -2,6 +2,11 @@
 import './styles/chat-wrapper.css';
 
 export { ChatWrapper } from './components/ChatWrapper';
+export {
+  GenerativeComponentRenderer,
+  UnknownComponentFallback,
+} from './components/GenerativeComponentRenderer';
+export { ComponentRegistry } from './services/componentRegistry';
 export { ConnectionNotification } from './components/ConnectionNotification';
 export type { ConnectionNotificationProps } from './components/ConnectionNotification';
 export { ChatSkeleton } from './components/ChatSkeleton';
@@ -54,6 +59,9 @@ export type {
   Tools,
   ClientTool,
   ClientTools,
+  GenerativeComponent,
+  GenerativeComponents,
+  ComponentSchema,
   Thread,
   ThreadsResponse,
   MessagesResponse
@@ -88,6 +96,11 @@ export type {
   ConversationSlice,
   ThreadSlice,
 } from './store';
+
+// Public hook for generative-UI components to send follow-up messages
+// back to the agent and read the chat status.
+export { useChatActions } from './hooks/useChatActions';
+export type { ChatActions } from './hooks/useChatActions';
 
 // Legacy hook export (for backward compatibility)
 // @deprecated Use Zustand store hooks instead (useLayoutState, useChatState, etc.)

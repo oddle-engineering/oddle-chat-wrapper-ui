@@ -8,12 +8,16 @@ import {
   ChatPosition,
   ChatTheme,
   EntityType,
+  GenerativeComponents,
   Tools,
   useUIStore,
 } from "@oddle/chat-wrapper-ui";
 import { TodoPanel } from "./components/TodoPanel";
 import { ReservationPanel } from "./components/ReservationPanel";
 import { ThreadAttachmentModal } from "./components/ThreadAttachmentModal";
+import { orderSummaryRegistration } from "./components/OrderSummaryCard";
+import { datePickerRegistration } from "./components/DatePickerCard";
+import { redeemableRegistration } from "./components/RedeemableCard";
 import "./components/panels.css";
 import "./App.css";
 
@@ -436,7 +440,7 @@ function App() {
   // State for dynamic metadata (for testing metadata prop sync)
   // Start with empty to test the "metadata starts empty then gets populated" scenario
   const [dynamicMetadata, setDynamicMetadata] = useState<any>({
-    campaignId: "",
+    marketing_id: 122222
   });
 
   // State for dynamic contextHelpers (for testing contextHelpers prop sync)
@@ -2296,12 +2300,23 @@ function App() {
     ],
   );
 
+  // Generative UI components the agent may render inline (UD21 test).
+  // Defined as a stable reference so re-renders don't reset the WS handshake.
+  const generativeComponents = useMemo<GenerativeComponents>(
+    () => [
+      orderSummaryRegistration,
+      datePickerRegistration,
+      redeemableRegistration,
+    ],
+    [],
+  );
+
   const sidebarChatProps: ChatWrapperProps = useMemo(
     () => ({
       // Authentication and entity context
       auth: {
         token:
-          "2ee6a5f61ecec576f3f99f3ccd40963ecb45420e4746f35f0509ea424d234baadc874a62c54057d958a7db40c40acdd9924b8c8a106f3894ba8b7224246ea15b",
+          "6052c74f4a5722aeb23058fb7d911fa0f33863d7a9e280275001ed8cb59d4f1acb49aa10df469383e04ee52dc41f9d550584c3ff77cfd336dcc8957771ca64b3",
         entityId: "8a608005902f987401902ff891b901a5",
         entityType: EntityType.BRAND,
       },
@@ -2368,9 +2383,16 @@ function App() {
         },
       },
       tools: tools,
+      generativeComponents: generativeComponents,
       contextHelpers: contextHelpers,
     }),
-    [customConfig, tools, dynamicMetadata, contextHelpers],
+    [
+      customConfig,
+      tools,
+      generativeComponents,
+      dynamicMetadata,
+      contextHelpers,
+    ],
   );
 
   return (
