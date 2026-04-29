@@ -17,11 +17,19 @@
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
-    "./dist/style.css": "./dist/style.css"
+    "./style.css": {
+      "types": "./dist/style.css.d.ts",
+      "default": "./dist/style.css"
+    },
+    "./dist/style.css": {
+      "types": "./dist/style.css.d.ts",
+      "default": "./dist/style.css"
+    }
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && npm run build:css-types",
+    "build:css-types": "node -e \"require('fs').writeFileSync('dist/style.css.d.ts', 'export {};\\n')\"",
     "test": "echo \"Tests will be added in Phase 1.4\"",
     "lint": "echo \"Linting will be added in Phase 3.4\"",
     "preversion": "npm run preversion:check",

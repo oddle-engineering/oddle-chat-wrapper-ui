@@ -67,5 +67,5 @@ Available context files:
 # --- dynamic context (auto-managed) ---
 
 <!-- dynamic-context:start -->
-@context/components.md
+<!-- no specific context loaded | branch: feature/generative-ui -->
 <!-- dynamic-context:end -->
