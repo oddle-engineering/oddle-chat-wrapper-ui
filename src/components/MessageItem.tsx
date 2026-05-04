@@ -4,6 +4,7 @@ import remarkBreaks from "remark-breaks";
 import { Message } from "../types";
 import { Reasoning, ReasoningTrigger, ReasoningContent } from "./Reasoning";
 import { ToolingHandle, ToolingHandleTrigger } from "./ToolingHandle";
+import { GenerativeComponentRenderer } from "./GenerativeComponentRenderer";
 import { CopyIcon } from "./icons";
 import { SystemMessageCollapsible } from "./SystemMessageCollapsible";
 import { ImagePreviewModal } from "./ImagePreviewModal";
@@ -13,6 +14,14 @@ import { useTranslations } from "../i18n";
 
 interface MessageItemProps {
   message: Message;
+  /**
+   * True when this message is the most recent ui-component in the
+   * conversation AND no user message has come after it. Forwarded into
+   * `GenerativeRenderContext` so interactive cards can stay answerable
+   * (instead of locking themselves) when they're the active prompt — even
+   * after a page reload that rehydrates them from history.
+   */
+  isLatestUiComponent?: boolean;
 }
 
 interface ImageWithFallbackProps extends React.ImgHTMLAttributes<HTMLImageElement> {
@@ -144,7 +153,7 @@ const createMarkdownComponents = (onImageClick: (url: string) => void) => ({
 
 
 export const MessageItem = memo<MessageItemProps>(
-  ({ message }) => {
+  ({ message, isLatestUiComponent = false }) => {
     const {
       getReasoningTitle,
       getReasoningStatus,
@@ -153,6 +162,7 @@ export const MessageItem = memo<MessageItemProps>(
       getToolingTitle,
       getToolingStatus,
       clientTools,
+      generativeRegistry,
       currentAssistantMessageIdRef,
       onRetryMessage,
     } = useChatContext();
@@ -335,6 +345,35 @@ export const MessageItem = memo<MessageItemProps>(
       </ToolingHandle>
     );
 
+    const renderUIComponentMessage = () => {
+      if (!message.uiComponent) return null;
+      return (
+        <GenerativeComponentRenderer
+          registry={generativeRegistry}
+          componentName={message.uiComponent.name}
+          props={message.uiComponent.props}
+          status={message.uiComponent.status}
+          callId={message.uiComponent.callId}
+          source={message.uiComponent.source}
+          isLatest={isLatestUiComponent}
+        />
+      );
+    };
+
+    // Skip rendering the assistant bubble when the saved reply was purely
+    // generative-UI (empty `content`, but `uiComponents` populated). The
+    // expanded ui-component messages render right after, so dropping the
+    // empty parent avoids a blank bubble above the cards.
+    const isEmptyAssistantWithUIOnly =
+      message.role === "assistant" &&
+      !message.isStreaming &&
+      (message.content ?? "").trim() === "" &&
+      (message.uiComponents?.length ?? 0) > 0;
+
+    if (isEmptyAssistantWithUIOnly) {
+      return null;
+    }
+
     return (
       <>
         <div
@@ -345,6 +384,8 @@ export const MessageItem = memo<MessageItemProps>(
               ? "reasoning"
               : message.role === "tooling"
               ? "tooling"
+              : message.role === "ui-component"
+              ? "ui-component"
               : message.role
           }`}
           onMouseEnter={() =>
@@ -358,6 +399,8 @@ export const MessageItem = memo<MessageItemProps>(
             renderReasoningMessage()
           ) : message.role === "tooling" ? (
             renderToolingMessage()
+          ) : message.role === "ui-component" ? (
+            renderUIComponentMessage()
           ) : (
             <>
               <div className="chat-wrapper__message-content">

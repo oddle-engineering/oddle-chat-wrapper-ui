@@ -36,11 +36,13 @@ export class MessageFactory {
    */
   static createConfigureToolsMessage(
     toolSchemas: any[],
-    contextHelpers: ContextHelpers
+    contextHelpers: ContextHelpers,
+    generativeComponents?: any[]
   ): OutboundConfigureToolsMessage {
     return {
       type: OutboundMessageType.CONFIGURE_TOOLS,
       toolSchemas,
+      generativeComponents,
       contextHelpers,
     };
   }
@@ -48,10 +50,14 @@ export class MessageFactory {
   /**
    * Create an update tools message
    */
-  static createUpdateToolsMessage(toolSchemas: any[]): UpdateToolsMessage {
+  static createUpdateToolsMessage(
+    toolSchemas: any[],
+    generativeComponents?: any[]
+  ): UpdateToolsMessage {
     return {
       type: OutboundMessageType.UPDATE_TOOLS,
       toolSchemas,
+      generativeComponents,
     };
   }
 
@@ -161,15 +167,21 @@ export class MessageFactory {
 
   static serializeConfigureTools(
     toolSchemas: any[],
-    contextHelpers: ContextHelpers
+    contextHelpers: ContextHelpers,
+    componentSchemas?: any[]
   ): string {
-    return this.createAndSerialize(() => 
-      this.createConfigureToolsMessage(toolSchemas, contextHelpers)
+    return this.createAndSerialize(() =>
+      this.createConfigureToolsMessage(toolSchemas, contextHelpers, componentSchemas)
     );
   }
 
-  static serializeUpdateTools(toolSchemas: any[]): string {
-    return this.createAndSerialize(() => this.createUpdateToolsMessage(toolSchemas));
+  static serializeUpdateTools(
+    toolSchemas: any[],
+    componentSchemas?: any[]
+  ): string {
+    return this.createAndSerialize(() =>
+      this.createUpdateToolsMessage(toolSchemas, componentSchemas)
+    );
   }
 
   static serializeUpdateContextHelpers(contextHelpers: ContextHelpers): string {

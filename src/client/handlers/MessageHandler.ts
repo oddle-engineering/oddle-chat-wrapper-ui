@@ -25,7 +25,11 @@ export class MessageHandler {
   ) {
     this.handlers = handlers;
     this.reasoningHandler = new ReasoningHandler(handlers.onReasoningUpdate);
-    this.toolHandler = new ToolHandler(clientTools, handlers.onReasoningUpdate);
+    this.toolHandler = new ToolHandler(
+      clientTools,
+      handlers.onReasoningUpdate,
+      handlers.onUIComponent
+    );
   }
 
   handleMessage(event: MessageEvent): WebSocketMessage | null {
@@ -59,6 +63,9 @@ export class MessageHandler {
           break;
         case InboundMessageType.TOOL_CALL_REQUEST:
           this.handleToolCallRequest(data as ToolCallRequest);
+          break;
+        case InboundMessageType.UI_COMPONENT:
+          this.handleUIComponentMessage(data);
           break;
         case InboundMessageType.HEARTBEAT_PING:
           this.handleHeartbeatPing(data);
@@ -188,6 +195,29 @@ export class MessageHandler {
 
   private handleToolCallRequest(request: ToolCallRequest): void {
     this.toolHandler.handleToolCallRequest(request);
+  }
+
+  private handleUIComponentMessage(data: WebSocketMessage): void {
+    const onUIComponent = this.handlers.onUIComponent;
+    if (!onUIComponent) return;
+
+    const anyData = data as any;
+    const toolCallId: string | undefined = anyData.toolCallId;
+    const componentName: string | undefined = anyData.componentName;
+    if (!toolCallId || !componentName) return;
+
+    const status = (anyData.status ?? "complete") as
+      | "streaming"
+      | "complete"
+      | "error";
+    const props = (anyData.props ?? {}) as Record<string, any>;
+
+    onUIComponent({
+      callId: toolCallId,
+      componentName,
+      props,
+      status,
+    });
   }
 
   private handleHeartbeatPing(data: WebSocketMessage): void {

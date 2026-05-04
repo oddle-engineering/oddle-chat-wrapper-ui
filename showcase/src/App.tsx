@@ -8,12 +8,16 @@ import {
   ChatPosition,
   ChatTheme,
   EntityType,
+  GenerativeComponents,
   Tools,
   useUIStore,
 } from "@oddle/chat-wrapper-ui";
 import { TodoPanel } from "./components/TodoPanel";
 import { ReservationPanel } from "./components/ReservationPanel";
 import { ThreadAttachmentModal } from "./components/ThreadAttachmentModal";
+import { orderSummaryRegistration } from "./components/OrderSummaryCard";
+import { datePickerRegistration } from "./components/DatePickerCard";
+import { redeemableRegistration } from "./components/RedeemableCard";
 import "./components/panels.css";
 import "./App.css";
 
@@ -239,30 +243,6 @@ async function fetchTodos() {
   });
 }
 
-async function fetchMenuItems() {
-  try {
-    const response = await fetch(
-      `https://oddlemenumanagement.beta.oddleapp.com/api/v1/menus/370513651653558296?all-versions=true`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "x-oddle-mp-auth-token":
-            "ec934bc1904cdc6bcefb49caa287923e733b5dd8af2cae5c73ba7fc59cf6f9c7d03bdf8f26aa6e86003445159ccc8e68fef50ae0ce3cd280c5530a88c2770832",
-          "x-oddle-chat-server-key": "mock-api-key",
-        },
-      },
-    );
-    const res = await response.json();
-    return {
-      success: true,
-      items: res.data,
-      message: `Retrieved ${res.data.length} menu items for brand 8a818ca9776ae07301776c71205c0ba8`,
-    };
-  } catch (error) {
-    return { success: false, message: "Failed to retrieve menu items" };
-  }
-}
-
 // Showcase App demonstrating ChatWrapper with new required authentication props
 // Updated to use: userMpAuthToken, chatServerUrl, chatServerKey (all required)
 // Plus optional: entityId, entityType, providerResId for conversation generation
@@ -436,7 +416,7 @@ function App() {
   // State for dynamic metadata (for testing metadata prop sync)
   // Start with empty to test the "metadata starts empty then gets populated" scenario
   const [dynamicMetadata, setDynamicMetadata] = useState<any>({
-    campaignId: "",
+    marketing_id: 12222233
   });
 
   // State for dynamic contextHelpers (for testing contextHelpers prop sync)
@@ -872,10 +852,83 @@ function App() {
   }, []);
 
   const getBrandItems = useCallback(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 10000));
-    const items = await fetchMenuItems();
-    console.log("items");
-    return items;
+    // Mock data so we can exercise AskUserInputV0 (single + multi choice)
+    // without hitting the real menu API.
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const items = [
+      {
+        id: "item-001",
+        name: "Truffle Mushroom Pasta",
+        description:
+          "Hand-rolled fettuccine tossed in a creamy truffle and porcini sauce.",
+        price: 24,
+        category: "Mains",
+        tags: ["vegetarian", "popular"],
+      },
+      {
+        id: "item-002",
+        name: "Wagyu Beef Burger",
+        description:
+          "House-ground wagyu patty, smoked cheddar, caramelised onions, brioche bun.",
+        price: 28,
+        category: "Mains",
+        tags: ["chef-pick"],
+      },
+      {
+        id: "item-003",
+        name: "Crispy Karaage Chicken",
+        description: "Japanese-style fried chicken with yuzu kosho aioli.",
+        price: 18,
+        category: "Mains",
+        tags: ["spicy"],
+      },
+      {
+        id: "item-004",
+        name: "Charred Broccolini",
+        description: "Wood-fired broccolini, miso butter, toasted almonds.",
+        price: 14,
+        category: "Sides",
+        tags: ["vegetarian", "gluten-free"],
+      },
+      {
+        id: "item-005",
+        name: "Truffle Fries",
+        description: "Skin-on fries, truffle oil, parmesan, chives.",
+        price: 12,
+        category: "Sides",
+        tags: ["vegetarian", "popular"],
+      },
+      {
+        id: "item-006",
+        name: "Yuzu Cheesecake",
+        description: "Creamy yuzu-infused cheesecake on a graham cracker base.",
+        price: 13,
+        category: "Desserts",
+        tags: ["vegetarian"],
+      },
+      {
+        id: "item-007",
+        name: "Cold Brew Float",
+        description:
+          "Slow-steeped cold brew over a scoop of vanilla bean ice cream.",
+        price: 9,
+        category: "Drinks",
+        tags: ["caffeine", "popular"],
+      },
+      {
+        id: "item-008",
+        name: "Sparkling Yuzu Lemonade",
+        description: "House-made yuzu lemonade with a touch of fizz.",
+        price: 7,
+        category: "Drinks",
+        tags: ["non-alcoholic", "vegan"],
+      },
+    ];
+    return {
+      success: true,
+      items,
+      message: `Retrieved ${items.length} mock menu items for testing AskUserInputV0`,
+    };
   }, []);
 
   // Marketing tools implementation functions
@@ -2296,12 +2349,23 @@ function App() {
     ],
   );
 
+  // Generative UI components the agent may render inline (UD21 test).
+  // Defined as a stable reference so re-renders don't reset the WS handshake.
+  const generativeComponents = useMemo<GenerativeComponents>(
+    () => [
+      orderSummaryRegistration,
+      datePickerRegistration,
+      redeemableRegistration,
+    ],
+    [],
+  );
+
   const sidebarChatProps: ChatWrapperProps = useMemo(
     () => ({
       // Authentication and entity context
       auth: {
         token:
-          "2ee6a5f61ecec576f3f99f3ccd40963ecb45420e4746f35f0509ea424d234baadc874a62c54057d958a7db40c40acdd9924b8c8a106f3894ba8b7224246ea15b",
+          "dc139bf522fc9c1e986276ad30405bfef4cd5e6f8fc2dd18191df03e20b0a18a70832248495485a581a7bcac173f532d48d9d31a618228858265a84e4c08dec8",
         entityId: "8a608005902f987401902ff891b901a5",
         entityType: EntityType.BRAND,
       },
@@ -2368,9 +2432,16 @@ function App() {
         },
       },
       tools: tools,
+      generativeComponents: generativeComponents,
       contextHelpers: contextHelpers,
     }),
-    [customConfig, tools, dynamicMetadata, contextHelpers],
+    [
+      customConfig,
+      tools,
+      generativeComponents,
+      dynamicMetadata,
+      contextHelpers,
+    ],
   );
 
   return (

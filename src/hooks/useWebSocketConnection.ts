@@ -1,6 +1,13 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { WebSocketChatClient, SystemEvent } from "../client";
-import { ContextHelpers, EntityType, Tools, ConnectionState } from "../types";
+import type { UIComponentRenderRequest } from "../client/types/events";
+import {
+  ComponentSchema,
+  ContextHelpers,
+  EntityType,
+  Tools,
+  ConnectionState,
+} from "../types";
 import { logClassifiedError } from "../utils/errorClassification";
 
 interface UseWebSocketConnectionProps {
@@ -16,6 +23,9 @@ interface UseWebSocketConnectionProps {
   // Tools configuration
   tools?: Tools; // Unified tools with execution functions
 
+  // Generative-UI components (JSON-Schema form, ready for the wire)
+  componentSchemas?: ComponentSchema[];
+
   // Other properties
   contextHelpers?: ContextHelpers;
   onSetMessage: (char: string) => void;
@@ -25,6 +35,7 @@ interface UseWebSocketConnectionProps {
     content: string,
     toolCallRequest?: any
   ) => void;
+  onUIComponent?: (request: UIComponentRenderRequest) => void;
   onThreadCreated?: (data: {
     providerResId: string;
     threadId: string;
@@ -51,11 +62,15 @@ export function useWebSocketConnection({
   // Tools configuration
   tools,
 
+  // Generative-UI components
+  componentSchemas,
+
   // Other properties
   contextHelpers,
   onSetMessage,
   onSystemEvent,
   onReasoningUpdate,
+  onUIComponent,
   onThreadCreated,
   onMessagesPersisted,
   onError,
@@ -74,6 +89,7 @@ export function useWebSocketConnection({
   const onSetMessageRef = useRef(onSetMessage);
   const onSystemEventRef = useRef(onSystemEvent);
   const onReasoningUpdateRef = useRef(onReasoningUpdate);
+  const onUIComponentRef = useRef(onUIComponent);
   const onThreadCreatedRef = useRef(onThreadCreated);
   const onMessagesPersistedRef = useRef(onMessagesPersisted);
 
@@ -98,6 +114,24 @@ export function useWebSocketConnection({
       toolsStableRef.current = tools;
     }
   }, [tools]);
+
+  // Stabilize componentSchemas reference (deep comparison) to avoid reconnect loops.
+  const componentSchemasRef = useRef<ComponentSchema[] | undefined>(
+    componentSchemas
+  );
+  const componentSchemasStableRef = useRef<ComponentSchema[] | undefined>(
+    componentSchemas
+  );
+
+  useEffect(() => {
+    const componentsChanged =
+      JSON.stringify(componentSchemas) !==
+      JSON.stringify(componentSchemasRef.current);
+    if (componentsChanged) {
+      componentSchemasRef.current = componentSchemas;
+      componentSchemasStableRef.current = componentSchemas;
+    }
+  }, [componentSchemas]);
 
   // Stabilize contextHelpers reference to prevent unnecessary reconnections
   // Only update when contextHelpers structure actually changes (deep comparison)
@@ -127,6 +161,7 @@ export function useWebSocketConnection({
     onSetMessageRef.current = onSetMessage;
     onSystemEventRef.current = onSystemEvent;
     onReasoningUpdateRef.current = onReasoningUpdate;
+    onUIComponentRef.current = onUIComponent;
     onThreadCreatedRef.current = onThreadCreated;
     onMessagesPersistedRef.current = onMessagesPersisted;
     userMpAuthTokenRef.current = userMpAuthToken;
@@ -138,6 +173,7 @@ export function useWebSocketConnection({
     onSetMessage,
     onSystemEvent,
     onReasoningUpdate,
+    onUIComponent,
     onThreadCreated,
     onMessagesPersisted,
     userMpAuthToken,
@@ -220,10 +256,12 @@ export function useWebSocketConnection({
         // Tools configuration
         toolSchemas: toolSchemas,
         clientTools: clientToolExecutors,
+        componentSchemas: componentSchemasStableRef.current,
         contextHelpers: contextHelpersToUse,
         onSetMessage: onSetMessageRef.current,
         onSystemEvent: onSystemEventRef.current,
         onReasoningUpdate: onReasoningUpdateRef.current,
+        onUIComponent: (request) => onUIComponentRef.current?.(request),
         onThreadCreated: onThreadCreatedRef.current,
         onMessagesPersisted: onMessagesPersistedRef.current,
         onError: onError,

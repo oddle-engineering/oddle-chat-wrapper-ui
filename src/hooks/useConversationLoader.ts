@@ -3,6 +3,38 @@ import { Message } from "../types";
 import { fetchThreadMessages } from "../utils/threadApi";
 import { logClassifiedError } from "../utils/errorClassification";
 
+/**
+ * Expand any persisted `uiComponents` arrays on assistant messages into
+ * separate `role: "ui-component"` messages placed immediately after the
+ * assistant message they belonged to. This keeps the in-memory shape
+ * identical to the live-streaming flow (where each render becomes its own
+ * message keyed by `toolCallId`).
+ */
+function expandPersistedUIComponents(messages: Message[]): Message[] {
+  const expanded: Message[] = [];
+  for (const message of messages) {
+    expanded.push(message);
+    if (message.role === "assistant" && message.uiComponents?.length) {
+      for (const ui of message.uiComponents) {
+        expanded.push({
+          id: ui.toolCallId,
+          role: "ui-component",
+          content: "",
+          timestamp: message.timestamp,
+          uiComponent: {
+            name: ui.componentName,
+            props: ui.props ?? {},
+            callId: ui.toolCallId,
+            status: "complete",
+            source: "history",
+          },
+        });
+      }
+    }
+  }
+  return expanded;
+}
+
 interface UseConversationLoaderProps {
   entityId?: string;
   entityType?: string;
@@ -99,7 +131,7 @@ export function useConversationLoader({
         }
       );
       
-      setMessages(response.messages);
+      setMessages(expandPersistedUIComponents(response.messages));
 
       // Set threadId from the API response if server returned it
       if (response.threadId) {

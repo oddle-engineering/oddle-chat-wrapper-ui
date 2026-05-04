@@ -1,12 +1,15 @@
 import { default as default_2 } from 'react';
 import { ForwardRefExoticComponent } from 'react';
+import { infer } from 'zod';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { MemoExoticComponent } from 'react';
+import { NamedExoticComponent } from 'react';
 import { ReactNode } from 'react';
 import { RefAttributes } from 'react';
 import { StoreApi } from 'zustand';
 import { UseBoundStore } from 'zustand';
 import { UseTranslationResponse } from 'react-i18next';
+import { ZodTypeAny } from 'zod';
 
 export declare const AnimatedPlaceholder: ({ placeholderTexts, shouldAnimate, className, }: AnimatedPlaceholderProps) => JSX_2.Element;
 
@@ -47,6 +50,36 @@ export declare const CHAT_STATUS: {
     readonly STREAMING: "streaming";
     readonly ERROR: "error";
 };
+
+/**
+ * Public actions available to generative-UI components rendered inside
+ * `<ChatWrapper>`. Use this hook from components registered via
+ * `generativeComponents` to react to user clicks by sending a follow-up
+ * message back to the agent.
+ *
+ * @example
+ * function ConfirmCard({ orderId }: { orderId?: string }) {
+ *   const { sendMessage, isStreaming } = useChatActions();
+ *   return (
+ *     <button
+ *       disabled={isStreaming}
+ *       onClick={() => sendMessage(`Confirm order ${orderId}`)}
+ *     >
+ *       Confirm
+ *     </button>
+ *   );
+ * }
+ */
+export declare interface ChatActions {
+    /** Send a user message to the agent (same as the user typing it). */
+    sendMessage: (message: string, media?: string[]) => void;
+    /** Cancel an in-flight assistant response. */
+    stopGeneration: () => void;
+    /** True while the assistant is producing a response. */
+    isStreaming: boolean;
+    /** Current chat status (idle, submitted, streaming, error, etc.). */
+    chatStatus: ChatStatus;
+}
 
 export declare interface ChatConfig {
     mode: ChatMode;
@@ -133,6 +166,7 @@ export declare interface ChatWrapperProps {
     };
     config: Omit<ChatConfig, "apiEndpoint">;
     tools?: Tools;
+    generativeComponents?: GenerativeComponents;
     contextHelpers?: ContextHelpers;
 }
 
@@ -181,6 +215,36 @@ export declare type ClientTools = ClientTool[];
 export declare const CloseIcon: default_2.FC<IconProps>;
 
 export declare const CollapseIcon: default_2.FC<IconProps>;
+
+/**
+ * Holds the dashboard's registered generative components and exposes:
+ *  - the React components, looked up by name when an agent asks to render one;
+ *  - their JSON-Schema-converted prop schemas, sent to the chat-server so the
+ *    agent knows what props each component accepts.
+ *
+ * Zod → JSON Schema conversion runs once per registration to avoid repeating
+ * the work on every render.
+ */
+export declare class ComponentRegistry {
+    private readonly entries;
+    private readonly schemas;
+    constructor(components?: GenerativeComponents);
+    private add;
+    get(name: string): GenerativeComponent<any> | undefined;
+    has(name: string): boolean;
+    getSchemas(): ComponentSchema[];
+    size(): number;
+}
+
+/**
+ * Component schema sent to the server (Zod schema converted to JSON Schema).
+ * The library performs the conversion internally; consumers pass `GenerativeComponent`.
+ */
+export declare interface ComponentSchema {
+    name: string;
+    description: string;
+    propsSchemaJson: Record<string, any>;
+}
 
 /**
  * ConnectionError - Displays error overlay when connection fails
@@ -330,6 +394,88 @@ declare interface FullscreenIconProps extends IconProps {
     isFullscreen?: boolean;
 }
 
+/**
+ * A React component the agent can render inline in chat replies (generative UI).
+ *
+ * Registrations carry both the component implementation (used by the chat-ui
+ * library to render it) and a Zod schema describing its props (used to advertise
+ * the schema to the agent via the chat-server). The component must accept
+ * `Partial<TProps>` because props arrive incrementally during streaming.
+ *
+ * @example
+ * {
+ *   name: "OrderSummary",
+ *   description: "Show details of a customer order.",
+ *   propsSchema: z.object({
+ *     orderId: z.string().describe("Order ID, e.g., 'ORD-12345'"),
+ *     status: z.enum(["pending", "shipped", "delivered"]),
+ *   }),
+ *   component: OrderSummaryCard,
+ * }
+ */
+export declare interface GenerativeComponent<TSchema extends ZodTypeAny = ZodTypeAny> {
+    name: string;
+    description: string;
+    propsSchema: TSchema;
+    component: default_2.ComponentType<Partial<infer<TSchema>>>;
+}
+
+/**
+ * Renders a registered generative-UI component by name. Components must accept
+ * `Partial<Props>` since props arrive incrementally during streaming.
+ */
+export declare const GenerativeComponentRenderer: NamedExoticComponent<GenerativeComponentRendererProps>;
+
+declare interface GenerativeComponentRendererProps {
+    registry?: ComponentRegistry;
+    componentName: string;
+    props: Record<string, any>;
+    status: "streaming" | "complete" | "error";
+    /** Stable id of the agent's render call — required so child components can
+     *  read it via `useGenerativeRender`. */
+    callId: string;
+    /** Whether this render is live or rehydrated from history. Defaults to
+     *  "live" when omitted. */
+    source?: "live" | "history";
+    /** True when this card is the latest ui-component with no subsequent user
+     *  reply. Interactive cards use this to remain answerable. Defaults to
+     *  false. */
+    isLatest?: boolean;
+}
+
+export declare type GenerativeComponents = GenerativeComponent<any>[];
+
+/**
+ * Render-context metadata exposed to a generative-UI component while it
+ * renders. Components registered via `generativeComponents` (and library
+ * built-ins) receive their props from the agent through `propsSchema`; this
+ * context carries the *render-side* metadata that lives outside that schema.
+ *
+ * Most importantly, `source` lets interactive cards (e.g. `AskUserInputV0`)
+ * disable themselves when rehydrated from history, so the user can't
+ * re-trigger an answer that was already given.
+ */
+export declare interface GenerativeRenderContextValue {
+    /** Stable id of the agent's render call — same value across status updates. */
+    callId: string;
+    /** Streaming lifecycle status forwarded from the server. */
+    status: "streaming" | "complete" | "error";
+    /**
+     * Where this render came from:
+     *  - "live" — produced in the current session as the agent streamed
+     *  - "history" — rehydrated from a persisted thread on initial load
+     */
+    source: "live" | "history";
+    /**
+     * True when this card is the most recent ui-component in the conversation
+     * AND no user message has come after it — i.e. the user is still expected
+     * to answer this card. Interactive cards (e.g. `AskUserInputV0`) use this
+     * as the lock signal: stay answerable when `isLatest` is true, even after
+     * a page reload that rehydrates the card from history.
+     */
+    isLatest: boolean;
+}
+
 export declare interface IconProps {
     className?: string;
     onClick?: () => void;
@@ -378,7 +524,7 @@ declare interface LoaderProps {
 
 export declare interface Message {
     id: string;
-    role: "user" | "assistant" | "system" | "reasoning" | "tooling";
+    role: "user" | "assistant" | "system" | "reasoning" | "tooling" | "ui-component";
     content: string;
     timestamp: Date;
     isStreaming?: boolean;
@@ -393,6 +539,34 @@ export declare interface Message {
         result?: any;
         status?: "processing" | "completed" | "error";
     };
+    uiComponent?: {
+        name: string;
+        props: Record<string, any>;
+        callId: string;
+        status: "streaming" | "complete" | "error";
+        /**
+         * Where this render came from:
+         *  - "live" — produced in the current session as the agent streamed
+         *  - "history" — rehydrated from a persisted thread on initial load
+         *
+         * Defaults to "live" when omitted. Interactive cards (e.g.
+         * `AskUserInputV0`) use this to lock themselves on history so the user
+         * can't re-trigger an answer that was already given.
+         */
+        source?: "live" | "history";
+    };
+    /**
+     * Persisted generative-UI renders attached to an assistant message.
+     * Populated by the server on thread rehydration (one entry per render_ui
+     * call the assistant made in that turn). The conversation loader expands
+     * each entry into a separate `role: "ui-component"` message so the renderer
+     * treats rehydrated and live-streamed renders the same way.
+     */
+    uiComponents?: Array<{
+        toolCallId: string;
+        componentName: string;
+        props: Record<string, any>;
+    }>;
 }
 
 export declare interface MessagesResponse {
@@ -664,6 +838,15 @@ export declare interface TranslationResources {
 
 export declare type UIStore = LayoutSlice & ChatSlice & ConversationSlice & ThreadSlice & MessagesSlice;
 
+export declare const UnknownComponentFallback: NamedExoticComponent<UnknownComponentFallbackProps>;
+
+declare interface UnknownComponentFallbackProps {
+    name: string;
+    /** "live" = component missing during a fresh render (dev/integration error);
+     *  "rehydrated" = saved card whose component is no longer registered. */
+    variant?: "live" | "rehydrated";
+}
+
 /**
  * Update a thread by providerResId (PATCH)
  *
@@ -753,6 +936,8 @@ export declare function updateThreadMetadata(apiBaseUrl: string, providerResId: 
     chatServerKey?: string;
 }): Promise<Thread>;
 
+export declare function useChatActions(): ChatActions;
+
 export declare const useChatState: () => {
     chatStatus: ChatStatus;
     streamingStatus: StreamingStatus;
@@ -768,6 +953,22 @@ export declare const useConversationState: () => {
     setConversationError: (error: string | null) => void;
     clearConversationError: () => void;
 };
+
+/**
+ * Read render-context metadata from inside a generative-UI component.
+ *
+ * Returns `null` when called outside of a `GenerativeComponentRenderer` (e.g.
+ * if a registered component is mounted directly in tests/storybook). Callers
+ * should treat `null` as "no render context — assume live".
+ *
+ * @example
+ * function ConfirmCard({ orderId }: { orderId?: string }) {
+ *   const render = useGenerativeRender();
+ *   const isRehydrated = render?.source === "history";
+ *   return <button disabled={isRehydrated}>Confirm</button>;
+ * }
+ */
+export declare function useGenerativeRender(): GenerativeRenderContextValue | null;
 
 /**
  * Hook to access the underlying i18next t function from react-i18next
