@@ -15,6 +15,7 @@ import {
   Message,
 } from "../types";
 import { ComponentRegistry } from "../services/componentRegistry";
+import { mergeWithBuiltinComponents } from "../services/builtinComponents";
 import type { UIComponentRenderRequest } from "../client/types/events";
 import { ChatInputRef } from "./ChatInput";
 import { SystemEvent, SystemEventType } from "../client";
@@ -104,11 +105,19 @@ const ChatWrapperInner = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       return [];
     }, [tools]);
 
+    // Merge consumer-registered components with library built-ins (e.g.
+    // AskUserInputV0). Consumer entries come first so they win the registry's
+    // first-write-wins dedup if a name collides with a built-in.
+    const effectiveGenerativeComponents = useMemo(
+      () => mergeWithBuiltinComponents(generativeComponents),
+      [generativeComponents]
+    );
+
     // Build the generative-UI component registry once per registration set.
     // Zod → JSON Schema conversion happens inside the registry constructor.
     const generativeRegistry = useMemo(
-      () => new ComponentRegistry(generativeComponents),
-      [generativeComponents]
+      () => new ComponentRegistry(effectiveGenerativeComponents),
+      [effectiveGenerativeComponents]
     );
 
     // JSON Schemas to advertise to the chat-server alongside the tool schemas.
@@ -214,6 +223,7 @@ const ChatWrapperInner = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       handleChatFinished,
       handleChatError,
       stopGeneration: originalStopGeneration,
+      clearResponseError,
     } = messageHandling;
 
     // Refs for managing UI
@@ -240,6 +250,10 @@ const ChatWrapperInner = forwardRef<ChatWrapperRef, ChatWrapperProps>(
         if (request.status === "streaming") {
           return;
         }
+
+        // A render frame is a real response — clear the no-response timeout
+        // and any stale error state on the most recent user message.
+        clearResponseError();
 
         setMessages((prev) => {
           const existingIndex = prev.findIndex(
@@ -268,7 +282,7 @@ const ChatWrapperInner = forwardRef<ChatWrapperRef, ChatWrapperProps>(
           return [...prev, updated];
         });
       },
-      [setMessages]
+      [setMessages, clearResponseError]
     );
 
     // Handle thread creation

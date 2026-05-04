@@ -1,11 +1,22 @@
 import { memo } from "react";
 import type { ComponentRegistry } from "../services/componentRegistry";
+import { GenerativeRenderProvider } from "../contexts/GenerativeRenderContext";
 
 interface GenerativeComponentRendererProps {
   registry?: ComponentRegistry;
   componentName: string;
   props: Record<string, any>;
   status: "streaming" | "complete" | "error";
+  /** Stable id of the agent's render call — required so child components can
+   *  read it via `useGenerativeRender`. */
+  callId: string;
+  /** Whether this render is live or rehydrated from history. Defaults to
+   *  "live" when omitted. */
+  source?: "live" | "history";
+  /** True when this card is the latest ui-component with no subsequent user
+   *  reply. Interactive cards use this to remain answerable. Defaults to
+   *  false. */
+  isLatest?: boolean;
 }
 
 /**
@@ -13,7 +24,15 @@ interface GenerativeComponentRendererProps {
  * `Partial<Props>` since props arrive incrementally during streaming.
  */
 export const GenerativeComponentRenderer = memo<GenerativeComponentRendererProps>(
-  ({ registry, componentName, props, status }) => {
+  ({
+    registry,
+    componentName,
+    props,
+    status,
+    callId,
+    source = "live",
+    isLatest = false,
+  }) => {
     const entry = registry?.get(componentName);
 
     if (!entry) {
@@ -30,8 +49,16 @@ export const GenerativeComponentRenderer = memo<GenerativeComponentRendererProps
         className="chat-wrapper__generative-component"
         data-component-name={componentName}
         data-streaming={status === "streaming" ? "true" : undefined}
+        data-source={source}
       >
-        <Component {...props} />
+        <GenerativeRenderProvider
+          callId={callId}
+          status={status}
+          source={source}
+          isLatest={isLatest}
+        >
+          <Component {...props} />
+        </GenerativeRenderProvider>
       </div>
     );
   }

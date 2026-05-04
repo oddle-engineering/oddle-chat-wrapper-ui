@@ -77,6 +77,16 @@ export interface Message {
     props: Record<string, any>;
     callId: string;
     status: "streaming" | "complete" | "error";
+    /**
+     * Where this render came from:
+     *  - "live" — produced in the current session as the agent streamed
+     *  - "history" — rehydrated from a persisted thread on initial load
+     *
+     * Defaults to "live" when omitted. Interactive cards (e.g.
+     * `AskUserInputV0`) use this to lock themselves on history so the user
+     * can't re-trigger an answer that was already given.
+     */
+    source?: "live" | "history";
   };
   /**
    * Persisted generative-UI renders attached to an assistant message.

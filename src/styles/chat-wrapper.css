@@ -737,6 +737,165 @@
   font-size: 12px;
 }
 
+/* Built-in: AskUserInputV0 (multi-question form with submit) */
+.chat-wrapper__ask-user-input-v0 {
+  border: 1px solid rgba(145, 158, 171, 0.24);
+  border-radius: 12px;
+  background: #fff;
+  padding: 16px;
+  max-width: 100%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  font-family: "Public Sans", system-ui, sans-serif;
+}
+
+.chat-wrapper__ask-user-input-v0-prompt {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: #212b36;
+}
+
+.chat-wrapper__ask-user-input-v0-empty {
+  margin: 0;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.chat-wrapper__ask-user-input-v0-questions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.chat-wrapper__ask-user-input-v0-question {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chat-wrapper__ask-user-input-v0-question-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: #212b36;
+}
+
+.chat-wrapper__ask-user-input-v0-helper {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.chat-wrapper__ask-user-input-v0-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chat-wrapper__ask-user-input-v0-option {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(145, 158, 171, 0.32);
+  background: #fff;
+  color: #212b36;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 18px;
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease,
+    opacity 120ms ease;
+}
+
+.chat-wrapper__ask-user-input-v0-option:hover:not(:disabled) {
+  background: rgba(145, 158, 171, 0.08);
+  border-color: rgba(145, 158, 171, 0.56);
+}
+
+.chat-wrapper__ask-user-input-v0-option:focus-visible {
+  outline: 2px solid #410099;
+  outline-offset: 2px;
+}
+
+.chat-wrapper__ask-user-input-v0-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.chat-wrapper__ask-user-input-v0-option--picked {
+  background: rgba(65, 0, 153, 0.10);
+  border-color: #410099;
+  color: #410099;
+  opacity: 1;
+}
+
+/* Hover on a picked pill — deepen the tint and border so the user gets clear
+ * visual feedback that the selection is still interactive (e.g. unpick on a
+ * multi_choice question). The non-picked rule above only applies when the
+ * `--picked` class is absent, so we need an explicit picked-hover here. */
+.chat-wrapper__ask-user-input-v0-option--picked:hover:not(:disabled) {
+  background: rgba(65, 0, 153, 0.18);
+  border-color: #410099;
+  color: #410099;
+}
+
+.chat-wrapper__ask-user-input-v0-option--picked:disabled {
+  opacity: 1;
+}
+
+.chat-wrapper__ask-user-input-v0-option-check {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.chat-wrapper__ask-user-input-v0-actions {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 4px;
+}
+
+.chat-wrapper__ask-user-input-v0-submit {
+  appearance: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(145, 158, 171, 0.32);
+  background: #fff;
+  color: #212b36;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease,
+    opacity 120ms ease;
+}
+
+.chat-wrapper__ask-user-input-v0-submit:hover:not(:disabled) {
+  background: rgba(145, 158, 171, 0.08);
+  border-color: rgba(145, 158, 171, 0.56);
+}
+
+.chat-wrapper__ask-user-input-v0-submit:focus-visible {
+  outline: 2px solid #410099;
+  outline-offset: 2px;
+}
+
+.chat-wrapper__ask-user-input-v0-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 /* Message Content */
 .chat-wrapper__message-content {
   padding: 4px 8px;

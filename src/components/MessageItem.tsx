@@ -14,6 +14,14 @@ import { useTranslations } from "../i18n";
 
 interface MessageItemProps {
   message: Message;
+  /**
+   * True when this message is the most recent ui-component in the
+   * conversation AND no user message has come after it. Forwarded into
+   * `GenerativeRenderContext` so interactive cards can stay answerable
+   * (instead of locking themselves) when they're the active prompt — even
+   * after a page reload that rehydrates them from history.
+   */
+  isLatestUiComponent?: boolean;
 }
 
 interface ImageWithFallbackProps extends React.ImgHTMLAttributes<HTMLImageElement> {
@@ -145,7 +153,7 @@ const createMarkdownComponents = (onImageClick: (url: string) => void) => ({
 
 
 export const MessageItem = memo<MessageItemProps>(
-  ({ message }) => {
+  ({ message, isLatestUiComponent = false }) => {
     const {
       getReasoningTitle,
       getReasoningStatus,
@@ -345,6 +353,9 @@ export const MessageItem = memo<MessageItemProps>(
           componentName={message.uiComponent.name}
           props={message.uiComponent.props}
           status={message.uiComponent.status}
+          callId={message.uiComponent.callId}
+          source={message.uiComponent.source}
+          isLatest={isLatestUiComponent}
         />
       );
     };

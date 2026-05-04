@@ -102,6 +102,12 @@ export type {
 export { useChatActions } from './hooks/useChatActions';
 export type { ChatActions } from './hooks/useChatActions';
 
+// Public hook for generative-UI components to read render-context metadata
+// (callId, status, source). Use `source === "history"` to lock interactive
+// cards that have been rehydrated from a persisted thread.
+export { useGenerativeRender } from './contexts/GenerativeRenderContext';
+export type { GenerativeRenderContextValue } from './contexts/GenerativeRenderContext';
+
 // Legacy hook export (for backward compatibility)
 // @deprecated Use Zustand store hooks instead (useLayoutState, useChatState, etc.)
 export { useUIState } from './hooks/useUIState';

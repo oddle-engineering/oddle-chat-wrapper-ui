@@ -26,6 +26,7 @@ function expandPersistedUIComponents(messages: Message[]): Message[] {
             props: ui.props ?? {},
             callId: ui.toolCallId,
             status: "complete",
+            source: "history",
           },
         });
       }
