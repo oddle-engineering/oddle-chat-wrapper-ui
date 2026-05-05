@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { useChatActions } from "../../hooks/useChatActions";
 import { useGenerativeRender } from "../../contexts/GenerativeRenderContext";
@@ -214,6 +214,25 @@ export function AskUserInputV0(props: Partial<AskUserInputV0Props>) {
   // clicking Change answer puts that question back into edit mode while
   // still keeping any later revealed questions visible.
   const [editingIds, setEditingIds] = useState<Set<string>>(() => new Set());
+
+  // Auto-scroll the chat to keep newly-revealed questions in view. We hold
+  // a ref to the outer container and the previous revealedCount so we can
+  // scroll only on forward advances (not on initial mount, not when the
+  // user clicks Change answer, not on rehydrate).
+  const containerRef = useRef<HTMLDivElement>(null);
+  const previousRevealedCount = useRef(revealedCount);
+  useEffect(() => {
+    if (revealedCount > previousRevealedCount.current) {
+      // Scroll the bottom edge of the form into view inside the chat's
+      // scrollable container — pushes the just-revealed question (and the
+      // Submit button on the final advance) into the visible area.
+      containerRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+    }
+    previousRevealedCount.current = revealedCount;
+  }, [revealedCount]);
 
   // A card is the "active" question only when it's the most recent
   // ui-component AND no user message has come after it. Older cards (already
@@ -510,7 +529,10 @@ export function AskUserInputV0(props: Partial<AskUserInputV0Props>) {
   // styling so they read as separate inline messages in the chat; the
   // prompt is plain text above them, not part of any card.
   return (
-    <div className="chat-wrapper__ask-user-input-v0">
+    <div
+      ref={containerRef}
+      className="chat-wrapper__ask-user-input-v0"
+    >
       {prompt ? (
         <p className="chat-wrapper__ask-user-input-v0-prompt">{prompt}</p>
       ) : null}
