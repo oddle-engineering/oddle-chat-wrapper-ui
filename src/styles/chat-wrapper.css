@@ -737,92 +737,87 @@
   font-size: 12px;
 }
 
-/* Built-in: AskUserInputV0 (multi-question form with submit) */
+/* Built-in: AskUserInputV0 (multi-question clarifying form, ChatKit-style)
+ *
+ * Layout: the outer container is a plain flex column with no border. The
+ * intro prompt sits above as standalone text. Each question is its own
+ * card (border + padding + shadow) so a multi-question form reads as
+ * separate inline messages in the chat thread. The Submit row is a
+ * sibling of the question cards. */
 .chat-wrapper__ask-user-input-v0 {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  font-family: "Public Sans", system-ui, sans-serif;
+  color: #212b36;
+}
+
+/* Prompt spans the full container width — reads as a chat-style intro line
+ * above the form, not constrained to the form's narrower card width. */
+.chat-wrapper__ask-user-input-v0-prompt {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+/* Question cards (and the submit row) cap at 400px so wide chat containers
+ * (sidebar/fullscreen) show the form at roughly half-width; narrow
+ * containers (≤400px, e.g. mobile or an embedded panel) let them fill. */
+.chat-wrapper__ask-user-input-v0-question {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   border: 1px solid rgba(145, 158, 171, 0.24);
   border-radius: 12px;
   background: #fff;
   padding: 16px;
-  max-width: 100%;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  font-family: "Public Sans", system-ui, sans-serif;
-}
-
-.chat-wrapper__ask-user-input-v0-prompt {
-  margin: 0 0 12px 0;
-  font-size: 14px;
-  line-height: 20px;
-  color: #212b36;
-}
-
-.chat-wrapper__ask-user-input-v0-empty {
-  margin: 0;
-  font-size: 12px;
-  color: rgba(0, 0, 0, 0.6);
-}
-
-.chat-wrapper__ask-user-input-v0-questions {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.chat-wrapper__ask-user-input-v0-question {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  width: 100%;
+  max-width: 540px;
 }
 
 .chat-wrapper__ask-user-input-v0-question-title {
   margin: 0;
   font-size: 14px;
-  font-weight: 600;
   line-height: 20px;
-  color: #212b36;
+}
+
+.chat-wrapper__ask-user-input-v0-question-title strong {
+  font-weight: 600;
 }
 
 .chat-wrapper__ask-user-input-v0-helper {
-  margin: 0;
-  font-size: 12px;
-  line-height: 16px;
+  font-weight: 400;
   color: rgba(0, 0, 0, 0.55);
 }
 
+/* Option list: vertical stack of radio/checkbox rows. */
 .chat-wrapper__ask-user-input-v0-options {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .chat-wrapper__ask-user-input-v0-option {
   appearance: none;
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(145, 158, 171, 0.32);
-  background: #fff;
-  color: #212b36;
-  font-family: inherit;
-  font-size: 13px;
-  line-height: 18px;
+  gap: 12px;
+  padding: 4px 0;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
   cursor: pointer;
-  transition:
-    background-color 120ms ease,
-    border-color 120ms ease,
-    color 120ms ease,
-    opacity 120ms ease;
-}
-
-.chat-wrapper__ask-user-input-v0-option:hover:not(:disabled) {
-  background: rgba(145, 158, 171, 0.08);
-  border-color: rgba(145, 158, 171, 0.56);
 }
 
 .chat-wrapper__ask-user-input-v0-option:focus-visible {
   outline: 2px solid #410099;
   outline-offset: 2px;
+  border-radius: 4px;
 }
 
 .chat-wrapper__ask-user-input-v0-option:disabled {
@@ -830,49 +825,183 @@
   opacity: 0.5;
 }
 
-.chat-wrapper__ask-user-input-v0-option--picked {
-  background: rgba(65, 0, 153, 0.10);
+.chat-wrapper__ask-user-input-v0-option-label {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+/* Indicator shared base. Shape variants follow. */
+.chat-wrapper__ask-user-input-v0-option-indicator {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(145, 158, 171, 0.6);
+  background: #fff;
+  position: relative;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease;
+}
+
+.chat-wrapper__ask-user-input-v0-option:hover:not(:disabled)
+  .chat-wrapper__ask-user-input-v0-option-indicator {
+  border-color: rgba(65, 0, 153, 0.55);
+}
+
+/* Radio (single_choice). */
+.chat-wrapper__ask-user-input-v0-option-indicator--radio {
+  border-radius: 50%;
+}
+
+.chat-wrapper__ask-user-input-v0-option--picked
+  .chat-wrapper__ask-user-input-v0-option-indicator--radio {
   border-color: #410099;
-  color: #410099;
-  opacity: 1;
 }
 
-/* Hover on a picked pill — deepen the tint and border so the user gets clear
- * visual feedback that the selection is still interactive (e.g. unpick on a
- * multi_choice question). The non-picked rule above only applies when the
- * `--picked` class is absent, so we need an explicit picked-hover here. */
-.chat-wrapper__ask-user-input-v0-option--picked:hover:not(:disabled) {
-  background: rgba(65, 0, 153, 0.18);
+.chat-wrapper__ask-user-input-v0-option--picked
+  .chat-wrapper__ask-user-input-v0-option-indicator--radio::after {
+  content: "";
+  position: absolute;
+  inset: 50%;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background: #410099;
+}
+
+/* Checkbox (multi_choice). */
+.chat-wrapper__ask-user-input-v0-option-indicator--checkbox {
+  border-radius: 4px;
+}
+
+.chat-wrapper__ask-user-input-v0-option--picked
+  .chat-wrapper__ask-user-input-v0-option-indicator--checkbox {
   border-color: #410099;
-  color: #410099;
+  background: #410099;
 }
 
-.chat-wrapper__ask-user-input-v0-option--picked:disabled {
-  opacity: 1;
+.chat-wrapper__ask-user-input-v0-option--picked
+  .chat-wrapper__ask-user-input-v0-option-indicator--checkbox::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  width: 4px;
+  height: 9px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
 
-.chat-wrapper__ask-user-input-v0-option-check {
-  font-size: 12px;
-  line-height: 1;
+/* Per-question summary view: when a single_choice question has been
+ * answered (radio pick) and the form isn't submitted yet, the question
+ * collapses to "You selected: …" + an outlined Change answer button. */
+.chat-wrapper__ask-user-input-v0-summary-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: #212b36;
 }
 
-.chat-wrapper__ask-user-input-v0-actions {
-  display: flex;
-  justify-content: flex-start;
-  margin-top: 4px;
-}
-
-.chat-wrapper__ask-user-input-v0-submit {
+.chat-wrapper__ask-user-input-v0-change-answer {
   appearance: none;
-  padding: 8px 16px;
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #410099;
+  color: #410099;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+
+.chat-wrapper__ask-user-input-v0-change-answer:hover:not(:disabled) {
+  background: rgba(65, 0, 153, 0.06);
+}
+
+.chat-wrapper__ask-user-input-v0-change-answer:focus-visible {
+  outline: 2px solid #410099;
+  outline-offset: 2px;
+}
+
+.chat-wrapper__ask-user-input-v0-change-answer:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Free-text input: appears when a question has `allowFreeText: true`. For
+ * single_choice it's mutually exclusive with the radio picks (typing
+ * deselects them); for multi_choice it adds to the selected checkboxes. */
+.chat-wrapper__ask-user-input-v0-free-text-input {
+  appearance: none;
+  width: 100%;
+  padding: 8px 12px;
   border-radius: 8px;
   border: 1px solid rgba(145, 158, 171, 0.32);
   background: #fff;
   color: #212b36;
   font-family: inherit;
-  font-size: 13px;
+  font-size: 14px;
+  line-height: 20px;
+  outline: none;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease;
+  box-sizing: border-box;
+}
+
+.chat-wrapper__ask-user-input-v0-free-text-input::placeholder {
+  color: rgba(0, 0, 0, 0.38);
+}
+
+.chat-wrapper__ask-user-input-v0-free-text-input:hover:not(:disabled) {
+  border-color: rgba(145, 158, 171, 0.56);
+}
+
+.chat-wrapper__ask-user-input-v0-free-text-input:focus {
+  border-color: #410099;
+}
+
+.chat-wrapper__ask-user-input-v0-free-text-input:disabled {
+  background: rgba(145, 158, 171, 0.06);
+  cursor: not-allowed;
+}
+
+/* Action area: full-width primary submit, shown only once every question has
+ * been revealed and the user has the option to submit their final answers.
+ * Capped to match the question-card width so it visually lines up. */
+.chat-wrapper__ask-user-input-v0-actions {
+  display: flex;
+  margin-top: 4px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.chat-wrapper__ask-user-input-v0-submit {
+  appearance: none;
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: #410099;
+  border: 1px solid #410099;
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
   font-weight: 600;
-  line-height: 18px;
+  line-height: 20px;
   cursor: pointer;
   transition:
     background-color 120ms ease,
@@ -882,8 +1011,8 @@
 }
 
 .chat-wrapper__ask-user-input-v0-submit:hover:not(:disabled) {
-  background: rgba(145, 158, 171, 0.08);
-  border-color: rgba(145, 158, 171, 0.56);
+  background: #36007f;
+  border-color: #36007f;
 }
 
 .chat-wrapper__ask-user-input-v0-submit:focus-visible {
@@ -893,7 +1022,7 @@
 
 .chat-wrapper__ask-user-input-v0-submit:disabled {
   cursor: not-allowed;
-  opacity: 0.45;
+  opacity: 0.5;
 }
 
 /* Message Content */
