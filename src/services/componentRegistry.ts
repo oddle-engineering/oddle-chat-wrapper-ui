@@ -1,9 +1,27 @@
+import { z, type ZodTypeAny } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import type {
   ComponentSchema,
   GenerativeComponent,
   GenerativeComponents,
 } from "../types";
+
+/**
+ * Convert a Zod schema to JSON Schema in a way that works against both Zod v3
+ * and Zod v4. Zod v4 ships a built-in `z.toJSONSchema(schema)`; v3 doesn't and
+ * relies on the third-party `zod-to-json-schema` package. We prefer the
+ * built-in when present so v4 consumers don't carry around an extra
+ * conversion path that wasn't designed for their schema internals.
+ */
+function convertZodToJsonSchema(schema: ZodTypeAny): Record<string, any> {
+  const v4 = (z as { toJSONSchema?: (s: unknown) => unknown }).toJSONSchema;
+  if (typeof v4 === "function") {
+    return v4(schema) as Record<string, any>;
+  }
+  return zodToJsonSchema(schema, {
+    $refStrategy: "none",
+  }) as Record<string, any>;
+}
 
 /**
  * Holds the dashboard's registered generative components and exposes:
@@ -30,9 +48,7 @@ export class ComponentRegistry {
     this.schemas.push({
       name: component.name,
       description: component.description,
-      propsSchemaJson: zodToJsonSchema(component.propsSchema, {
-        $refStrategy: "none",
-      }) as Record<string, any>,
+      propsSchemaJson: convertZodToJsonSchema(component.propsSchema),
     });
   }
 
