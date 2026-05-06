@@ -25,6 +25,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.54] - 2026-05-05
+
+### Fixed
+- Drop `import { ZodTypeAny, infer }` from the public `dist/index.d.ts`. `GenerativeComponent` now takes a props-shape generic (`GenerativeComponent<TProps>`) and types `propsSchema` as a structural `ZodSchemaLike` (`{ parse(input): unknown }`). Apps consuming `@oddle/chat-wrapper-ui` no longer need `zod` resolvable by their TypeScript just to use the public types.
+- Move `zod` from `dependencies` to `peerDependencies` (`^3.20.0 || ^4.0.0`) so the consumer's chosen Zod major is the single source of truth in their install tree.
+- `componentRegistry` prefers Zod v4's built-in `z.toJSONSchema()` and falls back to `zod-to-json-schema` only on Zod v3.
+
+### Migration
+- If you previously typed a registration as `GenerativeComponent<typeof MySchema>`, switch to `GenerativeComponent<z.infer<typeof MySchema>>`. The runtime registration object is unchanged.
+
 ## [1.0.53] - 2026-04-28
 
 ### Fixed

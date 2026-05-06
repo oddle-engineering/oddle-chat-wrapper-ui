@@ -1,6 +1,5 @@
 import { default as default_2 } from 'react';
 import { ForwardRefExoticComponent } from 'react';
-import { infer } from 'zod';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { MemoExoticComponent } from 'react';
 import { NamedExoticComponent } from 'react';
@@ -9,7 +8,6 @@ import { RefAttributes } from 'react';
 import { StoreApi } from 'zustand';
 import { UseBoundStore } from 'zustand';
 import { UseTranslationResponse } from 'react-i18next';
-import { ZodTypeAny } from 'zod';
 
 export declare const AnimatedPlaceholder: ({ placeholderTexts, shouldAnimate, className, }: AnimatedPlaceholderProps) => JSX_2.Element;
 
@@ -402,22 +400,30 @@ declare interface FullscreenIconProps extends IconProps {
  * the schema to the agent via the chat-server). The component must accept
  * `Partial<TProps>` because props arrive incrementally during streaming.
  *
+ * The generic `TProps` is the props shape your component receives. Pass it
+ * explicitly — typically via `z.infer<typeof YourSchema>` from your own zod
+ * import — so the public types stay free of any zod dependency.
+ *
  * @example
- * {
+ * import { z } from "zod";
+ *
+ * const OrderSummaryProps = z.object({
+ *   orderId: z.string().describe("Order ID, e.g., 'ORD-12345'"),
+ *   status: z.enum(["pending", "shipped", "delivered"]),
+ * });
+ *
+ * const registration: GenerativeComponent<z.infer<typeof OrderSummaryProps>> = {
  *   name: "OrderSummary",
  *   description: "Show details of a customer order.",
- *   propsSchema: z.object({
- *     orderId: z.string().describe("Order ID, e.g., 'ORD-12345'"),
- *     status: z.enum(["pending", "shipped", "delivered"]),
- *   }),
+ *   propsSchema: OrderSummaryProps,
  *   component: OrderSummaryCard,
- * }
+ * };
  */
-export declare interface GenerativeComponent<TSchema extends ZodTypeAny = ZodTypeAny> {
+export declare interface GenerativeComponent<TProps = Record<string, unknown>> {
     name: string;
     description: string;
-    propsSchema: TSchema;
-    component: default_2.ComponentType<Partial<infer<TSchema>>>;
+    propsSchema: ZodSchemaLike;
+    component: default_2.ComponentType<Partial<TProps>>;
 }
 
 /**
@@ -1060,5 +1066,14 @@ devtools: {
 cleanup: () => void;
 };
 }>;
+
+/**
+ * Minimal structural shape of a Zod schema, used so the public type surface
+ * doesn't need to import from `zod`. Any Zod schema (v3 or v4) satisfies
+ * this — both expose a `parse(input): output` method.
+ */
+declare interface ZodSchemaLike {
+    parse(input: unknown): unknown;
+}
 
 export { }

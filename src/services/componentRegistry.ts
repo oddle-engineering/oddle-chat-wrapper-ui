@@ -1,4 +1,4 @@
-import { z, type ZodTypeAny } from "zod";
+import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import type {
   ComponentSchema,
@@ -12,13 +12,18 @@ import type {
  * relies on the third-party `zod-to-json-schema` package. We prefer the
  * built-in when present so v4 consumers don't carry around an extra
  * conversion path that wasn't designed for their schema internals.
+ *
+ * Typed as `unknown` so the public `GenerativeComponent.propsSchema` shape
+ * (`ZodSchemaLike`, kept zod-import-free) flows through without forcing a
+ * cast at every callsite. The runtime guarantee is that callers pass a real
+ * Zod schema; both code paths handle it.
  */
-function convertZodToJsonSchema(schema: ZodTypeAny): Record<string, any> {
+function convertZodToJsonSchema(schema: unknown): Record<string, any> {
   const v4 = (z as { toJSONSchema?: (s: unknown) => unknown }).toJSONSchema;
   if (typeof v4 === "function") {
     return v4(schema) as Record<string, any>;
   }
-  return zodToJsonSchema(schema, {
+  return zodToJsonSchema(schema as never, {
     $refStrategy: "none",
   }) as Record<string, any>;
 }

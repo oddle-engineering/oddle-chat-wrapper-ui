@@ -1,5 +1,4 @@
 import React from "react";
-import type { ZodTypeAny, infer as ZodInfer } from "zod";
 import type { ContextHelpers } from "../client/types/shared";
 
 export type ChatMode = "sidebar" | "fullscreen" | "modal" | "embedded";
@@ -280,6 +279,15 @@ export interface Tool extends ToolSchema {
 export type Tools = Tool[];
 
 /**
+ * Minimal structural shape of a Zod schema, used so the public type surface
+ * doesn't need to import from `zod`. Any Zod schema (v3 or v4) satisfies
+ * this — both expose a `parse(input): output` method.
+ */
+export interface ZodSchemaLike {
+  parse(input: unknown): unknown;
+}
+
+/**
  * A React component the agent can render inline in chat replies (generative UI).
  *
  * Registrations carry both the component implementation (used by the chat-ui
@@ -287,22 +295,30 @@ export type Tools = Tool[];
  * the schema to the agent via the chat-server). The component must accept
  * `Partial<TProps>` because props arrive incrementally during streaming.
  *
+ * The generic `TProps` is the props shape your component receives. Pass it
+ * explicitly — typically via `z.infer<typeof YourSchema>` from your own zod
+ * import — so the public types stay free of any zod dependency.
+ *
  * @example
- * {
+ * import { z } from "zod";
+ *
+ * const OrderSummaryProps = z.object({
+ *   orderId: z.string().describe("Order ID, e.g., 'ORD-12345'"),
+ *   status: z.enum(["pending", "shipped", "delivered"]),
+ * });
+ *
+ * const registration: GenerativeComponent<z.infer<typeof OrderSummaryProps>> = {
  *   name: "OrderSummary",
  *   description: "Show details of a customer order.",
- *   propsSchema: z.object({
- *     orderId: z.string().describe("Order ID, e.g., 'ORD-12345'"),
- *     status: z.enum(["pending", "shipped", "delivered"]),
- *   }),
+ *   propsSchema: OrderSummaryProps,
  *   component: OrderSummaryCard,
- * }
+ * };
  */
-export interface GenerativeComponent<TSchema extends ZodTypeAny = ZodTypeAny> {
+export interface GenerativeComponent<TProps = Record<string, unknown>> {
   name: string;
   description: string;
-  propsSchema: TSchema;
-  component: React.ComponentType<Partial<ZodInfer<TSchema>>>;
+  propsSchema: ZodSchemaLike;
+  component: React.ComponentType<Partial<TProps>>;
 }
 
 export type GenerativeComponents = GenerativeComponent<any>[];
