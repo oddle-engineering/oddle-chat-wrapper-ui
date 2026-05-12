@@ -38,6 +38,7 @@ export interface ChatMessage extends BaseOutboundMessage {
 export interface OutboundConfigureToolsMessage extends BaseOutboundMessage {
   type: OutboundMessageType.CONFIGURE_TOOLS;
   toolSchemas: any[];
+  generativeComponents?: any[];
   contextHelpers: ContextHelpers;
 }
 
@@ -45,6 +46,7 @@ export interface OutboundConfigureToolsMessage extends BaseOutboundMessage {
 export interface UpdateToolsMessage extends BaseOutboundMessage {
   type: OutboundMessageType.UPDATE_TOOLS;
   toolSchemas: any[];
+  generativeComponents?: any[];
 }
 
 // Update context helpers message

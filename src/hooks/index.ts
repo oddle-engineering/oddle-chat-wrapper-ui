@@ -5,3 +5,5 @@ export { useConversationLoader } from "./useConversationLoader";
 export { useAutoScroll } from "./useAutoScroll";
 export { useMetadataSync } from "./useMetadataSync";
 export { useNetworkStatus } from "./useNetworkStatus";
+export { useChatActions } from "./useChatActions";
+export type { ChatActions } from "./useChatActions";

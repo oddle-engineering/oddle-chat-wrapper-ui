@@ -56,7 +56,7 @@ export interface AuthConfig {
 
 export interface Message {
   id: string;
-  role: "user" | "assistant" | "system" | "reasoning" | "tooling";
+  role: "user" | "assistant" | "system" | "reasoning" | "tooling" | "ui-component";
   content: string;
   timestamp: Date;
   isStreaming?: boolean;
@@ -71,6 +71,34 @@ export interface Message {
     result?: any;
     status?: "processing" | "completed" | "error";
   };
+  uiComponent?: {
+    name: string;
+    props: Record<string, any>;
+    callId: string;
+    status: "streaming" | "complete" | "error";
+    /**
+     * Where this render came from:
+     *  - "live" — produced in the current session as the agent streamed
+     *  - "history" — rehydrated from a persisted thread on initial load
+     *
+     * Defaults to "live" when omitted. Interactive cards (e.g.
+     * `AskUserInputV0`) use this to lock themselves on history so the user
+     * can't re-trigger an answer that was already given.
+     */
+    source?: "live" | "history";
+  };
+  /**
+   * Persisted generative-UI renders attached to an assistant message.
+   * Populated by the server on thread rehydration (one entry per render_ui
+   * call the assistant made in that turn). The conversation loader expands
+   * each entry into a separate `role: "ui-component"` message so the renderer
+   * treats rehydrated and live-streamed renders the same way.
+   */
+  uiComponents?: Array<{
+    toolCallId: string;
+    componentName: string;
+    props: Record<string, any>;
+  }>;
 }
 
 export interface StreamEvent {
@@ -190,6 +218,7 @@ export interface ChatWrapperProps {
   // Existing props
   config: Omit<ChatConfig, "apiEndpoint">;
   tools?: Tools; // Unified tools with execution functions
+  generativeComponents?: GenerativeComponents; // React components the agent can render inline
   contextHelpers?: ContextHelpers;
 }
 
@@ -248,6 +277,61 @@ export interface Tool extends ToolSchema {
 
 // Type for tools array
 export type Tools = Tool[];
+
+/**
+ * Minimal structural shape of a Zod schema, used so the public type surface
+ * doesn't need to import from `zod`. Any Zod schema (v3 or v4) satisfies
+ * this — both expose a `parse(input): output` method.
+ */
+export interface ZodSchemaLike {
+  parse(input: unknown): unknown;
+}
+
+/**
+ * A React component the agent can render inline in chat replies (generative UI).
+ *
+ * Registrations carry both the component implementation (used by the chat-ui
+ * library to render it) and a Zod schema describing its props (used to advertise
+ * the schema to the agent via the chat-server). The component must accept
+ * `Partial<TProps>` because props arrive incrementally during streaming.
+ *
+ * The generic `TProps` is the props shape your component receives. Pass it
+ * explicitly — typically via `z.infer<typeof YourSchema>` from your own zod
+ * import — so the public types stay free of any zod dependency.
+ *
+ * @example
+ * import { z } from "zod";
+ *
+ * const OrderSummaryProps = z.object({
+ *   orderId: z.string().describe("Order ID, e.g., 'ORD-12345'"),
+ *   status: z.enum(["pending", "shipped", "delivered"]),
+ * });
+ *
+ * const registration: GenerativeComponent<z.infer<typeof OrderSummaryProps>> = {
+ *   name: "OrderSummary",
+ *   description: "Show details of a customer order.",
+ *   propsSchema: OrderSummaryProps,
+ *   component: OrderSummaryCard,
+ * };
+ */
+export interface GenerativeComponent<TProps = Record<string, unknown>> {
+  name: string;
+  description: string;
+  propsSchema: ZodSchemaLike;
+  component: React.ComponentType<Partial<TProps>>;
+}
+
+export type GenerativeComponents = GenerativeComponent<any>[];
+
+/**
+ * Component schema sent to the server (Zod schema converted to JSON Schema).
+ * The library performs the conversion internally; consumers pass `GenerativeComponent`.
+ */
+export interface ComponentSchema {
+  name: string;
+  description: string;
+  propsSchemaJson: Record<string, any>; // JSON Schema
+}
 
 // Legacy ClientTool interface (for backward compatibility)
 export interface ClientTool {

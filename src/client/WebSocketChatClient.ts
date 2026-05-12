@@ -26,6 +26,7 @@ export class WebSocketChatClient {
 
   // Client tools and context
   private toolSchemas: any[] = [];
+  private componentSchemas: any[] = [];
   private contextHelpers: ContextHelpers = {};
 
   // Ticket management - now centralized in TicketManager
@@ -108,11 +109,14 @@ export class WebSocketChatClient {
     }
 
     if (data?.type === InboundMessageType.SESSION_ESTABLISHED) {
-      // Send client tools configuration after session is established
-      if (this.toolSchemas && this.toolSchemas.length > 0) {
+      // Send client tools / generative-component configuration after session is established
+      const hasTools = this.toolSchemas && this.toolSchemas.length > 0;
+      const hasComponents =
+        this.componentSchemas && this.componentSchemas.length > 0;
+      if (hasTools || hasComponents) {
         this.sendToolConfiguration();
       } else {
-        // No tools to configure, resolve initialization
+        // Nothing to configure, resolve initialization immediately
         this.initResolve?.();
       }
     }
@@ -156,7 +160,8 @@ export class WebSocketChatClient {
   private sendToolConfiguration(): void {
     const message = MessageFactory.serializeConfigureTools(
       this.toolSchemas,
-      this.contextHelpers
+      this.contextHelpers,
+      this.componentSchemas.length > 0 ? this.componentSchemas : undefined
     );
     this.wsManager.send(message);
   }
@@ -220,6 +225,7 @@ export class WebSocketChatClient {
       onSetMessage: props.onSetMessage,
       onSystemEvent: props.onSystemEvent,
       onReasoningUpdate: props.onReasoningUpdate,
+      onUIComponent: props.onUIComponent,
       onThreadCreated: props.onThreadCreated,
       onMessagesPersisted: props.onMessagesPersisted,
     };
@@ -229,6 +235,7 @@ export class WebSocketChatClient {
 
   private setupToolsAndContext(props: WebSocketChatClientProps): void {
     this.toolSchemas = props.toolSchemas || [];
+    this.componentSchemas = props.componentSchemas || [];
     this.contextHelpers = props.contextHelpers;
     if (props.clientTools) {
       this.messageHandler.updateClientTools(props.clientTools);
@@ -299,7 +306,10 @@ export class WebSocketChatClient {
       this.toolSchemas = [...this.toolSchemas, ...schemas];
     }
 
-    const message = MessageFactory.serializeUpdateTools(this.toolSchemas);
+    const message = MessageFactory.serializeUpdateTools(
+      this.toolSchemas,
+      this.componentSchemas.length > 0 ? this.componentSchemas : undefined
+    );
     this.wsManager.send(message);
   }
 

@@ -53,6 +53,43 @@ export function useMessageHandlers({
   const reasoningMessagesByCallId = useRef<Map<string, string>>(new Map());
   const toolingMessagesByCallId = useRef<Map<string, string>>(new Map());
 
+  /**
+   * Clear the "no response in 120s" timeout and any error state on the most
+   * recent user message. Called whenever we receive evidence that a response
+   * is actually in flight or has finished (text delta, ui_component frame,
+   * or chat_finished event).
+   *
+   * Without this, render_ui-only replies (no text deltas) would let the
+   * timeout fire and falsely mark the user message with hasError=true,
+   * showing a Retry button on a successful turn.
+   */
+  const clearResponseError = useCallback(() => {
+    if (!(window as any).responseTimeoutId) return;
+
+    clearTimeout((window as any).responseTimeoutId);
+    (window as any).responseTimeoutId = null;
+
+    // Only reset error state if no streaming assistant message exists yet —
+    // matches the historic guard in handleSetMessage (don't disturb tool/
+    // reasoning updates mid-flight).
+    if (currentAssistantMessageIdRef.current) return;
+
+    setMessages((prev) => {
+      const lastUserMessageIndex = prev
+        .map((msg, index) => ({ msg, index }))
+        .filter(({ msg }) => msg.role === "user")
+        .pop()?.index;
+
+      if (lastUserMessageIndex === undefined) return prev;
+
+      return prev.map((msg, index) =>
+        index === lastUserMessageIndex && (msg.hasError || msg.isRetrying)
+          ? { ...msg, hasError: false, errorMessage: undefined, isRetrying: false }
+          : msg
+      );
+    });
+  }, [currentAssistantMessageIdRef, setMessages]);
+
   // Finalize the current streaming message
   const finalizeCurrentStreamingMessage = useCallback(() => {
     if (currentAssistantMessageIdRef.current && streamingContentRef.current) {
@@ -81,31 +118,8 @@ export function useMessageHandlers({
   // Handle streaming message character by character
   const handleSetMessage = useCallback(
     (char: string) => {
-      // Clear response timeout since we got a response
-      if ((window as any).responseTimeoutId) {
-        clearTimeout((window as any).responseTimeoutId);
-        (window as any).responseTimeoutId = null;
-        
-        // Only clear error state from the most recent user message if we're starting a new assistant response
-        // (not during tool/reasoning updates)
-        if (!currentAssistantMessageIdRef.current) {
-          setMessages((prev) => {
-            const lastUserMessageIndex = prev.map((msg, index) => ({ msg, index }))
-              .filter(({ msg }) => msg.role === "user")
-              .pop()?.index;
-            
-            if (lastUserMessageIndex !== undefined) {
-              return prev.map((msg, index) =>
-                index === lastUserMessageIndex && (msg.hasError || msg.isRetrying)
-                  ? { ...msg, hasError: false, errorMessage: undefined, isRetrying: false }
-                  : msg
-              );
-            }
-            return prev;
-          });
-        }
-      }
-      
+      clearResponseError();
+
       // Don't sanitize individual characters - only sanitize the complete message on finalization
       // Sanitizing character-by-character can strip spaces and other valid characters
 
@@ -275,10 +289,19 @@ export function useMessageHandlers({
 
   // Handle chat finished event
   const handleChatFinished = useCallback(() => {
+    // Safety net: a successful chat_finished must clear the response timeout,
+    // otherwise replies that produced no text deltas (e.g., render_ui-only
+    // turns) would let the timeout fire and falsely show a Retry button.
+    clearResponseError();
     setIsStreaming(false);
     setIsThinking(false);
     finalizeCurrentStreamingMessage();
-  }, [setIsStreaming, setIsThinking, finalizeCurrentStreamingMessage]);
+  }, [
+    clearResponseError,
+    setIsStreaming,
+    setIsThinking,
+    finalizeCurrentStreamingMessage,
+  ]);
 
   // Handle chat error event
   const handleChatError = useCallback(
@@ -316,5 +339,6 @@ export function useMessageHandlers({
     handleChatError,
     stopGeneration,
     finalizeCurrentStreamingMessage,
+    clearResponseError,
   };
 }

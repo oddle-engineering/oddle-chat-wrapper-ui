@@ -1,19 +1,32 @@
 import { ToolCallRequest, ContextHelpers } from "./shared";
 import { SystemEventHandler } from "./systemEvents";
 
+/**
+ * Payload emitted when the agent calls the universal `render_ui` tool.
+ * The chat-ui-library converts this into a UI-component message rather than
+ * executing it as a regular tool.
+ */
+export interface UIComponentRenderRequest {
+  callId: string;
+  componentName: string;
+  props: Record<string, any>;
+  status: "streaming" | "complete" | "error";
+}
+
 export interface WebSocketChatClientProps {
   // Authentication and server properties
   userMpAuthToken: string;
   chatServerUrl: string;
   chatServerKey: string;
-  
+
   // Entity configuration
   entityId?: string;
   entityType?: string;
-  
+
   // Existing properties
   toolSchemas?: any[];
   clientTools?: Record<string, Function>;
+  componentSchemas?: any[]; // Generative-UI component schemas (JSON Schema form)
   contextHelpers: ContextHelpers;
   onSetMessage?: (char: string) => void;
   onSystemEvent?: SystemEventHandler;
@@ -22,6 +35,7 @@ export interface WebSocketChatClientProps {
     content: string,
     toolCallRequest?: ToolCallRequest
   ) => void;
+  onUIComponent?: (request: UIComponentRenderRequest) => void;
   onThreadCreated?: (data: {
     providerResId: string;
     threadId: string;
@@ -43,6 +57,7 @@ export interface ChatEventHandlers {
     content: string,
     request: ToolCallRequest
   ) => void;
+  onUIComponent?: (request: UIComponentRenderRequest) => void;
   onThreadCreated?: (data: {
     providerResId: string;
     threadId: string;

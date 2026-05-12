@@ -79,5 +79,6 @@ export function useMessageHandling() {
     handleChatError: handlers.handleChatError,
     stopGeneration: handlers.stopGeneration,
     finalizeCurrentStreamingMessage: handlers.finalizeCurrentStreamingMessage,
+    clearResponseError: handlers.clearResponseError,
   };
 }
