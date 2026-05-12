@@ -41,7 +41,7 @@ export const AskUserInputV0QuestionSchema = z.object({
     .array(AskUserInputV0OptionSchema)
     .optional()
     .describe(
-      "Reply options for this question. Provide 2–6 — fewer is not a meaningful choice; more hurts readability.",
+      "Reply options for this question. Provide 2–6 — fewer is not a meaningful choice; more hurts readability. Do not combine with `allowFreeText: true`; pick one input mode per question.",
     ),
   helperText: z
     .string()
@@ -53,7 +53,7 @@ export const AskUserInputV0QuestionSchema = z.object({
     .boolean()
     .optional()
     .describe(
-      "When true, render a text input below the options where the user can type their own answer. For single_choice, the input is mutually exclusive with the radio picks (typing into the input deselects radios; picking a radio clears the input). For multi_choice, the typed text combines with any selected checkboxes on submit. Defaults to false.",
+      "When true, render a single text input where the user types their own answer — and do NOT also supply `options`. Use this for open-ended questions where preset choices wouldn't fit (e.g. a date, a name, free-form notes). Mixing options with a free-text input confuses users and is not supported. Defaults to false.",
     ),
 });
 
@@ -158,16 +158,11 @@ function normalizeQuestions(
 }
 
 function formatSubmission(
-  prompt: string | undefined,
   entries: RenderableQuestion[],
   answers: Answers,
   freeTextValues: FreeTextValues,
 ): string {
   const lines: string[] = [];
-  if (prompt?.trim()) {
-    lines.push(prompt.trim());
-    lines.push("");
-  }
   entries.forEach(({ question, qIndex }) => {
     const id = questionId(question, qIndex);
     const type = question.type ?? "single_choice";
@@ -374,7 +369,6 @@ export function AskUserInputV0(props: Partial<AskUserInputV0Props>) {
   const handleSubmit = () => {
     if (!canSubmit) return;
     const message = formatSubmission(
-      prompt,
       renderableQuestions,
       answers,
       freeTextValues,
