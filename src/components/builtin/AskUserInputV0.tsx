@@ -95,7 +95,8 @@ type RenderableQuestion = {
 };
 
 function questionId(q: AskUserInputV0Question, index: number): string {
-  return q.id?.trim() || `q${index + 1}`;
+  const base = q.id?.trim() || `q${index + 1}`;
+  return `${base}-${index}`;
 }
 
 function defaultHelper(type: AskUserInputV0QuestionType | undefined): string {
