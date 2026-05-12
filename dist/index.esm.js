@@ -3652,13 +3652,13 @@ const yu = ca({
     "single_choice = pick exactly one (radio). multi_choice = pick one or more (checkbox). Defaults to single_choice."
   ),
   options: So(yu).optional().describe(
-    "Reply options for this question. Provide 2–6 — fewer is not a meaningful choice; more hurts readability."
+    "Reply options for this question. Provide 2–6 — fewer is not a meaningful choice; more hurts readability. Do not combine with `allowFreeText: true`; pick one input mode per question."
   ),
   helperText: bn().optional().describe(
     'Hint shown inline after the bolded title (e.g. "Pick one", "Pick one or more"). Auto-derived from `type` when omitted.'
   ),
   allowFreeText: vc().optional().describe(
-    "When true, render a text input below the options where the user can type their own answer. For single_choice, the input is mutually exclusive with the radio picks (typing into the input deselects radios; picking a radio clears the input). For multi_choice, the typed text combines with any selected checkboxes on submit. Defaults to false."
+    "When true, render a single text input where the user types their own answer — and do NOT also supply `options`. Use this for open-ended questions where preset choices wouldn't fit (e.g. a date, a name, free-form notes). Mixing options with a free-text input confuses users and is not supported. Defaults to false."
   )
 }), xu = ca({
   prompt: bn().optional().describe(
@@ -3699,15 +3699,15 @@ function vu(t, e) {
     }
   ] : [];
 }
-function Tu(t, e, n, r) {
-  const i = [];
-  return t != null && t.trim() && (i.push(t.trim()), i.push("")), e.forEach(({ question: a, qIndex: s }) => {
-    var h;
-    const o = _n(a, s), l = a.type ?? "single_choice", u = n[o] ?? [], c = (r[o] ?? "").trim(), d = l === "multi_choice" ? [...u, ...c ? [c] : []] : u.length > 0 ? [...u] : c ? [c] : [];
-    if (d.length === 0) return;
-    const f = ((h = a.title) == null ? void 0 : h.trim()) || `Q${s + 1}`;
-    i.push(`${f} ${d.join(", ")}`);
-  }), i.join(`
+function Tu(t, e, n) {
+  const r = [];
+  return t.forEach(({ question: i, qIndex: a }) => {
+    var f;
+    const s = _n(i, a), o = i.type ?? "single_choice", l = e[s] ?? [], u = (n[s] ?? "").trim(), c = o === "multi_choice" ? [...l, ...u ? [u] : []] : l.length > 0 ? [...l] : u ? [u] : [];
+    if (c.length === 0) return;
+    const d = ((f = i.title) == null ? void 0 : f.trim()) || `Q${a + 1}`;
+    r.push(`${d} ${c.join(", ")}`);
+  }), r.join(`
 `).trim();
 }
 function Eu(t) {
@@ -3768,7 +3768,6 @@ function Eu(t) {
   }, W = ae || s || U === 0 || !ee ? !1 : b.every((z) => (z.question.type ?? "single_choice") === "multi_choice" ? !0 : q(z)), de = () => {
     if (!W) return;
     const z = Tu(
-      e,
       b,
       l,
       c
