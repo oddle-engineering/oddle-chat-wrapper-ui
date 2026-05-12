@@ -25,6 +25,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.55] - 2026-05-12
+
+### Added
+- drop zod from public types, peer-dep zod, support v3+v4
+- add AskUserInputV0 built-in clarifying-question form
+- add generative UI support (render_ui)
+
+### Changed
+- chore(build): rebuild dist for recent fixes
+- fix(showcase): use z.infer for GenerativeComponent generic
+- fix(ask-user-input): make questionId collision-proof across questions
+- fix(conversation-loader): skip malformed persisted UI entries
+- fix(deps): move zod to peerDependencies and support v3 + v4
+- feat(ask-user-input): auto-scroll chat when a new question is revealed
+- feat(ask-user-input): collapse answered single_choice to summary with Change answer
+- chore: add best react practices skills for agent
+
+### Fixed
+- ship CSS type declarations and add cleaner /style.css export path
+
 ## [1.0.54] - 2026-05-05
 
 ### Fixed
