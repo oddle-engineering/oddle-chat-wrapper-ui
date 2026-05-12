@@ -25,6 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.58] - 2026-05-12
+
+### Changed
+- chore(build): rebuild dist for recent fixes
+- fix(ask-user-input): submit option labels instead of value codes
+
 ## [1.0.57] - 2026-05-12
 
 ### Changed
