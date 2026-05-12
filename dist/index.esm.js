@@ -3670,8 +3670,8 @@ const yu = ca({
   submitLabel: bn().optional().describe('Label for the submit button. Defaults to "Submit".')
 }), ku = 6, _u = "Type your answer here…";
 function _n(t, e) {
-  var n;
-  return ((n = t.id) == null ? void 0 : n.trim()) || `q${e + 1}`;
+  var r;
+  return `${((r = t.id) == null ? void 0 : r.trim()) || `q${e + 1}`}-${e}`;
 }
 function Su(t) {
   return t === "multi_choice" ? "Pick one or more" : "Pick one";
@@ -8907,7 +8907,7 @@ function Ph(t) {
   for (const r of t)
     if (e.push(r), r.role === "assistant" && ((n = r.uiComponents) != null && n.length))
       for (const i of r.uiComponents)
-        e.push({
+        !i || !i.toolCallId || !i.componentName || e.push({
           id: i.toolCallId,
           role: "ui-component",
           content: "",
