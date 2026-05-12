@@ -205,7 +205,7 @@ export function OrderSummaryCard({
   );
 }
 
-export const orderSummaryRegistration: GenerativeComponent<typeof OrderSummaryPropsSchema> = {
+export const orderSummaryRegistration: GenerativeComponent<z.infer<typeof OrderSummaryPropsSchema>> = {
   name: "OrderSummary",
   description:
     "Show details of a customer order — id, status, customer, items, and total. " +

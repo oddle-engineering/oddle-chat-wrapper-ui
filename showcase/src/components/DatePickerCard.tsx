@@ -205,7 +205,7 @@ export function DatePickerCard({
   );
 }
 
-export const datePickerRegistration: GenerativeComponent<typeof DatePickerPropsSchema> = {
+export const datePickerRegistration: GenerativeComponent<z.infer<typeof DatePickerPropsSchema>> = {
   name: "DatePicker",
   description:
     "Show a calendar/date picker so the user can choose a date. Use whenever a date is required from the user — booking, scheduling a reminder, picking a delivery date. Provide `purpose` so the follow-up message reads naturally (e.g. 'reservation' → 'I'd like Friday March 5 for reservation'). Provide `suggestions` for fast common picks like 'Tonight' or 'Next weekend' when applicable.",
