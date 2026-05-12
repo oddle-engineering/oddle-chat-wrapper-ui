@@ -25,6 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.57] - 2026-05-12
+
+### Changed
+- chore(build): rebuild dist for recent fixes
+- fix(ask-user-input): steer agent away from mixing options with free-text
+
 ## [1.0.56] - 2026-05-12
 
 ### Added
