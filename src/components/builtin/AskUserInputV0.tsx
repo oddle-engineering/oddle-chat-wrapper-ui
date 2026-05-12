@@ -12,7 +12,7 @@ export const AskUserInputV0OptionSchema = z.object({
     .string()
     .optional()
     .describe(
-      "Optional value sent back when this option is selected. Defaults to `label`. Use this when the visible label differs from the answer you want the agent to receive (e.g. label \"Yes\" → value \"Yes, schedule the campaign for next Friday\").",
+      "Optional internal identifier for this option (e.g. a stable code like \"winback\" or \"amount_off_min_spend\"). The user-visible chat message echoes the `label` — not `value` — so pick a label that reads naturally as the user's reply. Defaults to `label` when omitted.",
     ),
 });
 
@@ -163,10 +163,14 @@ function formatSubmission(
   freeTextValues: FreeTextValues,
 ): string {
   const lines: string[] = [];
-  entries.forEach(({ question, qIndex }) => {
+  entries.forEach(({ question, qIndex, opts }) => {
     const id = questionId(question, qIndex);
     const type = question.type ?? "single_choice";
     const picks = answers[id] ?? [];
+    // Submit the visible labels, not the underlying `value` codes — the
+    // submission becomes a user-visible chat message and should match what
+    // the user actually clicked.
+    const pickLabels = picks.map((pick) => findOptionLabel(opts, pick));
     const text = (freeTextValues[id] ?? "").trim();
     // multi_choice combines every selected option AND the typed text.
     // single_choice picks win when present; the typed text only contributes
@@ -174,9 +178,9 @@ function formatSubmission(
     // mutual exclusion for single_choice, so this is just a safety join.)
     const parts =
       type === "multi_choice"
-        ? [...picks, ...(text ? [text] : [])]
-        : picks.length > 0
-          ? [...picks]
+        ? [...pickLabels, ...(text ? [text] : [])]
+        : pickLabels.length > 0
+          ? [...pickLabels]
           : text
             ? [text]
             : [];
