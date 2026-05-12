@@ -3,6 +3,11 @@ import {
   AskUserInputV0PropsSchema,
   type AskUserInputV0Props,
 } from "../components/builtin/AskUserInputV0";
+import {
+  ChartCardV0,
+  ChartCardV0PropsSchema,
+  type ChartCardV0Props,
+} from "../components/builtin/ChartCardV0";
 import type { GenerativeComponent, GenerativeComponents } from "../types";
 
 /**
@@ -23,8 +28,17 @@ export const askUserInputV0Registration: GenerativeComponent<AskUserInputV0Props
   component: AskUserInputV0,
 };
 
+export const chartCardV0Registration: GenerativeComponent<ChartCardV0Props> = {
+  name: "ChartCardV0",
+  description:
+    "Render a single-series bar or line chart inline in chat. Use for short numeric summaries (1–60 datapoints) such as daily counts, comparisons across categories, or a trend over an ordered series. Pick `type: \"bar\"` for category comparisons (counts, totals across discrete buckets) and `type: \"line\"` when the x-axis order is meaningful and continuous (e.g. days, weeks). Provide each datapoint under `data[]` with `label` (x-axis category/bucket name, kept short — long labels are decimated) and `value` (numeric; negative supported). Set `title`/`subtitle` for context (plain text, no markdown). Use `valueFormat` to control how y-axis ticks and the hover tooltip format the value: `{ style: \"currency\", currency: \"SGD\" }` for money, `{ style: \"percent\" }` for ratios (Intl multiplies by 100). Set `xAxisLabel`/`yAxisLabel` only when units are not obvious from the data. The card is display-only — the user reads the chart and continues the conversation in prose; do not use this when you need an answer back from the user.",
+  propsSchema: ChartCardV0PropsSchema,
+  component: ChartCardV0,
+};
+
 export const BUILTIN_GENERATIVE_COMPONENTS: GenerativeComponents = [
   askUserInputV0Registration,
+  chartCardV0Registration,
 ];
 
 /**

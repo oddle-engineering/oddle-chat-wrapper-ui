@@ -18,6 +18,11 @@ import { ThreadAttachmentModal } from "./components/ThreadAttachmentModal";
 import { orderSummaryRegistration } from "./components/OrderSummaryCard";
 import { datePickerRegistration } from "./components/DatePickerCard";
 import { redeemableRegistration } from "./components/RedeemableCard";
+// Reach directly into the source tree to render the built-in chart card as a
+// static visual demo. Built-ins are not re-exported from the public surface
+// (consuming products never register them themselves), so this import bypasses
+// the package alias on purpose.
+import { ChartCardV0 } from "../../src/components/builtin/ChartCardV0";
 import "./components/panels.css";
 import "./App.css";
 
@@ -416,7 +421,7 @@ function App() {
   // State for dynamic metadata (for testing metadata prop sync)
   // Start with empty to test the "metadata starts empty then gets populated" scenario
   const [dynamicMetadata, setDynamicMetadata] = useState<any>({
-    marketing_id: 122222333335
+    marketing_id: 1222223333357
   });
 
   // State for dynamic contextHelpers (for testing contextHelpers prop sync)
@@ -2551,8 +2556,74 @@ function App() {
             onUpdateStatus={handleUpdateReservationStatus}
             onCancelReservation={handleCancelReservation}
           />
+          <ChartCardDemoPanel />
         </div>
       </div>
+    </div>
+  );
+}
+
+function ChartCardDemoPanel() {
+  const reservationsByDay = [
+    { label: "Mon", value: 12 },
+    { label: "Tue", value: 18 },
+    { label: "Wed", value: 9 },
+    { label: "Thu", value: 22 },
+    { label: "Fri", value: 31 },
+    { label: "Sat", value: 44 },
+    { label: "Sun", value: 27 },
+  ];
+  const revenueTrend = [
+    { label: "W1", value: 1820 },
+    { label: "W2", value: 2140 },
+    { label: "W3", value: 1990 },
+    { label: "W4", value: 2480 },
+    { label: "W5", value: 2710 },
+    { label: "W6", value: 2630 },
+    { label: "W7", value: 3120 },
+    { label: "W8", value: 3380 },
+  ];
+  const sparseValues = [
+    { label: "A", value: -3 },
+    { label: "B", value: 4 },
+    { label: "C", value: 1 },
+  ];
+  return (
+    <div
+      className="panel-section"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 16,
+        padding: 16,
+        marginTop: 16,
+      }}
+    >
+      <h2 style={{ margin: 0, fontSize: 16 }}>ChartCardV0 — built-in demo</h2>
+      <p style={{ margin: 0, color: "#555", fontSize: 13 }}>
+        Static visual demo of the built-in chart card. Hover or tab into the
+        bars/points to see tooltips.
+      </p>
+      <ChartCardV0
+        type="bar"
+        title="Reservations this week"
+        subtitle="Across all venues"
+        data={reservationsByDay}
+        xAxisLabel="Day"
+        yAxisLabel="Bookings"
+      />
+      <ChartCardV0
+        type="line"
+        title="Revenue trend"
+        subtitle="Last 8 weeks"
+        data={revenueTrend}
+        valueFormat={{ style: "currency", currency: "SGD" }}
+      />
+      <ChartCardV0
+        type="bar"
+        title="Sample with negatives"
+        data={sparseValues}
+      />
     </div>
   );
 }

@@ -4409,3 +4409,184 @@
 .chat-wrapper__media-image--clickable:hover::after {
   opacity: 1;
 }
+
+/* Built-in: ChartCardV0 (single-series bar/line chart, display-only)
+ *
+ * Mirrors the AskUserInputV0 visual language: same card chrome (border, radius,
+ * shadow, max-width), same color tokens (primary #410099, text #212b36, helper
+ * gray, neutral border). Width is driven by ResizeObserver on the wrapper so
+ * the SVG flexes between mobile and sidebar widths; the SVG itself uses a
+ * fixed 16:9 aspect ratio computed in JS. */
+.chat-wrapper__chart-card-v0 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid rgba(145, 158, 171, 0.24);
+  border-radius: 12px;
+  background: #fff;
+  padding: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  max-width: 540px;
+  font-family: "Public Sans", system-ui, sans-serif;
+  color: #212b36;
+}
+
+.chat-wrapper__chart-card-v0--empty {
+  min-height: 64px;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.chat-wrapper__chart-card-v0-empty-text {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.55);
+  display: inline-flex;
+  gap: 6px;
+}
+
+.chat-wrapper__chart-card-v0-empty-hint {
+  font-style: italic;
+}
+
+.chat-wrapper__chart-card-v0-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chat-wrapper__chart-card-v0-title {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+.chat-wrapper__chart-card-v0-subtitle {
+  font-size: 12px;
+  line-height: 16px;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.chat-wrapper__chart-card-v0-canvas {
+  position: relative;
+  width: 100%;
+}
+
+.chat-wrapper__chart-card-v0-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.chat-wrapper__chart-card-v0-axis-line {
+  stroke: rgba(145, 158, 171, 0.6);
+  stroke-width: 1;
+}
+
+.chat-wrapper__chart-card-v0-gridline {
+  stroke: rgba(145, 158, 171, 0.2);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.chat-wrapper__chart-card-v0-tick-label {
+  fill: rgba(0, 0, 0, 0.55);
+  font-size: 11px;
+  font-family: inherit;
+}
+
+.chat-wrapper__chart-card-v0-axis-label {
+  fill: rgba(0, 0, 0, 0.55);
+  font-size: 11px;
+  font-family: inherit;
+}
+
+.chat-wrapper__chart-card-v0-bar {
+  fill: #410099;
+  transition: fill 120ms ease;
+  outline: none;
+}
+
+.chat-wrapper__chart-card-v0-bar:hover,
+.chat-wrapper__chart-card-v0-bar:focus-visible,
+.chat-wrapper__chart-card-v0-bar--active {
+  fill: #5c1bcc;
+}
+
+.chat-wrapper__chart-card-v0-bar:focus-visible {
+  stroke: #410099;
+  stroke-width: 2;
+}
+
+.chat-wrapper__chart-card-v0-line {
+  fill: none;
+  stroke: #410099;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.chat-wrapper__chart-card-v0-point {
+  fill: #fff;
+  stroke: #410099;
+  stroke-width: 2;
+  transition: r 120ms ease;
+  outline: none;
+}
+
+.chat-wrapper__chart-card-v0-point:hover,
+.chat-wrapper__chart-card-v0-point:focus-visible,
+.chat-wrapper__chart-card-v0-point--active {
+  fill: #410099;
+}
+
+.chat-wrapper__chart-card-v0-focus-line {
+  stroke: rgba(65, 0, 153, 0.25);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  pointer-events: none;
+}
+
+.chat-wrapper__chart-card-v0-overlay {
+  cursor: crosshair;
+}
+
+.chat-wrapper__chart-card-v0-tooltip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  margin-top: -8px;
+  background: #fff;
+  border: 1px solid rgba(145, 158, 171, 0.24);
+  border-radius: 8px;
+  padding: 6px 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  pointer-events: none;
+  font-size: 12px;
+  line-height: 16px;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.chat-wrapper__chart-card-v0-tooltip-label {
+  color: rgba(0, 0, 0, 0.55);
+  font-size: 11px;
+}
+
+.chat-wrapper__chart-card-v0-tooltip-value {
+  color: #212b36;
+  font-weight: 600;
+}
+
+/* Visually hidden table for screen readers — same data the SVG renders. */
+.chat-wrapper__chart-card-v0-sr-table {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
