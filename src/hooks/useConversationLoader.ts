@@ -16,6 +16,9 @@ function expandPersistedUIComponents(messages: Message[]): Message[] {
     expanded.push(message);
     if (message.role === "assistant" && message.uiComponents?.length) {
       for (const ui of message.uiComponents) {
+        if (!ui || !ui.toolCallId || !ui.componentName) {
+          continue;
+        }
         expanded.push({
           id: ui.toolCallId,
           role: "ui-component",
