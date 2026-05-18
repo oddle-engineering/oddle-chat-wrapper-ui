@@ -4,6 +4,10 @@ import { MessageFactory } from '../utils/messageFactory';
 import { ToolCallFactory } from '../utils/toolCallFactory';
 import { BaseHandler } from './BaseHandler';
 import { REASONING_CONSTANTS } from '../constants/reasoning';
+import {
+  ASK_USER_QUESTION_TOOL_NAME,
+  mapAskUserQuestionParamsToProps,
+} from '../../services/builtinClientTools';
 
 /**
  * Tool name reserved for the universal generative-UI render tool.
@@ -11,6 +15,13 @@ import { REASONING_CONSTANTS } from '../constants/reasoning';
  * message to the client — it should NOT arrive here as a tool_call_request.
  */
 export const RENDER_UI_TOOL_NAME = 'render_ui';
+
+/**
+ * Component name that the built-in `ask_user_question` client tool renders
+ * into. Kept in sync with the registration in `builtinComponents.ts` so the
+ * interception path emits a `ui_component` event the registry can resolve.
+ */
+const ASK_USER_QUESTION_COMPONENT_NAME = 'AskUserInputV0';
 
 export class ToolHandler extends BaseHandler {
   private readonly processedToolCalls = new Set<string>();
@@ -40,6 +51,27 @@ export class ToolHandler extends BaseHandler {
     // skip executing it as a real tool and ack synthetically so the agent
     // doesn't hang. The actual render is driven by `ui_component`.
     if (toolName === RENDER_UI_TOOL_NAME) {
+      this.sendToolResponse(callId, { rendered: true });
+      return;
+    }
+
+    // Built-in `ask_user_question` client tool: render the structured-question
+    // form locally instead of executing the (no-op) tool function. We emit a
+    // synthetic `ui_component` event so the existing renderer mounts the same
+    // `AskUserInputV0` component used by the legacy render_ui path, then ack
+    // the tool call immediately so the agent doesn't block — the user's
+    // actual answer flows back as a normal chat message when the form is
+    // submitted.
+    if (toolName === ASK_USER_QUESTION_TOOL_NAME) {
+      const onUIComponent = this.getHandler('onUIComponent');
+      if (onUIComponent) {
+        onUIComponent({
+          callId,
+          componentName: ASK_USER_QUESTION_COMPONENT_NAME,
+          props: mapAskUserQuestionParamsToProps(parameters as any),
+          status: 'complete',
+        });
+      }
       this.sendToolResponse(callId, { rendered: true });
       return;
     }

@@ -186,7 +186,13 @@ function formatSubmission(
             : [];
     if (parts.length === 0) return;
     const title = question.title?.trim() || `Q${qIndex + 1}`;
-    lines.push(`${title} ${parts.join(", ")}`);
+    // Format each answered question as a paired Q/A exchange so the
+    // submitted chat message reads like a back-and-forth instead of a flat
+    // list. Pairs are separated by a blank line so multi-question
+    // submissions stay scannable.
+    lines.push(`Q: ${title}`);
+    lines.push(`A: ${parts.join(", ")}`);
+    lines.push("");
   });
   return lines.join("\n").trim();
 }

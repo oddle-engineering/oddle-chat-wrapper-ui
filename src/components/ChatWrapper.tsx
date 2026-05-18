@@ -16,6 +16,7 @@ import {
 } from "../types";
 import { ComponentRegistry } from "../services/componentRegistry";
 import { mergeWithBuiltinComponents } from "../services/builtinComponents";
+import { mergeWithBuiltinClientTools } from "../services/builtinClientTools";
 import type { UIComponentRenderRequest } from "../client/types/events";
 import { ChatInputRef } from "./ChatInput";
 import { SystemEvent, SystemEventType } from "../client";
@@ -96,14 +97,22 @@ const ChatWrapperInner = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       [httpApiUrl, userMpAuthToken, chatServerKey, config.fileUploadConfig]
     );
 
+    // Merge consumer-supplied tools with the library's built-in client tools
+    // (e.g. `ask_user_question`). Consumer tools come first so an app can
+    // override a built-in by registering a tool with the same name.
+    const effectiveTools = useMemo(
+      () => mergeWithBuiltinClientTools(tools),
+      [tools]
+    );
+
     // Extract client tools for UI display
     const uiClientTools = useMemo(() => {
-      if (tools && tools.length > 0) {
+      if (effectiveTools.length > 0) {
         // Extract schemas from unified tools for UI display
-        return tools.map(({ execute, ...schema }) => schema);
+        return effectiveTools.map(({ execute, ...schema }) => schema);
       }
       return [];
-    }, [tools]);
+    }, [effectiveTools]);
 
     // Merge consumer-registered components with library built-ins (e.g.
     // AskUserInputV0). Consumer entries come first so they win the registry's
@@ -115,14 +124,22 @@ const ChatWrapperInner = forwardRef<ChatWrapperRef, ChatWrapperProps>(
 
     // Build the generative-UI component registry once per registration set.
     // Zod → JSON Schema conversion happens inside the registry constructor.
+    // The registry is still used client-side so the built-in `AskUserInputV0`
+    // (and any consumer-supplied components) can be mounted by name when the
+    // `ask_user_question` client tool fires.
     const generativeRegistry = useMemo(
       () => new ComponentRegistry(effectiveGenerativeComponents),
       [effectiveGenerativeComponents]
     );
 
-    // JSON Schemas to advertise to the chat-server alongside the tool schemas.
+    // render_ui is intentionally disabled: we no longer advertise generative
+    // component schemas to the chat-server. The agent should reach the UI via
+    // the `ask_user_question` client tool instead, which the ToolHandler
+    // intercepts and routes into the same renderer. Keep this as an empty
+    // array (not the registry's schemas) so the server never offers
+    // `render_ui` as a target.
     const componentSchemas = useMemo(
-      () => generativeRegistry.getSchemas(),
+      () => generativeRegistry.getSchemas().slice(0, 0),
       [generativeRegistry]
     );
 
@@ -364,8 +381,10 @@ const ChatWrapperInner = forwardRef<ChatWrapperRef, ChatWrapperProps>(
       entityId,
       entityType,
 
-      // Tools configuration
-      tools,
+      // Tools configuration (consumer tools + library built-ins like
+      // `ask_user_question`, merged in a stable order so the WS connection
+      // hook doesn't see spurious tool-set changes).
+      tools: effectiveTools,
 
       // Generative-UI components
       componentSchemas,

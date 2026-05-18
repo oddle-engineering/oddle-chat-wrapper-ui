@@ -416,7 +416,7 @@ function App() {
   // State for dynamic metadata (for testing metadata prop sync)
   // Start with empty to test the "metadata starts empty then gets populated" scenario
   const [dynamicMetadata, setDynamicMetadata] = useState<any>({
-    marketing_id: 122222333335
+    marketing_id: 12222233333511,
   });
 
   // State for dynamic contextHelpers (for testing contextHelpers prop sync)
@@ -2365,7 +2365,7 @@ function App() {
       // Authentication and entity context
       auth: {
         token:
-          "db9717b350331169829d53795574bdf734a64088c587801c1b57d2e0b6058d4e50e1e41f30a2614a274c2fa6f1f29f5ebbd0e371dfae79e422573a6bdaa5dd0f",
+          "459c2182a2002f8f5003b33f216f8a8c4d45812a1c0d9f9b292f546c94a7a50d2c1d7a36ad9332718d8608475a1030f646ee860bcc983a2a320465eea6ffc402",
         entityId: "8a608005902f987401902ff891b901a5",
         entityType: EntityType.BRAND,
       },
