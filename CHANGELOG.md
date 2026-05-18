@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing
 
+## [1.0.59] - 2026-05-18
+
+### Added
+- replace render_ui with ask_user_question; disable generative UI by default
+
 ## [1.0.58] - 2026-05-12
 
 ### Changed
